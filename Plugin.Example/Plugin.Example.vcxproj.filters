@@ -28,7 +28,7 @@
     <Library Include="..\Release\Bot.lib">
       <Filter>Resource Files</Filter>
     </Library>
-    <Library Include="..\Jupiter\Jupiter.lib">
+    <Library Include="..\Jupiter\Release\Jupiter.lib">
       <Filter>Resource Files</Filter>
     </Library>
   </ItemGroup>

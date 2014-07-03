@@ -1,0 +1,3 @@
+[submodule "Jupiter"]
+	path = Jupiter
+	url = https://github.com/JustinAJ/Jupiter.git

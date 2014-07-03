@@ -75,7 +75,7 @@
     <ClCompile Include="ExtraCommands.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <Library Include="..\Jupiter\Jupiter.lib" />
+    <Library Include="..\Jupiter\Release\Jupiter.lib" />
     <Library Include="..\Release\Bot.lib" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

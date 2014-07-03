@@ -75,7 +75,7 @@
     <ClCompile Include="ExcessiveHeadshots.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <Library Include="..\Jupiter\Jupiter.lib" />
+    <Library Include="..\Jupiter\Release\Jupiter.lib" />
     <Library Include="..\Release\Bot.lib" />
     <Library Include="..\Release\Plugins\RenX.Core.lib" />
   </ItemGroup>
