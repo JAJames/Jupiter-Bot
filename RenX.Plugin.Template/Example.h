@@ -15,6 +15,7 @@
 
 class RenX_TPlugin : public RenX::Plugin
 {
+public:
 	const Jupiter::ReadableString &getName() override { return name; }
 
 private:
