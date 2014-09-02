@@ -497,7 +497,9 @@ int RenX::Core::think()
 							else if (header.equals("lC-LIST:"))
 							{
 								// ID IP SteamID Team Name
-								
+								if (playerData.isEmpty())
+									break;
+
 								int id;
 								bool isBot = false;
 								if (playerData.get(0) == 'b')
