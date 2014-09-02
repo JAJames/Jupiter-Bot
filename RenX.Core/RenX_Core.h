@@ -51,7 +51,7 @@ namespace RenX
 	public:
 
 		/**
-		* @brief Loops through the Renegade-X servers and parses data.
+		* @brief Loops through the Renegade-X servers.
 		* This should only be called by main().
 		*
 		* @return Result of Jupiter::Plugin::Think().

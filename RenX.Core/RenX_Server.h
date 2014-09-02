@@ -29,6 +29,7 @@
 #include "Jupiter/String.h"
 #include "Jupiter/CString.h"
 #include "Jupiter/INIFile.h"
+#include "Jupiter/Thinker.h"
 #include "RenX.h"
 
 /** DLL Linkage Nagging */
@@ -48,10 +49,18 @@ namespace RenX
 	* @brief Represents a connection to an individiaul Renegade-X server.
 	* There are often more than one of these, such as when communities run multiple servers.
 	*/
-	class RENX_API Server
+	class RENX_API Server : public Jupiter::Thinker
 	{
-		friend class RenX::Core;
-	public:
+	public: // Jupiter::Thinker
+
+		/**
+		* @brief Checks and processes raw socket data.
+		*
+		* @return Zero if no error occurs, a non-zero value otherwise.
+		*/
+		int think();
+
+	public: // RenX::Server
 		Jupiter::DLList<RenX::PlayerInfo> players; /** A list of players in the server */
 		Jupiter::INIFile varData; /** This may be replaced later with a more dedicated type. */
 
@@ -353,6 +362,13 @@ namespace RenX
 		void sendLogChan(const char *fmt, ...) const;
 
 		/**
+		* @brief Processes a line of RCON input data. Input data SHOULD NOT include a new-line ('\n') terminator.
+		*
+		* @param line Line to process
+		*/
+		void processLine(const Jupiter::ReadableString &line);
+
+		/**
 		* @brief Disconnects from a server's RCON interface.
 		*/
 		void disconnect();
@@ -418,6 +434,7 @@ namespace RenX
 		Jupiter::StringS IRCPrefix;
 		Jupiter::StringS CommandPrefix;
 		Jupiter::StringS gameVersion;
+		Jupiter::String lastLine;
 		Jupiter::ArrayList<RenX::GameCommand> commands;
 	};
 
