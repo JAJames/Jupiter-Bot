@@ -425,6 +425,7 @@ namespace RenX
 		int adminLogChanType;
 		time_t lastAttempt = 0;
 		time_t delay;
+		unsigned int uuidMode; /** 0 = steam, 1 = nickname */
 		Jupiter::TCPSocket sock;
 		Jupiter::CStringS clientHostname;
 		Jupiter::CStringS hostname;

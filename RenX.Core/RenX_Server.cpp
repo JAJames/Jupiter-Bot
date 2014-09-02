@@ -681,7 +681,21 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 				else if (action.equals("entered from"))
 				{
 					player->ip = buff.getWord(3, RenX::DelimS);
-					if (buff.getWord(4, RenX::DelimS).equals("steamid")) player->steamid = buff.getWord(5, RenX::DelimS);
+					if (buff.getWord(4, RenX::DelimS).equals("steamid"))
+						player->steamid = buff.getWord(5, RenX::DelimS).asUnsignedInt();
+
+					switch (RenX::Server::uuidMode)
+					{
+					default:
+					case 0:
+						if (player->steamid != 0)
+							player->uuid.format("%llx", player->steamid);
+						break;
+					case 1:
+						player->uuid = player->name;
+						break;
+					}
+
 					for (size_t i = 0; i < xPlugins.size(); i++)
 						xPlugins.get(i)->RenX_OnJoin(this, player);
 				}
@@ -691,6 +705,8 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 					for (size_t i = 0; i < xPlugins.size(); i++)
 						xPlugins.get(i)->RenX_OnNameChange(this, player, newName);
 					player->name = newName;
+					if (RenX::Server::uuidMode == 1)
+						player->uuid = player->name;
 				}
 			}
 			else if (header.equals("lRCON:"))
@@ -769,7 +785,19 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 				if (player->ip.size() == 0)
 				{
 					player->ip = ip;
-					player->steamid = steamid;
+					player->steamid = steamid.asUnsignedInt();
+
+					switch (RenX::Server::uuidMode)
+					{
+					default:
+					case 0:
+						if (player->steamid != 0)
+							player->uuid.format("%llx", player->steamid);
+						break;
+					case 1:
+						player->uuid = player->name;
+						break;
+					}
 				}
 			}
 			else
@@ -886,8 +914,8 @@ RenX::Server::Server(const Jupiter::ReadableString &configurationSection)
 	RenX::Server::setPrefix(Jupiter::IRC::Client::Config->get(RenX::Server::configSection, STRING_LITERAL_AS_REFERENCE("IRCPrefix")));
 
 	RenX::Server::rules = Jupiter::IRC::Client::Config->get(RenX::Server::configSection, STRING_LITERAL_AS_REFERENCE("Rules"), STRING_LITERAL_AS_REFERENCE("Anarchy!"));
-
 	RenX::Server::delay = Jupiter::IRC::Client::Config->getInt(RenX::Server::configSection, STRING_LITERAL_AS_REFERENCE("ReconnectDelay"), 60);
+	RenX::Server::uuidMode = Jupiter::IRC::Client::Config->getInt(RenX::Server::configSection, STRING_LITERAL_AS_REFERENCE("UUIDMode"), 0);
 
 	for (size_t i = 0; i < RenX::GameMasterCommandList->size(); i++)
 		RenX::Server::addCommand(RenX::GameMasterCommandList->get(i)->copy());

@@ -27,21 +27,21 @@ const char *medalsFileName = "medals.ini";
 
 struct MedalPlayerData
 {
-	Jupiter::StringS steamID;
+	Jupiter::StringS uuid;
 	unsigned long recs = 0;
 	unsigned long noobs = 0;
 	Jupiter::StringS lastName;
 	time_t lastSeen = 0;
 
-	MedalPlayerData(Jupiter::INIFile &medalsFile, const Jupiter::ReadableString &steamid)
+	MedalPlayerData(Jupiter::INIFile &medalsFile, const Jupiter::ReadableString &id)
 	{
-		MedalPlayerData::steamID = steamid;
-		if (medalsFile.getSectionIndex(MedalPlayerData::steamID) != Jupiter::INVALID_INDEX)
+		MedalPlayerData::uuid = id;
+		if (medalsFile.getSectionIndex(MedalPlayerData::uuid) != Jupiter::INVALID_INDEX)
 		{
-			MedalPlayerData::recs = medalsFile.get(MedalPlayerData::steamID, STRING_LITERAL_AS_REFERENCE("Recs")).asUnsignedInt(10);
-			MedalPlayerData::noobs = medalsFile.get(MedalPlayerData::steamID, STRING_LITERAL_AS_REFERENCE("Noobs")).asUnsignedInt(10);
-			MedalPlayerData::lastName = medalsFile.get(MedalPlayerData::steamID, STRING_LITERAL_AS_REFERENCE("Name"));
-			MedalPlayerData::lastSeen = medalsFile.getInt(MedalPlayerData::steamID, STRING_LITERAL_AS_REFERENCE("Seen"));
+			MedalPlayerData::recs = medalsFile.get(MedalPlayerData::uuid, STRING_LITERAL_AS_REFERENCE("Recs")).asUnsignedInt(10);
+			MedalPlayerData::noobs = medalsFile.get(MedalPlayerData::uuid, STRING_LITERAL_AS_REFERENCE("Noobs")).asUnsignedInt(10);
+			MedalPlayerData::lastName = medalsFile.get(MedalPlayerData::uuid, STRING_LITERAL_AS_REFERENCE("Name"));
+			MedalPlayerData::lastSeen = medalsFile.getInt(MedalPlayerData::uuid, STRING_LITERAL_AS_REFERENCE("Seen"));
 		}
 	}
 };
@@ -57,10 +57,10 @@ void updateMedalPlayerData(MedalPlayerData &player, RenX::PlayerInfo *pInfo)
 	player.lastSeen = time(0);
 }
 
-void syncPlayerMedalDataToINI(Jupiter::INIFile &file, MedalPlayerData &player, const Jupiter::ReadableString &steamid)
+void syncPlayerMedalDataToINI(Jupiter::INIFile &file, MedalPlayerData &player, const Jupiter::ReadableString &uuid)
 {
-	file.set(steamid, STRING_LITERAL_AS_REFERENCE("Name"), player.lastName);
-	file.set(steamid, STRING_LITERAL_AS_REFERENCE("Seen"), Jupiter::StringS::Format("%d", player.lastSeen));
+	file.set(uuid, STRING_LITERAL_AS_REFERENCE("Name"), player.lastName);
+	file.set(uuid, STRING_LITERAL_AS_REFERENCE("Seen"), Jupiter::StringS::Format("%d", player.lastSeen));
 }
 
 struct CongratPlayerData
@@ -112,11 +112,11 @@ void RenX_MedalsPlugin::RenX_OnGameOver(RenX::Server *server, RenX::WinType winT
 		if (pInfo->vehicleKills > mostVehicleKills->vehicleKills) mostVehicleKills = pInfo;
 		if (RenX::getKillDeathRatio(pInfo) > RenX::getKillDeathRatio(bestKD)) bestKD = pInfo;
 
-		if (pInfo->steamid.size() != 0)
+		if (pInfo->uuid.isEmpty() == false)
 		{
-			MedalPlayerData player(RenX_MedalsPlugin::medalsFile, pInfo->steamid);
+			MedalPlayerData player(RenX_MedalsPlugin::medalsFile, pInfo->uuid);
 			updateMedalPlayerData(player, pInfo);
-			syncPlayerMedalDataToINI(RenX_MedalsPlugin::medalsFile, player, pInfo->steamid);
+			syncPlayerMedalDataToINI(RenX_MedalsPlugin::medalsFile, player, pInfo->uuid);
 		}
 		n = n->next;
 	}
@@ -124,11 +124,11 @@ void RenX_MedalsPlugin::RenX_OnGameOver(RenX::Server *server, RenX::WinType winT
 	CongratPlayerData *congratPlayerData;
 
 	/** +1 for most kills */
-	if (mostKills->steamid.size() != 0 && mostKills->kills > 0)
+	if (mostKills->uuid.isEmpty() == false && mostKills->kills > 0)
 	{
 		addRec(mostKills);
-		MedalPlayerData player(RenX_MedalsPlugin::medalsFile, mostKills->steamid);
-		syncPlayerMedalDataToINI(RenX_MedalsPlugin::medalsFile, player, mostKills->steamid);
+		MedalPlayerData player(RenX_MedalsPlugin::medalsFile, mostKills->uuid);
+		syncPlayerMedalDataToINI(RenX_MedalsPlugin::medalsFile, player, mostKills->uuid);
 
 		congratPlayerData = new CongratPlayerData();
 		congratPlayerData->server = server;
@@ -138,11 +138,11 @@ void RenX_MedalsPlugin::RenX_OnGameOver(RenX::Server *server, RenX::WinType winT
 	}
 
 	/** +1 for most Vehicle kills */
-	if (mostVehicleKills->steamid.size() != 0 && mostVehicleKills->vehicleKills > 0)
+	if (mostVehicleKills->uuid.isEmpty() == false && mostVehicleKills->vehicleKills > 0)
 	{
 		addRec(mostVehicleKills);
-		MedalPlayerData player(RenX_MedalsPlugin::medalsFile, mostVehicleKills->steamid);
-		syncPlayerMedalDataToINI(RenX_MedalsPlugin::medalsFile, player, mostVehicleKills->steamid);
+		MedalPlayerData player(RenX_MedalsPlugin::medalsFile, mostVehicleKills->uuid);
+		syncPlayerMedalDataToINI(RenX_MedalsPlugin::medalsFile, player, mostVehicleKills->uuid);
 
 		congratPlayerData = new CongratPlayerData();
 		congratPlayerData->server = server;
@@ -152,11 +152,11 @@ void RenX_MedalsPlugin::RenX_OnGameOver(RenX::Server *server, RenX::WinType winT
 	}
 
 	/** +1 for best K/D ratio */
-	if (bestKD->steamid.size() != 0)
+	if (bestKD->uuid.isEmpty() == false)
 	{
 		addRec(bestKD);
-		MedalPlayerData player(RenX_MedalsPlugin::medalsFile, bestKD->steamid);
-		syncPlayerMedalDataToINI(RenX_MedalsPlugin::medalsFile, player, bestKD->steamid);
+		MedalPlayerData player(RenX_MedalsPlugin::medalsFile, bestKD->uuid);
+		syncPlayerMedalDataToINI(RenX_MedalsPlugin::medalsFile, player, bestKD->uuid);
 
 		congratPlayerData = new CongratPlayerData();
 		congratPlayerData->server = server;
@@ -173,9 +173,9 @@ void RenX_MedalsPlugin::RenX_OnDestroy(RenX::Server *server, const RenX::PlayerI
 	if (type == RenX::ObjectType::Building)
 	{
 		addRec((RenX::PlayerInfo *) player); // -whistles-
-		MedalPlayerData playerMedalData(RenX_MedalsPlugin::medalsFile, player->steamid);
+		MedalPlayerData playerMedalData(RenX_MedalsPlugin::medalsFile, player->uuid);
 		updateMedalPlayerData(playerMedalData, (RenX::PlayerInfo *) player); // -whistles-
-		syncPlayerMedalDataToINI(RenX_MedalsPlugin::medalsFile, playerMedalData, player->steamid);
+		syncPlayerMedalDataToINI(RenX_MedalsPlugin::medalsFile, playerMedalData, player->uuid);
 
 		const Jupiter::ReadableString &translated = RenX::translateName(objectName);
 		server->sendMessage(Jupiter::StringS::Format("%.*s has been recommended for destroying the %.*s!", player->name.size(), player->name.ptr(), translated.size(), translated.ptr()));
@@ -203,13 +203,13 @@ void RecsGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *player, co
 			source->sendMessage(player, STRING_LITERAL_AS_REFERENCE("Error: Player not found! Syntax: recs [player]"));
 			// Check INI?
 		}
-		else if (target->steamid.size() == 0)
+		else if (target->uuid.isEmpty())
 			source->sendMessage(player, STRING_LITERAL_AS_REFERENCE("Error: Player is not using steam."));
 		else if (target == player)
 			RecsGameCommand::trigger(source, player, Jupiter::ReferenceString::empty);
 		else source->sendMessage(Jupiter::StringS::Format("%.*s has %lu and %lu n00bs. Their worth: %d", target->name.size(), target->name.ptr(), getRecs(target), getNoobs(target), getWorth(target)));
 	}
-	else if (player->steamid.size() == 0)
+	else if (player->uuid.isEmpty())
 		source->sendMessage(player, STRING_LITERAL_AS_REFERENCE("Error: You are not using steam."));
 	else source->sendMessage(Jupiter::StringS::Format("%.*s, you have %lu and %lu n00bs. Your worth: %d", player->name.size(), player->name.ptr(), getRecs(player), getNoobs(player), getWorth(player)));
 }
@@ -236,7 +236,7 @@ void RecGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *player, con
 	{
 		RenX::PlayerInfo *target = source->getPlayerByPartName(parameters);
 		if (target == nullptr) source->sendMessage(player, STRING_LITERAL_AS_REFERENCE("Error: Player not found! Syntax: rec <player>"));
-		else if (target->steamid.size() == 0)
+		else if (target->uuid.isEmpty())
 			source->sendMessage(player, STRING_LITERAL_AS_REFERENCE("Error: Player is not using steam."));
 		else if (target == player)
 		{
@@ -277,7 +277,8 @@ void NoobGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *player, co
 	{
 		RenX::PlayerInfo *target = source->getPlayerByPartName(parameters);
 		if (target == nullptr) source->sendMessage(player, STRING_LITERAL_AS_REFERENCE("Error: Player not found! Syntax: noob [player]"));
-		else if (target->steamid.size() == 0) source->sendMessage(player, STRING_LITERAL_AS_REFERENCE("Error: Player is not using steam."));
+		else if (target->uuid.isEmpty())
+			source->sendMessage(player, STRING_LITERAL_AS_REFERENCE("Error: Player is not using steam."));
 		else if (player->varData.get(STRING_LITERAL_AS_REFERENCE("RenX.Medals"), STRING_LITERAL_AS_REFERENCE("gn")) != nullptr)
 			source->sendMessage(player, STRING_LITERAL_AS_REFERENCE("You can only give one noob per game."));
 		else
@@ -305,13 +306,13 @@ RenX_MedalsPlugin pluginInstance;
 void addRec(MedalPlayerData &player, int amount)
 {
 	player.recs += amount;
-	pluginInstance.medalsFile.set(player.steamID, STRING_LITERAL_AS_REFERENCE("Recs"), Jupiter::StringS::Format("%u", player.recs));
+	pluginInstance.medalsFile.set(player.uuid, STRING_LITERAL_AS_REFERENCE("Recs"), Jupiter::StringS::Format("%u", player.recs));
 }
 
 void addNoob(MedalPlayerData &player, int amount)
 {
 	player.noobs += amount;
-	pluginInstance.medalsFile.set(player.steamID, STRING_LITERAL_AS_REFERENCE("Noobs"), Jupiter::StringS::Format("%u", player.noobs));
+	pluginInstance.medalsFile.set(player.uuid, STRING_LITERAL_AS_REFERENCE("Noobs"), Jupiter::StringS::Format("%u", player.noobs));
 }
 
 int getWorth(MedalPlayerData &player)
@@ -321,7 +322,7 @@ int getWorth(MedalPlayerData &player)
 
 inline MedalPlayerData getMedalPlayerData(RenX::PlayerInfo *player)
 {
-	return MedalPlayerData(pluginInstance.medalsFile, player->steamid);
+	return MedalPlayerData(pluginInstance.medalsFile, player->uuid);
 }
 
 void addRec(RenX::PlayerInfo *player, int amount)
