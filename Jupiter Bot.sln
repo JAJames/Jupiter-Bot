@@ -95,6 +95,17 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "RenX.SetJoin", "RenX.SetJoi
 		{9103DF3D-8B4A-48E5-A6B3-CBE2554630E2} = {9103DF3D-8B4A-48E5-A6B3-CBE2554630E2}
 	EndProjectSection
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "UserInterface", "UserInterface\UserInterface.vcxproj", "{BE8799E6-A0AC-4F29-AEC5-9EC5886868D7}"
+	ProjectSection(ProjectDependencies) = postProject
+		{C188871B-5F32-4946-B301-24CA2EBB275D} = {C188871B-5F32-4946-B301-24CA2EBB275D}
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "RenX.DNS", "RenX.DNS\RenX.DNS.vcxproj", "{812E9781-A9CB-43C6-8C40-87908D50B363}"
+	ProjectSection(ProjectDependencies) = postProject
+		{C188871B-5F32-4946-B301-24CA2EBB275D} = {C188871B-5F32-4946-B301-24CA2EBB275D}
+		{9103DF3D-8B4A-48E5-A6B3-CBE2554630E2} = {9103DF3D-8B4A-48E5-A6B3-CBE2554630E2}
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -169,6 +180,14 @@ Global
 		{0489F164-DC8F-433C-8CFA-F7EB2A3356F1}.Debug|Win32.Build.0 = Debug|Win32
 		{0489F164-DC8F-433C-8CFA-F7EB2A3356F1}.Release|Win32.ActiveCfg = Release|Win32
 		{0489F164-DC8F-433C-8CFA-F7EB2A3356F1}.Release|Win32.Build.0 = Release|Win32
+		{BE8799E6-A0AC-4F29-AEC5-9EC5886868D7}.Debug|Win32.ActiveCfg = Debug|Win32
+		{BE8799E6-A0AC-4F29-AEC5-9EC5886868D7}.Debug|Win32.Build.0 = Debug|Win32
+		{BE8799E6-A0AC-4F29-AEC5-9EC5886868D7}.Release|Win32.ActiveCfg = Release|Win32
+		{BE8799E6-A0AC-4F29-AEC5-9EC5886868D7}.Release|Win32.Build.0 = Release|Win32
+		{812E9781-A9CB-43C6-8C40-87908D50B363}.Debug|Win32.ActiveCfg = Debug|Win32
+		{812E9781-A9CB-43C6-8C40-87908D50B363}.Debug|Win32.Build.0 = Debug|Win32
+		{812E9781-A9CB-43C6-8C40-87908D50B363}.Release|Win32.ActiveCfg = Release|Win32
+		{812E9781-A9CB-43C6-8C40-87908D50B363}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
