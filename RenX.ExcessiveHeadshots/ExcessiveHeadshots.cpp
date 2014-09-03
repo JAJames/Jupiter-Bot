@@ -55,7 +55,7 @@ void RenX_ExcessiveHeadshotsPlugin::RenX_OnKill(RenX::Server *server, const RenX
 		{
 			server->kickPlayer(player);
 			server->sendPubChan(IRCCOLOR "13[Aimbot]" IRCCOLOR " %.*s was banned from the server! Kills: %u - Deaths: %u - Headshots: %u", player->name.size(), player->name.ptr(), player->kills, player->deaths, player->headshots);
-			server->sendAdmChan(IRCCOLOR "13[Aimbot]" IRCCOLOR " %.*s was banned from the server! Kills: %u - Deaths: %u - Headshots: %u - IP: " IRCBOLD "%.*s" IRCBOLD " - Steam ID: " IRCBOLD "0x%.16llx" IRCBOLD, player->name.size(), player->name.ptr(), player->kills, player->deaths, player->headshots, player->ip.size(), player->ip.ptr(), player->steamid);
+			server->sendAdmChan(IRCCOLOR "13[Aimbot]" IRCCOLOR " %.*s was banned from the server! Kills: %u - Deaths: %u - Headshots: %u - IP: " IRCBOLD "%.*s" IRCBOLD " - Steam ID: " IRCBOLD "0x%.16llX" IRCBOLD, player->name.size(), player->name.ptr(), player->kills, player->deaths, player->headshots, player->ip.size(), player->ip.ptr(), player->steamid);
 		}
 	}
 }

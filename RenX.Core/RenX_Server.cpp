@@ -682,14 +682,14 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 				{
 					player->ip = buff.getWord(3, RenX::DelimS);
 					if (buff.getWord(4, RenX::DelimS).equals("steamid"))
-						player->steamid = buff.getWord(5, RenX::DelimS).asUnsignedInt();
+						player->steamid = buff.getWord(5, RenX::DelimS).asUnsignedLongLong();
 
 					switch (RenX::Server::uuidMode)
 					{
 					default:
 					case 0:
 						if (player->steamid != 0)
-							player->uuid.format("0x%.16llx", player->steamid);
+							player->uuid.format("0x%.16llX", player->steamid);
 						break;
 					case 1:
 						player->uuid = player->name;
@@ -785,14 +785,14 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 				if (player->ip.size() == 0)
 				{
 					player->ip = ip;
-					player->steamid = steamid.asUnsignedInt();
+					player->steamid = steamid.asUnsignedLongLong();
 
 					switch (RenX::Server::uuidMode)
 					{
 					default:
 					case 0:
 						if (player->steamid != 0)
-							player->uuid.format("0x%.16llx", player->steamid);
+							player->uuid.format("0x%.16llX", player->steamid);
 						break;
 					case 1:
 						player->uuid = player->name;

@@ -38,8 +38,8 @@ struct MedalPlayerData
 		MedalPlayerData::uuid = id;
 		if (medalsFile.getSectionIndex(MedalPlayerData::uuid) != Jupiter::INVALID_INDEX)
 		{
-			MedalPlayerData::recs = medalsFile.get(MedalPlayerData::uuid, STRING_LITERAL_AS_REFERENCE("Recs")).asUnsignedInt(10);
-			MedalPlayerData::noobs = medalsFile.get(MedalPlayerData::uuid, STRING_LITERAL_AS_REFERENCE("Noobs")).asUnsignedInt(10);
+			MedalPlayerData::recs = medalsFile.get(MedalPlayerData::uuid, STRING_LITERAL_AS_REFERENCE("Recs")).asUnsignedLongLong(10);
+			MedalPlayerData::noobs = medalsFile.get(MedalPlayerData::uuid, STRING_LITERAL_AS_REFERENCE("Noobs")).asUnsignedLongLong(10);
 			MedalPlayerData::lastName = medalsFile.get(MedalPlayerData::uuid, STRING_LITERAL_AS_REFERENCE("Name"));
 			MedalPlayerData::lastSeen = medalsFile.getInt(MedalPlayerData::uuid, STRING_LITERAL_AS_REFERENCE("Seen"));
 		}
