@@ -37,10 +37,16 @@ void RenX_DNSPlugin::RenX_OnJoin(RenX::Server *server, const RenX::PlayerInfo *p
 	(server->*func)(IRCCOLOR "03[DNS] " IRCBOLD "%.*s" IRCBOLD IRCCOLOR "'s hostname resolved to: " IRCBOLD IRCCOLOR "10%.*s" IRCBOLD, name.size(), name.ptr(), host.size(), host.ptr());
 }
 
-RenX_DNSPlugin::RenX_DNSPlugin()
+int RenX_DNSPlugin::OnRehash()
 {
 	RenX_DNSPlugin::resolveAdmin = Jupiter::IRC::Client::Config->getBool(RenX_DNSPlugin::name, STRING_LITERAL_AS_REFERENCE("ResolveAdmin"), true);
 	RenX_DNSPlugin::resolvePublic = Jupiter::IRC::Client::Config->getBool(RenX_DNSPlugin::name, STRING_LITERAL_AS_REFERENCE("ResolvePublic"), false);
+	return 0;
+}
+
+RenX_DNSPlugin::RenX_DNSPlugin()
+{
+	RenX_DNSPlugin::OnRehash();
 }
 
 // Plugin instantiation and entry point.

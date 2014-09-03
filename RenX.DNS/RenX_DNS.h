@@ -20,7 +20,9 @@ public: // RenX::Plugin
 
 public: // Jupiter::Plugin
 	const Jupiter::ReadableString &getName() override { return name; }
+	int OnRehash() override;
 	RenX_DNSPlugin();
+
 private:
 	STRING_LITERAL_AS_NAMED_REFERENCE(name, "RenX.DNS");
 	bool resolveAdmin;
