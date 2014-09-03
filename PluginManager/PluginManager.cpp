@@ -141,6 +141,8 @@ IRC_COMMAND_INIT(FreePluginIRCCommand)
 
 void ListPluginIRCCommand::create()
 {
+	this->addTrigger(STRING_LITERAL_AS_REFERENCE("plugins"));
+	this->addTrigger(STRING_LITERAL_AS_REFERENCE("plugin"));
 	this->addTrigger(STRING_LITERAL_AS_REFERENCE("listplugin"));
 	this->addTrigger(STRING_LITERAL_AS_REFERENCE("listplugins"));
 	this->addTrigger(STRING_LITERAL_AS_REFERENCE("pluginlist"));
