@@ -25,7 +25,7 @@ const Jupiter::ReferenceString configSection(STRING_LITERAL_AS_REFERENCE("RenX.S
 
 void RenX_SetJoinPlugin::RenX_OnJoin(RenX::Server *server, const RenX::PlayerInfo *player)
 {
-	if (player->steamid != 0)
+	if (player->uuid.isEmpty() == false)
 	{
 		const Jupiter::ReadableString &setjoin = Jupiter::IRC::Client::Config->get(configSection, player->uuid);
 		if (setjoin.isEmpty() == false)
@@ -43,7 +43,7 @@ void ViewJoinGameCommand::create()
 
 void ViewJoinGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *player, const Jupiter::ReadableString &parameters)
 {
-	if (player->steamid != 0)
+	if (player->uuid.isEmpty() == false)
 	{
 		const Jupiter::ReadableString &setjoin = Jupiter::IRC::Client::Config->get(configSection, player->uuid);
 		if (setjoin.isEmpty() == false)
@@ -73,7 +73,7 @@ void DelJoinGameCommand::create()
 
 void DelJoinGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *player, const Jupiter::ReadableString &)
 {
-	if (player->steamid != 0)
+	if (player->uuid.isEmpty() == false)
 	{
 		if (Jupiter::IRC::Client::Config->remove(configSection, player->uuid))
 			source->sendMessage(player, Jupiter::StringS::Format("%.*s, your join message has been removed.", player->name.size(), player->name.ptr()));
@@ -100,7 +100,7 @@ void SetJoinGameCommand::create()
 
 void SetJoinGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *player, const Jupiter::ReadableString &parameters)
 {
-	if (player->steamid != 0)
+	if (player->uuid.isEmpty() == false)
 	{
 		if (parameters.isEmpty() == false)
 		{
