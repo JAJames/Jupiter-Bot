@@ -63,7 +63,7 @@ void RenX_LoggingPlugin::RenX_OnJoin(RenX::Server *server, const RenX::PlayerInf
 	if (player->steamid == 0)
 		server->sendAdmChan(IRCCOLOR "12[Join]" IRCCOLOR "%.*s " IRCBOLD "%.*s" IRCBOLD " joined the game fighting for the %.*s from " IRCBOLD "%.*s" IRCBOLD ", but is not using Steam.", teamColor.size(), teamColor.ptr(), player->name.size(), player->name.ptr(), teamName.size(), teamName.ptr(), player->ip.size(), player->ip.ptr());
 	else
-		server->sendAdmChan(IRCCOLOR "12[Join]" IRCCOLOR "%.*s " IRCBOLD "%.*s" IRCBOLD " joined the game fighting for the %.*s from " IRCBOLD "%.*s" IRCBOLD " using Steam ID " IRCBOLD "%llx" IRCBOLD ".", teamColor.size(), teamColor.ptr(), player->name.size(), player->name.ptr(), teamName.size(), teamName.ptr(), player->ip.size(), player->ip.ptr(), player->steamid);
+		server->sendAdmChan(IRCCOLOR "12[Join]" IRCCOLOR "%.*s " IRCBOLD "%.*s" IRCBOLD " joined the game fighting for the %.*s from " IRCBOLD "%.*s" IRCBOLD " using Steam ID " IRCBOLD "0x%.8llx" IRCBOLD ".", teamColor.size(), teamColor.ptr(), player->name.size(), player->name.ptr(), teamName.size(), teamName.ptr(), player->ip.size(), player->ip.ptr(), player->steamid);
 }
 
 void RenX_LoggingPlugin::RenX_OnPart(RenX::Server *server, const RenX::PlayerInfo *player)

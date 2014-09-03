@@ -689,7 +689,7 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 					default:
 					case 0:
 						if (player->steamid != 0)
-							player->uuid.format("%llx", player->steamid);
+							player->uuid.format("0x%.8llx", player->steamid);
 						break;
 					case 1:
 						player->uuid = player->name;
@@ -792,7 +792,7 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 					default:
 					case 0:
 						if (player->steamid != 0)
-							player->uuid.format("%llx", player->steamid);
+							player->uuid.format("0x%.8llx", player->steamid);
 						break;
 					case 1:
 						player->uuid = player->name;
