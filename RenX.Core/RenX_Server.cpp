@@ -166,7 +166,7 @@ RenX::PlayerInfo *RenX::Server::getPlayerByPartNameFast(const Jupiter::ReadableS
 {
 	if (RenX::Server::players.size() == 0) return nullptr;
 	for (Jupiter::DLList<RenX::PlayerInfo>::Node *node = RenX::Server::players.getNode(0); node != nullptr; node = node->next)
-		if (node->data->name.find(partName) != Jupiter::INVALID_INDEX)
+		if (node->data->name.findi(partName) != Jupiter::INVALID_INDEX)
 			return node->data;
 	return nullptr;
 }
