@@ -23,7 +23,7 @@ Jupiter::ArrayList<RenX::GameCommand> *RenX::GameMasterCommandList = &_GameMaste
 
 RenX::GameCommand::GameCommand(const RenX::GameCommand &command)
 {
-	RenX::GameMasterCommandList->add(this);
+	//RenX::GameMasterCommandList->add(this);
 }
 
 RenX::GameCommand::GameCommand()
