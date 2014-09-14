@@ -179,11 +179,11 @@ void RenX::Server::kickPlayer(int id)
 void RenX::Server::kickPlayer(const RenX::PlayerInfo *player)
 {
 	if (player->isBot)
-		RenX::Server::sock.send(Jupiter::StringS::Format("cadminkick %.*s", player->name.size(), player->name.ptr()));
+		RenX::Server::sock.send(Jupiter::StringS::Format("cadminkick %.*s\n", player->name.size(), player->name.ptr()));
 	else if (player->id < 1000 || this->rconVersion > 2)
 		RenX::Server::kickPlayer(player->id);
 	else if (player->name.contains('|') == false)
-		RenX::Server::sock.send(Jupiter::StringS::Format("cadminkick %.*s", player->name.size(), player->name.ptr()));
+		RenX::Server::sock.send(Jupiter::StringS::Format("cadminkick %.*s\n", player->name.size(), player->name.ptr()));
 	else
 		RenX::Server::kickPlayer(player->id);
 }
