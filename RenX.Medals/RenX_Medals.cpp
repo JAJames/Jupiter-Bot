@@ -326,7 +326,7 @@ void RecGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *player, con
 			addNoob(player);
 			source->sendMessage(player, STRING_LITERAL_AS_REFERENCE("You can't recommend yourself, you noob! (+1 noob)"));
 		}
-		else if (player->varData.get(STRING_LITERAL_AS_REFERENCE("RenX.Medals"), STRING_LITERAL_AS_REFERENCE("gr")).isEmpty() == false || player->adminType.isEmpty() == false)
+		else if (player->varData.get(STRING_LITERAL_AS_REFERENCE("RenX.Medals"), STRING_LITERAL_AS_REFERENCE("gn")) != nullptr && player->adminType.isEmpty())
 			source->sendMessage(player, STRING_LITERAL_AS_REFERENCE("You can only give one recommendation per game."));
 		else
 		{
@@ -365,7 +365,7 @@ void NoobGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *player, co
 			source->sendMessage(player, STRING_LITERAL_AS_REFERENCE("Error: Player not found! Syntax: noob [player]"));
 		else if (target->uuid.isEmpty())
 			source->sendMessage(player, STRING_LITERAL_AS_REFERENCE("Error: Player is not using steam."));
-		else if (player->varData.get(STRING_LITERAL_AS_REFERENCE("RenX.Medals"), STRING_LITERAL_AS_REFERENCE("gn")) != nullptr || player->adminType.isEmpty() == false)
+		else if (player->varData.get(STRING_LITERAL_AS_REFERENCE("RenX.Medals"), STRING_LITERAL_AS_REFERENCE("gn")) != nullptr && player->adminType.isEmpty())
 			source->sendMessage(player, STRING_LITERAL_AS_REFERENCE("You can only give one noob per game."));
 		else
 		{
