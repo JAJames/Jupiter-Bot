@@ -66,24 +66,24 @@ Jupiter::ReferenceString unknownWinTypePlainTranslation = "Unknown";
 
 /** Nod Vehicles */
 Jupiter::ReferenceString translated_Vehicle_Harvester_Nod = STRING_LITERAL_AS_REFERENCE("Nod Harvester");
-// Buggy -> Buggy
+Jupiter::ReferenceString translated_Vehicle_Buggy = STRING_LITERAL_AS_REFERENCE("Buggy");
 Jupiter::ReferenceString translated_Vehicle_Artillery = STRING_LITERAL_AS_REFERENCE("Mobile Artillery");
 Jupiter::ReferenceString translated_Vehicle_APC_Nod = STRING_LITERAL_AS_REFERENCE("Nod APC");
 Jupiter::ReferenceString translated_Vehicle_LightTank = STRING_LITERAL_AS_REFERENCE("Light Tank");
 Jupiter::ReferenceString translated_Vehicle_FlameTank = STRING_LITERAL_AS_REFERENCE("Flame Tank");
 Jupiter::ReferenceString translated_Vehicle_StealthTank = STRING_LITERAL_AS_REFERENCE("Stealth Tank");
 Jupiter::ReferenceString translated_Vehicle_Chinook_Nod = STRING_LITERAL_AS_REFERENCE("Nod Chinook");
-// Apache -> Apache
+Jupiter::ReferenceString translated_Vehicle_Apache = STRING_LITERAL_AS_REFERENCE("Apache");
 
 /** GDI Vehicles */
 Jupiter::ReferenceString translated_Vehicle_Harvester_GDI = STRING_LITERAL_AS_REFERENCE("GDI Harvester");
-// Humvee -> Humvee
+Jupiter::ReferenceString translated_Vehicle_Humvee = STRING_LITERAL_AS_REFERENCE("Humvee");
 Jupiter::ReferenceString translated_Vehicle_MRLS = STRING_LITERAL_AS_REFERENCE("Mobile Rocket Launcher System");
 Jupiter::ReferenceString translated_Vehicle_APC_GDI = STRING_LITERAL_AS_REFERENCE("GDI APC");
 Jupiter::ReferenceString translated_Vehicle_MediumTank = STRING_LITERAL_AS_REFERENCE("Medium Tank");
 Jupiter::ReferenceString translated_Vehicle_MammothTank = STRING_LITERAL_AS_REFERENCE("Mammoth Tank");
 Jupiter::ReferenceString translated_Vehicle_Chinook_GDI = STRING_LITERAL_AS_REFERENCE("GDI Chinook");
-// Orca -> Orca
+Jupiter::ReferenceString translated_Vehicle_Orca = STRING_LITERAL_AS_REFERENCE("Orca");
 
 /** Other Vehicles */
 Jupiter::ReferenceString translated_Vehicle_A10_DmgType_GattlingGun = STRING_LITERAL_AS_REFERENCE("A10 Thunderbolt Gattling Gun");
@@ -98,14 +98,14 @@ Jupiter::ReferenceString translated_DmgType_TiberiumBleed = STRING_LITERAL_AS_RE
 Jupiter::ReferenceString translated_DmgType_RanOver = STRING_LITERAL_AS_REFERENCE("Crushed");
 
 /** Infantry weapons */
-// Pistol -> Pistol
+Jupiter::ReferenceString translated_DmgType_Pistol = STRING_LITERAL_AS_REFERENCE("Pistol");
 Jupiter::ReferenceString translated_DmgType_SMG = STRING_LITERAL_AS_REFERENCE("Machine Pistol");
 Jupiter::ReferenceString translated_DmgType_HeavyPistol = STRING_LITERAL_AS_REFERENCE("Heavy Pistol");
-// Carbine -> Carbine
+Jupiter::ReferenceString translated_DmgType_Carbine = STRING_LITERAL_AS_REFERENCE("Carbine");
 Jupiter::ReferenceString translated_DmgType_TiberiumFlechetteRifle = STRING_LITERAL_AS_REFERENCE("Tiberium Flechette Gun"); // Not a rifle.
 Jupiter::ReferenceString translated_DmgType_TiberiumAutoRifle = STRING_LITERAL_AS_REFERENCE("Tiberium Automatic Rifle");
 
-// Grenade -> Grenade
+Jupiter::ReferenceString translated_DmgType_Grenade = STRING_LITERAL_AS_REFERENCE("Grenade");
 Jupiter::ReferenceString translated_DmgType_TimedC4 = STRING_LITERAL_AS_REFERENCE("Timed C4");
 Jupiter::ReferenceString translated_DmgType_RemoteC4 = STRING_LITERAL_AS_REFERENCE("Remote C4");
 Jupiter::ReferenceString translated_DmgType_ProxyC4 = STRING_LITERAL_AS_REFERENCE("Proximity C4");
@@ -113,7 +113,7 @@ Jupiter::ReferenceString translated_DmgType_BurnC4 = STRING_LITERAL_AS_REFERENCE
 Jupiter::ReferenceString translated_DmgType_FireBleed = STRING_LITERAL_AS_REFERENCE("Fire Burn"); // Caused by C4 or flame weapons
 
 Jupiter::ReferenceString translated_DmgType_AutoRifle = STRING_LITERAL_AS_REFERENCE("Automatic Rifle");
-// Shotgun -> Shotgun
+Jupiter::ReferenceString translated_DmgType_Shotgun = STRING_LITERAL_AS_REFERENCE("Shotgun");
 Jupiter::ReferenceString translated_DmgType_FlameThrower = STRING_LITERAL_AS_REFERENCE("Flamethrower");
 Jupiter::ReferenceString translated_DmgType_GrenadeLauncher = STRING_LITERAL_AS_REFERENCE("Grenade Launcher");
 Jupiter::ReferenceString translated_DmgType_MarksmanRifle = STRING_LITERAL_AS_REFERENCE("Marksman's Rifle");
@@ -130,7 +130,7 @@ Jupiter::ReferenceString translated_DmgType_FlakCannon = STRING_LITERAL_AS_REFER
 Jupiter::ReferenceString translated_DmgType_FlakCannon_Alt = STRING_LITERAL_AS_REFERENCE("Concentrated Flak");
 Jupiter::ReferenceString translated_DmgType_SniperRifle = STRING_LITERAL_AS_REFERENCE("Sniper Rifle");
 Jupiter::ReferenceString translated_DmgType_RamjetRifle = STRING_LITERAL_AS_REFERENCE("Ramjet");
-// Railgun -> Railgun
+Jupiter::ReferenceString translated_DmgType_Railgun = STRING_LITERAL_AS_REFERENCE("Railgun");
 Jupiter::ReferenceString translated_DmgType_PersonalIonCannon = STRING_LITERAL_AS_REFERENCE("Personal Ion Cannon");
 Jupiter::ReferenceString translated_DmgType_VoltRifle = STRING_LITERAL_AS_REFERENCE("Volt Rifle");
 Jupiter::ReferenceString translated_DmgType_VoltRifle_Alt = STRING_LITERAL_AS_REFERENCE("Volt Rifle Burst");
@@ -157,24 +157,24 @@ Jupiter::ReferenceString translated_DmgType_RocketEmpl_Missile = STRING_LITERAL_
 
 /** Nod Vehicles */
 Jupiter::ReferenceString translated_DmgType_Harvester_Nod = STRING_LITERAL_AS_REFERENCE("Nod Harvester");
-// Buggy -> Buggy
+Jupiter::ReferenceString translated_DmgType_Buggy = STRING_LITERAL_AS_REFERENCE("Buggy");
 Jupiter::ReferenceString translated_DmgType_Artillery = STRING_LITERAL_AS_REFERENCE("Mobile Artillery");
 Jupiter::ReferenceString translated_DmgType_APC_Nod = STRING_LITERAL_AS_REFERENCE("Nod APC");
 Jupiter::ReferenceString translated_DmgType_LightTank = STRING_LITERAL_AS_REFERENCE("Light Tank");
 Jupiter::ReferenceString translated_DmgType_FlameTank = STRING_LITERAL_AS_REFERENCE("Flame Tank");
 Jupiter::ReferenceString translated_DmgType_StealthTank = STRING_LITERAL_AS_REFERENCE("Stealth Tank");
 Jupiter::ReferenceString translated_DmgType_Chinook_Nod = STRING_LITERAL_AS_REFERENCE("Nod Chinook");
-// Apache -> Apache
+Jupiter::ReferenceString translated_DmgType_Apache = STRING_LITERAL_AS_REFERENCE("Apache");
 
 /** GDI Vehicles */
 Jupiter::ReferenceString translated_DmgType_Harvester_GDI = STRING_LITERAL_AS_REFERENCE("GDI Harvester");
-// Humvee -> Humvee
+Jupiter::ReferenceString translated_DmgType_Humvee = STRING_LITERAL_AS_REFERENCE("Humvee");
 Jupiter::ReferenceString translated_DmgType_MRLS = STRING_LITERAL_AS_REFERENCE("Mobile Rocket Launcher System");
 Jupiter::ReferenceString translated_DmgType_APC_GDI = STRING_LITERAL_AS_REFERENCE("GDI APC");
 Jupiter::ReferenceString translated_DmgType_MediumTank = STRING_LITERAL_AS_REFERENCE("Medium Tank");
 Jupiter::ReferenceString translated_DmgType_MammothTank = STRING_LITERAL_AS_REFERENCE("Mammoth Tank");
 Jupiter::ReferenceString translated_DmgType_Chinook_GDI = STRING_LITERAL_AS_REFERENCE("GDI Chinook");
-// Orca -> Orca
+Jupiter::ReferenceString translated_DmgType_Orca = STRING_LITERAL_AS_REFERENCE("Orca");
 
 /** Other Vehicles */
 Jupiter::ReferenceString translated_DmgType_A10_DmgType_GattlingGun = STRING_LITERAL_AS_REFERENCE("A10 Thunderbolt Gattling Gun");
@@ -208,6 +208,7 @@ Jupiter::ReferenceString translated_Defence_RocketEmplacement = STRING_LITERAL_A
 
 /** UT damage types */
 Jupiter::ReferenceString translated_UTDmgType_VehicleExplosion = STRING_LITERAL_AS_REFERENCE("Vehicle Explosion");
+Jupiter::ReferenceString translated_UTDmgType_Drowned = STRING_LITERAL_AS_REFERENCE("Drowned");
 
 /** Beacons */
 Jupiter::ReferenceString translated_IonCannonBeacon = STRING_LITERAL_AS_REFERENCE("Ion Cannon Strike");
@@ -307,24 +308,24 @@ const Jupiter::ReadableString &RenX::translateName(const Jupiter::ReadableString
 
 		/** Nod Vehicles */
 		if (object.equals(STRING_LITERAL_AS_REFERENCE("Harvester_Nod"))) return translated_Vehicle_Harvester_Nod;
-		// Buggy -> Buggy
+		if (object.equals(STRING_LITERAL_AS_REFERENCE("Buggy"))) return translated_Vehicle_Buggy;
 		if (object.equals(STRING_LITERAL_AS_REFERENCE("Artillery"))) return translated_Vehicle_Artillery;
 		if (object.equals(STRING_LITERAL_AS_REFERENCE("APC_Nod"))) return translated_Vehicle_APC_Nod;
 		if (object.equals(STRING_LITERAL_AS_REFERENCE("LightTank"))) return translated_Vehicle_LightTank;
 		if (object.equals(STRING_LITERAL_AS_REFERENCE("FlameTank"))) return translated_Vehicle_FlameTank;
 		if (object.equals(STRING_LITERAL_AS_REFERENCE("StealthTank"))) return translated_Vehicle_StealthTank;
 		if (object.equals(STRING_LITERAL_AS_REFERENCE("Chinook_Nod"))) return translated_Vehicle_Chinook_Nod;
-		// Apache -> Apache
+		if (object.equals(STRING_LITERAL_AS_REFERENCE("Apache"))) return translated_Vehicle_Apache;
 
 		/** GDI Vehicles */
 		if (object.equals(STRING_LITERAL_AS_REFERENCE("Harvester_GDI"))) return translated_Vehicle_Harvester_GDI;
-		// Humvee -> Humvee
+		if (object.equals(STRING_LITERAL_AS_REFERENCE("Humvee"))) return translated_Vehicle_Humvee;
 		if (object.equals(STRING_LITERAL_AS_REFERENCE("MRLS"))) return translated_Vehicle_MRLS;
 		if (object.equals(STRING_LITERAL_AS_REFERENCE("APC_GDI"))) return translated_Vehicle_APC_GDI;
 		if (object.equals(STRING_LITERAL_AS_REFERENCE("MediumTank"))) return translated_Vehicle_MediumTank;
 		if (object.equals(STRING_LITERAL_AS_REFERENCE("MammothTank"))) return translated_Vehicle_MammothTank;
 		if (object.equals(STRING_LITERAL_AS_REFERENCE("Chinook_GDI"))) return translated_Vehicle_Chinook_GDI;
-		// Orca -> Orca
+		if (object.equals(STRING_LITERAL_AS_REFERENCE("Orca"))) return translated_Vehicle_Orca;
 
 		/** Other Vehicles */
 		if (object.equals(STRING_LITERAL_AS_REFERENCE("A10_DmgType_GattlingGun"))) return translated_Vehicle_A10_DmgType_GattlingGun;
@@ -343,14 +344,14 @@ const Jupiter::ReadableString &RenX::translateName(const Jupiter::ReadableString
 		if (object.equals(STRING_LITERAL_AS_REFERENCE("RanOver"))) return translated_DmgType_RanOver;
 
 		/** Infantry weapons */
-		// Pistol -> Pistol
+		if (object.equals(STRING_LITERAL_AS_REFERENCE("Pistol"))) return translated_DmgType_Pistol;
 		if (object.equals(STRING_LITERAL_AS_REFERENCE("SMG"))) return translated_DmgType_SMG;
 		if (object.equals(STRING_LITERAL_AS_REFERENCE("HeavyPistol"))) return translated_DmgType_HeavyPistol;
-		// Carbine -> Carbine
+		if (object.equals(STRING_LITERAL_AS_REFERENCE("Carbine"))) return translated_DmgType_Carbine;
 		if (object.equals(STRING_LITERAL_AS_REFERENCE("TiberiumFlechetteRifle"))) return translated_DmgType_TiberiumFlechetteRifle; // Not a rifle.
 		if (object.equals(STRING_LITERAL_AS_REFERENCE("TiberiumAutoRifle"))) return translated_DmgType_TiberiumAutoRifle;
 
-		// Grenade -> Grenade
+		if (object.equals(STRING_LITERAL_AS_REFERENCE("Grenade"))) return translated_DmgType_Grenade;
 		if (object.equals(STRING_LITERAL_AS_REFERENCE("TimedC4"))) return translated_DmgType_TimedC4;
 		if (object.equals(STRING_LITERAL_AS_REFERENCE("RemoteC4"))) return translated_DmgType_RemoteC4;
 		if (object.equals(STRING_LITERAL_AS_REFERENCE("ProxyC4"))) return translated_DmgType_ProxyC4;
@@ -358,7 +359,7 @@ const Jupiter::ReadableString &RenX::translateName(const Jupiter::ReadableString
 		if (object.equals(STRING_LITERAL_AS_REFERENCE("FireBleed"))) return translated_DmgType_FireBleed; // Caused by C4 or flame weapons
 
 		if (object.equals(STRING_LITERAL_AS_REFERENCE("AutoRifle"))) return translated_DmgType_AutoRifle;
-		// Shotgun -> Shotgun
+		if (object.equals(STRING_LITERAL_AS_REFERENCE("Shotgun"))) return translated_DmgType_Shotgun;
 		if (object.equals(STRING_LITERAL_AS_REFERENCE("FlameThrower"))) return translated_DmgType_FlameThrower;
 		if (object.equals(STRING_LITERAL_AS_REFERENCE("GrenadeLauncher"))) return translated_DmgType_GrenadeLauncher;
 		if (object.equals(STRING_LITERAL_AS_REFERENCE("MarksmanRifle"))) return translated_DmgType_MarksmanRifle;
@@ -375,7 +376,7 @@ const Jupiter::ReadableString &RenX::translateName(const Jupiter::ReadableString
 		if (object.equals(STRING_LITERAL_AS_REFERENCE("FlakCannon_Alt"))) return translated_DmgType_FlakCannon_Alt;
 		if (object.equals(STRING_LITERAL_AS_REFERENCE("SniperRifle"))) return translated_DmgType_SniperRifle;
 		if (object.equals(STRING_LITERAL_AS_REFERENCE("RamjetRifle"))) return translated_DmgType_RamjetRifle;
-		// Railgun -> Railgun
+		if (object.equals(STRING_LITERAL_AS_REFERENCE("Railgun"))) return translated_DmgType_Railgun;
 		if (object.equals(STRING_LITERAL_AS_REFERENCE("PersonalIonCannon"))) return translated_DmgType_PersonalIonCannon;
 		if (object.equals(STRING_LITERAL_AS_REFERENCE("VoltRifle"))) return translated_DmgType_VoltRifle;
 		if (object.equals(STRING_LITERAL_AS_REFERENCE("VoltRifle_Alt"))) return translated_DmgType_VoltRifle_Alt;
@@ -402,24 +403,24 @@ const Jupiter::ReadableString &RenX::translateName(const Jupiter::ReadableString
 
 		/** Nod Vehicles */
 		if (object.equals(STRING_LITERAL_AS_REFERENCE("Harvester_Nod"))) return translated_DmgType_Harvester_Nod;
-		// Buggy -> Buggy
+		if (object.equals(STRING_LITERAL_AS_REFERENCE("Buggy"))) return translated_DmgType_Buggy;
 		if (object.equals(STRING_LITERAL_AS_REFERENCE("Artillery"))) return translated_DmgType_Artillery;
 		if (object.equals(STRING_LITERAL_AS_REFERENCE("APC_Nod"))) return translated_DmgType_APC_Nod;
 		if (object.equals(STRING_LITERAL_AS_REFERENCE("LightTank"))) return translated_DmgType_LightTank;
 		if (object.equals(STRING_LITERAL_AS_REFERENCE("FlameTank"))) return translated_DmgType_FlameTank;
 		if (object.equals(STRING_LITERAL_AS_REFERENCE("StealthTank"))) return translated_DmgType_StealthTank;
 		if (object.equals(STRING_LITERAL_AS_REFERENCE("Chinook_Nod"))) return translated_DmgType_Chinook_Nod;
-		// Apache -> Apache
+		if (object.equals(STRING_LITERAL_AS_REFERENCE("Apache"))) return translated_DmgType_Apache;
 
 		/** GDI Vehicles */
 		if (object.equals(STRING_LITERAL_AS_REFERENCE("Harvester_GDI"))) return translated_DmgType_Harvester_GDI;
-		// Humvee -> Humvee
+		if (object.equals(STRING_LITERAL_AS_REFERENCE("Humvee"))) return translated_DmgType_Humvee;
 		if (object.equals(STRING_LITERAL_AS_REFERENCE("MRLS"))) return translated_DmgType_MRLS;
 		if (object.equals(STRING_LITERAL_AS_REFERENCE("APC_GDI"))) return translated_DmgType_APC_GDI;
 		if (object.equals(STRING_LITERAL_AS_REFERENCE("MediumTank"))) return translated_DmgType_MediumTank;
 		if (object.equals(STRING_LITERAL_AS_REFERENCE("MammothTank"))) return translated_DmgType_MammothTank;
 		if (object.equals(STRING_LITERAL_AS_REFERENCE("Chinook_GDI"))) return translated_DmgType_Chinook_GDI;
-		// Orca -> Orca
+		if (object.equals(STRING_LITERAL_AS_REFERENCE("Orca"))) return translated_DmgType_Orca;
 
 		/** Other Vehicles */
 		if (object.equals(STRING_LITERAL_AS_REFERENCE("A10_DmgType_GattlingGun"))) return translated_DmgType_A10_DmgType_GattlingGun;
@@ -460,7 +461,7 @@ const Jupiter::ReadableString &RenX::translateName(const Jupiter::ReadableString
 	{
 		object.shiftRight(10);
 		if (object.equals(STRING_LITERAL_AS_REFERENCE("VehicleExplosion"))) return translated_UTDmgType_VehicleExplosion;
-		// Drowned -> Drowned
+		if (object.equals(STRING_LITERAL_AS_REFERENCE("Drowned"))) return translated_UTDmgType_Drowned;
 	}
 	else if (object.equals(STRING_LITERAL_AS_REFERENCE("IonCannonBeacon"))) return translated_IonCannonBeacon;
 	else if (object.equals(STRING_LITERAL_AS_REFERENCE("NukeBeacon"))) return translated_NukeBeacon;
