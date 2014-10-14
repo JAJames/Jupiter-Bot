@@ -47,7 +47,7 @@ void ViewJoinGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *player
 	{
 		const Jupiter::ReadableString &setjoin = Jupiter::IRC::Client::Config->get(configSection, player->uuid);
 		if (setjoin.isEmpty() == false)
-			source->sendMessage(Jupiter::StringS::Format("[%.*s] %.*s", player->name.size(), player->name.ptr(), setjoin.size(), setjoin.ptr()));
+			source->sendMessage(player, Jupiter::StringS::Format("[%.*s] %.*s", player->name.size(), player->name.ptr(), setjoin.size(), setjoin.ptr()));
 		else source->sendMessage(player, STRING_LITERAL_AS_REFERENCE("Error: No setjoin found."));
 	}
 	else source->sendMessage(player, STRING_LITERAL_AS_REFERENCE("Error: A setjoin message requires steam."));

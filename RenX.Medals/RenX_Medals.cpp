@@ -280,18 +280,18 @@ void RecsGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *player, co
 			{
 				unsigned int recs = section->getValue(STRING_LITERAL_AS_REFERENCE("Recs")).asUnsignedInt();
 				unsigned int noobs = section->getValue(STRING_LITERAL_AS_REFERENCE("Noobs")).asUnsignedInt();
-				source->sendMessage(Jupiter::StringS::Format("[Archive] %.*s has %u and %u n00bs. Their worth: %d", section->getName().size(), section->getName().ptr(), recs, noobs, recs - noobs));
+				source->sendMessage(player, Jupiter::StringS::Format("[Archive] %.*s has %u and %u n00bs. Their worth: %d", section->getName().size(), section->getName().ptr(), recs, noobs, recs - noobs));
 			}
 		}
 		else if (target->uuid.isEmpty())
 			source->sendMessage(player, STRING_LITERAL_AS_REFERENCE("Error: Player is not using steam."));
 		else if (target == player)
 			RecsGameCommand::trigger(source, player, Jupiter::ReferenceString::empty);
-		else source->sendMessage(Jupiter::StringS::Format("%.*s has %lu and %lu n00bs. Their worth: %d", target->name.size(), target->name.ptr(), getRecs(target), getNoobs(target), getWorth(target)));
+		else source->sendMessage(player, Jupiter::StringS::Format("%.*s has %lu and %lu n00bs. Their worth: %d", target->name.size(), target->name.ptr(), getRecs(target), getNoobs(target), getWorth(target)));
 	}
 	else if (player->uuid.isEmpty())
 		source->sendMessage(player, STRING_LITERAL_AS_REFERENCE("Error: You are not using steam."));
-	else source->sendMessage(Jupiter::StringS::Format("%.*s, you have %lu recs and %lu n00bs. Your worth: %d", player->name.size(), player->name.ptr(), getRecs(player), getNoobs(player), getWorth(player)));
+	else source->sendMessage(player, Jupiter::StringS::Format("%.*s, you have %lu recs and %lu n00bs. Your worth: %d", player->name.size(), player->name.ptr(), getRecs(player), getNoobs(player), getWorth(player)));
 }
 
 const Jupiter::ReadableString &RecsGameCommand::getHelp(const Jupiter::ReadableString &)
