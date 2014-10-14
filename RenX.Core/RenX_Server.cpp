@@ -147,7 +147,7 @@ RenX::PlayerInfo *RenX::Server::getPlayerByName(const Jupiter::ReadableString &n
 	else if (name.matchi("pid?*"))
 		idToken.shiftRight(3);
 	else return nullptr;
-	int id = name.asInt(10);
+	int id = idToken.asInt(10);
 
 	for (Jupiter::DLList<RenX::PlayerInfo>::Node *node = RenX::Server::players.getNode(0); node != nullptr; node = node->next)
 		if (node->data->id == id)
