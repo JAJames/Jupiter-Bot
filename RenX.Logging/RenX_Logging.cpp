@@ -191,6 +191,8 @@ void RenX_LoggingPlugin::RenX_OnGameOver(RenX::Server *server, RenX::WinType win
 	}
 	else (server->*func)(IRCCOLOR "03[Game]" IRCCOLOR "%.*s The " IRCBOLD "%.*s" IRCBOLD " won by " IRCBOLD "%.*s" IRCBOLD, teamColor.size(), teamColor.ptr(), teamName.size(), teamName.ptr(), win.size(), win.ptr());
 	(server->*func)(IRCCOLOR "03[Game]" IRCCOLOR "%.*s %.*s" IRCCOLOR ": %d | " IRCCOLOR "%.*s%.*s" IRCCOLOR ": %d", gTeamColor.size(), gTeamColor.ptr(), gTeamName.size(), gTeamName.ptr(), gScore, nTeamColor.size(), nTeamColor.ptr(), nTeamName.size(), nTeamName.ptr(), nScore);
+	if (server->profile->disconnectOnGameOver)
+		(server->*func)(IRCCOLOR "07[Warning]" IRCCOLOR " Game version \"%.*s\" gets disconnected when a map unloads; to prevent disconnect spam, player disconnects are silenced until the bot reconnects.", server->getGameVersion().size(), server->getGameVersion().ptr());
 }
 
 void RenX_LoggingPlugin::RenX_OnGame(RenX::Server *server, const Jupiter::ReadableString &raw)
