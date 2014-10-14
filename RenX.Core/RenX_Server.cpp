@@ -56,13 +56,12 @@ int RenX::Server::think()
 		}
 		else if (Jupiter::Socket::getLastError() != 10035) // This is a serious error
 		{
+			RenX::Server::wipeData();
+			RenX::Server::sendLogChan(IRCCOLOR "07[Warning]" IRCCOLOR " Connection to Renegade-X server lost. Reconnection attempt in progress.");
 			if (RenX::Server::reconnect())
-				RenX::Server::sendLogChan(IRCCOLOR "07[Warning]" IRCCOLOR " Connection to Renegade-X server lost. Reconnection attempt in progress.");
+				RenX::Server::sendLogChan(IRCCOLOR "06[Progress]" IRCCOLOR " Connection to Renegade-X server reestablished. Initializing Renegade-X RCON protocol...");
 			else
-			{
-				RenX::Server::wipeData();
 				RenX::Server::sendLogChan(IRCCOLOR "04[Error]" IRCCOLOR " Connection to Renegade-X server lost. Reconnection attempt failed.");
-			}
 		}
 	}
 	return 0;
