@@ -212,6 +212,16 @@ void RenX_LoggingPlugin::RenX_OnExecute(RenX::Server *server, const Jupiter::Rea
 		func = &RenX::Server::sendLogChan;
 		(server->*func)(IRCCOLOR "09EVA: %.*s", command.size() - 4, command.ptr() + 4);
 	}
+	else if (command.matchi("evaprivatesay *"))
+	{
+		RenX::PlayerInfo *player = server->getPlayerByName(Jupiter::ReferenceString::getToken(command, 1, ' '));
+		if (player != nullptr)
+		{
+			Jupiter::ReferenceString msg = Jupiter::ReferenceString::gotoToken(command, 2, ' ');
+			(server->*func)(IRCCOLOR "12(EVA -> %.*s): %.*s", player->name.size(), player->name.ptr(), msg.size(), msg.ptr());
+		}
+		else (server->*func)(IRCCOLOR "07%.*s executed: %.*s", user.size(), user.ptr(), command.size(), command.ptr());
+	}
 	else (server->*func)(IRCCOLOR "07%.*s executed: %.*s", user.size(), user.ptr(), command.size(), command.ptr());
 	// Add a format check later for if user == us.
 }
