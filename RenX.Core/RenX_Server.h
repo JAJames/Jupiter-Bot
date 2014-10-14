@@ -31,6 +31,7 @@
 #include "Jupiter/INIFile.h"
 #include "Jupiter/Thinker.h"
 #include "RenX.h"
+#include "RenX_ServerProfile.h"
 
 /** DLL Linkage Nagging */
 #if defined _MSC_VER
@@ -63,6 +64,7 @@ namespace RenX
 	public: // RenX::Server
 		Jupiter::DLList<RenX::PlayerInfo> players; /** A list of players in the server */
 		Jupiter::INIFile varData; /** This may be replaced later with a more dedicated type. */
+		const RenX::ServerProfile *profile = RenX::defaultProfile;
 
 		/**
 		* @brief Checks if the server is connected to RCON.
@@ -419,6 +421,7 @@ namespace RenX
 	private:
 		bool connected = false;
 		bool needsCList = false;
+		bool silenceParts = false;
 		unsigned int rconVersion = 0;
 		unsigned short port;
 		int logChanType;

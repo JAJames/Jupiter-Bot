@@ -115,7 +115,7 @@ int RenX::Server::sendMessage(const Jupiter::ReadableString &message)
 
 int RenX::Server::sendMessage(RenX::PlayerInfo *player, const Jupiter::ReadableString &message)
 {
-	if (RenX::Server::gameVersion.equals("Open Beta 2"))
+	if (RenX::Server::profile->privateMessages == false)
 		return RenX::Server::sendMessage(message);
 
 	return RenX::Server::sock.send(Jupiter::StringS::Format("cevaprivatesay pid%d %.*s\n", player->id, message.size(), message.ptr()));
@@ -621,6 +621,9 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 						iWinType = Base;
 
 					this->needsCList = true;
+					if (this->profile->disconnectOnGameOver)
+						this->silenceParts = true;
+
 					onPreGameOver(this, iWinType, team, gScore, nScore);
 					for (size_t i = 0; i < xPlugins.size(); i++)
 						xPlugins.get(i)->RenX_OnGameOver(this, iWinType, team, gScore, nScore);
@@ -632,6 +635,9 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 					int nScore = buff.getWord(3, RenX::DelimS).gotoWord(1, "=").asInt(10);
 
 					this->needsCList = true;
+					if (this->profile->disconnectOnGameOver)
+						this->silenceParts = true;
+
 					if (gScore == nScore)
 					{
 						onPreGameOver(this, Tie, Other, gScore, nScore);
@@ -675,8 +681,9 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 				PARSE_PLAYER_DATA();
 				if (action.equals("disconnected"))
 				{
-					for (size_t i = 0; i < xPlugins.size(); i++)
-						xPlugins.get(i)->RenX_OnPart(this, player);
+					if (this->silenceParts == false)
+						for (size_t i = 0; i < xPlugins.size(); i++)
+							xPlugins.get(i)->RenX_OnPart(this, player);
 					this->removePlayer(player);
 					player = nullptr;
 				}
@@ -829,6 +836,14 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 			buff.shiftRight(1);
 			this->rconVersion = buff.asInt(10);
 			this->gameVersion = buff.substring(3);
+
+			if (this->rconVersion == 1)
+				this->profile = RenX::openBeta1Profile;
+			else if (gameVersion.equals("Open Beta 2"))
+				this->profile = RenX::openBeta2Profile;
+			else if (gameVersion.equals("Open Beta 3"))
+				this->profile = RenX::openBeta3Profile;
+
 			for (size_t i = 0; i < xPlugins.size(); i++)
 				xPlugins.get(i)->RenX_OnVersion(this, buff);
 			buff.shiftLeft(1);
@@ -870,6 +885,7 @@ bool RenX::Server::connect()
 		RenX::Server::sock.send(STRING_LITERAL_AS_REFERENCE("s\n"));
 		RenX::Server::sock.send(STRING_LITERAL_AS_REFERENCE("clogclientlist\n"));
 		RenX::Server::connected = true;
+		RenX::Server::silenceParts = false;
 		return true;
 	}
 	RenX::Server::connected = false;
