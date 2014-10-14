@@ -61,6 +61,34 @@ const Jupiter::ReadableString &ViewJoinGameCommand::getHelp(const Jupiter::Reada
 
 GAME_COMMAND_INIT(ViewJoinGameCommand)
 
+// ShowJoin Game Command
+
+void ShowJoinGameCommand::create()
+{
+	this->addTrigger(STRING_LITERAL_AS_REFERENCE("showjoin"));
+	this->addTrigger(STRING_LITERAL_AS_REFERENCE("shjoin"));
+}
+
+void ShowJoinGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *player, const Jupiter::ReadableString &parameters)
+{
+	if (player->uuid.isEmpty() == false)
+	{
+		const Jupiter::ReadableString &setjoin = Jupiter::IRC::Client::Config->get(configSection, player->uuid);
+		if (setjoin.isEmpty() == false)
+			source->sendMessage(Jupiter::StringS::Format("[%.*s] %.*s", player->name.size(), player->name.ptr(), setjoin.size(), setjoin.ptr()));
+		else source->sendMessage(player, STRING_LITERAL_AS_REFERENCE("Error: No setjoin found."));
+	}
+	else source->sendMessage(player, STRING_LITERAL_AS_REFERENCE("Error: A setjoin message requires steam."));
+}
+
+const Jupiter::ReadableString &ShowJoinGameCommand::getHelp(const Jupiter::ReadableString &)
+{
+	STRING_LITERAL_AS_NAMED_REFERENCE(defaultHelp, "Displays your join message. Syntax: showjoin");
+	return defaultHelp;
+}
+
+GAME_COMMAND_INIT(ShowJoinGameCommand)
+
 // DelJoin Game Command
 
 void DelJoinGameCommand::create()

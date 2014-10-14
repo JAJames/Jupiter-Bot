@@ -36,6 +36,7 @@ private:
 
 GENERIC_GAME_COMMAND(SetJoinGameCommand)
 GENERIC_GAME_COMMAND(ViewJoinGameCommand)
+GENERIC_GAME_COMMAND(ShowJoinGameCommand)
 GENERIC_GAME_COMMAND(DelJoinGameCommand)
 
 #endif // _RENX_SETJOIN_H_HEADER
