@@ -115,8 +115,10 @@ int RenX::Server::sendMessage(const Jupiter::ReadableString &message)
 
 int RenX::Server::sendMessage(RenX::PlayerInfo *player, const Jupiter::ReadableString &message)
 {
-	// We'll have a real implementation when Kil adds one to RCON! :D
-	return RenX::Server::sendMessage(message);
+	if (RenX::Server::gameVersion.equals("Open Beta 2"))
+		return RenX::Server::sendMessage(message);
+
+	return RenX::Server::sock.send(Jupiter::StringS::Format("cevaprivatesay pid%d %.*s\n", player->id, message.size(), message.ptr()));
 }
 
 int RenX::Server::sendData(const Jupiter::ReadableString &data)
