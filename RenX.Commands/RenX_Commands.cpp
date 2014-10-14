@@ -123,6 +123,54 @@ const Jupiter::ReadableString &MsgIRCCommand::getHelp(const Jupiter::ReadableStr
 
 IRC_COMMAND_INIT(MsgIRCCommand)
 
+// PMsg IRC Command
+
+void PMsgIRCCommand::create()
+{
+	this->addTrigger(STRING_LITERAL_AS_REFERENCE("pmsg"));
+	this->addTrigger(STRING_LITERAL_AS_REFERENCE("psay"));
+	this->addTrigger(STRING_LITERAL_AS_REFERENCE("page"));
+	this->addTrigger(STRING_LITERAL_AS_REFERENCE("ppage"));
+	this->setAccessLevel(1);
+}
+
+void PMsgIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &channel, const Jupiter::ReadableString &nick, const Jupiter::ReadableString &parameters)
+{
+	if (parameters.wordCount(WHITESPACE) >= 2)
+	{
+		int type = source->getChannel(channel)->getType();
+		Jupiter::ReferenceString name = Jupiter::ReferenceString::getWord(parameters, 0, WHITESPACE);
+		RenX::PlayerInfo *player;
+		Jupiter::StringL msg = source->getChannel(channel)->getUserPrefix(nick);
+		msg += nick;
+		msg += "@IRC: ";
+		msg += Jupiter::ReferenceString::gotoWord(parameters, 1, WHITESPACE);
+		if (parameters.size() != 0)
+		{
+			for (unsigned int i = 0; i != RenX::getCore()->getServerCount(); i++)
+			{
+				RenX::Server *server = RenX::getCore()->getServer(i);
+				if (server->isLogChanType(type))
+				{
+					player = server->getPlayerByPartName(name);
+					if (player != nullptr)
+						server->sendMessage(player, msg);
+					else source->sendNotice(nick, STRING_LITERAL_AS_REFERENCE("Error: Player not found."));
+				}
+			}
+		}
+	}
+	else source->sendNotice(nick, STRING_LITERAL_AS_REFERENCE("Error: Too Few Parameters. Syntax: PMsg <Player> <Message>"));
+}
+
+const Jupiter::ReadableString &PMsgIRCCommand::getHelp(const Jupiter::ReadableString &)
+{
+	static STRING_LITERAL_AS_NAMED_REFERENCE(defaultHelp, "Sends a message in - game.Syntax: PMsg <Player> <Message>");
+	return defaultHelp;
+}
+
+IRC_COMMAND_INIT(PMsgIRCCommand)
+
 // Host Msg IRC Command
 
 void HostMsgIRCCommand::create()
