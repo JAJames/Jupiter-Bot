@@ -403,7 +403,11 @@ void PlayerInfoIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableStrin
 								else msg += "IP Not Found" IRCBOLD;
 							}
 							if (player->steamid != 0)
-								msg.aformat(" - Steam ID: " IRCBOLD "0x%.16llX" IRCBOLD, player->steamid);
+							{
+								msg += " - Steam ID: " IRCBOLD;
+								msg += server->formatSteamID(player);
+								msg += IRCBOLD;
+							}
 							if (player->adminType.size() != 0)
 							{
 								msg += " - Admin Type: " IRCBOLD;
@@ -460,7 +464,11 @@ void SteamIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &ch
 							Jupiter::String &playerName = RenX::getFormattedPlayerName(player);
 							msg.format(IRCCOLOR "03[Steam] " IRCCOLOR "%.*s (ID: %d) ", playerName.size(), playerName.ptr(), player->id);
 							if (player->steamid != 0)
-								msg.aformat("is using steam ID " IRCBOLD "0x%.16llX" IRCBOLD, player->steamid);
+							{
+								msg += "is using steam ID " IRCBOLD;
+								msg += server->formatSteamID(player);
+								msg += IRCBOLD;
+							}
 							else msg += "is not using steam.";
 							source->sendMessage(channel, msg);
 						}

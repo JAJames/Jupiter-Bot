@@ -164,6 +164,22 @@ namespace RenX
 		RenX::PlayerInfo *getPlayerByPartNameFast(const Jupiter::ReadableString &partName) const;
 
 		/**
+		* @brief Formats a player's Steam ID into a readable string.
+		*
+		* @param player Player to fetch Steam ID from
+		* @return A player's formatted Steam ID on success, an empty string otherwise.
+		*/
+		Jupiter::StringS formatSteamID(const RenX::PlayerInfo *player);
+
+		/**
+		* @brief Formats a Steam ID into a readable string.
+		*
+		* @param id Steam ID to format
+		* @return A player's formatted Steam ID on success, an empty string otherwise.
+		*/
+		Jupiter::StringS formatSteamID(uint64_t id);
+
+		/**
 		* @brief Kicks a player from the server.
 		*
 		* @param id Player ID of the player to kick.
@@ -428,6 +444,7 @@ namespace RenX
 		int adminLogChanType;
 		time_t lastAttempt = 0;
 		time_t delay;
+		unsigned int steamFormat; /** 16 = hex, 10 = base 10, 8 = octal */
 		unsigned int uuidMode; /** 0 = steam, 1 = nickname */
 		Jupiter::TCPSocket sock;
 		Jupiter::CStringS clientHostname;

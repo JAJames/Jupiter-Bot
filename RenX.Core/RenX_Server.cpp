@@ -173,6 +173,28 @@ RenX::PlayerInfo *RenX::Server::getPlayerByPartNameFast(const Jupiter::ReadableS
 	return nullptr;
 }
 
+Jupiter::StringS RenX::Server::formatSteamID(const RenX::PlayerInfo *player)
+{
+	return RenX::Server::formatSteamID(player->steamid);
+}
+
+Jupiter::StringS RenX::Server::formatSteamID(uint64_t id)
+{
+	switch (RenX::Server::steamFormat)
+	{
+	default:
+	case 16:
+		return Jupiter::StringS::Format("0x%.16llX", id);
+		break;
+	case 10:
+		return Jupiter::StringS::Format("%llu", id);
+		break;
+	case 8:
+		return Jupiter::StringS::Format("0%llo", id);
+		break;
+	}
+}
+
 void RenX::Server::kickPlayer(int id)
 {
 	RenX::Server::sock.send(Jupiter::StringS::Format("cadminkick pid%d\n", id));
@@ -698,7 +720,7 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 					default:
 					case 0:
 						if (player->steamid != 0)
-							player->uuid.format("0x%.16llX", player->steamid);
+							player->uuid = this->formatSteamID(player);
 						break;
 					case 1:
 						player->uuid = player->name;
@@ -801,7 +823,7 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 					default:
 					case 0:
 						if (player->steamid != 0)
-							player->uuid.format("0x%.16llX", player->steamid);
+							player->uuid = this->formatSteamID(player);
 						break;
 					case 1:
 						player->uuid = player->name;
@@ -934,6 +956,7 @@ RenX::Server::Server(const Jupiter::ReadableString &configurationSection)
 	RenX::Server::rules = Jupiter::IRC::Client::Config->get(RenX::Server::configSection, STRING_LITERAL_AS_REFERENCE("Rules"), STRING_LITERAL_AS_REFERENCE("Anarchy!"));
 	RenX::Server::delay = Jupiter::IRC::Client::Config->getInt(RenX::Server::configSection, STRING_LITERAL_AS_REFERENCE("ReconnectDelay"), 60);
 	RenX::Server::uuidMode = Jupiter::IRC::Client::Config->getInt(RenX::Server::configSection, STRING_LITERAL_AS_REFERENCE("UUIDMode"), 0);
+	RenX::Server::steamFormat = Jupiter::IRC::Client::Config->getInt(RenX::Server::configSection, STRING_LITERAL_AS_REFERENCE("SteamFormat"), 16);
 
 	for (size_t i = 0; i < RenX::GameMasterCommandList->size(); i++)
 		RenX::Server::addCommand(RenX::GameMasterCommandList->get(i)->copy());
