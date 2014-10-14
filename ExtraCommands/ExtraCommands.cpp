@@ -164,6 +164,10 @@ void InfoIRCCommand::create()
 void InfoIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &channel, const Jupiter::ReadableString &nick, const Jupiter::ReadableString &parameters)
 {
 	Jupiter::String msg;
+	msg.format("Prefixes: %.*s", source->getPrefixes().size(), source->getPrefixes().ptr());
+	source->sendMessage(channel, msg);
+	msg.format("Prefix Modes: %.*s", source->getPrefixModes().size(), source->getPrefixModes().ptr());
+	source->sendMessage(channel, msg);
 	msg.format("Outputing data for %u channels...", source->getChannelCount());
 	source->sendMessage(channel, msg);
 	for (unsigned int a = 0; a < source->getChannelCount(); a++)
