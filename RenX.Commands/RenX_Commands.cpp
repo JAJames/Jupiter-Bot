@@ -424,13 +424,15 @@ void SteamIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &ch
 		}
 		else
 		{
-			unsigned int total = 0;
-			unsigned int realPlayers = 0;
+			unsigned int total;
+			unsigned int realPlayers;
 			for (unsigned int i = 0; i != RenX::getCore()->getServerCount(); i++)
 			{
 				RenX::Server *server = RenX::getCore()->getServer(i);
 				if (server->isLogChanType(type) && server->players.size() != 0)
 				{
+					total = 0;
+					realPlayers = 0;
 					for (Jupiter::DLList<RenX::PlayerInfo>::Node *node = server->players.getNode(0); node != nullptr; node = node->next)
 					{
 						player = node->data;
@@ -441,10 +443,10 @@ void SteamIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &ch
 								total++;
 						}
 					}
+					if (realPlayers != 0)
+						source->sendMessage(channel, Jupiter::StringS::Format("%.2f%% (%u/%u) of players are using Steam.", ((double)total * 100) / ((double)realPlayers), total, realPlayers));
+					else source->sendMessage(channel, STRING_LITERAL_AS_REFERENCE("No players are in-game."));
 				}
-				if (realPlayers != 0)
-					source->sendMessage(channel, Jupiter::StringS::Format("%.2f%% (%u/%u) of players are using Steam.", ((double)total * 100) / ((double)realPlayers), total, realPlayers));
-				else source->sendMessage(channel, STRING_LITERAL_AS_REFERENCE("No players are in-game."));
 			}
 		}
 	}
