@@ -155,7 +155,7 @@ void PMsgIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &cha
 					player = server->getPlayerByPartName(name);
 					if (player != nullptr)
 						server->sendMessage(player, msg);
-					else source->sendNotice(nick, STRING_LITERAL_AS_REFERENCE("Error: Player not found."));
+					else source->sendNotice(nick, Jupiter::StringS::Format("Error: Player \"%.*s\" not found.", name.size(), name.ptr()));
 				}
 			}
 		}
@@ -1243,7 +1243,7 @@ void HelpGameCommand::create()
 
 void HelpGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *player, const Jupiter::ReadableString &parameters)
 {
-	Jupiter::StringL output = "say Available Commands: ";
+	Jupiter::StringL output = "Available Commands: ";
 	parameters.println(stdout);
 	if (parameters.wordCount(WHITESPACE) == 0)
 	{
@@ -1262,7 +1262,7 @@ void HelpGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *player, co
 			output += cmd->getHelp(Jupiter::ReferenceString::gotoWord(parameters, 1, WHITESPACE));
 		else output += "Error: Command not found.";
 	}
-	source->send(output);
+	source->sendMessage(player, output);
 }
 
 const Jupiter::ReadableString &HelpGameCommand::getHelp(const Jupiter::ReadableString &)
@@ -1352,6 +1352,7 @@ void ModRequestGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *play
 	IRC_Bot *server;
 	Jupiter::IRC::Client::Channel *channel;
 	unsigned int channelCount;
+	unsigned int messageCount = 0;
 	int type;
 	Jupiter::String &fmtName = RenX::getFormattedPlayerName(player);
 	Jupiter::StringL msg = Jupiter::StringL::Format(IRCCOLOR "12[Moderator Request] " IRCCOLOR IRCBOLD "%.*s" IRCBOLD IRCCOLOR "07 has requested assistance in-game; please look in ", fmtName.size(), fmtName.ptr());
@@ -1373,14 +1374,20 @@ void ModRequestGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *play
 					{
 						msg += channel->getName();
 						for (unsigned int c = 0; c < channel->getUserCount(); c++)
+						{
 							if (channel->getUserPrefix(c) != 0)
+							{
 								server->sendMessage(channel->getUser(c)->getUser()->getNickname(), msg);
+								messageCount++;
+							}
+						}
 						msg -= channel->getName().size();
 					}
 				}
 			}
 		}
 	}
+	source->sendMessage(player, Jupiter::StringS::Format("A total of %u moderators have been notified of your assistance request.", messageCount));
 }
 
 const Jupiter::ReadableString &ModRequestGameCommand::getHelp(const Jupiter::ReadableString &)
