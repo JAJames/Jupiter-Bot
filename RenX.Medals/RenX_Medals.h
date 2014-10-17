@@ -55,7 +55,6 @@ public: // Jupiter::Plugin
 	const Jupiter::ReadableString &getName() override { return name; }
 
 public:
-	bool firstGame = true;
 	time_t killCongratDelay;
 	time_t vehicleKillCongratDelay;
 	time_t kdrCongratDelay;

@@ -137,9 +137,7 @@ void RenX_MedalsPlugin::RenX_OnJoin(RenX::Server *server, const RenX::PlayerInfo
 
 void RenX_MedalsPlugin::RenX_OnGameOver(RenX::Server *server, RenX::WinType winType, RenX::TeamType team, int gScore, int nScore)
 {
-	if (firstGame) // No unfair medals for the first game! :D
-		firstGame = false;
-	else
+	if (server->isFirstGame() == false) // No unfair medals for the first game! :D
 	{
 		if (server->players.size() == 0) return;
 		Jupiter::DLList<RenX::PlayerInfo>::Node *n = server->players.getNode(0);
