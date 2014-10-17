@@ -35,6 +35,8 @@ namespace RenX
 		bool supported;
 		bool privateMessages;
 		bool disconnectOnGameOver;
+		bool pidbug;
+		bool mustSanitize;
 	};
 
 	RENX_API extern const ServerProfile *defaultProfile;	/** Default server profile */

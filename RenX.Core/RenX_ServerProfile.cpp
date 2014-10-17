@@ -24,13 +24,11 @@ struct BaseProfile : RenX::ServerProfile
 		supported = true;
 		privateMessages = true;
 		disconnectOnGameOver = false;
+		pidbug = false;
+		mustSanitize = true;
 	}
-};
-
-struct IdealProfile : BaseProfile
-{
-} _idealProfile;
-const RenX::ServerProfile *RenX::defaultProfile = &_idealProfile;
+} _baseProfile;
+const RenX::ServerProfile *RenX::defaultProfile = &_baseProfile;
 
 struct OpenBeta1Profile : BaseProfile
 {
@@ -47,6 +45,7 @@ struct OpenBeta2Profile : BaseProfile
 	OpenBeta2Profile()
 	{
 		privateMessages = false;
+		pidbug = true;
 	}
 } _openBeta2Profile;
 const RenX::ServerProfile *RenX::openBeta2Profile = &_openBeta2Profile;
