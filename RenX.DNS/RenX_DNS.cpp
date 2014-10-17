@@ -17,24 +17,34 @@
 
 typedef void(RenX::Server::*logFuncType)(const char *fmt, ...) const;
 
+void RenX_DNSPlugin::RenX_OnPlayerCreate(RenX::Server *server, const RenX::PlayerInfo *player)
+{
+	if (player->isBot == false)
+	{
+		Jupiter::ReferenceString host = Jupiter::ReferenceString(Jupiter::Socket::resolveHostname(Jupiter::CStringS(player->ip).c_str(), 0));
+		const_cast<RenX::PlayerInfo *>(player)->varData.set(RenX_DNSPlugin::name, STRING_LITERAL_AS_REFERENCE("Host"), host);
+	}
+}
+
 void RenX_DNSPlugin::RenX_OnJoin(RenX::Server *server, const RenX::PlayerInfo *player)
 {
-	Jupiter::ReferenceString host = Jupiter::ReferenceString(Jupiter::Socket::resolveHostname(Jupiter::CStringS(player->ip).c_str(), 0));
-	const_cast<RenX::PlayerInfo *>(player)->varData.set(RenX_DNSPlugin::name, STRING_LITERAL_AS_REFERENCE("Host"), host);
-
-	logFuncType func;
-	if (RenX_DNSPlugin::resolveAdmin)
+	if (player->isBot == false)
 	{
-		if (RenX_DNSPlugin::resolvePublic)
-			func = &RenX::Server::sendLogChan;
-		else func = &RenX::Server::sendAdmChan;
-	}
-	else if (RenX_DNSPlugin::resolvePublic)
-		func = &RenX::Server::sendPubChan;
-	else return;
+		logFuncType func;
+		if (RenX_DNSPlugin::resolveAdmin)
+		{
+			if (RenX_DNSPlugin::resolvePublic)
+				func = &RenX::Server::sendLogChan;
+			else func = &RenX::Server::sendAdmChan;
+		}
+		else if (RenX_DNSPlugin::resolvePublic)
+			func = &RenX::Server::sendPubChan;
+		else return;
 
-	Jupiter::ReadableString &name = RenX::getFormattedPlayerName(player);
-	(server->*func)(IRCCOLOR "03[DNS] " IRCBOLD "%.*s" IRCBOLD IRCCOLOR "'s hostname resolved to: " IRCBOLD IRCCOLOR "10%.*s" IRCBOLD, name.size(), name.ptr(), host.size(), host.ptr());
+		const Jupiter::ReadableString &host = player->varData.get(RenX_DNSPlugin::name, STRING_LITERAL_AS_REFERENCE("Host"), Jupiter::ReferenceString::empty);
+		Jupiter::ReadableString &name = RenX::getFormattedPlayerName(player);
+		(server->*func)(IRCCOLOR "03[DNS] " IRCBOLD "%.*s" IRCBOLD IRCCOLOR "'s hostname resolved to: " IRCBOLD IRCCOLOR "10%.*s" IRCBOLD, name.size(), name.ptr(), host.size(), host.ptr());
+	}
 }
 
 int RenX_DNSPlugin::OnRehash()

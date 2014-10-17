@@ -16,7 +16,8 @@
 class RenX_DNSPlugin : public RenX::Plugin
 {
 public: // RenX::Plugin
-	void RenX_OnJoin(RenX::Server *server, const RenX::PlayerInfo *player);
+	void RenX_OnPlayerCreate(RenX::Server *server, const RenX::PlayerInfo *player) override;
+	void RenX_OnJoin(RenX::Server *server, const RenX::PlayerInfo *player) override;
 
 public: // Jupiter::Plugin
 	const Jupiter::ReadableString &getName() override { return name; }
