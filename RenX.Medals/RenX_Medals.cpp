@@ -80,15 +80,28 @@ void congratPlayer(unsigned int, void *params)
 	delete congratPlayerData;
 }
 
+void RenX_MedalsPlugin::RenX_OnPlayerCreate(RenX::Server *server, const RenX::PlayerInfo *player)
+{
+	if (player->isBot == false)
+	{
+		const_cast<RenX::PlayerInfo *>(player)->varData.set(this->getName(), STRING_LITERAL_AS_REFERENCE("Recs"), RenX_MedalsPlugin::medalsFile.get(player->uuid, STRING_LITERAL_AS_REFERENCE("Recs")));
+		const_cast<RenX::PlayerInfo *>(player)->varData.set(this->getName(), STRING_LITERAL_AS_REFERENCE("Noobs"), RenX_MedalsPlugin::medalsFile.get(player->uuid, STRING_LITERAL_AS_REFERENCE("Noobs")));
+	}
+}
+
+void RenX_MedalsPlugin::RenX_OnPlayerDelete(RenX::Server *server, const RenX::PlayerInfo *player)
+{
+	if (player->isBot == false)
+	{
+		RenX_MedalsPlugin::medalsFile.set(player->uuid, STRING_LITERAL_AS_REFERENCE("Recs"), player->varData.get(this->getName(), STRING_LITERAL_AS_REFERENCE("Recs")));
+		RenX_MedalsPlugin::medalsFile.set(player->uuid, STRING_LITERAL_AS_REFERENCE("Noobs"), player->varData.get(this->getName(), STRING_LITERAL_AS_REFERENCE("Noobs")));
+	}
+}
+
 void RenX_MedalsPlugin::RenX_OnJoin(RenX::Server *server, const RenX::PlayerInfo *player)
 {
 	if (player->uuid.isEmpty() == false)
 	{
-		const Jupiter::ReadableString &recs = RenX_MedalsPlugin::medalsFile.get(player->uuid, STRING_LITERAL_AS_REFERENCE("Recs"));
-		const Jupiter::ReadableString &noobs = RenX_MedalsPlugin::medalsFile.get(player->uuid, STRING_LITERAL_AS_REFERENCE("Noobs"));
-		const_cast<RenX::PlayerInfo *>(player)->varData.set(this->getName(), STRING_LITERAL_AS_REFERENCE("Recs"), recs);
-		const_cast<RenX::PlayerInfo *>(player)->varData.set(this->getName(), STRING_LITERAL_AS_REFERENCE("Noobs"), noobs);
-
 		int worth = getWorth(player);
 		Jupiter::INIFile::Section *section = RenX_MedalsPlugin::joinMessageFile.getSection(RenX_MedalsPlugin::firstSection);
 		if (section != nullptr)
@@ -107,6 +120,9 @@ void RenX_MedalsPlugin::RenX_OnJoin(RenX::Server *server, const RenX::PlayerInfo
 					pair = section->getPair(r);
 				} while (pair->getKey().asInt() == 0);
 
+				const Jupiter::ReadableString &recs = RenX_MedalsPlugin::medalsFile.get(player->uuid, STRING_LITERAL_AS_REFERENCE("Recs"));
+				const Jupiter::ReadableString &noobs = RenX_MedalsPlugin::medalsFile.get(player->uuid, STRING_LITERAL_AS_REFERENCE("Noobs"));
+
 				Jupiter::StringS msg = pair->getValue();
 				msg.replace(RenX_MedalsPlugin::nameTag, player->name);
 				msg.replace(RenX_MedalsPlugin::recsTag, recs);
@@ -117,12 +133,6 @@ void RenX_MedalsPlugin::RenX_OnJoin(RenX::Server *server, const RenX::PlayerInfo
 			}
 		}
 	}
-}
-
-void RenX_MedalsPlugin::RenX_OnPart(RenX::Server *server, const RenX::PlayerInfo *player)
-{
-	RenX_MedalsPlugin::medalsFile.set(player->uuid, STRING_LITERAL_AS_REFERENCE("Recs"), player->varData.get(this->getName(), STRING_LITERAL_AS_REFERENCE("Recs")));
-	RenX_MedalsPlugin::medalsFile.set(player->uuid, STRING_LITERAL_AS_REFERENCE("Noobs"), player->varData.get(this->getName(), STRING_LITERAL_AS_REFERENCE("Noobs")));
 }
 
 void RenX_MedalsPlugin::RenX_OnGameOver(RenX::Server *server, RenX::WinType winType, RenX::TeamType team, int gScore, int nScore)
