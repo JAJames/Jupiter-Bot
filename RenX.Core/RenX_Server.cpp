@@ -254,6 +254,9 @@ bool RenX::Server::removePlayer(int id)
 		if (node->data->id == id)
 		{
 			RenX::PlayerInfo *p = RenX::Server::players.remove(node);
+			Jupiter::ArrayList<RenX::Plugin> &xPlugins = *RenX::getCore()->getPlugins();
+			for (size_t i = 0; i < xPlugins.size(); i++)
+				xPlugins.get(i)->RenX_OnPlayerDelete(this, p);
 			delete p;
 			return true;
 		}
@@ -479,6 +482,9 @@ inline RenX::PlayerInfo *getPlayerOrAdd(RenX::Server *server, const Jupiter::Rea
 		r->isBot = isBot;
 		r->joinTime = time(nullptr);
 		if (id != 0) server->players.add(r);
+		Jupiter::ArrayList<RenX::Plugin> &xPlugins = *RenX::getCore()->getPlugins();
+		for (size_t i = 0; i < xPlugins.size(); i++)
+			xPlugins.get(i)->RenX_OnPlayerCreate(server, r);
 	}
 	else if (r->name.size() == 0) r->name = name;
 	r->team = team;

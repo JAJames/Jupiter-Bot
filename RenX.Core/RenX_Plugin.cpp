@@ -35,6 +35,16 @@ RenX::Plugin::~Plugin()
 	}
 }
 
+void RenX::Plugin::RenX_OnPlayerCreate(Server *, const RenX::PlayerInfo *)
+{
+	return;
+}
+
+void RenX::Plugin::RenX_OnPlayerDelete(Server *, const RenX::PlayerInfo *)
+{
+	return;
+}
+
 void RenX::Plugin::RenX_OnJoin(Server *, const RenX::PlayerInfo *)
 {
 	return;

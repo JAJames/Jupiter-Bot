@@ -37,6 +37,10 @@ namespace RenX
 	class RENX_API Plugin : public Jupiter::Plugin
 	{
 	public:
+		/** Non-RCON RenX logs */
+		virtual void RenX_OnPlayerCreate(Server *server, const PlayerInfo *player);
+		virtual void RenX_OnPlayerDelete(Server *server, const PlayerInfo *player);
+
 		/** Player type logs */
 		virtual void RenX_OnJoin(Server *server, const PlayerInfo *player);
 		virtual void RenX_OnPart(Server *server, const PlayerInfo *player);
