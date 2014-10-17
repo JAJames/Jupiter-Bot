@@ -141,7 +141,7 @@ int RenX::Server::sendMessage(const Jupiter::ReadableString &message)
 	}
 }
 
-int RenX::Server::sendMessage(RenX::PlayerInfo *player, const Jupiter::ReadableString &message)
+int RenX::Server::sendMessage(const RenX::PlayerInfo *player, const Jupiter::ReadableString &message)
 {
 	if (RenX::Server::profile->privateMessages == false)
 		return RenX::Server::sendMessage(message);

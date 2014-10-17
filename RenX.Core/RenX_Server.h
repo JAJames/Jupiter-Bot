@@ -155,7 +155,7 @@ namespace RenX
 		* @param message Message to send in-game.
 		* @return The number of bytes sent on success, less than or equal to zero otherwise.
 		*/
-		int sendMessage(RenX::PlayerInfo *player, const Jupiter::ReadableString &message);
+		int sendMessage(const RenX::PlayerInfo *player, const Jupiter::ReadableString &message);
 
 		/**
 		* @brief Sends data to the server.
