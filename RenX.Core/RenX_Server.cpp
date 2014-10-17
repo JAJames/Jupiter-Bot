@@ -118,15 +118,27 @@ int RenX::Server::send(const Jupiter::ReadableString &command)
 
 int RenX::Server::sendMessage(const Jupiter::ReadableString &message)
 {
-	char *t = new char[message.size() + 6];
-	strcpy(t, "csay ");
-	for (size_t i = 0; i != message.size(); i++) t[i + 5] = message.get(i);
-	t[message.size() + 5] = '\n';
-	if (RenX::Server::profile->mustSanitize)
-		RenX::sanitizeString(t);
-	int r = RenX::Server::sock.send(t, message.size() + 6);
-	delete[] t;
-	return r;
+	int r = 0;
+	if (RenX::Server::neverSay)
+	{
+		if (RenX::Server::profile->privateMessages && RenX::Server::players.size() != 0)
+			for (Jupiter::DLList<RenX::PlayerInfo>::Node *node = RenX::Server::players.getNode(0); node != nullptr; node = node->next)
+				if (node->data->isBot == false)
+					r += RenX::Server::sendMessage(node->data, message);
+		return r;
+	}
+	else
+	{
+		char *t = new char[message.size() + 6];
+		strcpy(t, "csay ");
+		for (size_t i = 0; i != message.size(); i++) t[i + 5] = message.get(i);
+		t[message.size() + 5] = '\n';
+		if (RenX::Server::profile->mustSanitize)
+			RenX::sanitizeString(t);
+		r = RenX::Server::sock.send(t, message.size() + 6);
+		delete[] t;
+		return r;
+	}
 }
 
 int RenX::Server::sendMessage(RenX::PlayerInfo *player, const Jupiter::ReadableString &message)
@@ -1022,6 +1034,7 @@ RenX::Server::Server(const Jupiter::ReadableString &configurationSection)
 	RenX::Server::delay = Jupiter::IRC::Client::Config->getInt(RenX::Server::configSection, STRING_LITERAL_AS_REFERENCE("ReconnectDelay"), 60);
 	RenX::Server::uuidMode = Jupiter::IRC::Client::Config->getInt(RenX::Server::configSection, STRING_LITERAL_AS_REFERENCE("UUIDMode"), 0);
 	RenX::Server::steamFormat = Jupiter::IRC::Client::Config->getInt(RenX::Server::configSection, STRING_LITERAL_AS_REFERENCE("SteamFormat"), 16);
+	RenX::Server::neverSay = Jupiter::IRC::Client::Config->getBool(RenX::Server::configSection, STRING_LITERAL_AS_REFERENCE("NeverSay"), false);
 
 	for (size_t i = 0; i < RenX::GameMasterCommandList->size(); i++)
 		RenX::Server::addCommand(RenX::GameMasterCommandList->get(i)->copy());

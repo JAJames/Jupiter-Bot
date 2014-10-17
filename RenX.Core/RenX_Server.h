@@ -470,22 +470,29 @@ namespace RenX
 
 	/** Private members */
 	private:
+		/** Tracking variables */
 		bool connected = false;
 		bool needsCList = false;
 		bool silenceParts = false;
 		bool silenceJoins = false;
 		bool firstGame = true;
-		unsigned int rconVersion = 0;
-		unsigned short port;
-		int logChanType;
-		int adminLogChanType;
-		time_t lastAttempt = 0;
-		time_t delay;
-		int steamFormat; /** 16 = hex, 10 = base 10, 8 = octal, -2 = SteamID 2, -3 = SteamID 3 */
-		unsigned int uuidMode; /** 0 = steam, 1 = nickname */
 		bool firstKill = false;
 		bool firstDeath = false;
 		bool firstAction = false;
+		unsigned int rconVersion = 0;
+		time_t lastAttempt = 0;
+		Jupiter::String lastLine;
+		Jupiter::StringS gameVersion;
+		Jupiter::ArrayList<RenX::GameCommand> commands;
+
+		/** Configuration variables */
+		unsigned short port;
+		int logChanType;
+		int adminLogChanType;
+		time_t delay;
+		int steamFormat; /** 16 = hex, 10 = base 10, 8 = octal, -2 = SteamID 2, -3 = SteamID 3 */
+		unsigned int uuidMode; /** 0 = steam, 1 = nickname */
+		bool neverSay;
 		Jupiter::TCPSocket sock;
 		Jupiter::CStringS clientHostname;
 		Jupiter::CStringS hostname;
@@ -494,9 +501,6 @@ namespace RenX
 		Jupiter::StringS rules;
 		Jupiter::StringS IRCPrefix;
 		Jupiter::StringS CommandPrefix;
-		Jupiter::StringS gameVersion;
-		Jupiter::String lastLine;
-		Jupiter::ArrayList<RenX::GameCommand> commands;
 	};
 
 }
