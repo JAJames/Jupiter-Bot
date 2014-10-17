@@ -74,6 +74,41 @@ namespace RenX
 		bool isConnected() const;
 
 		/**
+		* @brief Checks if the game in progress is the first game.
+		*
+		* @return True if this is the first game, false otherwise.
+		*/
+		bool isFirstGame() const;
+
+		/**
+		* @brief Checks if the first kill has already been processed.
+		* Note: This does not set to "true" until AFTER the first kill has been fully processed.
+		* This includes processing by plugins.
+		*
+		* @return True if the first kill has been fully processed, false otherwise.
+		*/
+		bool isFirstKill() const;
+
+		/**
+		* @brief Checks if the first death has already been processed.
+		* Note: This does not set to "true" until AFTER the first death has been fully processed.
+		* This includes processing by plugins.
+		*
+		* @return True if the first death has been fully processed, false otherwise.
+		*/
+		bool isFirstDeath() const;
+
+		/**
+		* @brief Checks if the first action has already been processed.
+		* Note: This does not set to "true" until AFTER the first action has been fully processed.
+		* This includes processing by plugins.
+		* An action is a kill, death, message, destroy, or any other player-induced interaction other than a join or part.
+		*
+		* @return True if the first action has been fully processed, false otherwise.
+		*/
+		bool isFirstAction() const;
+
+		/**
 		* @brief Checks if a channel type is a public channel type.
 		*
 		* @param type Type to check against.
@@ -438,6 +473,8 @@ namespace RenX
 		bool connected = false;
 		bool needsCList = false;
 		bool silenceParts = false;
+		bool silenceJoins = false;
+		bool firstGame = true;
 		unsigned int rconVersion = 0;
 		unsigned short port;
 		int logChanType;
@@ -446,6 +483,9 @@ namespace RenX
 		time_t delay;
 		int steamFormat; /** 16 = hex, 10 = base 10, 8 = octal, -2 = SteamID 2, -3 = SteamID 3 */
 		unsigned int uuidMode; /** 0 = steam, 1 = nickname */
+		bool firstKill = false;
+		bool firstDeath = false;
+		bool firstAction = false;
 		Jupiter::TCPSocket sock;
 		Jupiter::CStringS clientHostname;
 		Jupiter::CStringS hostname;

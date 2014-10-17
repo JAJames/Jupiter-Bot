@@ -72,6 +72,21 @@ bool RenX::Server::isConnected() const
 	return RenX::Server::connected;
 }
 
+bool RenX::Server::isFirstGame() const
+{
+	return RenX::Server::firstGame;
+}
+
+bool RenX::Server::isFirstKill() const
+{
+	return RenX::Server::firstKill;
+}
+
+bool RenX::Server::isFirstDeath() const
+{
+	return RenX::Server::firstDeath;
+}
+
 bool RenX::Server::isPublicLogChanType(int type) const
 {
 	return RenX::Server::logChanType == type;
@@ -491,72 +506,83 @@ inline RenX::PlayerInfo *getPlayerOrAdd(RenX::Server *server, const Jupiter::Rea
 	return r;
 }
 
-inline void onPreGameOver(RenX::Server *server, RenX::WinType winType, RenX::TeamType team, int gScore, int nScore)
-{
-	RenX::PlayerInfo *player;
-
-	if (server->players.size() != 0)
-	{
-		for (Jupiter::DLList<RenX::PlayerInfo>::Node *n = server->players.getNode(0); n != nullptr; n = n->next)
-		{
-			player = n->data;
-			if (player != nullptr)
-			{
-				if (player->team == team)
-					player->wins++;
-				else player->loses++;
-			}
-		}
-	}
-}
-
-inline void onPostGameOver(RenX::Server *server, RenX::WinType winType, RenX::TeamType team, int gScore, int nScore)
-{
-	RenX::PlayerInfo *player;
-
-	if (server->players.size() != 0)
-	{
-		for (Jupiter::DLList<RenX::PlayerInfo>::Node *n = server->players.getNode(0); n != nullptr; n = n->next)
-		{
-			player = n->data;
-			if (player != nullptr)
-			{
-				player->kills = 0;
-				player->deaths = 0;
-				player->suicides = 0;
-				player->headshots = 0;
-				player->vehicleKills = 0;
-				player->buildingKills = 0;
-				player->defenceKills = 0;
-			}
-		}
-	}
-}
-
-inline void onChat(RenX::Server *server, RenX::PlayerInfo *player, const Jupiter::ReadableString &message, bool isPublic)
-{
-	const Jupiter::ReadableString &prefix = server->getCommandPrefix();
-	if (message.find(prefix) == 0 && message.size() != prefix.size())
-	{
-		Jupiter::ReferenceString command;
-		Jupiter::ReferenceString parameters;
-		if (containsSymbol(WHITESPACE, message.get(prefix.size())))
-		{
-			command = Jupiter::ReferenceString::getWord(message, 1, WHITESPACE);
-			parameters = Jupiter::ReferenceString::gotoWord(message, 2, WHITESPACE);
-		}
-		else
-		{
-			command = Jupiter::ReferenceString::getWord(message, 0, WHITESPACE);
-			command.shiftRight(prefix.size());
-			parameters = Jupiter::ReferenceString::gotoWord(message, 1, WHITESPACE);
-		}
-		server->triggerCommand(command, player, parameters);
-	}
-}
-
 void RenX::Server::processLine(const Jupiter::ReadableString &line)
 {
+	/** Local functions */
+	auto onPreGameOver = [&](RenX::Server *server, RenX::WinType winType, RenX::TeamType team, int gScore, int nScore)
+	{
+		RenX::PlayerInfo *player;
+
+		if (server->players.size() != 0)
+		{
+			for (Jupiter::DLList<RenX::PlayerInfo>::Node *n = server->players.getNode(0); n != nullptr; n = n->next)
+			{
+				player = n->data;
+				if (player != nullptr)
+				{
+					if (player->team == team)
+						player->wins++;
+					else player->loses++;
+				}
+			}
+		}
+	};
+	auto onPostGameOver = [&](RenX::Server *server, RenX::WinType winType, RenX::TeamType team, int gScore, int nScore)
+	{
+		this->firstGame = false;
+		this->firstAction = false;
+		this->firstKill = false;
+		this->firstDeath = false;
+		RenX::PlayerInfo *player;
+
+		if (server->players.size() != 0)
+		{
+			for (Jupiter::DLList<RenX::PlayerInfo>::Node *n = server->players.getNode(0); n != nullptr; n = n->next)
+			{
+				player = n->data;
+				if (player != nullptr)
+				{
+					player->kills = 0;
+					player->deaths = 0;
+					player->suicides = 0;
+					player->headshots = 0;
+					player->vehicleKills = 0;
+					player->buildingKills = 0;
+					player->defenceKills = 0;
+				}
+			}
+		}
+	};
+	auto onChat = [&](RenX::Server *server, RenX::PlayerInfo *player, const Jupiter::ReadableString &message, bool isPublic)
+	{
+		const Jupiter::ReadableString &prefix = server->getCommandPrefix();
+		if (message.find(prefix) == 0 && message.size() != prefix.size())
+		{
+			Jupiter::ReferenceString command;
+			Jupiter::ReferenceString parameters;
+			if (containsSymbol(WHITESPACE, message.get(prefix.size())))
+			{
+				command = Jupiter::ReferenceString::getWord(message, 1, WHITESPACE);
+				parameters = Jupiter::ReferenceString::gotoWord(message, 2, WHITESPACE);
+			}
+			else
+			{
+				command = Jupiter::ReferenceString::getWord(message, 0, WHITESPACE);
+				command.shiftRight(prefix.size());
+				parameters = Jupiter::ReferenceString::gotoWord(message, 1, WHITESPACE);
+			}
+			server->triggerCommand(command, player, parameters);
+		}
+	};
+	auto onAction = [&]()
+	{
+		if (this->firstAction == false)
+		{
+			this->firstAction = true;
+			this->silenceJoins = false;
+		}
+	};
+
 	Jupiter::ReferenceString buff = line;
 	Jupiter::ArrayList<RenX::Plugin> &xPlugins = *RenX::getCore()->getPlugins();
 	Jupiter::ReferenceString header = buff.getWord(0, RenX::DelimS);
@@ -576,6 +602,7 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 					if (objectType.match("*Beacon")) player->beaconPlacements++;
 					for (size_t i = 0; i < xPlugins.size(); i++)
 						xPlugins.get(i)->RenX_OnDeploy(this, player, objectType);
+					onAction();
 				}
 				else if (action.equals("suicided by"))
 				{
@@ -585,6 +612,8 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 					Jupiter::ReferenceString damageType = buff.getWord(3, RenX::DelimS);
 					for (size_t i = 0; i < xPlugins.size(); i++)
 						xPlugins.get(i)->RenX_OnSuicide(this, player, damageType);
+					this->firstDeath = true;
+					onAction();
 				}
 				else if (action.equals("killed"))
 				{
@@ -615,6 +644,10 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 
 					for (size_t i = 0; i < xPlugins.size(); i++)
 						xPlugins.get(i)->RenX_OnKill(this, player, victim, damageType);
+
+					this->firstKill = true;
+					this->firstDeath = true;
+					onAction();
 				}
 				else if (action.match("died by"))
 				{
@@ -623,6 +656,8 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 					Jupiter::ReferenceString damageType = buff.getWord(3, RenX::DelimS);
 					for (size_t i = 0; i < xPlugins.size(); i++)
 						xPlugins.get(i)->RenX_OnDie(this, player, damageType);
+					this->firstDeath = true;
+					onAction();
 				}
 				else if (action.match("destroyed*"))
 				{
@@ -647,6 +682,7 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 					}
 					for (size_t i = 0; i < xPlugins.size(); i++)
 						xPlugins.get(i)->RenX_OnDestroy(this, player, victim, damageType, type);
+					onAction();
 				}
 				else if (playerData.match("??? wins (*)"))
 				{
@@ -718,6 +754,7 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 					for (size_t i = 0; i < xPlugins.size(); i++)
 						xPlugins.get(i)->RenX_OnChat(this, player, message);
 				}
+				onAction();
 			}
 			else if (header.equals("lPLAYER:"))
 			{
@@ -748,8 +785,9 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 						break;
 					}
 
-					for (size_t i = 0; i < xPlugins.size(); i++)
-						xPlugins.get(i)->RenX_OnJoin(this, player);
+					if (this->silenceJoins == false)
+						for (size_t i = 0; i < xPlugins.size(); i++)
+							xPlugins.get(i)->RenX_OnJoin(this, player);
 				}
 				else if (action.equals("changed name to:"))
 				{
@@ -759,6 +797,7 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 					player->name = newName;
 					if (RenX::Server::uuidMode == 1)
 						player->uuid = player->name;
+					onAction();
 				}
 			}
 			else if (header.equals("lRCON:"))
@@ -886,6 +925,11 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 				this->profile = RenX::openBeta2Profile;
 			else if (gameVersion.equals("Open Beta 3"))
 				this->profile = RenX::openBeta3Profile;
+
+			if (this->profile->disconnectOnGameOver == false)
+				this->firstGame = true;
+			else if (this->firstGame == false)
+				this->silenceJoins = true;
 
 			for (size_t i = 0; i < xPlugins.size(); i++)
 				xPlugins.get(i)->RenX_OnVersion(this, buff);
