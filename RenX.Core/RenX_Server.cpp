@@ -94,7 +94,8 @@ int RenX::Server::send(const Jupiter::ReadableString &command)
 	for (size_t i = 0; i != command.size(); i++) t[i + 1] = command.get(i);
 	t[command.size() + 1] = '\n';
 	int r;
-	RenX::sanitizeString(t);
+	if (RenX::Server::profile->mustSanitize)
+		RenX::sanitizeString(t);
 	r = RenX::Server::sock.send(t, command.size() + 2);
 	delete[] t;
 	return r;
@@ -106,7 +107,8 @@ int RenX::Server::sendMessage(const Jupiter::ReadableString &message)
 	strcpy(t, "csay ");
 	for (size_t i = 0; i != message.size(); i++) t[i + 5] = message.get(i);
 	t[message.size() + 5] = '\n';
-	RenX::sanitizeString(t);
+	if (RenX::Server::profile->mustSanitize)
+		RenX::sanitizeString(t);
 	int r = RenX::Server::sock.send(t, message.size() + 6);
 	delete[] t;
 	return r;
@@ -184,13 +186,19 @@ Jupiter::StringS RenX::Server::formatSteamID(uint64_t id)
 	default:
 	case 16:
 		return Jupiter::StringS::Format("0x%.16llX", id);
-		break;
 	case 10:
 		return Jupiter::StringS::Format("%llu", id);
-		break;
 	case 8:
 		return Jupiter::StringS::Format("0%llo", id);
-		break;
+	case -2:
+		id -= 0x0110000100000000ULL;
+		if (id % 2 == 1)
+			return Jupiter::StringS::Format("STEAM_1:1:%llu", id / 2ULL);
+		else
+			return Jupiter::StringS::Format("STEAM_1:0:%llu", id / 2ULL);
+	case -3:
+		id -= 0x0110000100000000ULL;
+		return Jupiter::StringS::Format("[U:1:%llu]", id);
 	}
 }
 
@@ -201,33 +209,41 @@ void RenX::Server::kickPlayer(int id)
 
 void RenX::Server::kickPlayer(const RenX::PlayerInfo *player)
 {
-	if (player->isBot)
-		RenX::Server::sock.send(Jupiter::StringS::Format("cadminkick %.*s\n", player->name.size(), player->name.ptr()));
-	else if (player->id < 1000 || this->rconVersion > 2)
-		RenX::Server::kickPlayer(player->id);
-	else if (player->name.contains('|') == false)
-		RenX::Server::sock.send(Jupiter::StringS::Format("cadminkick %.*s\n", player->name.size(), player->name.ptr()));
+	if (this->profile->pidbug)
+	{
+		if (player->isBot)
+			RenX::Server::sock.send(Jupiter::StringS::Format("cadminkick %.*s\n", player->name.size(), player->name.ptr()));
+		else if (player->id < 1000)
+			RenX::Server::kickPlayer(player->id);
+		else if (player->name.contains('|') == false)
+			RenX::Server::sock.send(Jupiter::StringS::Format("cadminkick %.*s\n", player->name.size(), player->name.ptr()));
+		else
+			RenX::Server::kickPlayer(player->id);
+	}
 	else
 		RenX::Server::kickPlayer(player->id);
 }
 
 void RenX::Server::banPlayer(int id)
 {
-	Jupiter::StringS msg;
-	msg.format("cadminkickban pid%d\n", id);
-	RenX::Server::sock.send(msg);
+	RenX::Server::sock.send(Jupiter::StringS::Format("cadminkickban pid%d\n", id));
 }
 
 void RenX::Server::banPlayer(const RenX::PlayerInfo *player)
 {
-	if (player->isBot)
-		RenX::Server::sock.send(Jupiter::StringS::Format("cadminkickban %.*s\n", player->name.size(), player->name.ptr()));
-	else if (player->id < 1000 || this->rconVersion > 2)
-		RenX::Server::sock.send(Jupiter::StringS::Format("cadminkickban pid%d\n", player->id));
-	else if (player->name.contains('|') == false)
-		RenX::Server::sock.send(Jupiter::StringS::Format("cadminkickban %.*s\n", player->name.size(), player->name.ptr()));
+	if (this->profile->pidbug)
+	{
+		if (player->isBot)
+			RenX::Server::sock.send(Jupiter::StringS::Format("cadminkickban %.*s\n", player->name.size(), player->name.ptr()));
+		else if (player->id < 1000)
+			RenX::Server::banPlayer(player->id);
+		else if (player->name.contains('|') == false)
+			RenX::Server::sock.send(Jupiter::StringS::Format("cadminkickban %.*s\n", player->name.size(), player->name.ptr()));
+		else
+			RenX::Server::banPlayer(player->id);
+	}
 	else
-		RenX::Server::sock.send(Jupiter::StringS::Format("cadminkickban pid%d\n", player->id));
+		RenX::Server::banPlayer(player->id);
 }
 
 bool RenX::Server::removePlayer(int id)

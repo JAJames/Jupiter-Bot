@@ -444,7 +444,7 @@ namespace RenX
 		int adminLogChanType;
 		time_t lastAttempt = 0;
 		time_t delay;
-		unsigned int steamFormat; /** 16 = hex, 10 = base 10, 8 = octal */
+		int steamFormat; /** 16 = hex, 10 = base 10, 8 = octal, -2 = SteamID 2, -3 = SteamID 3 */
 		unsigned int uuidMode; /** 0 = steam, 1 = nickname */
 		Jupiter::TCPSocket sock;
 		Jupiter::CStringS clientHostname;
