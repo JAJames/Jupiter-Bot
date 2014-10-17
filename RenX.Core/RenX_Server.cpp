@@ -124,7 +124,7 @@ int RenX::Server::sendMessage(const Jupiter::ReadableString &message)
 		if (RenX::Server::profile->privateMessages && RenX::Server::players.size() != 0)
 			for (Jupiter::DLList<RenX::PlayerInfo>::Node *node = RenX::Server::players.getNode(0); node != nullptr; node = node->next)
 				if (node->data->isBot == false)
-					r += RenX::Server::sendMessage(node->data, message);
+					r += RenX::Server::sock.send(Jupiter::StringS::Format("cevaprivatesay pid%d %.*s\n", node->data->id, message.size(), message.ptr()));
 		return r;
 	}
 	else
