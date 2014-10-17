@@ -467,7 +467,7 @@ void SteamIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &ch
 							{
 								msg += "is using steam ID " IRCBOLD;
 								msg += server->formatSteamID(player);
-								msg += IRCBOLD;
+								msg.aformat(IRCBOLD "; Steam Profile: " IRCBOLD "http://www.steamcommunity.com/profiles/%llu" IRCBOLD, player->steamid);
 							}
 							else msg += "is not using steam.";
 							source->sendMessage(channel, msg);
