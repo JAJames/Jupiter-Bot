@@ -61,7 +61,7 @@ namespace RenX
 		unsigned int loses = 0;
 		unsigned int beaconPlacements = 0;
 
-		Jupiter::INIFile varData; // This will be replaced later with a more dedicated type.
+		mutable Jupiter::INIFile varData; // This will be replaced later with a more dedicated type.
 	};
 
 }
