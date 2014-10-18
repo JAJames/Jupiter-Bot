@@ -84,8 +84,8 @@ void RenX_MedalsPlugin::RenX_OnPlayerCreate(RenX::Server *server, const RenX::Pl
 {
 	if (player->isBot == false)
 	{
-		const_cast<RenX::PlayerInfo *>(player)->varData.set(this->getName(), STRING_LITERAL_AS_REFERENCE("Recs"), RenX_MedalsPlugin::medalsFile.get(player->uuid, STRING_LITERAL_AS_REFERENCE("Recs")));
-		const_cast<RenX::PlayerInfo *>(player)->varData.set(this->getName(), STRING_LITERAL_AS_REFERENCE("Noobs"), RenX_MedalsPlugin::medalsFile.get(player->uuid, STRING_LITERAL_AS_REFERENCE("Noobs")));
+		player->varData.set(this->getName(), STRING_LITERAL_AS_REFERENCE("Recs"), RenX_MedalsPlugin::medalsFile.get(player->uuid, STRING_LITERAL_AS_REFERENCE("Recs")));
+		player->varData.set(this->getName(), STRING_LITERAL_AS_REFERENCE("Noobs"), RenX_MedalsPlugin::medalsFile.get(player->uuid, STRING_LITERAL_AS_REFERENCE("Noobs")));
 	}
 }
 
@@ -207,7 +207,7 @@ void RenX_MedalsPlugin::RenX_OnDestroy(RenX::Server *server, const RenX::PlayerI
 {
 	if (type == RenX::ObjectType::Building)
 	{
-		addRec(const_cast<RenX::PlayerInfo *>(player)); // -whistles-
+		addRec(player); // -whistles-
 
 		const Jupiter::ReadableString &translated = RenX::translateName(objectName);
 		server->sendMessage(Jupiter::StringS::Format("%.*s has been recommended for destroying the %.*s!", player->name.size(), player->name.ptr(), translated.size(), translated.ptr()));
@@ -393,13 +393,13 @@ const Jupiter::ReadableString &NoobGameCommand::getHelp(const Jupiter::ReadableS
 
 GAME_COMMAND_INIT(NoobGameCommand)
 
-void addRec(RenX::PlayerInfo *player, int amount)
+void addRec(const RenX::PlayerInfo *player, int amount)
 {
 	if (player->uuid.matchi("Player*") == false)
 		player->varData.set(pluginInstance.getName(), STRING_LITERAL_AS_REFERENCE("Recs"), Jupiter::StringS::Format("%u", getRecs(player) + amount));
 }
 
-void addNoob(RenX::PlayerInfo *player, int amount)
+void addNoob(const RenX::PlayerInfo *player, int amount)
 {
 	if (player->uuid.matchi("Player*") == false)
 		player->varData.set(pluginInstance.getName(), STRING_LITERAL_AS_REFERENCE("Noobs"), Jupiter::StringS::Format("%u", getNoobs(player) + amount));

@@ -25,10 +25,10 @@
 #include "RenX_GameCommand.h"
 
 /** Adds a recommendation to the player's medal data */
-void addRec(RenX::PlayerInfo *player, int amount = 1);
+void addRec(const RenX::PlayerInfo *player, int amount = 1);
 
 /** Adds a noob to the player's medal data */
-void addNoob(RenX::PlayerInfo *player, int amount = 1);
+void addNoob(const RenX::PlayerInfo *player, int amount = 1);
 
 /** Fetches a player's recommendation count */
 unsigned long getRecs(const RenX::PlayerInfo *player);

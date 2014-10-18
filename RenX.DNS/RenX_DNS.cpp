@@ -31,7 +31,7 @@ void RenX_DNSPlugin::RenX_OnPlayerCreate(RenX::Server *server, const RenX::Playe
 	if (player->isBot == false)
 	{
 		Jupiter::ReferenceString host = Jupiter::ReferenceString(Jupiter::Socket::resolveHostname(Jupiter::CStringS(player->ip).c_str(), 0));
-		const_cast<RenX::PlayerInfo *>(player)->varData.set(RenX_DNSPlugin::name, STRING_LITERAL_AS_REFERENCE("Host"), host);
+		player->varData.set(RenX_DNSPlugin::name, STRING_LITERAL_AS_REFERENCE("Host"), host);
 	}
 }
 
