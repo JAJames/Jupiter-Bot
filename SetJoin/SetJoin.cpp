@@ -21,7 +21,7 @@
 #include "SetJoin.h"
 #include "IRC_Bot.h"
 
-void SetJoinPlugin::OnJoin(Jupiter::IRC::Client *server, const Jupiter::StringType &chan, const Jupiter::StringType &nick)
+void SetJoinPlugin::OnJoin(Jupiter::IRC::Client *server, const Jupiter::ReadableString &chan, const Jupiter::ReadableString &nick)
 {
 	const Jupiter::ReadableString &setjoin = server->Config->get(STRING_LITERAL_AS_REFERENCE("SetJoins"), nick);
 	if (setjoin.isEmpty() == false)

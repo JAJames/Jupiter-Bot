@@ -24,7 +24,7 @@
 class SetJoinPlugin : public Jupiter::Plugin
 {
 public:
-	void OnJoin(Jupiter::IRC::Client *server, const Jupiter::StringType &chan, const Jupiter::StringType &nick);
+	void OnJoin(Jupiter::IRC::Client *server, const Jupiter::ReadableString &chan, const Jupiter::ReadableString &nick) override;
 	const Jupiter::ReadableString &getName() override { return name; }
 
 private:
