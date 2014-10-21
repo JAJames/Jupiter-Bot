@@ -133,7 +133,7 @@ int main(int argc, const char **args)
 	while (1)
 	{
 		for (size_t i = 0; i < Jupiter::plugins->size(); i++)
-			if (Jupiter::plugins->get(i)->think() != 0)
+			if (Jupiter::plugins->get(i)->shouldRemove() || Jupiter::plugins->get(i)->think() != 0)
 				Jupiter::freePlugin(i);
 		Jupiter_checkTimers();
 		serverManager->think();

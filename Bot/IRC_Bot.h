@@ -103,6 +103,11 @@ public:
 	*/
 	int OnRehash();
 
+	/**
+	* @brief Shouldn't ever happen; returns removed.
+	*/
+	bool OnBadRehash(bool removed) { return removed; };
+
 	/** Constructor for IRC_Bot */
 	IRC_Bot(const Jupiter::ReadableString &configSection);
 
