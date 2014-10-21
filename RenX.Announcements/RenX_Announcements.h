@@ -21,23 +21,35 @@
 #include "Jupiter/Plugin.h"
 #include "Jupiter/Timer.h"
 #include "Jupiter/File.h"
+#include "Jupiter/String.h"
+#include "Jupiter/CString.h"
+#include "Jupiter/Reference_String.h"
 #include "RenX_Plugin.h"
 
 class RenX_AnnouncementsPlugin : public RenX::Plugin
 {
 public:
-	const Jupiter::ReadableString &getName() override { return name; }
-	RenX_AnnouncementsPlugin();
-	~RenX_AnnouncementsPlugin();
+	void announce(unsigned int);
+	int init();
 
-public:
-	Jupiter::File announcementsFile;
-	bool random;
-	unsigned int lastLine;
+public: // Jupiter::Plugin
+	int OnRehash();
+	//int think();
+	const Jupiter::ReadableString &getName() override { return name; }
+	~RenX_AnnouncementsPlugin();
 
 private:
 	STRING_LITERAL_AS_NAMED_REFERENCE(name, "RenX.Announcements");
+	bool random;
+	unsigned int lastLine;
 	Jupiter::Timer *timer;
+	Jupiter::StringS dateTag;
+	Jupiter::StringS timeTag;
+	Jupiter::StringS rulesTag;
+	//Jupiter::StringS modsTag;
+	Jupiter::CStringS dateFmt;
+	Jupiter::CStringS timeFmt;
+	Jupiter::File announcementsFile;
 };
 
 #endif // _RENX_ANNOUNCEMENTS_H_HEADER
