@@ -60,6 +60,11 @@ void RenX::Plugin::RenX_OnNameChange(Server *, const PlayerInfo *, const Jupiter
 	return;
 }
 
+void RenX::Plugin::RenX_OnTeamChange(Server *, const PlayerInfo *)
+{
+	return;
+}
+
 void RenX::Plugin::RenX_OnChat(Server *, const RenX::PlayerInfo *, const Jupiter::ReadableString &)
 {
 	return;

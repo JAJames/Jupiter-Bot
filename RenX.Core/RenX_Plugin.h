@@ -45,6 +45,7 @@ namespace RenX
 		virtual void RenX_OnJoin(Server *server, const PlayerInfo *player);
 		virtual void RenX_OnPart(Server *server, const PlayerInfo *player);
 		virtual void RenX_OnNameChange(Server *server, const PlayerInfo *player, const Jupiter::ReadableString &newPlayerName);
+		virtual void RenX_OnTeamChange(Server *server, const PlayerInfo *player);
 		
 		/** Chat type logs */
 		virtual void RenX_OnChat(Server *server, const PlayerInfo *player, const Jupiter::ReadableString &message);

@@ -201,12 +201,12 @@ RenX::PlayerInfo *RenX::Server::getPlayerByPartNameFast(const Jupiter::ReadableS
 	return nullptr;
 }
 
-Jupiter::StringS RenX::Server::formatSteamID(const RenX::PlayerInfo *player)
+Jupiter::StringS RenX::Server::formatSteamID(const RenX::PlayerInfo *player) const
 {
 	return RenX::Server::formatSteamID(player->steamid);
 }
 
-Jupiter::StringS RenX::Server::formatSteamID(uint64_t id)
+Jupiter::StringS RenX::Server::formatSteamID(uint64_t id) const
 {
 	switch (RenX::Server::steamFormat)
 	{
@@ -435,6 +435,11 @@ void RenX::Server::sendPubChan(const char *fmt, ...) const
 	}
 	else msg.vformat(fmt, args);
 	va_end(args);
+	RenX::Server::sendPubChan(msg);
+}
+
+void RenX::Server::sendPubChan(const Jupiter::ReadableString &msg) const
+{
 	for (size_t i = 0; i != serverManager->size(); i++)
 		serverManager->getServer(i)->messageChannels(RenX::Server::logChanType, msg);
 }
@@ -453,6 +458,11 @@ void RenX::Server::sendAdmChan(const char *fmt, ...) const
 	}
 	else msg.vformat(fmt, args);
 	va_end(args);
+	RenX::Server::sendAdmChan(msg);
+}
+
+void RenX::Server::sendAdmChan(const Jupiter::ReadableString &msg) const
+{
 	for (size_t i = 0; i != serverManager->size(); i++)
 		serverManager->getServer(i)->messageChannels(RenX::Server::adminLogChanType, msg);
 }
@@ -471,11 +481,16 @@ void RenX::Server::sendLogChan(const char *fmt, ...) const
 	}
 	else msg.vformat(fmt, args);
 	va_end(args);
+	RenX::Server::sendLogChan(msg);
+}
+
+void RenX::Server::sendLogChan(const Jupiter::ReadableString &msg) const
+{
 	for (size_t i = 0; i != serverManager->size(); i++)
 	{
-		IRC_Bot *ircServer = serverManager->getServer(i);
-		ircServer->messageChannels(RenX::Server::logChanType, msg);
-		ircServer->messageChannels(RenX::Server::adminLogChanType, msg);
+		IRC_Bot *server = serverManager->getServer(i);
+		server->messageChannels(RenX::Server::logChanType, msg);
+		server->messageChannels(RenX::Server::adminLogChanType, msg);
 	}
 }
 
@@ -680,8 +695,12 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 					RenX::PlayerInfo *player = getPlayerOrAdd(this, name, id, team, isBot, 0);
 					player->deaths++;
 					Jupiter::ReferenceString damageType = buff.getWord(3, RenX::DelimS);
-					for (size_t i = 0; i < xPlugins.size(); i++)
-						xPlugins.get(i)->RenX_OnDie(this, player, damageType);
+					if (damageType.equals("DamageType"))
+						for (size_t i = 0; i < xPlugins.size(); i++)
+							xPlugins.get(i)->RenX_OnTeamChange(this, player);
+					else
+						for (size_t i = 0; i < xPlugins.size(); i++)
+							xPlugins.get(i)->RenX_OnDie(this, player, damageType);
 					this->firstDeath = true;
 					onAction();
 				}

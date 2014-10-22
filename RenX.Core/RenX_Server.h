@@ -204,7 +204,7 @@ namespace RenX
 		* @param player Player to fetch Steam ID from
 		* @return A player's formatted Steam ID on success, an empty string otherwise.
 		*/
-		Jupiter::StringS formatSteamID(const RenX::PlayerInfo *player);
+		Jupiter::StringS formatSteamID(const RenX::PlayerInfo *player) const;
 
 		/**
 		* @brief Formats a Steam ID into a readable string.
@@ -212,7 +212,7 @@ namespace RenX
 		* @param id Steam ID to format
 		* @return A player's formatted Steam ID on success, an empty string otherwise.
 		*/
-		Jupiter::StringS formatSteamID(uint64_t id);
+		Jupiter::StringS formatSteamID(uint64_t id) const;
 
 		/**
 		* @brief Kicks a player from the server.
@@ -393,26 +393,26 @@ namespace RenX
 		/**
 		* @brief Formats and sends a message to a server's corresponding public channels.
 		*
-		* @param server Server corresponding to channel types.
 		* @param fmt String containing the format specifiers indicating what message to send.
 		*/
 		void sendPubChan(const char *fmt, ...) const;
+		void sendPubChan(const Jupiter::ReadableString &msg) const;
 
 		/**
 		* @brief Formats and sends a message to a server's corresponding adminstrative channels.
 		*
-		* @param server Server corresponding to channel types.
 		* @param fmt String containing the format specifiers indicating what message to send.
 		*/
 		void sendAdmChan(const char *fmt, ...) const;
+		void sendAdmChan(const Jupiter::ReadableString &msg) const;
 
 		/**
 		* @brief Formats and sends a message to a server's corresponding channels.
 		*
-		* @param server Server corresponding to channel types.
 		* @param fmt String containing the format specifiers indicating what message to send.
 		*/
 		void sendLogChan(const char *fmt, ...) const;
+		void sendLogChan(const Jupiter::ReadableString &msg) const;
 
 		/**
 		* @brief Processes a line of RCON input data. Input data SHOULD NOT include a new-line ('\n') terminator.
