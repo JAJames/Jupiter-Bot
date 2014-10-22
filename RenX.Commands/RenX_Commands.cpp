@@ -1251,26 +1251,58 @@ void HelpGameCommand::create()
 
 void HelpGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *player, const Jupiter::ReadableString &parameters)
 {
-	Jupiter::StringL output = "Available Commands: ";
-	parameters.println(stdout);
+	RenX::GameCommand *cmd;
+	unsigned int cmdCount = 0;
+	auto getAccessCommands = [&](int accessLevel)
+	{
+		Jupiter::String list;
+		unsigned int i = 0;
+		while (i != source->getCommandCount())
+		{
+			cmd = source->getCommand(i++);
+			if (cmd->getAccessLevel() == accessLevel)
+			{
+				cmdCount++;
+				list.format("Access level %d commands: %.*s", accessLevel, cmd->getTrigger().size(), cmd->getTrigger().ptr());
+				break;
+			}
+		}
+		while (i != source->getCommandCount())
+		{
+			cmd = source->getCommand(i++);
+			if (cmd->getAccessLevel() == accessLevel)
+			{
+				cmdCount++;
+				list += ", ";
+				list += cmd->getTrigger();
+			}
+		}
+		return list;
+	};
 	if (parameters.wordCount(WHITESPACE) == 0)
 	{
-		// We know there's at least one command, because of this command!
-		output += source->getCommand(0)->getTrigger();
-		for (unsigned int i = 1; i != source->getCommandCount(); i++)
+		for (int i = 0; i <= player->access; i++)
 		{
-			output += ", ";
-			output += source->getCommand(i)->getTrigger();
+			Jupiter::ReadableString &msg = getAccessCommands(i);
+			if (msg.isEmpty() == false)
+				source->sendMessage(player, getAccessCommands(i));
 		}
+		if (cmdCount == 0)
+			source->sendMessage(player, STRING_LITERAL_AS_REFERENCE("No listed commands available."));
 	}
 	else
 	{
-		RenX::GameCommand *cmd = source->getCommand(Jupiter::ReferenceString::getWord(parameters, 0, WHITESPACE));
+		cmd = source->getCommand(Jupiter::ReferenceString::getWord(parameters, 0, WHITESPACE));
 		if (cmd != nullptr)
-			output += cmd->getHelp(Jupiter::ReferenceString::gotoWord(parameters, 1, WHITESPACE));
-		else output += "Error: Command not found.";
+		{
+			if (player->access >= cmd->getAccessLevel())
+				source->sendMessage(player, cmd->getHelp(Jupiter::ReferenceString::gotoWord(parameters, 1, WHITESPACE)));
+			else
+				source->sendMessage(player, STRING_LITERAL_AS_REFERENCE("Access Denied."));
+		}
+		else
+			source->sendMessage(player, STRING_LITERAL_AS_REFERENCE("Error: Command not found."));
 	}
-	source->sendMessage(player, output);
 }
 
 const Jupiter::ReadableString &HelpGameCommand::getHelp(const Jupiter::ReadableString &)
