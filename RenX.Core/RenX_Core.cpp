@@ -38,8 +38,9 @@ RenX::Core::Core()
 {
 	const Jupiter::ReadableString &serverList = Jupiter::IRC::Client::Config->get(STRING_LITERAL_AS_REFERENCE("RenX"), STRING_LITERAL_AS_REFERENCE("Servers"));
 	RenX::Core::translationsFile.readFile(Jupiter::IRC::Client::Config->get(STRING_LITERAL_AS_REFERENCE("RenX"), STRING_LITERAL_AS_REFERENCE("TranslationsFile"), STRING_LITERAL_AS_REFERENCE("Translations.ini")));
-
 	RenX::initTranslations(RenX::Core::translationsFile);
+	RenX::Core::commandsFile.readFile(Jupiter::IRC::Client::Config->get(STRING_LITERAL_AS_REFERENCE("RenX"), STRING_LITERAL_AS_REFERENCE("CommandsFile"), STRING_LITERAL_AS_REFERENCE("RenXGameCommands.ini")));
+	
 	unsigned int wc = serverList.wordCount(WHITESPACE);
 
 	RenX::Server *server;
@@ -134,6 +135,11 @@ Jupiter::ArrayList<RenX::Plugin> *RenX::Core::getPlugins()
 Jupiter::INIFile &RenX::Core::getTranslationsFile()
 {
 	return RenX::Core::translationsFile;
+}
+
+Jupiter::INIFile &RenX::Core::getCommandsFile()
+{
+	return RenX::Core::commandsFile;
 }
 
 int RenX::Core::addCommand(RenX::GameCommand *command)

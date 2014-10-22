@@ -151,6 +151,13 @@ namespace RenX
 		Jupiter::INIFile &getTranslationsFile();
 
 		/**
+		* @brief Fetches the commands settings file.
+		*
+		* @return Commands settings configuration file.
+		*/
+		Jupiter::INIFile &getCommandsFile();
+
+		/**
 		* @brief Copys a command, and passes it to each server.
 		*
 		* @param command Command to copy.
@@ -174,6 +181,7 @@ namespace RenX
 		Jupiter::ArrayList<RenX::Server> servers;
 		Jupiter::ArrayList<RenX::Plugin> plugins;
 		Jupiter::INIFile translationsFile;
+		Jupiter::INIFile commandsFile;
 	};
 
 	RENX_API Core *getCore();

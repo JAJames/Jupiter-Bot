@@ -121,6 +121,12 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "RenX.IRCJoin", "RenX.IRCJoi
 		{9103DF3D-8B4A-48E5-A6B3-CBE2554630E2} = {9103DF3D-8B4A-48E5-A6B3-CBE2554630E2}
 	EndProjectSection
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "RenX.ModSystem", "RenX.ModSystem\RenX.ModSystem.vcxproj", "{160CD71B-1E13-4816-9977-8BBD73871F31}"
+	ProjectSection(ProjectDependencies) = postProject
+		{C188871B-5F32-4946-B301-24CA2EBB275D} = {C188871B-5F32-4946-B301-24CA2EBB275D}
+		{9103DF3D-8B4A-48E5-A6B3-CBE2554630E2} = {9103DF3D-8B4A-48E5-A6B3-CBE2554630E2}
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -211,6 +217,10 @@ Global
 		{672B3FC9-0B31-45B4-AAB6-669073F2D291}.Debug|Win32.Build.0 = Debug|Win32
 		{672B3FC9-0B31-45B4-AAB6-669073F2D291}.Release|Win32.ActiveCfg = Release|Win32
 		{672B3FC9-0B31-45B4-AAB6-669073F2D291}.Release|Win32.Build.0 = Release|Win32
+		{160CD71B-1E13-4816-9977-8BBD73871F31}.Debug|Win32.ActiveCfg = Debug|Win32
+		{160CD71B-1E13-4816-9977-8BBD73871F31}.Debug|Win32.Build.0 = Debug|Win32
+		{160CD71B-1E13-4816-9977-8BBD73871F31}.Release|Win32.ActiveCfg = Release|Win32
+		{160CD71B-1E13-4816-9977-8BBD73871F31}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

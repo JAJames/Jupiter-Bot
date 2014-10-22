@@ -30,6 +30,7 @@
 #include "Jupiter/CString.h"
 #include "Jupiter/INIFile.h"
 #include "Jupiter/Thinker.h"
+#include "Jupiter/Rehash.h"
 #include "RenX.h"
 #include "RenX_ServerProfile.h"
 
@@ -50,7 +51,7 @@ namespace RenX
 	* @brief Represents a connection to an individiaul Renegade-X server.
 	* There are often more than one of these, such as when communities run multiple servers.
 	*/
-	class RENX_API Server : public Jupiter::Thinker
+	class RENX_API Server : public Jupiter::Thinker, public Jupiter::Rehashable
 	{
 	public: // Jupiter::Thinker
 
@@ -60,6 +61,23 @@ namespace RenX
 		* @return Zero if no error occurs, a non-zero value otherwise.
 		*/
 		int think();
+
+	public: // Jupiter::Rehashable
+
+		/**
+		* @brief Rehashes an object's status.
+		*
+		* @return 0.
+		*/
+		virtual int OnRehash();
+
+		/**
+		* @brief Fires when a non-zero value is returned by an object during a call to rehash().
+		*
+		* @param removed True if the object was removed from the rehashable objects list, false otherwise.
+		* @return True if the object should be deleted, false otherwise.
+		*/
+		virtual bool OnBadRehash(bool removed);
 
 	public: // RenX::Server
 		Jupiter::DLList<RenX::PlayerInfo> players; /** A list of players in the server */
@@ -481,6 +499,8 @@ namespace RenX
 
 	/** Private members */
 	private:
+		void init();
+
 		/** Tracking variables */
 		bool connected = false;
 		bool needsCList = false;
@@ -513,6 +533,8 @@ namespace RenX
 		Jupiter::StringS IRCPrefix;
 		Jupiter::StringS CommandPrefix;
 		Jupiter::StringS rconUser;
+		Jupiter::INIFile::Section *commandAccessLevels;
+		Jupiter::INIFile::Section *commandAliases;
 	};
 
 }

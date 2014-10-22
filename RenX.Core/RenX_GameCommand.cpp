@@ -49,3 +49,13 @@ RenX::GameCommand::~GameCommand()
 		}
 	}
 }
+
+int RenX::GameCommand::getAccessLevel()
+{
+	return RenX::GameCommand::access;
+}
+
+void RenX::GameCommand::setAccessLevel(int accessLevel)
+{
+	RenX::GameCommand::access = accessLevel;
+}

@@ -67,6 +67,50 @@ int RenX::Server::think()
 	return 0;
 }
 
+int RenX::Server::OnRehash()
+{
+	Jupiter::StringS oldHostname = RenX::Server::hostname;
+	unsigned short oldPort = RenX::Server::port;
+	Jupiter::StringS oldClientHostname = RenX::Server::clientHostname;
+	Jupiter::StringS oldPass = RenX::Server::pass;
+	unsigned int oldUUIDMode = RenX::Server::uuidMode;
+	int oldSteamFormat = RenX::Server::steamFormat;
+	RenX::Server::commands.emptyAndDelete();
+	RenX::Server::init();
+	if (oldHostname.equalsi(RenX::Server::hostname) && oldPort == RenX::Server::port && oldClientHostname.equalsi(RenX::Server::clientHostname) && oldPass.equalsi(RenX::Server::pass))
+	{
+		if ((oldUUIDMode != RenX::Server::uuidMode || (RenX::Server::uuidMode == 0 && oldSteamFormat != RenX::Server::steamFormat)) && RenX::Server::players.size() != 0)
+		{
+			RenX::PlayerInfo *player;
+			for (Jupiter::DLList<RenX::PlayerInfo>::Node *n = RenX::Server::players.getNode(0); n != nullptr; n = n->next)
+			{
+				player = n->data;
+				switch (this->uuidMode)
+				{
+				default:
+				case 0:
+					if (player->steamid != 0)
+						player->uuid = this->formatSteamID(player);
+					else
+						player->uuid = Jupiter::ReferenceString::empty;
+					break;
+				case 1:
+					player->uuid = player->name;
+					break;
+				}
+			}
+		}
+	}
+	else
+		RenX::Server::reconnect();
+	return 0;
+}
+
+bool RenX::Server::OnBadRehash(bool removed)
+{
+	return removed;
+}
+
 bool RenX::Server::isConnected() const
 {
 	return RenX::Server::connected;
@@ -861,6 +905,10 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 				if (action.equals("logged in as"))
 				{
 					player->adminType = buff.getWord(3, RenX::DelimS);
+					if (player->adminType.equalsi("moderator") && player->access < 1)
+						player->access = 1;
+					else if (player->adminType.equalsi("administrator") && player->access < 2)
+						player->access = 2;
 					for (size_t i = 0; i < xPlugins.size(); i++)
 						xPlugins.get(i)->RenX_OnAdminLogin(this, player);
 				}
@@ -870,10 +918,15 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 					for (size_t i = 0; i < xPlugins.size(); i++)
 						xPlugins.get(i)->RenX_OnAdminLogout(this, player);
 					player->adminType = "";
+					player->access = 0;
 				}
 				else if (action.equals("granted"))
 				{
 					player->adminType = buff.getWord(3, RenX::DelimS);
+					if (player->adminType.equalsi("moderator") && player->access < 1)
+						player->access = 1;
+					else if (player->adminType.equalsi("administrator") && player->access < 2)
+						player->access = 2;
 					for (size_t i = 0; i < xPlugins.size(); i++)
 						xPlugins.get(i)->RenX_OnAdminGrant(this, player);
 				}
@@ -1017,7 +1070,7 @@ bool RenX::Server::connect()
 
 bool RenX::Server::reconnect()
 {
-	RenX::Server::sock.closeSocket();
+	RenX::Server::disconnect();
 	return RenX::Server::connect();
 }
 
@@ -1026,7 +1079,6 @@ void RenX::Server::wipeData()
 	RenX::Server::rconUser.truncate(RenX::Server::rconUser.size());
 	while (RenX::Server::players.size() != 0)
 		delete RenX::Server::players.remove(0U);
-	RenX::Server::commands.emptyAndDelete();
 }
 
 unsigned int RenX::Server::getVersion() const
@@ -1047,11 +1099,14 @@ const Jupiter::ReadableString &RenX::Server::getRCONUsername() const
 RenX::Server::Server(const Jupiter::ReadableString &configurationSection)
 {
 	RenX::Server::configSection = configurationSection;
+	init();
+}
 
+void RenX::Server::init()
+{
 	RenX::Server::hostname = Jupiter::IRC::Client::Config->get(RenX::Server::configSection, STRING_LITERAL_AS_REFERENCE("Hostname"), STRING_LITERAL_AS_REFERENCE("localhost"));
 	RenX::Server::port = (unsigned short)Jupiter::IRC::Client::Config->getInt(RenX::Server::configSection, STRING_LITERAL_AS_REFERENCE("Port"), 7777);
 	RenX::Server::clientHostname = Jupiter::IRC::Client::Config->get(RenX::Server::configSection, STRING_LITERAL_AS_REFERENCE("ClientAddress"));
-
 	RenX::Server::pass = Jupiter::IRC::Client::Config->get(RenX::Server::configSection, STRING_LITERAL_AS_REFERENCE("Password"), STRING_LITERAL_AS_REFERENCE("renx"));
 
 	RenX::Server::logChanType = Jupiter::IRC::Client::Config->getShort(RenX::Server::configSection, STRING_LITERAL_AS_REFERENCE("ChanType"));
@@ -1066,12 +1121,34 @@ RenX::Server::Server(const Jupiter::ReadableString &configurationSection)
 	RenX::Server::steamFormat = Jupiter::IRC::Client::Config->getInt(RenX::Server::configSection, STRING_LITERAL_AS_REFERENCE("SteamFormat"), 16);
 	RenX::Server::neverSay = Jupiter::IRC::Client::Config->getBool(RenX::Server::configSection, STRING_LITERAL_AS_REFERENCE("NeverSay"), false);
 
-	for (size_t i = 0; i < RenX::GameMasterCommandList->size(); i++)
-		RenX::Server::addCommand(RenX::GameMasterCommandList->get(i)->copy());
+	Jupiter::INIFile &commandsFile = RenX::getCore()->getCommandsFile();
+	RenX::Server::commandAccessLevels = commandsFile.getSection(RenX::Server::configSection);
+	RenX::Server::commandAliases = commandsFile.getSection(Jupiter::StringS::Format("%.*s.Aliases", RenX::Server::configSection.size(), RenX::Server::configSection.ptr()));
+
+	RenX::GameCommand *cmd;
+	for (size_t i = 0, j; i < RenX::GameMasterCommandList->size(); i++)
+	{
+		cmd = RenX::GameMasterCommandList->get(i)->copy();
+		RenX::Server::addCommand(cmd);
+		if (commandAccessLevels != nullptr)
+		{
+			const Jupiter::ReadableString &accessLevel = RenX::Server::commandAccessLevels->getValue(cmd->getTrigger());
+			if (accessLevel.isEmpty() == false)
+				cmd->setAccessLevel(accessLevel.asInt());
+		}
+		if (commandAliases != nullptr)
+		{
+			const Jupiter::ReadableString &aliasList = RenX::Server::commandAliases->getValue(cmd->getTrigger());
+			j = aliasList.wordCount(WHITESPACE);
+			while (j != 0)
+				cmd->addTrigger(Jupiter::ReferenceString::getWord(aliasList, --j, WHITESPACE));
+		}
+	}
 }
 
 RenX::Server::~Server()
 {
 	sock.closeSocket();
 	RenX::Server::wipeData();
+	RenX::Server::commands.emptyAndDelete();
 }
