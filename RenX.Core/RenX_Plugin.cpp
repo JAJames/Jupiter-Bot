@@ -130,6 +130,11 @@ void RenX::Plugin::RenX_OnAdminLogin(Server *, const RenX::PlayerInfo *)
 	return;
 }
 
+void RenX::Plugin::RenX_OnAdminGrant(Server *, const RenX::PlayerInfo *)
+{
+	return;
+}
+
 void RenX::Plugin::RenX_OnAdminLogout(Server *, const RenX::PlayerInfo *)
 {
 	return;

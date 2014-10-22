@@ -67,6 +67,7 @@ namespace RenX
 		
 		/** Admin Type Logs */
 		virtual void RenX_OnAdminLogin(Server *server, const PlayerInfo *player);
+		virtual void RenX_OnAdminGrant(Server *server, const PlayerInfo *player);
 		virtual void RenX_OnAdminLogout(Server *server, const PlayerInfo *player);
 		virtual void RenX_OnAdmin(Server *server, const Jupiter::ReadableString &raw);
 		

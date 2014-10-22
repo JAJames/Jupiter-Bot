@@ -871,6 +871,12 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 						xPlugins.get(i)->RenX_OnAdminLogout(this, player);
 					player->adminType = "";
 				}
+				else if (action.equals("granted"))
+				{
+					player->adminType = buff.getWord(3, RenX::DelimS);
+					for (size_t i = 0; i < xPlugins.size(); i++)
+						xPlugins.get(i)->RenX_OnAdminGrant(this, player);
+				}
 				else for (size_t i = 0; i < xPlugins.size(); i++)
 					xPlugins.get(i)->RenX_OnAdmin(this, buff.gotoWord(1, RenX::DelimS));
 			}
