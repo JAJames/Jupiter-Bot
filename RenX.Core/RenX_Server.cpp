@@ -427,7 +427,10 @@ unsigned int RenX::Server::triggerCommand(const Jupiter::ReadableString &trigger
 		cmd = RenX::Server::commands.get(i);
 		if (cmd->matches(trigger))
 		{
-			cmd->trigger(this, player, parameters);
+			if (player->access >= cmd->getAccessLevel())
+				cmd->trigger(this, player, parameters);
+			else
+				RenX::Server::sendMessage(player, STRING_LITERAL_AS_REFERENCE("Access Denied."));
 			r++;
 		}
 	}

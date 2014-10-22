@@ -98,7 +98,7 @@ namespace RenX
 		virtual ~GameCommand();
 
 	private:
-		int access; /** Minimum access level */
+		int access = 0; /** Minimum access level */
 	};
 }
 
