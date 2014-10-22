@@ -952,7 +952,10 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 			if (this->profile->disconnectOnGameOver == false)
 				this->firstGame = true;
 			else if (this->firstGame == false)
+			{
+				this->firstAction = false;
 				this->silenceJoins = true;
+			}
 
 			for (size_t i = 0; i < xPlugins.size(); i++)
 				xPlugins.get(i)->RenX_OnVersion(this, buff);
