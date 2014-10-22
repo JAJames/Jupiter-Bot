@@ -110,6 +110,8 @@ Jupiter::ReferenceString translated_DmgType_Grenade = STRING_LITERAL_AS_REFERENC
 Jupiter::ReferenceString translated_DmgType_TimedC4 = STRING_LITERAL_AS_REFERENCE("Timed C4");
 Jupiter::ReferenceString translated_DmgType_RemoteC4 = STRING_LITERAL_AS_REFERENCE("Remote C4");
 Jupiter::ReferenceString translated_DmgType_ProxyC4 = STRING_LITERAL_AS_REFERENCE("Proximity C4");
+Jupiter::ReferenceString translated_DmgType_ATMine = STRING_LITERAL_AS_REFERENCE("Anti-Tank Mine");
+Jupiter::ReferenceString translated_DmgType_EMPGrenade = STRING_LITERAL_AS_REFERENCE("EMP Grenade");
 Jupiter::ReferenceString translated_DmgType_BurnC4 = STRING_LITERAL_AS_REFERENCE("C4 Burn");
 Jupiter::ReferenceString translated_DmgType_FireBleed = STRING_LITERAL_AS_REFERENCE("Fire Burn"); // Caused by C4 or flame weapons
 
@@ -357,6 +359,8 @@ const Jupiter::ReadableString &RenX::translateName(const Jupiter::ReadableString
 		if (object.equals(STRING_LITERAL_AS_REFERENCE("TimedC4"))) return translated_DmgType_TimedC4;
 		if (object.equals(STRING_LITERAL_AS_REFERENCE("RemoteC4"))) return translated_DmgType_RemoteC4;
 		if (object.equals(STRING_LITERAL_AS_REFERENCE("ProxyC4"))) return translated_DmgType_ProxyC4;
+		if (object.equals(STRING_LITERAL_AS_REFERENCE("ATMine"))) return translated_DmgType_ATMine;
+		if (object.equals(STRING_LITERAL_AS_REFERENCE("EMPGrenade"))) return translated_DmgType_EMPGrenade;
 		if (object.equals(STRING_LITERAL_AS_REFERENCE("BurnC4"))) return translated_DmgType_BurnC4;
 		if (object.equals(STRING_LITERAL_AS_REFERENCE("FireBleed"))) return translated_DmgType_FireBleed; // Caused by C4 or flame weapons
 
