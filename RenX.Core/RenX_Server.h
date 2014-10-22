@@ -448,13 +448,24 @@ namespace RenX
 
 		/**
 		* @brief Fetches the RCON version number, or 0 or none has been set.
+		*
+		* @return RCON version number
 		*/
 		unsigned int getVersion() const;
 
 		/**
 		* @brief Fetches the game version string, or an empty string if none has been set.
+		*
+		* @return String containing the Game version
 		*/
 		const Jupiter::ReadableString &getGameVersion() const;
+
+		/**
+		* @brief Fetches the RCON user name.
+		*
+		* @return String containing the RCON user name
+		*/
+		const Jupiter::ReadableString &getRCONUsername() const;
 
 		/**
 		* @brief Creates the Server object, and loads settings from the specified configuration section.
@@ -501,6 +512,7 @@ namespace RenX
 		Jupiter::StringS rules;
 		Jupiter::StringS IRCPrefix;
 		Jupiter::StringS CommandPrefix;
+		Jupiter::StringS rconUser;
 	};
 
 }

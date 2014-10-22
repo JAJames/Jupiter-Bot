@@ -846,7 +846,11 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 						xPlugins.get(i)->RenX_OnExecute(this, playerData, command);
 				}
 				else if (action.equals("subscribed")) for (size_t i = 0; i < xPlugins.size(); i++)
+				{
+					if (this->rconUser.isEmpty())
+						this->rconUser = playerData;
 					xPlugins.get(i)->RenX_OnSubscribe(this, playerData);
+				}
 				else for (size_t i = 0; i < xPlugins.size(); i++)
 					xPlugins.get(i)->RenX_OnRCON(this, buff.gotoWord(1, RenX::DelimS));
 			}
@@ -1013,6 +1017,7 @@ bool RenX::Server::reconnect()
 
 void RenX::Server::wipeData()
 {
+	RenX::Server::rconUser.truncate(RenX::Server::rconUser.size());
 	while (RenX::Server::players.size() != 0)
 		delete RenX::Server::players.remove(0U);
 	RenX::Server::commands.emptyAndDelete();
@@ -1026,6 +1031,11 @@ unsigned int RenX::Server::getVersion() const
 const Jupiter::ReadableString &RenX::Server::getGameVersion() const
 {
 	return RenX::Server::gameVersion;
+}
+
+const Jupiter::ReadableString &RenX::Server::getRCONUsername() const
+{
+	return RenX::Server::rconUser;
 }
 
 RenX::Server::Server(const Jupiter::ReadableString &configurationSection)
