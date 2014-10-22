@@ -1377,13 +1377,13 @@ void ModRequestGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *play
 				if (channel != nullptr)
 				{
 					type = channel->getType();
-					server->sendMessage(channel->getName(), msg2);
 					if (source->isLogChanType(type))
 					{
+						server->sendMessage(channel->getName(), msg2);
 						msg += channel->getName();
 						for (unsigned int c = 0; c < channel->getUserCount(); c++)
 						{
-							if (channel->getUserPrefix(c) != 0)
+							if (channel->getUserPrefix(c) != 0 && channel->getUser(c)->getNickname().equals(server->getNickname()) == false)
 							{
 								server->sendMessage(channel->getUser(c)->getUser()->getNickname(), msg);
 								messageCount++;
