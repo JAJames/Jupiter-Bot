@@ -391,7 +391,7 @@ void PlayerInfoIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableStrin
 						{
 							const Jupiter::ReadableString &teamColor = RenX::getTeamColor(player->team);
 							const Jupiter::ReadableString &teamName = RenX::getFullTeamName(player->team);
-							msg.format(IRCCOLOR "03[Player Info]" IRCCOLOR "%.*s Name: " IRCBOLD "%.*s" IRCBOLD " - ID: %d - Team: " IRCBOLD "%.*s" IRCBOLD " - Vehicle Kills: %u - Defence Kills: %u - Building Kills: %u - Kills: %u (%u headshots) - Deaths: %u (%u suicides) - KDR: %.2f", teamColor.size(), teamColor.ptr(), player->name.size(), player->name.ptr(), player->id, teamName.size(), teamName.ptr(), player->vehicleKills, player->defenceKills, player->buildingKills, player->kills, player->headshots, player->deaths, player->suicides, ((float)player->kills) / (player->deaths == 0 ? 1.0 : (float)player->deaths));
+							msg.format(IRCCOLOR "03[Player Info]" IRCCOLOR "%.*s Name: " IRCBOLD "%.*s" IRCBOLD " - ID: %d - Team: " IRCBOLD "%.*s" IRCBOLD " - Vehicle Kills: %u - Defence Kills: %u - Building Kills: %u - Kills: %u (%u headshots) - Deaths: %u (%u suicides) - KDR: %.2f - Access: %d", teamColor.size(), teamColor.ptr(), player->name.size(), player->name.ptr(), player->id, teamName.size(), teamName.ptr(), player->vehicleKills, player->defenceKills, player->buildingKills, player->kills, player->headshots, player->deaths, player->suicides, ((float)player->kills) / (player->deaths == 0 ? 1.0 : (float)player->deaths), player->access);
 							if (source->getAccessLevel(channel, nick) > 1)
 							{
 								msg += " - IP: " IRCBOLD;
