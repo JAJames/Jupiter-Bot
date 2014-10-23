@@ -649,7 +649,8 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 			r = new RenX::PlayerInfo();
 			r->id = id;
 			r->name = name;
-			r->isBot = isBot;
+			if (r->isBot = isBot)
+				r->formatNamePrefix = IRCCOLOR "05[B]";
 			r->joinTime = time(nullptr);
 			r->steamid = steamid;
 			r->ip = ip;

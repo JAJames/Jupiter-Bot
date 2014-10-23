@@ -545,8 +545,7 @@ void RenX::initTranslations(Jupiter::INIFile &translationsFile)
 
 Jupiter::String RenX::getFormattedPlayerName(const RenX::PlayerInfo *player)
 {
-	Jupiter::String r;
-	if (player->isBot) r += IRCCOLOR "05[B]";
+	Jupiter::String r = player->formatNamePrefix;
 	r += IRCCOLOR;
 	r += RenX::getTeamColor(player->team);
 	r += player->name;
