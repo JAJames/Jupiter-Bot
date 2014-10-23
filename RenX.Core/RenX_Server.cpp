@@ -1135,13 +1135,13 @@ void RenX::Server::init()
 		RenX::Server::addCommand(cmd);
 		if (commandAccessLevels != nullptr)
 		{
-			const Jupiter::ReadableString &accessLevel = RenX::Server::commandAccessLevels->getValue(cmd->getTrigger());
+			const Jupiter::ReadableString &accessLevel = RenX::Server::commandAccessLevels->get(cmd->getTrigger());
 			if (accessLevel.isEmpty() == false)
 				cmd->setAccessLevel(accessLevel.asInt());
 		}
 		if (commandAliases != nullptr)
 		{
-			const Jupiter::ReadableString &aliasList = RenX::Server::commandAliases->getValue(cmd->getTrigger());
+			const Jupiter::ReadableString &aliasList = RenX::Server::commandAliases->get(cmd->getTrigger());
 			j = aliasList.wordCount(WHITESPACE);
 			while (j != 0)
 				cmd->addTrigger(Jupiter::ReferenceString::getWord(aliasList, --j, WHITESPACE));

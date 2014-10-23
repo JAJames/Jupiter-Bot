@@ -109,8 +109,8 @@ void RenX_MedalsPlugin::RenX_OnJoin(RenX::Server *server, const RenX::PlayerInfo
 		Jupiter::INIFile::Section *section = RenX_MedalsPlugin::joinMessageFile.getSection(RenX_MedalsPlugin::firstSection);
 		if (section != nullptr)
 		{
-			while (section->hasKey(STRING_LITERAL_AS_REFERENCE("MaxRecs")) && section->getValue(STRING_LITERAL_AS_REFERENCE("MaxRecs")).asInt() < worth)
-				if ((section = RenX_MedalsPlugin::joinMessageFile.getSection(section->getValue(STRING_LITERAL_AS_REFERENCE("NextSection")))) == nullptr)
+			while (section->hasKey(STRING_LITERAL_AS_REFERENCE("MaxRecs")) && section->get(STRING_LITERAL_AS_REFERENCE("MaxRecs")).asInt() < worth)
+				if ((section = RenX_MedalsPlugin::joinMessageFile.getSection(section->get(STRING_LITERAL_AS_REFERENCE("NextSection")))) == nullptr)
 					return; // No matching section found.
 
 			if (section->hasKey(STRING_LITERAL_AS_REFERENCE("1")))
@@ -289,8 +289,8 @@ void RecsGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *player, co
 				source->sendMessage(player, STRING_LITERAL_AS_REFERENCE("Error: Player not found! Syntax: recs [player]"));
 			else
 			{
-				unsigned int recs = section->getValue(STRING_LITERAL_AS_REFERENCE("Recs")).asUnsignedInt();
-				unsigned int noobs = section->getValue(STRING_LITERAL_AS_REFERENCE("Noobs")).asUnsignedInt();
+				unsigned int recs = section->get(STRING_LITERAL_AS_REFERENCE("Recs")).asUnsignedInt();
+				unsigned int noobs = section->get(STRING_LITERAL_AS_REFERENCE("Noobs")).asUnsignedInt();
 				source->sendMessage(player, Jupiter::StringS::Format("[Archive] %.*s has %u and %u n00bs. Their worth: %d", section->getName().size(), section->getName().ptr(), recs, noobs, recs - noobs));
 			}
 		}
