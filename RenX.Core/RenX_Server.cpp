@@ -641,7 +641,7 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 			this->silenceJoins = false;
 		}
 	};
-	auto getPlayerOrAdd = [&](RenX::Server *server, const Jupiter::ReadableString &name, int id, RenX::TeamType team, bool isBot, uint64_t steamid)
+	auto getPlayerOrAdd = [&](RenX::Server *server, const Jupiter::ReadableString &name, int id, RenX::TeamType team, bool isBot, uint64_t steamid, const Jupiter::ReadableString &ip)
 	{
 		RenX::PlayerInfo *r = server->getPlayer(id);
 		if (r == nullptr)
@@ -651,6 +651,8 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 			r->name = name;
 			r->isBot = isBot;
 			r->joinTime = time(nullptr);
+			r->steamid = steamid;
+			r->ip = ip;
 			if (id != 0)
 				server->players.add(r);
 			switch (this->uuidMode)
@@ -682,7 +684,7 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 				if (action.equals("deployed"))
 				{
 					PARSE_PLAYER_DATA();
-					RenX::PlayerInfo *player = getPlayerOrAdd(this, name, id, team, isBot, 0);
+					RenX::PlayerInfo *player = getPlayerOrAdd(this, name, id, team, isBot, 0, Jupiter::ReferenceString::empty);
 					Jupiter::ReferenceString objectType = buff.getWord(3, RenX::DelimS);
 					if (objectType.match("*Beacon")) player->beaconPlacements++;
 					for (size_t i = 0; i < xPlugins.size(); i++)
@@ -692,7 +694,7 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 				else if (action.equals("suicided by"))
 				{
 					PARSE_PLAYER_DATA();
-					RenX::PlayerInfo *player = getPlayerOrAdd(this, name, id, team, isBot, 0);
+					RenX::PlayerInfo *player = getPlayerOrAdd(this, name, id, team, isBot, 0, Jupiter::ReferenceString::empty);
 					player->deaths++;
 					player->suicides++;
 					Jupiter::ReferenceString damageType = buff.getWord(3, RenX::DelimS);
@@ -704,7 +706,7 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 				else if (action.equals("killed"))
 				{
 					PARSE_PLAYER_DATA();
-					RenX::PlayerInfo *player = getPlayerOrAdd(this, name, id, team, isBot, 0);
+					RenX::PlayerInfo *player = getPlayerOrAdd(this, name, id, team, isBot, 0, Jupiter::ReferenceString::empty);
 					Jupiter::ReferenceString victimData = buff.getWord(3, RenX::DelimS);
 					Jupiter::ReferenceString vname = victimData.getWord(2, ",");
 					Jupiter::ReferenceString vidToken = victimData.getWord(1, ",");
@@ -718,7 +720,7 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 					vid = vidToken.asInt(10);
 					TeamType vteam = RenX::getTeam(victimData.getWord(0, ",")[0]);
 					Jupiter::ReferenceString damageType = buff.getWord(5, RenX::DelimS);
-					RenX::PlayerInfo *victim = getPlayerOrAdd(this, vname, vid, vteam, visBot, 0);
+					RenX::PlayerInfo *victim = getPlayerOrAdd(this, vname, vid, vteam, visBot, 0, Jupiter::ReferenceString::empty);
 					player->kills++;
 					if (damageType.equals("Rx_DmgType_Headshot")) player->headshots++;
 					victim->deaths++;
@@ -739,7 +741,7 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 				else if (action.match("died by"))
 				{
 					PARSE_PLAYER_DATA();
-					RenX::PlayerInfo *player = getPlayerOrAdd(this, name, id, team, isBot, 0);
+					RenX::PlayerInfo *player = getPlayerOrAdd(this, name, id, team, isBot, 0, Jupiter::ReferenceString::empty);
 					player->deaths++;
 					Jupiter::ReferenceString damageType = buff.getWord(3, RenX::DelimS);
 					if (damageType.equals("DamageType"))
@@ -754,7 +756,7 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 				else if (action.match("destroyed*"))
 				{
 					PARSE_PLAYER_DATA();
-					RenX::PlayerInfo *player = getPlayerOrAdd(this, name, id, team, isBot, 0);
+					RenX::PlayerInfo *player = getPlayerOrAdd(this, name, id, team, isBot, 0, Jupiter::ReferenceString::empty);
 					Jupiter::ReferenceString victim = buff.getWord(3, RenX::DelimS);
 					Jupiter::ReferenceString damageType = buff.getWord(5, RenX::DelimS);
 					ObjectType type;
@@ -834,7 +836,7 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 				if (action.equals("teamsay:"))
 				{
 					PARSE_PLAYER_DATA();
-					RenX::PlayerInfo *player = getPlayerOrAdd(this, name, id, team, isBot, 0);
+					RenX::PlayerInfo *player = getPlayerOrAdd(this, name, id, team, isBot, 0, Jupiter::ReferenceString::empty);
 					Jupiter::ReferenceString message = buff.getWord(3, RenX::DelimS);
 					onChat(this, player, message, false);
 					for (size_t i = 0; i < xPlugins.size(); i++)
@@ -843,7 +845,7 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 				else if (action.equals("say:"))
 				{
 					PARSE_PLAYER_DATA();
-					RenX::PlayerInfo *player = getPlayerOrAdd(this, name, id, team, isBot, 0);
+					RenX::PlayerInfo *player = getPlayerOrAdd(this, name, id, team, isBot, 0, Jupiter::ReferenceString::empty);
 					Jupiter::ReferenceString message = buff.getWord(3, RenX::DelimS);
 					onChat(this, player, message, true);
 					for (size_t i = 0; i < xPlugins.size(); i++)
@@ -856,7 +858,7 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 				PARSE_PLAYER_DATA();
 				if (action.equals("disconnected"))
 				{
-					RenX::PlayerInfo *player = getPlayerOrAdd(this, name, id, team, isBot, 0);
+					RenX::PlayerInfo *player = getPlayerOrAdd(this, name, id, team, isBot, 0, Jupiter::ReferenceString::empty);
 					if (this->silenceParts == false)
 						for (size_t i = 0; i < xPlugins.size(); i++)
 							xPlugins.get(i)->RenX_OnPart(this, player);
@@ -865,8 +867,7 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 				}
 				else if (action.equals("entered from"))
 				{
-					RenX::PlayerInfo *player = getPlayerOrAdd(this, name, id, team, isBot, buff.getWord(4, RenX::DelimS).equals("steamid") ? buff.getWord(5, RenX::DelimS).asUnsignedLongLong() : 0);
-					player->ip = buff.getWord(3, RenX::DelimS);
+					RenX::PlayerInfo *player = getPlayerOrAdd(this, name, id, team, isBot, buff.getWord(4, RenX::DelimS).equals("steamid") ? buff.getWord(5, RenX::DelimS).asUnsignedLongLong() : 0, buff.getWord(3, RenX::DelimS));
 
 					if (this->silenceJoins == false)
 						for (size_t i = 0; i < xPlugins.size(); i++)
@@ -874,7 +875,7 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 				}
 				else if (action.equals("changed name to:"))
 				{
-					RenX::PlayerInfo *player = getPlayerOrAdd(this, name, id, team, isBot, 0);
+					RenX::PlayerInfo *player = getPlayerOrAdd(this, name, id, team, isBot, 0, Jupiter::ReferenceString::empty);
 					Jupiter::ReferenceString newName = buff.getWord(3, RenX::DelimS);
 					for (size_t i = 0; i < xPlugins.size(); i++)
 						xPlugins.get(i)->RenX_OnNameChange(this, player, newName);
@@ -904,7 +905,7 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 			else if (header.equals("lADMIN:"))
 			{
 				PARSE_PLAYER_DATA();
-				RenX::PlayerInfo *player = getPlayerOrAdd(this, name, id, team, isBot, 0);
+				RenX::PlayerInfo *player = getPlayerOrAdd(this, name, id, team, isBot, 0, Jupiter::ReferenceString::empty);
 				if (action.equals("logged in as"))
 				{
 					player->adminType = buff.getWord(3, RenX::DelimS);
@@ -976,9 +977,7 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 					name = playerData.gotoWord(4, WHITESPACE);
 				}
 
-				RenX::PlayerInfo *player = getPlayerOrAdd(this, name, id, team, isBot, steamid.asUnsignedLongLong());
-				if (player->ip.size() == 0)
-					player->ip = ip;
+				RenX::PlayerInfo *player = getPlayerOrAdd(this, name, id, team, isBot, steamid.asUnsignedLongLong(), ip);
 			}
 			else
 			{
