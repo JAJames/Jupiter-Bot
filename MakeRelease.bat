@@ -47,6 +47,7 @@ GOTO EOF
 ROBOCOPY "Release\\" "..\Jupiter Bot Binaries\\" *.dll *.exe ReadMe.txt /S
 COPY /Y "Release\Example Config.ini" "..\Jupiter Bot Binaries\Config.ini"
 COPY /Y "Release\Translations.ini" "..\Jupiter Bot Binaries\Translations.ini"
+COPY /Y "Release\Mods.ini" "..\Jupiter Bot Binaries\Mods.ini"
 "C:\Program Files\WinRAR\WinRAR.exe" a -r "..\Jupiter Bot Binaries.zip" "..\Jupiter Bot Binaries"
 GOTO EOF
 
@@ -55,6 +56,7 @@ ROBOCOPY ".\\" "..\Jupiter Bot Source\\" *.* /S /XD Release
 ROBOCOPY "Release\\" "..\Jupiter Bot Source\Release\\" *.dll *.exe ReadMe.txt /S
 COPY /Y "Release\Example Config.ini" "..\Jupiter Bot Source\Release\Config.ini"
 COPY /Y "Release\Translations.ini" "..\Jupiter Bot Source\Release\Translations.ini"
+COPY /Y "Release\Mods.ini" "..\Jupiter Bot Source\Release\Mods.ini"
 "C:\Program Files\WinRAR\WinRAR.exe" a -r "..\Jupiter Bot.zip" "..\Jupiter Bot Source"
 GOTO EOF
 
