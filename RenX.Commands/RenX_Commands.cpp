@@ -635,10 +635,11 @@ void ModsIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &cha
 						for (Jupiter::DLList<RenX::PlayerInfo>::Node *node = server->players.getNode(0); node != nullptr; node = node->next)
 						{
 							player = node->data;
-							if (player->adminType.size() != 0)
+							if (player->isBot == false && (player->adminType.size() != 0 || (player->access != 0 && (player->gamePrefix.isEmpty() == false || player->formatNamePrefix.isEmpty() == false))))
 							{
 								if (msg.size() != 0) msg += ", ";
 								else msg += "Moderators in-game: ";
+								msg += player->gamePrefix;
 								msg += player->name;
 							}
 						}
@@ -1328,10 +1329,11 @@ void ModsGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *, const Ju
 	for (Jupiter::DLList<RenX::PlayerInfo>::Node *node = source->players.getNode(0); node != nullptr; node = node->next)
 	{
 		player = node->data;
-		if (player->adminType.size() != 0)
+		if (player->isBot == false && (player->adminType.size() != 0 || (player->access != 0 && (player->gamePrefix.isEmpty() == false || player->formatNamePrefix.isEmpty() == false))))
 		{
 			if (msg.size() != 4) msg += ", ";
 			else msg += "Moderators in-game: ";
+			msg += player->gamePrefix;
 			msg += player->name;
 		}
 	}
