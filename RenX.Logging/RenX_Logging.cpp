@@ -353,7 +353,6 @@ typedef void(RenX::Server::*logFuncType)(const Jupiter::ReadableString &msg) con
 
 void RenX_LoggingPlugin::RenX_OnJoin(RenX::Server *server, const RenX::PlayerInfo *player)
 {
-	puts(__FUNCTION__);
 	Jupiter::String msg;
 	if (RenX_LoggingPlugin::joinPublic)
 	{
