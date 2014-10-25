@@ -61,6 +61,7 @@ namespace RenX
 		unsigned int loses = 0;
 		unsigned int beaconPlacements = 0;
 		
+		mutable Jupiter::StringS gamePrefix;
 		mutable Jupiter::StringS formatNamePrefix;
 		mutable int access = 0;
 		mutable Jupiter::INIFile varData; // This will be replaced later with a more dedicated type.
