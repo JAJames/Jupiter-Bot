@@ -440,6 +440,19 @@ unsigned int RenX::Server::triggerCommand(const Jupiter::ReadableString &trigger
 void RenX::Server::addCommand(RenX::GameCommand *command)
 {
 	RenX::Server::commands.add(command);
+	if (RenX::Server::commandAccessLevels != nullptr)
+	{
+		const Jupiter::ReadableString &accessLevel = RenX::Server::commandAccessLevels->get(command->getTrigger());
+		if (accessLevel.isEmpty() == false)
+			command->setAccessLevel(accessLevel.asInt());
+	}
+	if (RenX::Server::commandAliases != nullptr)
+	{
+		const Jupiter::ReadableString &aliasList = RenX::Server::commandAliases->get(command->getTrigger());
+		unsigned int j = aliasList.wordCount(WHITESPACE);
+		while (j != 0)
+			command->addTrigger(Jupiter::ReferenceString::getWord(aliasList, --j, WHITESPACE));
+	}
 }
 
 bool RenX::Server::removeCommand(RenX::GameCommand *command)
@@ -1128,25 +1141,8 @@ void RenX::Server::init()
 	RenX::Server::commandAccessLevels = commandsFile.getSection(RenX::Server::configSection);
 	RenX::Server::commandAliases = commandsFile.getSection(Jupiter::StringS::Format("%.*s.Aliases", RenX::Server::configSection.size(), RenX::Server::configSection.ptr()));
 
-	RenX::GameCommand *cmd;
-	for (size_t i = 0, j; i < RenX::GameMasterCommandList->size(); i++)
-	{
-		cmd = RenX::GameMasterCommandList->get(i)->copy();
-		RenX::Server::addCommand(cmd);
-		if (commandAccessLevels != nullptr)
-		{
-			const Jupiter::ReadableString &accessLevel = RenX::Server::commandAccessLevels->get(cmd->getTrigger());
-			if (accessLevel.isEmpty() == false)
-				cmd->setAccessLevel(accessLevel.asInt());
-		}
-		if (commandAliases != nullptr)
-		{
-			const Jupiter::ReadableString &aliasList = RenX::Server::commandAliases->get(cmd->getTrigger());
-			j = aliasList.wordCount(WHITESPACE);
-			while (j != 0)
-				cmd->addTrigger(Jupiter::ReferenceString::getWord(aliasList, --j, WHITESPACE));
-		}
-	}
+	for (size_t i = 0; i < RenX::GameMasterCommandList->size(); i++)
+		RenX::Server::addCommand(RenX::GameMasterCommandList->get(i)->copy());
 }
 
 RenX::Server::~Server()
