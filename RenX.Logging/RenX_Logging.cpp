@@ -33,6 +33,8 @@ Jupiter::ReferenceString INTERNAL_STEAM_TAG = STRING_LITERAL_AS_REFERENCE("\0STE
 Jupiter::ReferenceString INTERNAL_UUID_TAG = STRING_LITERAL_AS_REFERENCE("\0UUID\0");
 Jupiter::ReferenceString INTERNAL_ID_TAG = STRING_LITERAL_AS_REFERENCE("\0ID\0");
 Jupiter::ReferenceString INTERNAL_ADMIN_TAG = STRING_LITERAL_AS_REFERENCE("\0ADM\0");
+Jupiter::ReferenceString INTERNAL_PREFIX_TAG = STRING_LITERAL_AS_REFERENCE("\0PFX\0");
+Jupiter::ReferenceString INTERNAL_GAME_PREFIX_TAG = STRING_LITERAL_AS_REFERENCE("\0GPF\0");
 Jupiter::ReferenceString INTERNAL_TEAM_COLOR_TAG = STRING_LITERAL_AS_REFERENCE("\0TC\0");
 Jupiter::ReferenceString INTERNAL_TEAM_SHORT_TAG = STRING_LITERAL_AS_REFERENCE("\0TS\0");
 Jupiter::ReferenceString INTERNAL_TEAM_LONG_TAG = STRING_LITERAL_AS_REFERENCE("\0TL\0");
@@ -43,6 +45,8 @@ Jupiter::ReferenceString INTERNAL_VICTIM_STEAM_TAG = STRING_LITERAL_AS_REFERENCE
 Jupiter::ReferenceString INTERNAL_VICTIM_UUID_TAG = STRING_LITERAL_AS_REFERENCE("\0VUUID\0");
 Jupiter::ReferenceString INTERNAL_VICTIM_ID_TAG = STRING_LITERAL_AS_REFERENCE("\0VID\0");
 Jupiter::ReferenceString INTERNAL_VICTIM_ADMIN_TAG = STRING_LITERAL_AS_REFERENCE("\0VADM\0");
+Jupiter::ReferenceString INTERNAL_VICTIM_PREFIX_TAG = STRING_LITERAL_AS_REFERENCE("\0VPFX\0");
+Jupiter::ReferenceString INTERNAL_VICTIM_GAME_PREFIX_TAG = STRING_LITERAL_AS_REFERENCE("\0VGPF\0");
 Jupiter::ReferenceString INTERNAL_VICTIM_TEAM_COLOR_TAG = STRING_LITERAL_AS_REFERENCE("\0VTC\0");
 Jupiter::ReferenceString INTERNAL_VICTIM_TEAM_SHORT_TAG = STRING_LITERAL_AS_REFERENCE("\0VTS\0");
 Jupiter::ReferenceString INTERNAL_VICTIM_TEAM_LONG_TAG = STRING_LITERAL_AS_REFERENCE("\0VTL\0");
@@ -94,6 +98,8 @@ void RenX_LoggingPlugin::init()
 	RenX_LoggingPlugin::uuidTag = Jupiter::IRC::Client::Config->get(this->getName(), STRING_LITERAL_AS_REFERENCE("UUIDTag"), STRING_LITERAL_AS_REFERENCE("{UUID}"));
 	RenX_LoggingPlugin::idTag = Jupiter::IRC::Client::Config->get(this->getName(), STRING_LITERAL_AS_REFERENCE("IDTag"), STRING_LITERAL_AS_REFERENCE("{ID}"));
 	RenX_LoggingPlugin::adminTag = Jupiter::IRC::Client::Config->get(this->getName(), STRING_LITERAL_AS_REFERENCE("AdminTag"), STRING_LITERAL_AS_REFERENCE("{ADMIN}"));
+	RenX_LoggingPlugin::prefixTag = Jupiter::IRC::Client::Config->get(this->getName(), STRING_LITERAL_AS_REFERENCE("PrefixTag"), STRING_LITERAL_AS_REFERENCE("{PREFIX}"));
+	RenX_LoggingPlugin::gamePrefixTag = Jupiter::IRC::Client::Config->get(this->getName(), STRING_LITERAL_AS_REFERENCE("GamePrefixTag"), STRING_LITERAL_AS_REFERENCE("{GPREFIX}"));
 	RenX_LoggingPlugin::teamColorTag = Jupiter::IRC::Client::Config->get(this->getName(), STRING_LITERAL_AS_REFERENCE("TeamColorTag"), STRING_LITERAL_AS_REFERENCE("{TCOLOR}"));
 	RenX_LoggingPlugin::teamShortTag = Jupiter::IRC::Client::Config->get(this->getName(), STRING_LITERAL_AS_REFERENCE("ShortTeamTag"), STRING_LITERAL_AS_REFERENCE("{TEAMS}"));
 	RenX_LoggingPlugin::teamLongTag = Jupiter::IRC::Client::Config->get(this->getName(), STRING_LITERAL_AS_REFERENCE("LongTeamTag"), STRING_LITERAL_AS_REFERENCE("{TEAML}"));
@@ -105,7 +111,9 @@ void RenX_LoggingPlugin::init()
 	RenX_LoggingPlugin::victimSteamTag = Jupiter::IRC::Client::Config->get(this->getName(), STRING_LITERAL_AS_REFERENCE("VictimSteamTag"), STRING_LITERAL_AS_REFERENCE("{VSTEAM}"));
 	RenX_LoggingPlugin::victimUUIDTag = Jupiter::IRC::Client::Config->get(this->getName(), STRING_LITERAL_AS_REFERENCE("VictimUUIDTag"), STRING_LITERAL_AS_REFERENCE("{VUUID}"));
 	RenX_LoggingPlugin::victimIDTag = Jupiter::IRC::Client::Config->get(this->getName(), STRING_LITERAL_AS_REFERENCE("VictimIDTag"), STRING_LITERAL_AS_REFERENCE("{VID}"));
-	RenX_LoggingPlugin::adminTag = Jupiter::IRC::Client::Config->get(this->getName(), STRING_LITERAL_AS_REFERENCE("VictimAdminTag"), STRING_LITERAL_AS_REFERENCE("{VADMIN}"));
+	RenX_LoggingPlugin::victimAdminTag = Jupiter::IRC::Client::Config->get(this->getName(), STRING_LITERAL_AS_REFERENCE("VictimAdminTag"), STRING_LITERAL_AS_REFERENCE("{VADMIN}"));
+	RenX_LoggingPlugin::victimPrefixTag = Jupiter::IRC::Client::Config->get(this->getName(), STRING_LITERAL_AS_REFERENCE("VictimPrefixTag"), STRING_LITERAL_AS_REFERENCE("{VPREFIX}"));
+	RenX_LoggingPlugin::victimGamePrefixTag = Jupiter::IRC::Client::Config->get(this->getName(), STRING_LITERAL_AS_REFERENCE("VictimGamePrefixTag"), STRING_LITERAL_AS_REFERENCE("{VGPREFIX}"));
 	RenX_LoggingPlugin::victimTeamColorTag = Jupiter::IRC::Client::Config->get(this->getName(), STRING_LITERAL_AS_REFERENCE("VictimTeamColorTag"), STRING_LITERAL_AS_REFERENCE("{VTCOLOR}"));
 	RenX_LoggingPlugin::victimTeamShortTag = Jupiter::IRC::Client::Config->get(this->getName(), STRING_LITERAL_AS_REFERENCE("VictimShortTeamTag"), STRING_LITERAL_AS_REFERENCE("{VTEAMS}"));
 	RenX_LoggingPlugin::victimTeamLongTag = Jupiter::IRC::Client::Config->get(this->getName(), STRING_LITERAL_AS_REFERENCE("VictimLongTeamTag"), STRING_LITERAL_AS_REFERENCE("{VTEAML}"));
@@ -276,6 +284,8 @@ void RenX_LoggingPlugin::sanitizeTags(Jupiter::StringType &fmt) const
 	fmt.replace(this->uuidTag, INTERNAL_UUID_TAG);
 	fmt.replace(this->idTag, INTERNAL_ID_TAG);
 	fmt.replace(this->adminTag, INTERNAL_ADMIN_TAG);
+	fmt.replace(this->prefixTag, INTERNAL_PREFIX_TAG);
+	fmt.replace(this->gamePrefixTag, INTERNAL_GAME_PREFIX_TAG);
 	fmt.replace(this->teamColorTag, INTERNAL_TEAM_COLOR_TAG);
 	fmt.replace(this->teamShortTag, INTERNAL_TEAM_SHORT_TAG);
 	fmt.replace(this->teamLongTag, INTERNAL_TEAM_LONG_TAG);
@@ -288,6 +298,8 @@ void RenX_LoggingPlugin::sanitizeTags(Jupiter::StringType &fmt) const
 	fmt.replace(this->victimUUIDTag, INTERNAL_VICTIM_UUID_TAG);
 	fmt.replace(this->victimIDTag, INTERNAL_VICTIM_ID_TAG);
 	fmt.replace(this->victimAdminTag, INTERNAL_VICTIM_ADMIN_TAG);
+	fmt.replace(this->victimPrefixTag, INTERNAL_VICTIM_PREFIX_TAG);
+	fmt.replace(this->victimGamePrefixTag, INTERNAL_VICTIM_GAME_PREFIX_TAG);
 	fmt.replace(this->victimTeamColorTag, INTERNAL_VICTIM_TEAM_COLOR_TAG);
 	fmt.replace(this->victimTeamShortTag, INTERNAL_VICTIM_TEAM_SHORT_TAG);
 	fmt.replace(this->victimTeamLongTag, INTERNAL_VICTIM_TEAM_LONG_TAG);
@@ -314,6 +326,8 @@ void RenX_LoggingPlugin::processTags(Jupiter::StringType &msg, const RenX::Serve
 		msg.replace(INTERNAL_UUID_TAG, player->uuid);
 		msg.replace(INTERNAL_ID_TAG, Jupiter::StringS::Format("%d", player->id));
 		msg.replace(INTERNAL_ADMIN_TAG, player->adminType);
+		msg.replace(INTERNAL_PREFIX_TAG, player->formatNamePrefix);
+		msg.replace(INTERNAL_GAME_PREFIX_TAG, player->gamePrefix);
 		msg.replace(INTERNAL_TEAM_COLOR_TAG, RenX::getTeamColor(player->team));
 		msg.replace(INTERNAL_TEAM_SHORT_TAG, RenX::getTeamName(player->team));
 		msg.replace(INTERNAL_TEAM_LONG_TAG, RenX::getFullTeamName(player->team));
@@ -327,6 +341,8 @@ void RenX_LoggingPlugin::processTags(Jupiter::StringType &msg, const RenX::Serve
 		msg.replace(INTERNAL_VICTIM_UUID_TAG, victim->uuid);
 		msg.replace(INTERNAL_VICTIM_ID_TAG, Jupiter::StringS::Format("%d", victim->id));
 		msg.replace(INTERNAL_VICTIM_ADMIN_TAG, victim->adminType);
+		msg.replace(INTERNAL_VICTIM_PREFIX_TAG, victim->formatNamePrefix);
+		msg.replace(INTERNAL_VICTIM_GAME_PREFIX_TAG, victim->gamePrefix);
 		msg.replace(INTERNAL_VICTIM_TEAM_COLOR_TAG, RenX::getTeamColor(victim->team));
 		msg.replace(INTERNAL_VICTIM_TEAM_SHORT_TAG, RenX::getTeamName(victim->team));
 		msg.replace(INTERNAL_VICTIM_TEAM_LONG_TAG, RenX::getFullTeamName(victim->team));
@@ -599,7 +615,7 @@ void RenX_LoggingPlugin::RenX_OnGameOver(RenX::Server *server, RenX::WinType win
 		msg.replace(INTERNAL_TEAM_SHORT_TAG, RenX::getTeamName(team));
 		msg.replace(INTERNAL_TEAM_LONG_TAG, RenX::getFullTeamName(team));
 		msg.replace(INTERNAL_WIN_SCORE_TAG, Jupiter::StringS::Format("%d", winScore));
-		msg.replace(INTERNAL_LOSE_SCORE_TAG, Jupiter::StringS::Format("%d", winScore));
+		msg.replace(INTERNAL_LOSE_SCORE_TAG, Jupiter::StringS::Format("%d", loseScore));
 		msg.replace(INTERNAL_VICTIM_TEAM_COLOR_TAG, RenX::getTeamColor(loserTeam));
 		msg.replace(INTERNAL_VICTIM_TEAM_SHORT_TAG, RenX::getTeamName(loserTeam));
 		msg.replace(INTERNAL_VICTIM_TEAM_LONG_TAG, RenX::getFullTeamName(loserTeam));
@@ -608,8 +624,11 @@ void RenX_LoggingPlugin::RenX_OnGameOver(RenX::Server *server, RenX::WinType win
 	}
 
 	msg = this->gameOverScoreFmt;
-	if (team = RenX::TeamType::Other)
+	if (team == RenX::TeamType::Other)
+	{
 		team = RenX::TeamType::GDI;
+		loserTeam = RenX::TeamType::Nod;
+	}
 
 	if (msg.isEmpty() == false)
 	{
@@ -617,7 +636,7 @@ void RenX_LoggingPlugin::RenX_OnGameOver(RenX::Server *server, RenX::WinType win
 		msg.replace(INTERNAL_TEAM_SHORT_TAG, RenX::getTeamName(team));
 		msg.replace(INTERNAL_TEAM_LONG_TAG, RenX::getFullTeamName(team));
 		msg.replace(INTERNAL_WIN_SCORE_TAG, Jupiter::StringS::Format("%d", winScore));
-		msg.replace(INTERNAL_LOSE_SCORE_TAG, Jupiter::StringS::Format("%d", winScore));
+		msg.replace(INTERNAL_LOSE_SCORE_TAG, Jupiter::StringS::Format("%d", loseScore));
 		msg.replace(INTERNAL_VICTIM_TEAM_COLOR_TAG, RenX::getTeamColor(loserTeam));
 		msg.replace(INTERNAL_VICTIM_TEAM_SHORT_TAG, RenX::getTeamName(loserTeam));
 		msg.replace(INTERNAL_VICTIM_TEAM_LONG_TAG, RenX::getFullTeamName(loserTeam));

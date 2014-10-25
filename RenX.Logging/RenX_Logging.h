@@ -107,6 +107,8 @@ private:
 	Jupiter::StringS uuidTag;
 	Jupiter::StringS idTag;
 	Jupiter::StringS adminTag;
+	Jupiter::StringS prefixTag;
+	Jupiter::StringS gamePrefixTag;
 	Jupiter::StringS teamColorTag;
 	Jupiter::StringS teamShortTag;
 	Jupiter::StringS teamLongTag;
@@ -119,6 +121,8 @@ private:
 	Jupiter::StringS victimUUIDTag;
 	Jupiter::StringS victimIDTag;
 	Jupiter::StringS victimAdminTag;
+	Jupiter::StringS victimPrefixTag;
+	Jupiter::StringS victimGamePrefixTag;
 	Jupiter::StringS victimTeamColorTag;
 	Jupiter::StringS victimTeamShortTag;
 	Jupiter::StringS victimTeamLongTag;
