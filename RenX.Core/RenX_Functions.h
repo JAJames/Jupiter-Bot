@@ -162,8 +162,7 @@ namespace RenX
 	RENX_API double getKillsPerSecond(const RenX::PlayerInfo *player);
 
 	/** Constant variables */
-	RENX_API extern const char *DelimS; /** RCON message deliminator in a C-Style string */
-	RENX_API extern const char DelimC; /** RCON message deliminator as a character */
+	RENX_API extern const char DelimC; /** RCON message deliminator */
 }
 
 #endif // _RENX_FUNCTIONS_H_HEADER

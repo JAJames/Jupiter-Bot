@@ -41,8 +41,7 @@ Jupiter::ReferenceString GDILongName = "Global Defense Initiative";
 Jupiter::ReferenceString OtherLongName = "Unknown";
 
 /** RenegadeX RCON protocol message deliminator */
-const char *RenX::DelimS = "\xA0";
-const char RenX::DelimC = *RenX::DelimS;
+const char RenX::DelimC = '\xA0';
 
 /** WinType translations */
 

@@ -563,15 +563,10 @@ void RenX::Server::sendLogChan(const Jupiter::ReadableString &msg) const
 	int id; \
 	bool isBot = false; { \
 		Jupiter::ReferenceString idToken; \
-		if (playerData[0] == ',') { \
-			name = playerData.gotoWord(1, ","); \
-			idToken = playerData.getWord(0, ","); \
-			team = Other; \
-		} else { \
-			name = playerData.gotoWord(2, ","); \
-			idToken = playerData.getWord(1, ","); \
-			team = RenX::getTeam(playerData[0]); \
-		} \
+		name = playerData.gotoToken(2, ','); \
+		idToken = playerData.getToken(1, ','); \
+		if (playerData[0] == ',') team = Other; \
+		else team = RenX::getTeam(playerData[0]); \
 		if (idToken[0] == 'b') { idToken.shiftRight(1); isBot = true; } \
 		id = idToken.asInt(10); }
 
@@ -579,9 +574,9 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 {
 	Jupiter::ReferenceString buff = line;
 	Jupiter::ArrayList<RenX::Plugin> &xPlugins = *RenX::getCore()->getPlugins();
-	Jupiter::ReferenceString header = buff.getWord(0, RenX::DelimS);
-	Jupiter::ReferenceString playerData = buff.getWord(1, RenX::DelimS);
-	Jupiter::ReferenceString action = buff.getWord(2, RenX::DelimS);
+	Jupiter::ReferenceString header = buff.getToken(0, RenX::DelimC);
+	Jupiter::ReferenceString playerData = buff.getToken(1, RenX::DelimC);
+	Jupiter::ReferenceString action = buff.getToken(2, RenX::DelimC);
 
 	/** Local functions */
 	auto onPreGameOver = [&](RenX::Server *server, RenX::WinType winType, RenX::TeamType team, int gScore, int nScore)
@@ -702,7 +697,7 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 				{
 					PARSE_PLAYER_DATA();
 					RenX::PlayerInfo *player = getPlayerOrAdd(this, name, id, team, isBot, 0, Jupiter::ReferenceString::empty);
-					Jupiter::ReferenceString objectType = buff.getWord(3, RenX::DelimS);
+					Jupiter::ReferenceString objectType = buff.getToken(3, RenX::DelimC);
 					if (objectType.match("*Beacon")) player->beaconPlacements++;
 					for (size_t i = 0; i < xPlugins.size(); i++)
 						xPlugins.get(i)->RenX_OnDeploy(this, player, objectType);
@@ -714,7 +709,7 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 					RenX::PlayerInfo *player = getPlayerOrAdd(this, name, id, team, isBot, 0, Jupiter::ReferenceString::empty);
 					player->deaths++;
 					player->suicides++;
-					Jupiter::ReferenceString damageType = buff.getWord(3, RenX::DelimS);
+					Jupiter::ReferenceString damageType = buff.getToken(3, RenX::DelimC);
 					for (size_t i = 0; i < xPlugins.size(); i++)
 						xPlugins.get(i)->RenX_OnSuicide(this, player, damageType);
 					this->firstDeath = true;
@@ -724,9 +719,9 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 				{
 					PARSE_PLAYER_DATA();
 					RenX::PlayerInfo *player = getPlayerOrAdd(this, name, id, team, isBot, 0, Jupiter::ReferenceString::empty);
-					Jupiter::ReferenceString victimData = buff.getWord(3, RenX::DelimS);
-					Jupiter::ReferenceString vname = victimData.getWord(2, ",");
-					Jupiter::ReferenceString vidToken = victimData.getWord(1, ",");
+					Jupiter::ReferenceString victimData = buff.getToken(3, RenX::DelimC);
+					Jupiter::ReferenceString vname = victimData.getToken(2, ',');
+					Jupiter::ReferenceString vidToken = victimData.getToken(1, ',');
 					int vid;
 					bool visBot = false;
 					if (vidToken[0] == 'b')
@@ -735,8 +730,8 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 						visBot = true;
 					}
 					vid = vidToken.asInt(10);
-					TeamType vteam = RenX::getTeam(victimData.getWord(0, ",")[0]);
-					Jupiter::ReferenceString damageType = buff.getWord(5, RenX::DelimS);
+					TeamType vteam = RenX::getTeam(victimData.getToken(0, ',')[0]);
+					Jupiter::ReferenceString damageType = buff.getToken(5, RenX::DelimC);
 					RenX::PlayerInfo *victim = getPlayerOrAdd(this, vname, vid, vteam, visBot, 0, Jupiter::ReferenceString::empty);
 					player->kills++;
 					if (damageType.equals("Rx_DmgType_Headshot")) player->headshots++;
@@ -760,7 +755,7 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 					PARSE_PLAYER_DATA();
 					RenX::PlayerInfo *player = getPlayerOrAdd(this, name, id, team, isBot, 0, Jupiter::ReferenceString::empty);
 					player->deaths++;
-					Jupiter::ReferenceString damageType = buff.getWord(3, RenX::DelimS);
+					Jupiter::ReferenceString damageType = buff.getToken(3, RenX::DelimC);
 					if (damageType.equals("DamageType"))
 						for (size_t i = 0; i < xPlugins.size(); i++)
 							xPlugins.get(i)->RenX_OnTeamChange(this, player);
@@ -774,8 +769,8 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 				{
 					PARSE_PLAYER_DATA();
 					RenX::PlayerInfo *player = getPlayerOrAdd(this, name, id, team, isBot, 0, Jupiter::ReferenceString::empty);
-					Jupiter::ReferenceString victim = buff.getWord(3, RenX::DelimS);
-					Jupiter::ReferenceString damageType = buff.getWord(5, RenX::DelimS);
+					Jupiter::ReferenceString victim = buff.getToken(3, RenX::DelimC);
+					Jupiter::ReferenceString damageType = buff.getToken(5, RenX::DelimC);
 					ObjectType type;
 					if (action.equals("destroyed building"))
 					{
@@ -799,8 +794,8 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 				else if (playerData.match("??? wins (*)"))
 				{
 					TeamType team = RenX::getTeam(playerData[0]);
-					int gScore = buff.getWord(2, RenX::DelimS).gotoWord(1, "=").asInt(10);
-					int nScore = buff.getWord(3, RenX::DelimS).gotoWord(1, "=").asInt(10);
+					int gScore = buff.getToken(2, RenX::DelimC).gotoToken(1, '=').asInt(10);
+					int nScore = buff.getToken(3, RenX::DelimC).gotoToken(1, '=').asInt(10);
 					Jupiter::ReferenceString winType = Jupiter::ReferenceString::substring(playerData, 10);
 					winType.truncate(1);
 					WinType iWinType = Unknown;
@@ -822,8 +817,8 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 				}
 				else if (playerData.equals("Tie"))
 				{
-					int gScore = action.gotoWord(1, "=").asInt(10);
-					int nScore = buff.getWord(3, RenX::DelimS).gotoWord(1, "=").asInt(10);
+					int gScore = action.gotoToken(1, '=').asInt(10);
+					int nScore = buff.getToken(3, RenX::DelimC).gotoToken(1, '=').asInt(10);
 
 					this->needsCList = true;
 					if (this->profile->disconnectOnGameOver)
@@ -846,7 +841,7 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 					}
 				}
 				else for (size_t i = 0; i < xPlugins.size(); i++)
-					xPlugins.get(i)->RenX_OnGame(this, buff.gotoWord(1, RenX::DelimS));
+					xPlugins.get(i)->RenX_OnGame(this, buff.gotoToken(1, RenX::DelimC));
 			}
 			else if (header.equals("lCHAT:"))
 			{
@@ -854,7 +849,7 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 				{
 					PARSE_PLAYER_DATA();
 					RenX::PlayerInfo *player = getPlayerOrAdd(this, name, id, team, isBot, 0, Jupiter::ReferenceString::empty);
-					Jupiter::ReferenceString message = buff.getWord(3, RenX::DelimS);
+					Jupiter::ReferenceString message = buff.getToken(3, RenX::DelimC);
 					onChat(this, player, message, false);
 					for (size_t i = 0; i < xPlugins.size(); i++)
 						xPlugins.get(i)->RenX_OnTeamChat(this, player, message);
@@ -863,7 +858,7 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 				{
 					PARSE_PLAYER_DATA();
 					RenX::PlayerInfo *player = getPlayerOrAdd(this, name, id, team, isBot, 0, Jupiter::ReferenceString::empty);
-					Jupiter::ReferenceString message = buff.getWord(3, RenX::DelimS);
+					Jupiter::ReferenceString message = buff.getToken(3, RenX::DelimC);
 					onChat(this, player, message, true);
 					for (size_t i = 0; i < xPlugins.size(); i++)
 						xPlugins.get(i)->RenX_OnChat(this, player, message);
@@ -884,7 +879,7 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 				}
 				else if (action.equals("entered from"))
 				{
-					RenX::PlayerInfo *player = getPlayerOrAdd(this, name, id, team, isBot, buff.getWord(4, RenX::DelimS).equals("steamid") ? buff.getWord(5, RenX::DelimS).asUnsignedLongLong() : 0, buff.getWord(3, RenX::DelimS));
+					RenX::PlayerInfo *player = getPlayerOrAdd(this, name, id, team, isBot, buff.getToken(4, RenX::DelimC).equals("steamid") ? buff.getToken(5, RenX::DelimC).asUnsignedLongLong() : 0, buff.getToken(3, RenX::DelimC));
 
 					if (this->silenceJoins == false)
 						for (size_t i = 0; i < xPlugins.size(); i++)
@@ -893,7 +888,7 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 				else if (action.equals("changed name to:"))
 				{
 					RenX::PlayerInfo *player = getPlayerOrAdd(this, name, id, team, isBot, 0, Jupiter::ReferenceString::empty);
-					Jupiter::ReferenceString newName = buff.getWord(3, RenX::DelimS);
+					Jupiter::ReferenceString newName = buff.getToken(3, RenX::DelimC);
 					for (size_t i = 0; i < xPlugins.size(); i++)
 						xPlugins.get(i)->RenX_OnNameChange(this, player, newName);
 					player->name = newName;
@@ -906,7 +901,7 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 			{
 				if (action.equals("executed:"))
 				{
-					Jupiter::ReferenceString command = buff.getWord(3, RenX::DelimS);
+					Jupiter::ReferenceString command = buff.getToken(3, RenX::DelimC);
 					for (size_t i = 0; i < xPlugins.size(); i++)
 						xPlugins.get(i)->RenX_OnExecute(this, playerData, command);
 				}
@@ -917,7 +912,7 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 					xPlugins.get(i)->RenX_OnSubscribe(this, playerData);
 				}
 				else for (size_t i = 0; i < xPlugins.size(); i++)
-					xPlugins.get(i)->RenX_OnRCON(this, buff.gotoWord(1, RenX::DelimS));
+					xPlugins.get(i)->RenX_OnRCON(this, buff.gotoToken(1, RenX::DelimC));
 			}
 			else if (header.equals("lADMIN:"))
 			{
@@ -925,7 +920,7 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 				RenX::PlayerInfo *player = getPlayerOrAdd(this, name, id, team, isBot, 0, Jupiter::ReferenceString::empty);
 				if (action.equals("logged in as"))
 				{
-					player->adminType = buff.getWord(3, RenX::DelimS);
+					player->adminType = buff.getToken(3, RenX::DelimC);
 					if (player->adminType.equalsi("moderator") && player->access < 1)
 						player->access = 1;
 					else if (player->adminType.equalsi("administrator") && player->access < 2)
@@ -935,7 +930,7 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 				}
 				else if (action.equals("logged out of"))
 				{
-					Jupiter::ReferenceString type = buff.getWord(3, RenX::DelimS);
+					Jupiter::ReferenceString type = buff.getToken(3, RenX::DelimC);
 					for (size_t i = 0; i < xPlugins.size(); i++)
 						xPlugins.get(i)->RenX_OnAdminLogout(this, player);
 					player->adminType = "";
@@ -943,7 +938,7 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 				}
 				else if (action.equals("granted"))
 				{
-					player->adminType = buff.getWord(3, RenX::DelimS);
+					player->adminType = buff.getToken(3, RenX::DelimC);
 					if (player->adminType.equalsi("moderator") && player->access < 1)
 						player->access = 1;
 					else if (player->adminType.equalsi("administrator") && player->access < 2)
@@ -952,7 +947,7 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 						xPlugins.get(i)->RenX_OnAdminGrant(this, player);
 				}
 				else for (size_t i = 0; i < xPlugins.size(); i++)
-					xPlugins.get(i)->RenX_OnAdmin(this, buff.gotoWord(1, RenX::DelimS));
+					xPlugins.get(i)->RenX_OnAdmin(this, buff.gotoToken(1, RenX::DelimC));
 			}
 			else if (header.equals("lC-LIST:"))
 			{
@@ -960,6 +955,7 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 				if (playerData.isEmpty())
 					break;
 
+				static const Jupiter::ReferenceString CListDelim = STRING_LITERAL_AS_REFERENCE("  ");
 				int id;
 				bool isBot = false;
 				if (playerData.get(0) == 'b')
@@ -970,30 +966,31 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 					playerData.shiftLeft(1);
 				}
 				else id = playerData.asInt(10);
-				Jupiter::ReferenceString ip = playerData.getWord(1, WHITESPACE);
-				Jupiter::ReferenceString steamid = playerData.getWord(2, WHITESPACE);
+				Jupiter::ReferenceString ip = playerData.getToken(1, CListDelim);
+				Jupiter::ReferenceString steamid = playerData.getToken(2, CListDelim);
 				RenX::TeamType team;
 				Jupiter::ReferenceString name;
 				if (steamid.equals("-----NO")) // RCONv2-2a
 				{
 					steamid = "";
-					Jupiter::ReferenceString &teamToken = playerData.getWord(4, WHITESPACE);
+					Jupiter::ReferenceString &teamToken = playerData.getToken(4, CListDelim);
 					if (teamToken.isEmpty())
 						break;
 					team = getTeam(teamToken.get(0));
-					name = playerData.gotoWord(5, WHITESPACE);
+					name = playerData.gotoToken(5, CListDelim);
 				}
 				else
 				{
 					if (steamid.equals("-----NO-STEAM-----")) // RCONv2-2.5a
 						steamid = "";
-					Jupiter::ReferenceString &teamToken = playerData.getWord(3, WHITESPACE);
+					Jupiter::ReferenceString &teamToken = playerData.getToken(3, CListDelim);
 					if (teamToken.isEmpty())
 						break;
 					team = getTeam(teamToken.get(0));
-					name = playerData.gotoWord(4, WHITESPACE);
+					name = playerData.gotoToken(4, CListDelim);
 				}
 
+				printf("Name: %.*s - ID: %d - isBot: %u - steamid: %llu - ip: %.*s" ENDL, name.size(), name.ptr(), id, isBot, steamid.asUnsignedLongLong(), ip.size(), ip.ptr());
 				RenX::PlayerInfo *player = getPlayerOrAdd(this, name, id, team, isBot, steamid.asUnsignedLongLong(), ip);
 			}
 			else
