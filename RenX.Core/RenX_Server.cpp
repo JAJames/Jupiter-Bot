@@ -252,6 +252,9 @@ Jupiter::StringS RenX::Server::formatSteamID(const RenX::PlayerInfo *player) con
 
 Jupiter::StringS RenX::Server::formatSteamID(uint64_t id) const
 {
+	if (id == 0)
+		return Jupiter::ReferenceString::empty;
+
 	switch (RenX::Server::steamFormat)
 	{
 	default:
