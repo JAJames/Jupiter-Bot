@@ -46,6 +46,7 @@ namespace RenX
 		Jupiter::StringS adminType;
 		Jupiter::StringS uuid;
 		uint64_t steamid = 0;
+		uint32_t ip32 = 0;
 		TeamType team = Other;
 		int id = 0;
 		bool isBot = false;

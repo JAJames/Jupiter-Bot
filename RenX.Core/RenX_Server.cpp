@@ -25,6 +25,7 @@
 #include "RenX_GameCommand.h"
 #include "RenX_Functions.h"
 #include "RenX_Plugin.h"
+#include "RenX_BanDatabase.h"
 
 int RenX::Server::think()
 {
@@ -300,24 +301,38 @@ void RenX::Server::kickPlayer(const RenX::PlayerInfo *player)
 
 void RenX::Server::banPlayer(int id)
 {
-	RenX::Server::sock.send(Jupiter::StringS::Format("cadminkickban pid%d\n", id));
+	if (RenX::Server::rconBan)
+		RenX::Server::sock.send(Jupiter::StringS::Format("cadminkickban pid%d\n", id));
+	else
+	{
+		RenX::PlayerInfo *player = RenX::Server::getPlayer(id);
+		if (player != nullptr)
+			RenX::Server::banPlayer(player);
+	}
 }
 
-void RenX::Server::banPlayer(const RenX::PlayerInfo *player)
+void RenX::Server::banPlayer(const RenX::PlayerInfo *player, time_t length)
 {
-	if (this->profile->pidbug)
+	if (RenX::Server::rconBan && length == 0)
 	{
-		if (player->isBot)
-			RenX::Server::sock.send(Jupiter::StringS::Format("cadminkickban %.*s\n", player->name.size(), player->name.ptr()));
-		else if (player->id < 1000)
-			RenX::Server::banPlayer(player->id);
-		else if (player->name.contains('|') == false)
-			RenX::Server::sock.send(Jupiter::StringS::Format("cadminkickban %.*s\n", player->name.size(), player->name.ptr()));
+		if (this->profile->pidbug)
+		{
+			if (player->isBot)
+				RenX::Server::sock.send(Jupiter::StringS::Format("cadminkickban %.*s\n", player->name.size(), player->name.ptr()));
+			else if (player->id < 1000)
+				RenX::Server::banPlayer(player->id);
+			else if (player->name.contains('|') == false)
+				RenX::Server::sock.send(Jupiter::StringS::Format("cadminkickban %.*s\n", player->name.size(), player->name.ptr()));
+			else
+				RenX::Server::banPlayer(player->id);
+		}
 		else
-			RenX::Server::banPlayer(player->id);
+			RenX::Server::sock.send(Jupiter::StringS::Format("cadminkickban pid%d\n", player->id));
 	}
 	else
-		RenX::Server::banPlayer(player->id);
+		RenX::Server::kickPlayer(player);
+	if (RenX::Server::localBan)
+		RenX::banDatabase->add(this, player, length);
 }
 
 bool RenX::Server::removePlayer(int id)
@@ -665,6 +680,7 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 			r->joinTime = time(nullptr);
 			r->steamid = steamid;
 			r->ip = ip;
+			r->ip32 = Jupiter::Socket::pton4(Jupiter::CStringS(r->ip).c_str());
 			if (id != 0)
 				server->players.add(r);
 			switch (this->uuidMode)
@@ -680,6 +696,24 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 			}
 			for (size_t i = 0; i < xPlugins.size(); i++)
 				xPlugins.get(i)->RenX_OnPlayerCreate(server, r);
+
+			const Jupiter::ArrayList<RenX::BanDatabase::Entry> &entries = RenX::banDatabase->getEntries();
+			RenX::BanDatabase::Entry *entry;
+			for (size_t i = 0; i != entries.size(); i++)
+			{
+				entry = entries.get(i);
+				if (entry->active)
+				{
+					if (entry->timestamp + entry->length > time(0))
+						entry->active = false;
+					else if (server->localSteamBan && entry->steamid == r->steamid)
+						server->kickPlayer(r);
+					else if (server->localIPBan && entry->ip == r->ip32)
+						server->kickPlayer(r);
+					else if (server->localNameBan && entry->name.equalsi(r->name))
+						server->kickPlayer(r);
+				}
+			}
 		}
 		else if (r->name.size() == 0) r->name = name;
 		r->team = team;
@@ -990,7 +1024,6 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 					name = playerData.gotoToken(4, CListDelim);
 				}
 
-				printf("Name: %.*s - ID: %d - isBot: %u - steamid: %llu - ip: %.*s" ENDL, name.size(), name.ptr(), id, isBot, steamid.asUnsignedLongLong(), ip.size(), ip.ptr());
 				RenX::PlayerInfo *player = getPlayerOrAdd(this, name, id, team, isBot, steamid.asUnsignedLongLong(), ip);
 			}
 			else
@@ -1134,6 +1167,11 @@ void RenX::Server::init()
 	RenX::Server::rules = Jupiter::IRC::Client::Config->get(RenX::Server::configSection, STRING_LITERAL_AS_REFERENCE("Rules"), STRING_LITERAL_AS_REFERENCE("Anarchy!"));
 	RenX::Server::delay = Jupiter::IRC::Client::Config->getInt(RenX::Server::configSection, STRING_LITERAL_AS_REFERENCE("ReconnectDelay"), 60);
 	RenX::Server::uuidMode = Jupiter::IRC::Client::Config->getInt(RenX::Server::configSection, STRING_LITERAL_AS_REFERENCE("UUIDMode"), 0);
+	RenX::Server::rconBan = Jupiter::IRC::Client::Config->getBool(RenX::Server::configSection, STRING_LITERAL_AS_REFERENCE("RCONBan"), false);
+	RenX::Server::localSteamBan = Jupiter::IRC::Client::Config->getBool(RenX::Server::configSection, STRING_LITERAL_AS_REFERENCE("LocalSteamBan"), true);
+	RenX::Server::localIPBan = Jupiter::IRC::Client::Config->getBool(RenX::Server::configSection, STRING_LITERAL_AS_REFERENCE("LocalIPBan"), true);
+	RenX::Server::localNameBan = Jupiter::IRC::Client::Config->getBool(RenX::Server::configSection, STRING_LITERAL_AS_REFERENCE("LocalNameBan"), false);
+	RenX::Server::localBan = RenX::Server::localIPBan || RenX::Server::localSteamBan || RenX::Server::localNameBan;
 	RenX::Server::steamFormat = Jupiter::IRC::Client::Config->getInt(RenX::Server::configSection, STRING_LITERAL_AS_REFERENCE("SteamFormat"), 16);
 	RenX::Server::neverSay = Jupiter::IRC::Client::Config->getBool(RenX::Server::configSection, STRING_LITERAL_AS_REFERENCE("NeverSay"), false);
 

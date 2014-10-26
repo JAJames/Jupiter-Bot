@@ -24,6 +24,7 @@
  */
 
 #include "Jupiter/Plugin.h"
+#include "Jupiter/String_Type.h"
 #include "RenX.h"
 
 namespace RenX
@@ -40,6 +41,7 @@ namespace RenX
 		/** Non-RCON RenX logs */
 		virtual void RenX_OnPlayerCreate(Server *server, const PlayerInfo *player);
 		virtual void RenX_OnPlayerDelete(Server *server, const PlayerInfo *player);
+		virtual bool RenX_OnBan(Server *server, const PlayerInfo *player, Jupiter::StringType &data);
 
 		/** Player type logs */
 		virtual void RenX_OnJoin(Server *server, const PlayerInfo *player);

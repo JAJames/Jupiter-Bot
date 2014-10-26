@@ -45,6 +45,11 @@ void RenX::Plugin::RenX_OnPlayerDelete(Server *, const RenX::PlayerInfo *)
 	return;
 }
 
+bool RenX::Plugin::RenX_OnBan(Server *, const RenX::PlayerInfo *, Jupiter::StringType &)
+{
+	return false;
+}
+
 void RenX::Plugin::RenX_OnJoin(Server *, const RenX::PlayerInfo *)
 {
 	return;

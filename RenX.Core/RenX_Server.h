@@ -23,6 +23,7 @@
  * @brief Defines the Server class.
  */
 
+#include <ctime>
 #include "Jupiter/TCPSocket.h"
 #include "Jupiter/DLList.h"
 #include "Jupiter/ArrayList.h"
@@ -257,8 +258,9 @@ namespace RenX
 		* @brief Bans a player from the server.
 		*
 		* @param player Data of the player to ban.
+		* @param length Duration of the ban (0 for permanent).
 		*/
-		void banPlayer(const RenX::PlayerInfo *player);
+		void banPlayer(const RenX::PlayerInfo *player, time_t length = 0);
 
 		/**
 		* @brief Removes a player's data based on their ID number.
@@ -523,6 +525,11 @@ namespace RenX
 		time_t delay;
 		int steamFormat; /** 16 = hex, 10 = base 10, 8 = octal, -2 = SteamID 2, -3 = SteamID 3 */
 		unsigned int uuidMode; /** 0 = steam, 1 = nickname */
+		bool rconBan;
+		bool localBan;
+		bool localSteamBan;
+		bool localIPBan;
+		bool localNameBan;
 		bool neverSay;
 		Jupiter::TCPSocket sock;
 		Jupiter::CStringS clientHostname;

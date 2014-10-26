@@ -70,6 +70,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="RenX_BanDatabase.h" />
     <ClInclude Include="RenX_Core.h" />
     <ClInclude Include="RenX.h" />
     <ClInclude Include="RenX_Functions.h" />
@@ -80,6 +81,7 @@
     <ClInclude Include="RenX_ServerProfile.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="RenX_BanDatabase.cpp" />
     <ClCompile Include="RenX_Core.cpp" />
     <ClCompile Include="RenX_Functions.cpp" />
     <ClCompile Include="RenX_GameCommand.cpp" />
