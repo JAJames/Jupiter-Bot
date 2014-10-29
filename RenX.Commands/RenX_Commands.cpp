@@ -1440,6 +1440,85 @@ const Jupiter::ReadableString &ModRequestGameCommand::getHelp(const Jupiter::Rea
 
 GAME_COMMAND_INIT(ModRequestGameCommand)
 
+// Kick Game Command
+
+void KickGameCommand::create()
+{
+	this->addTrigger(STRING_LITERAL_AS_REFERENCE("kick"));
+	this->addTrigger(STRING_LITERAL_AS_REFERENCE("qkick"));
+	this->addTrigger(STRING_LITERAL_AS_REFERENCE("k"));
+	this->setAccessLevel(1);
+}
+
+void KickGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *player, const Jupiter::ReadableString &parameters)
+{
+	if (parameters.isEmpty() == false)
+	{
+		RenX::PlayerInfo *target = source->getPlayerByPartName(parameters);
+		if (target == nullptr)
+			source->sendMessage(player, STRING_LITERAL_AS_REFERENCE("Error: Player not found."));
+		else if (player == target)
+			source->sendMessage(player, STRING_LITERAL_AS_REFERENCE("Error: You can not kick yourself."));
+		else if (target->access >= player->access)
+			source->sendMessage(player, STRING_LITERAL_AS_REFERENCE("Error: You can not kick higher level moderators."));
+		else
+		{
+			source->kickPlayer(target);
+			source->sendMessage(player, STRING_LITERAL_AS_REFERENCE("Player has been kicked from the game."));
+		}
+	}
+	else
+		source->sendMessage(player, STRING_LITERAL_AS_REFERENCE("Error: Too few parameters. Syntax: kick <player>"));
+}
+
+const Jupiter::ReadableString &KickGameCommand::getHelp(const Jupiter::ReadableString &)
+{
+	static STRING_LITERAL_AS_NAMED_REFERENCE(defaultHelp, "Kicks a player from the game. Syntax: kick <player>");
+	return defaultHelp;
+}
+
+GAME_COMMAND_INIT(KickGameCommand)
+
+// KickBan Game Command
+
+void KickBanGameCommand::create()
+{
+	this->addTrigger(STRING_LITERAL_AS_REFERENCE("ban"));
+	this->addTrigger(STRING_LITERAL_AS_REFERENCE("kickban"));
+	this->addTrigger(STRING_LITERAL_AS_REFERENCE("kb"));
+	this->addTrigger(STRING_LITERAL_AS_REFERENCE("b"));
+	this->setAccessLevel(2);
+}
+
+void KickBanGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *player, const Jupiter::ReadableString &parameters)
+{
+	if (parameters.isEmpty() == false)
+	{
+		RenX::PlayerInfo *target = source->getPlayerByPartName(parameters);
+		if (target == nullptr)
+			source->sendMessage(player, STRING_LITERAL_AS_REFERENCE("Error: Player not found."));
+		else if (player == target)
+			source->sendMessage(player, STRING_LITERAL_AS_REFERENCE("Error: You can not ban yourself."));
+		else if (target->access >= player->access)
+			source->sendMessage(player, STRING_LITERAL_AS_REFERENCE("Error: You can not ban higher level moderators."));
+		else
+		{
+			source->banPlayer(target);
+			source->sendMessage(player, STRING_LITERAL_AS_REFERENCE("Player has been banned and kicked from the game."));
+		}
+	}
+	else
+		source->sendMessage(player, STRING_LITERAL_AS_REFERENCE("Error: Too few parameters. Syntax: ban <player>"));
+}
+
+const Jupiter::ReadableString &KickBanGameCommand::getHelp(const Jupiter::ReadableString &)
+{
+	static STRING_LITERAL_AS_NAMED_REFERENCE(defaultHelp, "Kicks a player from the game. Syntax: ban <player>");
+	return defaultHelp;
+}
+
+GAME_COMMAND_INIT(KickBanGameCommand)
+
 // Plugin instantiation and entry point.
 RenX_CommandsPlugin pluginInstance;
 
