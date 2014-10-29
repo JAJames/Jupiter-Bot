@@ -141,7 +141,7 @@ bool RenX_ModSystemPlugin::resetAccess(RenX::PlayerInfo *player)
 	return player->access == oAccess;
 }
 
-int RenX_ModSystemPlugin::auth(RenX::Server *server, const RenX::PlayerInfo *player, bool checkAuto, bool forceAuth)
+int RenX_ModSystemPlugin::auth(RenX::Server *server, const RenX::PlayerInfo *player, bool checkAuto, bool forceAuth) const
 {
 	if (player->isBot)
 		return 0;
@@ -158,7 +158,7 @@ int RenX_ModSystemPlugin::auth(RenX::Server *server, const RenX::PlayerInfo *pla
 
 		auto sectionAuth = [&]
 		{
-			player->varData.set(RenX_ModSystemPlugin::getName(), STRING_LITERAL_AS_REFERENCE("Group"), group->name);
+			player->varData.set(this->name, STRING_LITERAL_AS_REFERENCE("Group"), group->name);
 			player->formatNamePrefix = section->get(STRING_LITERAL_AS_REFERENCE("Prefix"), group->prefix);
 			player->gamePrefix = section->get(STRING_LITERAL_AS_REFERENCE("GamePrefix"), group->gamePrefix);
 			player->access = section->getInt(STRING_LITERAL_AS_REFERENCE("Access"), group->access);
@@ -193,10 +193,22 @@ int RenX_ModSystemPlugin::auth(RenX::Server *server, const RenX::PlayerInfo *pla
 	}
 	group = RenX_ModSystemPlugin::groups.get(0);
 
-	player->varData.set(RenX_ModSystemPlugin::getName(), STRING_LITERAL_AS_REFERENCE("Group"), group->name);
+	player->varData.set(this->name, STRING_LITERAL_AS_REFERENCE("Group"), group->name);
 	player->formatNamePrefix = group->prefix;
 	player->gamePrefix = group->gamePrefix;
 	return player->access = group->access;
+}
+
+void RenX_ModSystemPlugin::tempAuth(RenX::Server *server, const RenX::PlayerInfo *player, const ModGroup *group, bool notify) const
+{
+	if (group == nullptr)
+		group = this->getDefaultGroup();
+	player->varData.set(name, STRING_LITERAL_AS_REFERENCE("Group"), group->name);
+	player->formatNamePrefix = group->prefix;
+	player->gamePrefix = group->gamePrefix;
+	player->access = group->access;
+	if (notify)
+		server->sendMessage(player, Jupiter::StringS::Format("You have been authorized into group \"%.*s\", with access level %u.", group->name.size(), group->name.ptr(), player->access));
 }
 
 RenX_ModSystemPlugin::ModGroup *RenX_ModSystemPlugin::getGroupByName(const Jupiter::ReadableString &name, ModGroup *defaultGroup) const
@@ -246,6 +258,11 @@ size_t RenX_ModSystemPlugin::getGroupCount() const
 RenX_ModSystemPlugin::ModGroup *RenX_ModSystemPlugin::getDefaultGroup() const
 {
 	return RenX_ModSystemPlugin::groups.get(0);
+}
+
+RenX_ModSystemPlugin::ModGroup *RenX_ModSystemPlugin::getDefaultATMGroup() const
+{
+	return RenX_ModSystemPlugin::getGroupByName(RenX_ModSystemPlugin::atmDefault);
 }
 
 RenX_ModSystemPlugin::ModGroup *RenX_ModSystemPlugin::getModeratorGroup() const
@@ -437,6 +454,90 @@ const Jupiter::ReadableString &AuthIRCCommand::getHelp(const Jupiter::ReadableSt
 
 IRC_COMMAND_INIT(AuthIRCCommand)
 
+// ATM IRC Command
+
+void ATMIRCCommand::create()
+{
+	this->addTrigger(STRING_LITERAL_AS_REFERENCE("atm"));
+	this->setAccessLevel(3);
+}
+
+void ATMIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &channel, const Jupiter::ReadableString &nick, const Jupiter::ReadableString &parameters)
+{
+	if (parameters.isEmpty())
+		this->trigger(source, channel, nick, nick);
+	else
+	{
+		Jupiter::IRC::Client::Channel *chan = source->getChannel(channel);
+		if (chan != nullptr)
+		{
+			RenX::Server *server;
+			RenX::PlayerInfo *player;
+			RenX_ModSystemPlugin::ModGroup *group = pluginInstance.getDefaultATMGroup();
+			int type = chan->getType();
+			bool serverMatch = false;
+			Jupiter::ReferenceString playerName = parameters;
+			if (isdigit(parameters.get(0)))
+			{
+				int index = parameters.asInt();
+
+				if (index < 0 || index >= static_cast<int>(pluginInstance.groups.size()))
+					source->sendNotice(nick, STRING_LITERAL_AS_REFERENCE("Warning: Invalid group index. Ingoring parameter..."));
+				else if (index == 0)
+				{
+					source->sendNotice(nick, STRING_LITERAL_AS_REFERENCE("Error: Default group is not valid for this command. Use \"deauth\" to deauthorize a player."));
+					return;
+				}
+				else
+				{
+					group = pluginInstance.groups.get(index);
+					if (group->access > source->getAccessLevel(channel, nick))
+					{
+						group = pluginInstance.getDefaultATMGroup();
+						source->sendNotice(nick, STRING_LITERAL_AS_REFERENCE("Warning: You can not authorize an access level higher than yourself. Ignoring parameter..."));
+					}
+					playerName = playerName.gotoWord(1, WHITESPACE);
+					if (playerName.isEmpty())
+						playerName = nick;
+				}
+			}
+			if (group == nullptr)
+				source->sendNotice(nick, STRING_LITERAL_AS_REFERENCE("Error: Invalid group."));
+			else
+			{
+				for (unsigned int i = 0; i != RenX::getCore()->getServerCount(); i++)
+				{
+					server = RenX::getCore()->getServer(i);
+					if (server->isLogChanType(type))
+					{
+						serverMatch = true;
+						player = server->getPlayerByPartName(playerName);
+						if (player == nullptr)
+							source->sendNotice(nick, STRING_LITERAL_AS_REFERENCE("Error: Player not found."));
+						else if (player->access > group->access)
+							source->sendNotice(nick, STRING_LITERAL_AS_REFERENCE("Error: This command can not lower a player's access level."));
+						else
+						{
+							pluginInstance.tempAuth(server, player, group);
+							source->sendNotice(nick, STRING_LITERAL_AS_REFERENCE("Player successfully temporarily authenticated."));
+						}
+					}
+				}
+				if (serverMatch == false)
+					source->sendMessage(channel, STRING_LITERAL_AS_REFERENCE("Error: Channel not attached to any connected Renegade X servers."));
+			}
+		}
+	}
+}
+
+const Jupiter::ReadableString &ATMIRCCommand::getHelp(const Jupiter::ReadableString &)
+{
+	static STRING_LITERAL_AS_NAMED_REFERENCE(defaultHelp, "Temporarily authenticates a player in-game. Syntax: atm [level] [player=you]");
+	return defaultHelp;
+}
+
+IRC_COMMAND_INIT(ATMIRCCommand)
+
 // ForceAuth IRC Command
 
 void ForceAuthIRCCommand::create()
@@ -555,6 +656,71 @@ const Jupiter::ReadableString &AuthGameCommand::getHelp(const Jupiter::ReadableS
 }
 
 GAME_COMMAND_INIT(AuthGameCommand)
+
+// ATM Game Command
+
+void ATMGameCommand::create()
+{
+	this->addTrigger(STRING_LITERAL_AS_REFERENCE("atm"));
+	this->setAccessLevel(3);
+}
+
+void ATMGameCommand::trigger(RenX::Server *server, RenX::PlayerInfo *player, const Jupiter::ReadableString &parameters)
+{
+	if (parameters.isEmpty() == false)
+	{
+		RenX::PlayerInfo *target;
+		RenX_ModSystemPlugin::ModGroup *group = pluginInstance.getDefaultATMGroup();
+		Jupiter::ReferenceString playerName = parameters;
+		if (isdigit(parameters.get(0)) && parameters.wordCount(WHITESPACE) > 1)
+		{
+			int index = parameters.asInt();
+
+			if (index < 0 || index >= static_cast<int>(pluginInstance.groups.size()))
+				server->sendMessage(player, STRING_LITERAL_AS_REFERENCE("Warning: Invalid group index. Ingoring parameter..."));
+			else if (index == 0)
+			{
+				server->sendMessage(player, STRING_LITERAL_AS_REFERENCE("Error: Default group is not valid for this command. Use \"deauth\" to deauthorize a player."));
+				return;
+			}
+			else
+			{
+				group = pluginInstance.groups.get(index);
+				if (group->access > player->access)
+				{
+					group = pluginInstance.getDefaultATMGroup();
+					server->sendMessage(player, STRING_LITERAL_AS_REFERENCE("Warning: You can not authorize an access level higher than yourself. Ignoring parameter..."));
+				}
+				playerName = playerName.gotoWord(1, WHITESPACE);
+			}
+		}
+		if (group != nullptr)
+		{
+			target = server->getPlayerByPartName(playerName);
+			if (target == nullptr)
+				server->sendMessage(player, STRING_LITERAL_AS_REFERENCE("Error: Player not found."));
+			else if (target->access > group->access)
+				server->sendMessage(player, STRING_LITERAL_AS_REFERENCE("Error: This command can not lower a player's access level."));
+			else
+			{
+				pluginInstance.tempAuth(server, target, group);
+				server->sendMessage(player, STRING_LITERAL_AS_REFERENCE("Player successfully temporarily authenticated."));
+			}
+		}
+		else
+			server->sendMessage(player, STRING_LITERAL_AS_REFERENCE("Error: Invalid group."));
+	}
+	else
+		server->sendMessage(player, STRING_LITERAL_AS_REFERENCE("Error: Too few parameters. Syntax: auth <player>"));
+}
+
+const Jupiter::ReadableString &ATMGameCommand::getHelp(const Jupiter::ReadableString &)
+{
+	static STRING_LITERAL_AS_NAMED_REFERENCE(defaultHelp, "Temporarily authenticates a player. Syntax: atm [level] <player>");
+	return defaultHelp;
+}
+
+GAME_COMMAND_INIT(ATMGameCommand)
 
 // ForceAuth Game Command
 

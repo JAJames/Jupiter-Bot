@@ -70,7 +70,9 @@ public:
 	* @param forceauth (optional) True to bypass locks and authenticate the user based on UUID.
 	* @return New access of the user, -1 if the user is kicked.
 	*/
-	int auth(RenX::Server *server, const RenX::PlayerInfo *player, bool checkAuto = false, bool forceAuth = false);
+	int auth(RenX::Server *server, const RenX::PlayerInfo *player, bool checkAuto = false, bool forceAuth = false) const;
+
+	void tempAuth(RenX::Server *server, const RenX::PlayerInfo *player, const ModGroup *group, bool notify = true) const;
 
 	int getConfigAccess(const Jupiter::ReadableString &uuid) const;
 	size_t getGroupCount() const;
@@ -78,6 +80,7 @@ public:
 	ModGroup *getGroupByAccess(int access, ModGroup *defaultGroup = nullptr) const;
 	ModGroup *getGroupByIndex(size_t index) const;
 	ModGroup *getDefaultGroup() const;
+	ModGroup *getDefaultATMGroup() const;
 	ModGroup *getModeratorGroup() const;
 	ModGroup *getAdministratorGroup() const;
 
@@ -111,9 +114,11 @@ private:
 	Jupiter::INIFile modsFile;
 };
 
-GENERIC_IRC_COMMAND(AuthIRCCommand);
-GENERIC_IRC_COMMAND(ForceAuthIRCCommand);
+GENERIC_IRC_COMMAND(AuthIRCCommand)
+GENERIC_IRC_COMMAND(ATMIRCCommand)
+GENERIC_IRC_COMMAND(ForceAuthIRCCommand)
 GENERIC_GAME_COMMAND(AuthGameCommand)
+GENERIC_GAME_COMMAND(ATMGameCommand)
 GENERIC_GAME_COMMAND(ForceAuthGameCommand)
 
 #endif // _RENX_MODSYSTEM_H_HEADER
