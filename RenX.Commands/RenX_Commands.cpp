@@ -54,6 +54,9 @@ void RenX_CommandsPlugin::RenX_OnDie(RenX::Server *server, const RenX::PlayerInf
 	onDie(server, player);
 }
 
+// Plugin instantiation and entry point.
+RenX_CommandsPlugin pluginInstance;
+
 /** Console Commands */
 
 // RCON Console Command
@@ -1029,6 +1032,7 @@ void KickBanIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &
 						player = server->getPlayerByPartName(parameters);
 						if (player != nullptr)
 						{
+							player->varData.set(pluginInstance.getName(), STRING_LITERAL_AS_REFERENCE("banner"), nick);
 							server->banPlayer(player);
 							kicks++;
 						}
@@ -1503,6 +1507,7 @@ void KickBanGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *player,
 			source->sendMessage(player, STRING_LITERAL_AS_REFERENCE("Error: You can not ban higher level moderators."));
 		else
 		{
+			target->varData.set(pluginInstance.getName(), STRING_LITERAL_AS_REFERENCE("banner"), player->name);
 			source->banPlayer(target);
 			source->sendMessage(player, STRING_LITERAL_AS_REFERENCE("Player has been banned and kicked from the game."));
 		}
@@ -1518,9 +1523,6 @@ const Jupiter::ReadableString &KickBanGameCommand::getHelp(const Jupiter::Readab
 }
 
 GAME_COMMAND_INIT(KickBanGameCommand)
-
-// Plugin instantiation and entry point.
-RenX_CommandsPlugin pluginInstance;
 
 extern "C" __declspec(dllexport) Jupiter::Plugin *getPlugin()
 {
