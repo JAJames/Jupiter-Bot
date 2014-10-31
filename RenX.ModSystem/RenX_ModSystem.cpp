@@ -22,6 +22,7 @@
 #include "RenX_Server.h"
 #include "RenX_Core.h"
 #include "RenX_Functions.h"
+#include "RenX_BanDatabase.h"
 
 void RenX_ModSystemPlugin::init()
 {
@@ -604,6 +605,99 @@ const Jupiter::ReadableString &ForceAuthIRCCommand::getHelp(const Jupiter::Reada
 }
 
 IRC_COMMAND_INIT(ForceAuthIRCCommand)
+
+// Ban Search IRC Command
+
+void BanSearchIRCCommand::create()
+{
+	this->addTrigger(STRING_LITERAL_AS_REFERENCE("bansearch"));
+	this->addTrigger(STRING_LITERAL_AS_REFERENCE("bsearch"));
+	this->addTrigger(STRING_LITERAL_AS_REFERENCE("banfind"));
+	this->addTrigger(STRING_LITERAL_AS_REFERENCE("bfind"));
+	this->addTrigger(STRING_LITERAL_AS_REFERENCE("banlogs"));
+	this->addTrigger(STRING_LITERAL_AS_REFERENCE("blogs"));
+	this->setAccessLevel(2);
+}
+#include <functional>
+void BanSearchIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &channel, const Jupiter::ReadableString &nick, const Jupiter::ReadableString &parameters)
+{
+	auto entries = RenX::banDatabase->getEntries();
+	if (parameters.isEmpty() == false)
+	{
+		if (entries.size() == 0)
+			source->sendNotice(nick, STRING_LITERAL_AS_REFERENCE("The ban database is empty!"));
+		else
+		{
+			RenX::BanDatabase::Entry *entry;
+			Jupiter::ReferenceString params = Jupiter::ReferenceString::gotoWord(parameters, 1, WHITESPACE);
+			std::function<bool(unsigned int)> isMatch = [&](unsigned int type_l) -> bool
+			{
+				switch (type_l)
+				{
+				default:
+				case 0:
+					return isMatch(1) || isMatch(2) || isMatch(3) || isMatch(4) || isMatch(5);
+				case 1:
+					return entry->ip == params.asUnsignedInt();
+				case 2:
+					return entry->steamid == params.asUnsignedLongLong();
+				case 3:
+					return entry->name.equalsi(params);
+				case 4:
+					return entry->varData.get(STRING_LITERAL_AS_REFERENCE("RenX.Commands")).equalsi(params);
+				case 5:
+					return entry->active == params.asBool();
+				}
+			};
+
+			unsigned int type;
+			Jupiter::ReferenceString type_str = Jupiter::ReferenceString::getWord(parameters, 0, WHITESPACE);
+			if (type_str.equalsi(STRING_LITERAL_AS_REFERENCE("ip")))
+				type = 1;
+			else if (type_str.equalsi(STRING_LITERAL_AS_REFERENCE("steam")))
+				type = 2;
+			else if (type_str.equalsi(STRING_LITERAL_AS_REFERENCE("name")))
+				type = 3;
+			else if (type_str.equalsi(STRING_LITERAL_AS_REFERENCE("banner")))
+				type = 4;
+			else if (type_str.equalsi(STRING_LITERAL_AS_REFERENCE("active")))
+				type = 5;
+			else
+			{
+				type = 0;
+				params = parameters;
+			}
+
+			Jupiter::String out(256);
+			char timeStr[256];
+			for (size_t i = 0; i != entries.size(); i++)
+			{
+				entry = entries.get(i);
+				if (isMatch(type))
+				{
+					Jupiter::StringS ip_str = Jupiter::Socket::ntop4(entry->ip);
+					const Jupiter::ReadableString &banner = entry->varData.get(STRING_LITERAL_AS_REFERENCE("RenX.Commands"));
+					strftime(timeStr, sizeof(timeStr), "%b %d %Y; Time: %H:%M:%S", localtime(&(entry->timestamp)));
+					out.format("ID: %lu; Status: %sactive; Date: %s; IP: %.*s; Steam: %llu; Name: %.*s%s", i, entry->active ? "" : "in", timeStr, ip_str.size(), ip_str.ptr(), entry->steamid, entry->name.size(), entry->name.ptr(), banner.isEmpty() ? "" : "; Banner: ");
+					out.concat(banner);
+					source->sendNotice(nick, out);
+				}
+			}
+			if (out.isEmpty())
+				source->sendNotice(nick, STRING_LITERAL_AS_REFERENCE("No matches found."));
+		}
+	}
+	else
+		source->sendNotice(nick, Jupiter::StringS::Format("There are a total of %u entries in the ban database.", entries.size()));
+}
+
+const Jupiter::ReadableString &BanSearchIRCCommand::getHelp(const Jupiter::ReadableString &)
+{
+	static STRING_LITERAL_AS_NAMED_REFERENCE(defaultHelp, "Searches the ban database for an entry. Syntax: bsearch [ip/steam/name/banner/active/all = all] <player ip/steam/name/banner>");
+	return defaultHelp;
+}
+
+IRC_COMMAND_INIT(BanSearchIRCCommand)
 
 /** Game Commands */
 
