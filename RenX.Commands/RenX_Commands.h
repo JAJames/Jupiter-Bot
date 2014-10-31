@@ -26,6 +26,8 @@
 class RenX_CommandsPlugin : public RenX::Plugin
 {
 public: // RenX::Plugin
+	bool RenX_OnBan(RenX::Server *server, const RenX::PlayerInfo *player, Jupiter::StringType &data);
+
 	void RenX_OnSuicide(RenX::Server *server, const RenX::PlayerInfo *player, const Jupiter::ReadableString &damageType) override;
 	void RenX_OnKill(RenX::Server *server, const RenX::PlayerInfo *player, const RenX::PlayerInfo *victim, const Jupiter::ReadableString &damageType) override;
 	void RenX_OnDie(RenX::Server *server, const RenX::PlayerInfo *player, const Jupiter::ReadableString &damageType) override;

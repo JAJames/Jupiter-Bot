@@ -39,6 +39,12 @@ inline void onDie(RenX::Server *server, const RenX::PlayerInfo *player)
 	if (player->isBot && server->varData.getBool(STRING_LITERAL_AS_REFERENCE("RenX.Commands"), STRING_LITERAL_AS_REFERENCE("phasing"), false)) server->kickPlayer(player);
 }
 
+bool RenX_CommandsPlugin::RenX_OnBan(RenX::Server *server, const RenX::PlayerInfo *player, Jupiter::StringType &data)
+{
+	data = player->varData.get(this->getName(), STRING_LITERAL_AS_REFERENCE("banner"));
+	return !data.isEmpty();
+}
+
 void RenX_CommandsPlugin::RenX_OnSuicide(RenX::Server *server, const RenX::PlayerInfo *player, const Jupiter::ReadableString &)
 {
 	onDie(server, player);
