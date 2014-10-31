@@ -37,6 +37,9 @@ bool RenX::BanDatabase::load(const Jupiter::ReadableString &fname)
 		while (!feof(file))
 			if (fgetc(file) == '\n')
 				break;
+		Jupiter::String playerName(16);
+		Jupiter::String key(32);
+		Jupiter::String value(32);
 		Entry *entry;
 		char c;
 		while (!feof(file))
@@ -57,12 +60,36 @@ bool RenX::BanDatabase::load(const Jupiter::ReadableString &fname)
 			{
 				if (c == '\0')
 				{
-					// add plugin data.
+					key.truncate(key.size());
+					value.truncate(value.size());
+					c = fgetc(file);
+					while (c != '\n' && c != EOF)
+					{
+						while (c != '\0')
+						{
+							key += c;
+							c = fgetc(file);
+							if (c == EOF)
+							{
+								fprintf(stderr, "ERROR: Unexpected EOF in %s at %lu", RenX::BanDatabase::filename.c_str(), ftell(file));
+								break;
+							}
+						}
+						c = fgetc(file);
+						while (c != '\n' && c != EOF)
+						{
+							value += c;
+							c = fgetc(file);
+						}
+						entry->varData.set(key, value);
+						c = fgetc(file);
+					}
 					break;
 				}
-				entry->name += c;
+				playerName += c;
 				c = fgetc(file);
 			}
+			entry->name = playerName;
 			entries.add(entry);
 		}
 		fclose(file);

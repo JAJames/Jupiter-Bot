@@ -52,6 +52,7 @@ namespace RenX
 			uint64_t steamid /** SteamID of the banned player */;
 			uint32_t ip /** IPv4 address of the banned player */;
 			Jupiter::StringS name /** Name of the banned player */;
+			Jupiter::INIFile::Section varData; /** Variable entry data */
 		};
 
 		/**
