@@ -136,10 +136,12 @@ void RenX::BanDatabase::add(RenX::Server *server, const RenX::PlayerInfo *player
 		for (size_t i = 0; i < xPlugins.size(); i++)
 			if (xPlugins.get(i)->RenX_OnBan(server, player, pluginData))
 			{
+				const Jupiter::ReadableString &pluginName = xPlugins.get(i)->getName();
 				fputc('\0', file);
-				fwrite(xPlugins.get(i)->getName().ptr(), sizeof(char), xPlugins.get(i)->getName().size(), file);
+				fwrite(pluginName.ptr(), sizeof(char), pluginName.size(), file);
 				fputc('\0', file);
 				fwrite(pluginData.ptr(), sizeof(char), pluginData.size(), file);
+				entry->varData.set(pluginName, pluginData);
 			}
 
 
