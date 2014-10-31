@@ -1030,6 +1030,9 @@ void KickBanIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &
 				RenX::PlayerInfo *player;
 				RenX::Server *server;
 				unsigned int kicks = 0;
+				Jupiter::String banner(nick.size() + 4);
+				banner += nick;
+				banner += "@IRC";
 				for (size_t i = 0; i != servers.size(); i++)
 				{
 					server = servers.get(i);
