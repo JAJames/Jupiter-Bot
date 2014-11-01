@@ -635,18 +635,20 @@ void BanSearchIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString
 				switch (type_l)
 				{
 				default:
-				case 0:
-					return isMatch(1) || isMatch(2) || isMatch(3) || isMatch(4) || isMatch(5);
-				case 1:
+				case 0:	// ANY
+					return isMatch(1) || isMatch(2) || isMatch(3) || isMatch(4);
+				case 1:	// IP
 					return entry->ip == params.asUnsignedInt();
-				case 2:
+				case 2:	// STEAM
 					return entry->steamid == params.asUnsignedLongLong();
-				case 3:
+				case 3:	// NAME
 					return entry->name.equalsi(params);
-				case 4:
+				case 4:	// BANNER
 					return entry->varData.get(STRING_LITERAL_AS_REFERENCE("RenX.Commands")).equalsi(params);
-				case 5:
+				case 5:	// ACTIVE
 					return entry->active == params.asBool();
+				case 6:	// ALL
+					return true;
 				}
 			};
 
@@ -662,6 +664,10 @@ void BanSearchIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString
 				type = 4;
 			else if (type_str.equalsi(STRING_LITERAL_AS_REFERENCE("active")))
 				type = 5;
+			else if (type_str.equalsi(STRING_LITERAL_AS_REFERENCE("any")))
+				type = 0;
+			else if (type_str.equalsi(STRING_LITERAL_AS_REFERENCE("all")) || type_str.equals('*'))
+				type = 6;
 			else
 			{
 				type = 0;
@@ -693,7 +699,7 @@ void BanSearchIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString
 
 const Jupiter::ReadableString &BanSearchIRCCommand::getHelp(const Jupiter::ReadableString &)
 {
-	static STRING_LITERAL_AS_NAMED_REFERENCE(defaultHelp, "Searches the ban database for an entry. Syntax: bsearch [ip/steam/name/banner/active/all = all] <player ip/steam/name/banner>");
+	static STRING_LITERAL_AS_NAMED_REFERENCE(defaultHelp, "Searches the ban database for an entry. Syntax: bsearch [ip/steam/name/banner/active/any/all = any] <player ip/steam/name/banner>");
 	return defaultHelp;
 }
 
