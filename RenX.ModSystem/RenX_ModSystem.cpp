@@ -15,6 +15,7 @@
  * Written by Justin James <justin.aj@hotmail.com>
  */
 
+#include <functional>
 #include "Jupiter/IRC_Client.h"
 #include "IRC_Bot.h"
 #include "RenX_ModSystem.h"
@@ -618,7 +619,7 @@ void BanSearchIRCCommand::create()
 	this->addTrigger(STRING_LITERAL_AS_REFERENCE("blogs"));
 	this->setAccessLevel(2);
 }
-#include <functional>
+
 void BanSearchIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &channel, const Jupiter::ReadableString &nick, const Jupiter::ReadableString &parameters)
 {
 	auto entries = RenX::banDatabase->getEntries();
