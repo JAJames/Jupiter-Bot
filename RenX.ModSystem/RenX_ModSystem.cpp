@@ -621,6 +621,7 @@ IRC_COMMAND_INIT(ATMIRCCommand)
 
 void AddIRCCommand::create()
 {
+	this->addTrigger(STRING_LITERAL_AS_REFERENCE("addmod"));
 	this->addTrigger(STRING_LITERAL_AS_REFERENCE("add"));
 	this->addTrigger(STRING_LITERAL_AS_REFERENCE("set"));
 	this->setAccessLevel(5);
@@ -696,6 +697,8 @@ IRC_COMMAND_INIT(AddIRCCommand)
 
 void DelIRCCommand::create()
 {
+	this->addTrigger(STRING_LITERAL_AS_REFERENCE("delmod"));
+	this->addTrigger(STRING_LITERAL_AS_REFERENCE("remmod"));
 	this->addTrigger(STRING_LITERAL_AS_REFERENCE("del"));
 	this->addTrigger(STRING_LITERAL_AS_REFERENCE("rem"));
 	this->setAccessLevel(5);
