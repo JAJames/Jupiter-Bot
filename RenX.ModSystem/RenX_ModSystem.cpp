@@ -144,7 +144,7 @@ bool RenX_ModSystemPlugin::resetAccess(RenX::PlayerInfo *player)
 		player->access = groups.get(0)->access;
 	else
 		player->access = 0;
-	return player->access == oAccess;
+	return player->access != oAccess;
 }
 
 int RenX_ModSystemPlugin::auth(RenX::Server *server, const RenX::PlayerInfo *player, bool checkAuto, bool forceAuth) const
