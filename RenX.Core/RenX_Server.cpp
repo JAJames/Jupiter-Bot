@@ -705,12 +705,12 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 				if (entry->active)
 				{
 					if (entry->timestamp + entry->length > time(0))
-						entry->active = false;
-					else if (server->localSteamBan && entry->steamid == r->steamid)
+						banDatabase->deactivate(i);
+					else if (server->localSteamBan && entry->steamid != 0 && entry->steamid == r->steamid)
 						server->kickPlayer(r);
-					else if (server->localIPBan && entry->ip == r->ip32)
+					else if (server->localIPBan && entry->ip != 0 && entry->ip == r->ip32)
 						server->kickPlayer(r);
-					else if (server->localNameBan && entry->name.equalsi(r->name))
+					else if (server->localNameBan && entry->name.isEmpty() == false && entry->name.equalsi(r->name))
 						server->kickPlayer(r);
 				}
 			}
