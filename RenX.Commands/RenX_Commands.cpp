@@ -1786,6 +1786,116 @@ const Jupiter::ReadableString &KickBanGameCommand::getHelp(const Jupiter::Readab
 
 GAME_COMMAND_INIT(KickBanGameCommand)
 
+// AddBots Game Command
+
+void AddBotsGameCommand::create()
+{
+	this->addTrigger(STRING_LITERAL_AS_REFERENCE("addbots"));
+	this->addTrigger(STRING_LITERAL_AS_REFERENCE("abots"));
+	this->addTrigger(STRING_LITERAL_AS_REFERENCE("addbot"));
+	this->addTrigger(STRING_LITERAL_AS_REFERENCE("abot"));
+	this->setAccessLevel(1);
+}
+
+void AddBotsGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *player, const Jupiter::ReadableString &parameters)
+{
+	Jupiter::ReferenceString targetTeam = Jupiter::ReferenceString::getWord(parameters, 1, WHITESPACE);
+	RenX::TeamType team = targetTeam.isEmpty() ? RenX::TeamType::Other : RenX::getTeam(targetTeam[0]);
+
+	const char *cmd;
+	switch (team)
+	{
+	case RenX::TeamType::GDI:
+		cmd = "addredbots ";
+		break;
+	case RenX::TeamType::Nod:
+		cmd = "addbluebots ";
+		break;
+	default:
+	case RenX::TeamType::Other:
+		cmd = "addbots ";
+		break;
+	}
+
+	unsigned int amount;
+	if (parameters.isEmpty())
+		amount = 1;
+	else
+		amount = parameters.asUnsignedInt();
+	source->send(Jupiter::StringS::Format("%s %u", cmd, amount));
+	source->sendMessage(player, Jupiter::StringS::Format("%u bots have been added to the server.", amount));
+}
+
+const Jupiter::ReadableString &AddBotsGameCommand::getHelp(const Jupiter::ReadableString &)
+{
+	static STRING_LITERAL_AS_NAMED_REFERENCE(defaultHelp, "Adds bots to the game. Syntax: addbots [amount=1] [team]");
+	return defaultHelp;
+}
+
+GAME_COMMAND_INIT(AddBotsGameCommand)
+
+// KillBots Game Command
+
+void KillBotsGameCommand::create()
+{
+	this->addTrigger(STRING_LITERAL_AS_REFERENCE("killbots"));
+	this->addTrigger(STRING_LITERAL_AS_REFERENCE("kbots"));
+	this->addTrigger(STRING_LITERAL_AS_REFERENCE("rembots"));
+	this->addTrigger(STRING_LITERAL_AS_REFERENCE("rbots"));
+	this->setAccessLevel(2);
+}
+
+void KillBotsGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *player, const Jupiter::ReadableString &parameters)
+{
+	source->send(STRING_LITERAL_AS_REFERENCE("killbots"));
+	source->sendMessage(player, STRING_LITERAL_AS_REFERENCE("All bots have been removed from the server."));
+}
+
+const Jupiter::ReadableString &KillBotsGameCommand::getHelp(const Jupiter::ReadableString &)
+{
+	static STRING_LITERAL_AS_NAMED_REFERENCE(defaultHelp, "Removes all bots from the game. Syntax: killbots");
+	return defaultHelp;
+}
+
+GAME_COMMAND_INIT(KillBotsGameCommand)
+
+// PhaseBots Game Command
+
+void PhaseBotsGameCommand::create()
+{
+	this->addTrigger(STRING_LITERAL_AS_REFERENCE("phasebots"));
+	this->addTrigger(STRING_LITERAL_AS_REFERENCE("pbots"));
+	this->setAccessLevel(1);
+}
+
+void PhaseBotsGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *player, const Jupiter::ReadableString &parameters)
+{
+	if (parameters.size() == 0)
+	{
+		if (togglePhasing(source))
+			source->sendMessage(player, STRING_LITERAL_AS_REFERENCE("Bot phasing has been enabled."));
+		else source->sendMessage(player, STRING_LITERAL_AS_REFERENCE("Bot phasing has been disabled."));
+	}
+	else if (parameters.equalsi("true") || parameters.equalsi("on") || parameters.equalsi("start") || parameters.equalsi("1"))
+	{
+		togglePhasing(source, true);
+		source->sendMessage(player, STRING_LITERAL_AS_REFERENCE("Bot phasing has been enabled."));
+	}
+	else
+	{
+		togglePhasing(source, false);
+		source->sendMessage(player, STRING_LITERAL_AS_REFERENCE("Bot phasing has been disabled."));
+	}
+}
+
+const Jupiter::ReadableString &PhaseBotsGameCommand::getHelp(const Jupiter::ReadableString &)
+{
+	static STRING_LITERAL_AS_NAMED_REFERENCE(defaultHelp, "Removes all bots from the game. Syntax: phasebots");
+	return defaultHelp;
+}
+
+GAME_COMMAND_INIT(PhaseBotsGameCommand)
+
 extern "C" __declspec(dllexport) Jupiter::Plugin *getPlugin()
 {
 	return &pluginInstance;
