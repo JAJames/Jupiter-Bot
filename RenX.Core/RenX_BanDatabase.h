@@ -46,6 +46,7 @@ namespace RenX
 		*/
 		struct RENX_API Entry
 		{
+			fpos_t pos; /** Position of the entry in the database */
 			unsigned char active; /** 1 if the ban is active, 0 otherwise */
 			time_t timestamp /** Time the ban was created */;
 			time_t length /** Duration of the ban; 0 if permanent */;
@@ -65,13 +66,21 @@ namespace RenX
 		bool load(const Jupiter::ReadableString &fname);
 
 		/**
-		* @param Adds a ban entry for a player and immediately writes it to the database.
+		* @brief Adds a ban entry for a player and immediately writes it to the database.
 		*
 		* @param server Server the player is playing in
 		* @param player Data of the player to be banned
 		* @param length Duration of the ban
 		*/
 		void add(RenX::Server *server, const RenX::PlayerInfo *player, time_t length);
+
+		/**
+		* @brief Deactivates a ban entry.
+		*
+		* @param index Index of the entry to deactivate.
+		* @param True if the entry was active and is now inactive, false otherwise.
+		*/
+		bool deactivate(size_t index);
 
 		/**
 		* @brief Fetches the version of the database file.

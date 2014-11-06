@@ -45,6 +45,7 @@ bool RenX::BanDatabase::load(const Jupiter::ReadableString &fname)
 		while (!feof(file))
 		{
 			entry = new Entry();
+			fgetpos(file, &entry->pos);
 			fread(&entry->active, 1, 1, file);
 			fread(&entry->timestamp, sizeof(time_t), 1, file);
 			fread(&entry->length, sizeof(time_t), 1, file);
@@ -124,6 +125,7 @@ void RenX::BanDatabase::add(RenX::Server *server, const RenX::PlayerInfo *player
 	FILE *file = fopen(RenX::BanDatabase::filename.c_str(), "ab");
 	if (file != nullptr)
 	{
+		fgetpos(file, &entry->pos);
 		fwrite(&entry->active, 1, 1, file);
 		fwrite(&entry->timestamp, sizeof(time_t), 1, file);
 		fwrite(&entry->length, sizeof(time_t), 1, file);
@@ -148,6 +150,24 @@ void RenX::BanDatabase::add(RenX::Server *server, const RenX::PlayerInfo *player
 		fputc('\n', file);
 		fclose(file);
 	}
+}
+
+bool RenX::BanDatabase::deactivate(size_t index)
+{
+	RenX::BanDatabase::Entry *entry = RenX::BanDatabase::entries.get(index);
+	if (entry->active)
+	{
+		entry->active = 0;
+		FILE *file = fopen(RenX::BanDatabase::filename.c_str(), "r+b");
+		if (file != nullptr)
+		{
+			fsetpos(file, &entry->pos);
+			fputc(entry->active, file);
+			fclose(file);
+		}
+		return true;
+	}
+	return false;
 }
 
 uint8_t RenX::BanDatabase::getVersion() const
