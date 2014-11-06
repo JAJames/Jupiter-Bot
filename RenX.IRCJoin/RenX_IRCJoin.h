@@ -15,8 +15,8 @@
  * Written by Justin James <justin.aj@hotmail.com>
  */
 
-#if !defined _EXAMPLE_H_HEADER
-#define _EXAMPLE_H_HEADER
+#if !defined _RENX_IRCJOIN_H_HEADER
+#define _RENX_IRCJOIN_H_HEADER
 
 #include "Jupiter/Plugin.h"
 #include "Jupiter/Reference_String.h"
@@ -49,4 +49,4 @@ private:
 	STRING_LITERAL_AS_NAMED_REFERENCE(name, "RenX.IRCJoin");
 };
 
-#endif // _EXAMPLE_H_HEADER
+#endif // _RENX_IRCJOIN_H_HEADER
