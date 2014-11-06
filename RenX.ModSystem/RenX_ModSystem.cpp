@@ -856,6 +856,8 @@ void ModListIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &
 			msg.truncate(2);
 			source->sendMessage(channel, msg);
 		}
+		else
+			source->sendMessage(channel, STRING_LITERAL_AS_REFERENCE("There are no configured moderators."));
 	}
 }
 
