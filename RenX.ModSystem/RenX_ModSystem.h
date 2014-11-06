@@ -34,6 +34,7 @@ public:
 	{
 		bool lockSteam;
 		bool lockIP;
+		bool lockName;
 		bool kickLockMismatch;
 		bool autoAuthSteam;
 		bool autoAuthIP;
@@ -74,6 +75,8 @@ public:
 
 	void tempAuth(RenX::Server *server, const RenX::PlayerInfo *player, const ModGroup *group, bool notify = true) const;
 
+	bool set(RenX::PlayerInfo *player, ModGroup *group);
+
 	int getConfigAccess(const Jupiter::ReadableString &uuid) const;
 	size_t getGroupCount() const;
 	ModGroup *getGroupByName(const Jupiter::ReadableString &name, ModGroup *defaultGroup = nullptr) const;
@@ -99,24 +102,29 @@ public: // Jupiter::Plugin
 	int OnRehash();
 	const Jupiter::ReadableString &getName() override { return name; }
 
+	Jupiter::INIFile modsFile;
 private:
 	void init();
 	STRING_LITERAL_AS_NAMED_REFERENCE(name, "RenX.ModSystem");
 
 	bool lockSteam;
 	bool lockIP;
+	bool lockName;
 	bool kickLockMismatch;
 	bool autoAuthSteam;
 	bool autoAuthIP;
 	Jupiter::StringS atmDefault;
 	Jupiter::StringS moderatorGroup;
 	Jupiter::StringS administratorGroup;
-	Jupiter::INIFile modsFile;
 };
 
 GENERIC_IRC_COMMAND(AuthIRCCommand)
+GENERIC_IRC_COMMAND(DeAuthIRCCommand)
 GENERIC_IRC_COMMAND(ATMIRCCommand)
+GENERIC_IRC_COMMAND(AddIRCCommand)
+GENERIC_IRC_COMMAND(DelIRCCommand)
 GENERIC_IRC_COMMAND(ForceAuthIRCCommand)
+GENERIC_IRC_COMMAND(ModListIRCCommand)
 GENERIC_GAME_COMMAND(AuthGameCommand)
 GENERIC_GAME_COMMAND(ATMGameCommand)
 GENERIC_GAME_COMMAND(ForceAuthGameCommand)
