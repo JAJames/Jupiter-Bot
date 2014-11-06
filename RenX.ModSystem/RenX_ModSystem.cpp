@@ -225,6 +225,7 @@ bool RenX_ModSystemPlugin::set(RenX::PlayerInfo *player, RenX_ModSystemPlugin::M
 	RenX_ModSystemPlugin::modsFile.set(player->uuid, STRING_LITERAL_AS_REFERENCE("SteamID"), Jupiter::StringS::Format("%llu", player->steamid));
 	RenX_ModSystemPlugin::modsFile.set(player->uuid, STRING_LITERAL_AS_REFERENCE("LastIP"), player->ip);
 	RenX_ModSystemPlugin::modsFile.set(player->uuid, STRING_LITERAL_AS_REFERENCE("Name"), player->name);
+	RenX_ModSystemPlugin::modsFile.sync();
 	return r;
 }
 
