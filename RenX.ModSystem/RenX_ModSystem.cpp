@@ -693,7 +693,7 @@ const Jupiter::ReadableString &AddIRCCommand::getHelp(const Jupiter::ReadableStr
 
 IRC_COMMAND_INIT(AddIRCCommand)
 
-// Add IRC Command
+// Del IRC Command
 
 void DelIRCCommand::create()
 {
