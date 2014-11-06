@@ -62,6 +62,22 @@ void RenX_CommandsPlugin::RenX_OnDie(RenX::Server *server, const RenX::PlayerInf
 	onDie(server, player);
 }
 
+int RenX_CommandsPlugin::OnRehash()
+{
+	RenX_CommandsPlugin::_defaultTempBanTime = Jupiter::IRC::Client::Config->getLongLong(RenX_CommandsPlugin::getName(), STRING_LITERAL_AS_REFERENCE("TBanTime"), 86400);
+	return 0;
+}
+
+time_t RenX_CommandsPlugin::getTBanTime()
+{
+	return RenX_CommandsPlugin::_defaultTempBanTime;
+}
+
+RenX_CommandsPlugin::RenX_CommandsPlugin()
+{
+	this->OnRehash();
+}
+
 // Plugin instantiation and entry point.
 RenX_CommandsPlugin pluginInstance;
 
@@ -710,9 +726,12 @@ void BanSearchIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString
 				case 3:	// NAME
 					return entry->name.equalsi(params);
 				case 4:	// BANNER
-					return entry->varData.get(STRING_LITERAL_AS_REFERENCE("RenX.Commands")).equalsi(params);
+					return entry->varData.get(pluginInstance.getName()).equalsi(params);
 				case 5:	// ACTIVE
-					return entry->active == params.asBool();
+					if (params.asBool()) // Got tired of seeing a compiler warning.
+						return entry->active == 1;
+					else
+						return entry->active == 0;
 				case 6:	// ALL
 					return true;
 				}
@@ -748,7 +767,7 @@ void BanSearchIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString
 				if (isMatch(type))
 				{
 					Jupiter::StringS ip_str = Jupiter::Socket::ntop4(entry->ip);
-					const Jupiter::ReadableString &banner = entry->varData.get(STRING_LITERAL_AS_REFERENCE("RenX.Commands"));
+					const Jupiter::ReadableString &banner = entry->varData.get(pluginInstance.getName());
 					strftime(timeStr, sizeof(timeStr), "%b %d %Y; Time: %H:%M:%S", localtime(&(entry->timestamp)));
 					out.format("ID: %lu; Status: %sactive; Date: %s; IP: %.*s; Steam: %llu; Name: %.*s%s", i, entry->active ? "" : "in", timeStr, ip_str.size(), ip_str.ptr(), entry->steamid, entry->name.size(), entry->name.ptr(), banner.isEmpty() ? "" : "; Banner: ");
 					out.concat(banner);
@@ -1063,7 +1082,7 @@ void KickIRCCommand::create()
 	this->addTrigger(STRING_LITERAL_AS_REFERENCE("kick"));
 	this->addTrigger(STRING_LITERAL_AS_REFERENCE("qkick"));
 	this->addTrigger(STRING_LITERAL_AS_REFERENCE("k"));
-	this->setAccessLevel(3);
+	this->setAccessLevel(2);
 }
 
 void KickIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &channel, const Jupiter::ReadableString &nick, const Jupiter::ReadableString &parameters)
@@ -1107,6 +1126,62 @@ const Jupiter::ReadableString &KickIRCCommand::getHelp(const Jupiter::ReadableSt
 }
 
 IRC_COMMAND_INIT(KickIRCCommand)
+
+// TempBan IRC Command
+
+void TempBanIRCCommand::create()
+{
+	this->addTrigger(STRING_LITERAL_AS_REFERENCE("tban"));
+	this->addTrigger(STRING_LITERAL_AS_REFERENCE("tb"));
+	this->addTrigger(STRING_LITERAL_AS_REFERENCE("tempban"));
+	this->setAccessLevel(3);
+}
+
+void TempBanIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &channel, const Jupiter::ReadableString &nick, const Jupiter::ReadableString &parameters)
+{
+	if (parameters.size() != 0)
+	{
+		Jupiter::IRC::Client::Channel *chan = source->getChannel(channel);
+		if (chan != nullptr)
+		{
+			Jupiter::ArrayList<RenX::Server> servers = RenX::getCore()->getServers(chan->getType());
+			if (servers.size() != 0)
+			{
+				RenX::PlayerInfo *player;
+				RenX::Server *server;
+				unsigned int kicks = 0;
+				Jupiter::String banner(nick.size() + 4);
+				banner += nick;
+				banner += "@IRC";
+				for (size_t i = 0; i != servers.size(); i++)
+				{
+					server = servers.get(i);
+					if (server != nullptr)
+					{
+						player = server->getPlayerByPartName(parameters);
+						if (player != nullptr)
+						{
+							player->varData.set(pluginInstance.getName(), STRING_LITERAL_AS_REFERENCE("banner"), nick);
+							server->banPlayer(player, pluginInstance.getTBanTime());
+							kicks++;
+						}
+					}
+				}
+				source->sendMessage(channel, Jupiter::StringS::Format("%u players kicked.", kicks));
+			}
+			else source->sendMessage(channel, STRING_LITERAL_AS_REFERENCE("Error: Channel not attached to any connected Renegade X servers."));
+		}
+	}
+	else source->sendNotice(nick, STRING_LITERAL_AS_REFERENCE("Error: Too Few Parameters. Syntax: TempBan <Player>"));
+}
+
+const Jupiter::ReadableString &TempBanIRCCommand::getHelp(const Jupiter::ReadableString &)
+{
+	static STRING_LITERAL_AS_NAMED_REFERENCE(defaultHelp, "Kicks and temporarily bans a player from the game. Syntax: TempBan <Player>");
+	return defaultHelp;
+}
+
+IRC_COMMAND_INIT(TempBanIRCCommand)
 
 // KickBan IRC Command
 
@@ -1163,6 +1238,43 @@ const Jupiter::ReadableString &KickBanIRCCommand::getHelp(const Jupiter::Readabl
 }
 
 IRC_COMMAND_INIT(KickBanIRCCommand)
+
+// UnBan IRC Command
+
+void UnBanIRCCommand::create()
+{
+	this->addTrigger(STRING_LITERAL_AS_REFERENCE("unban"));
+	this->addTrigger(STRING_LITERAL_AS_REFERENCE("deban"));
+	this->addTrigger(STRING_LITERAL_AS_REFERENCE("uban"));
+	this->addTrigger(STRING_LITERAL_AS_REFERENCE("dban"));
+	this->setAccessLevel(4);
+}
+
+void UnBanIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &channel, const Jupiter::ReadableString &nick, const Jupiter::ReadableString &parameters)
+{
+	if (parameters.size() != 0)
+	{
+		size_t index = static_cast<size_t>(parameters.asUnsignedLongLong());
+		if (index < RenX::banDatabase->getEntries().size())
+		{
+			if (RenX::banDatabase->deactivate(index))
+				source->sendNotice(nick, STRING_LITERAL_AS_REFERENCE("Ban deactivated."));
+			else
+				source->sendNotice(nick, STRING_LITERAL_AS_REFERENCE("Error: Ban not active."));
+		}
+		else
+			source->sendNotice(nick, STRING_LITERAL_AS_REFERENCE("Error: Invalid ban ID; please find the ban ID using \"bansearch\"."));
+	}
+	else source->sendNotice(nick, STRING_LITERAL_AS_REFERENCE("Error: Too Few Parameters. Syntax: unban <Ban ID>"));
+}
+
+const Jupiter::ReadableString &UnBanIRCCommand::getHelp(const Jupiter::ReadableString &)
+{
+	static STRING_LITERAL_AS_NAMED_REFERENCE(defaultHelp, "Deactivates a ban. Syntax: unban <Ban ID>");
+	return defaultHelp;
+}
+
+IRC_COMMAND_INIT(UnBanIRCCommand)
 
 // AddBots IRC Command
 
@@ -1593,6 +1705,46 @@ const Jupiter::ReadableString &KickGameCommand::getHelp(const Jupiter::ReadableS
 
 GAME_COMMAND_INIT(KickGameCommand)
 
+// TempBan Game Command
+
+void TempBanGameCommand::create()
+{
+	this->addTrigger(STRING_LITERAL_AS_REFERENCE("tban"));
+	this->addTrigger(STRING_LITERAL_AS_REFERENCE("tempbank"));
+	this->addTrigger(STRING_LITERAL_AS_REFERENCE("tb"));
+	this->setAccessLevel(1);
+}
+
+void TempBanGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *player, const Jupiter::ReadableString &parameters)
+{
+	if (parameters.isEmpty() == false)
+	{
+		RenX::PlayerInfo *target = source->getPlayerByPartName(parameters);
+		if (target == nullptr)
+			source->sendMessage(player, STRING_LITERAL_AS_REFERENCE("Error: Player not found."));
+		else if (player == target)
+			source->sendMessage(player, STRING_LITERAL_AS_REFERENCE("Error: You can not ban yourself."));
+		else if (target->access >= player->access)
+			source->sendMessage(player, STRING_LITERAL_AS_REFERENCE("Error: You can not ban higher level moderators."));
+		else
+		{
+			target->varData.set(pluginInstance.getName(), STRING_LITERAL_AS_REFERENCE("banner"), player->name);
+			source->banPlayer(target, pluginInstance.getTBanTime());
+			source->sendMessage(player, STRING_LITERAL_AS_REFERENCE("Player has been temporarily banned and kicked from the game."));
+		}
+	}
+	else
+		source->sendMessage(player, STRING_LITERAL_AS_REFERENCE("Error: Too few parameters. Syntax: tban <player>"));
+}
+
+const Jupiter::ReadableString &TempBanGameCommand::getHelp(const Jupiter::ReadableString &)
+{
+	static STRING_LITERAL_AS_NAMED_REFERENCE(defaultHelp, "Kicks and temporarily bans a player from the game. Syntax: tban <player>");
+	return defaultHelp;
+}
+
+GAME_COMMAND_INIT(TempBanGameCommand)
+
 // KickBan Game Command
 
 void KickBanGameCommand::create()
@@ -1628,7 +1780,7 @@ void KickBanGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *player,
 
 const Jupiter::ReadableString &KickBanGameCommand::getHelp(const Jupiter::ReadableString &)
 {
-	static STRING_LITERAL_AS_NAMED_REFERENCE(defaultHelp, "Kicks a player from the game. Syntax: ban <player>");
+	static STRING_LITERAL_AS_NAMED_REFERENCE(defaultHelp, "Kicks and bans a player from the game. Syntax: ban <player>");
 	return defaultHelp;
 }
 

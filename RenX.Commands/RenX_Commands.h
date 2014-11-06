@@ -34,9 +34,15 @@ public: // RenX::Plugin
 
 public: // Jupiter::Plugin
 	const Jupiter::ReadableString &getName() override { return name; }
+	int OnRehash() override;
+
+public:
+	time_t getTBanTime();
+	RenX_CommandsPlugin();
 
 private:
 	STRING_LITERAL_AS_NAMED_REFERENCE(name, "RenX.Commands");
+	time_t _defaultTempBanTime;
 };
 
 GENERIC_CONSOLE_COMMAND(RCONConsoleCommand)
@@ -61,7 +67,9 @@ GENERIC_IRC_COMMAND(SetMapIRCCommand)
 GENERIC_IRC_COMMAND(MuteIRCCommand)
 GENERIC_IRC_COMMAND(UnMuteIRCCommand)
 GENERIC_IRC_COMMAND(KickIRCCommand)
+GENERIC_IRC_COMMAND(TempBanIRCCommand)
 GENERIC_IRC_COMMAND(KickBanIRCCommand)
+GENERIC_IRC_COMMAND(UnBanIRCCommand)
 GENERIC_IRC_COMMAND(AddBotsIRCCommand)
 GENERIC_IRC_COMMAND(KillBotsIRCCommand)
 GENERIC_IRC_COMMAND(PhaseBotsIRCCommand)
@@ -72,6 +80,7 @@ GENERIC_GAME_COMMAND(ModsGameCommand)
 GENERIC_GAME_COMMAND(RulesGameCommand)
 GENERIC_GAME_COMMAND(ModRequestGameCommand)
 GENERIC_GAME_COMMAND(KickGameCommand)
+GENERIC_GAME_COMMAND(TempBanGameCommand)
 GENERIC_GAME_COMMAND(KickBanGameCommand)
 
 #endif // _RENX_COMMANDS_H_HEADER
