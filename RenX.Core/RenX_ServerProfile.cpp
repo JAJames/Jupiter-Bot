@@ -26,6 +26,7 @@ struct BaseProfile : RenX::ServerProfile
 		disconnectOnGameOver = false;
 		pidbug = false;
 		mustSanitize = true;
+		tieFormat = 1;
 	}
 } _baseProfile;
 const RenX::ServerProfile *RenX::defaultProfile = &_baseProfile;
@@ -46,6 +47,7 @@ struct OpenBeta2Profile : BaseProfile
 	{
 		privateMessages = false;
 		pidbug = true;
+		tieFormat = 0;
 	}
 } _openBeta2Profile;
 const RenX::ServerProfile *RenX::openBeta2Profile = &_openBeta2Profile;

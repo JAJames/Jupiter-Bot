@@ -851,7 +851,17 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 				}
 				else if (playerData.equals("Tie"))
 				{
-					int gScore = action.gotoToken(1, '=').asInt(10);
+					int gScore;
+					switch (RenX::Server::profile->tieFormat)
+					{
+					default:
+					case 1:
+						gScore = buff.getToken(2, RenX::DelimC).gotoToken(1, '=').asInt(10);
+						break;
+					case 0:
+						gScore = action.gotoToken(1, '=').asInt(10);
+						break;
+					}
 					int nScore = buff.getToken(3, RenX::DelimC).gotoToken(1, '=').asInt(10);
 
 					this->needsCList = true;

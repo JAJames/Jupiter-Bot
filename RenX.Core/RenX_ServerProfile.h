@@ -37,6 +37,7 @@ namespace RenX
 		bool disconnectOnGameOver;
 		bool pidbug;
 		bool mustSanitize;
+		int tieFormat;
 	};
 
 	RENX_API extern const ServerProfile *defaultProfile;	/** Default server profile */
