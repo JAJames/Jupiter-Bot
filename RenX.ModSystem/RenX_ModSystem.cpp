@@ -837,6 +837,7 @@ void ModListIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &
 	size_t i;
 	Jupiter::String msg;
 	size_t msgBaseSize;
+	bool haveMods = false;
 	for (Jupiter::DLList<RenX_ModSystemPlugin::ModGroup>::Node *n = pluginInstance.groups.getNode(0); n != nullptr; n = n->next)
 	{
 		group = n->data;
@@ -858,10 +859,11 @@ void ModListIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &
 		{
 			msg.truncate(2);
 			source->sendMessage(channel, msg);
+			haveMods = true;
 		}
-		else
-			source->sendMessage(channel, STRING_LITERAL_AS_REFERENCE("There are no configured moderators."));
 	}
+	if (!haveMods)
+		source->sendMessage(channel, STRING_LITERAL_AS_REFERENCE("There are no configured moderators."));
 }
 
 const Jupiter::ReadableString &ModListIRCCommand::getHelp(const Jupiter::ReadableString &)
