@@ -261,11 +261,8 @@ int RenX_ModSystemPlugin::getConfigAccess(const Jupiter::ReadableString &uuid) c
 	Jupiter::INIFile::Section *section = RenX_ModSystemPlugin::modsFile.getSection(uuid);
 	if (section == nullptr)
 		return RenX_ModSystemPlugin::groups.get(0)->access;
-	const Jupiter::ReadableString &group = section->get(STRING_LITERAL_AS_REFERENCE("Group"));
-	if (group.isEmpty())
-		return section->getInt(STRING_LITERAL_AS_REFERENCE("Access"), RenX_ModSystemPlugin::groups.get(0)->access);
-	else
-		return section->getInt(STRING_LITERAL_AS_REFERENCE("Access"), RenX_ModSystemPlugin::modsFile.getInt(group, STRING_LITERAL_AS_REFERENCE("Access"), RenX_ModSystemPlugin::groups.get(0)->access));
+	RenX_ModSystemPlugin::ModGroup *group = RenX_ModSystemPlugin::getGroupByName(section->get(STRING_LITERAL_AS_REFERENCE("Group")));
+	return section->getInt(STRING_LITERAL_AS_REFERENCE("Access"), group->access);
 }
 
 size_t RenX_ModSystemPlugin::getGroupCount() const
@@ -671,10 +668,12 @@ void AddIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &chan
 							source->sendNotice(nick, STRING_LITERAL_AS_REFERENCE("Error: A bot can not be a moderator."));
 						else
 						{
+							pluginInstance.resetAccess(player);
 							if (pluginInstance.set(player, group))
 								source->sendNotice(nick, Jupiter::StringS::Format("%.*s has been added to group \"%.*s\"", player->name.size(), player->name.ptr(), group->name.size(), group->name.ptr()));
 							else
 								source->sendNotice(nick, Jupiter::StringS::Format("%.*s has been moved to group \"%.*s\"", player->name.size(), player->name.ptr(), group->name.size(), group->name.ptr()));
+							pluginInstance.auth(server, player, false, true);
 						}
 					}
 				}
