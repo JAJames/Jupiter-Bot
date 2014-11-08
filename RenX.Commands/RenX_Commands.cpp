@@ -132,7 +132,9 @@ void MsgIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &chan
 	if (parameters.isEmpty() == false)
 	{	
 		Jupiter::StringL msg = "say ";
-		msg += source->getChannel(channel)->getUserPrefix(nick);
+		char prefix = source->getChannel(channel)->getUserPrefix(nick);
+		if (prefix != '\0')
+			msg += prefix;
 		msg += nick;
 		msg += "@IRC: ";
 		msg += parameters;
@@ -168,7 +170,10 @@ void PMsgIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &cha
 		int type = source->getChannel(channel)->getType();
 		Jupiter::ReferenceString name = Jupiter::ReferenceString::getWord(parameters, 0, WHITESPACE);
 		RenX::PlayerInfo *player;
-		Jupiter::StringL msg = source->getChannel(channel)->getUserPrefix(nick);
+		Jupiter::StringL msg;
+		char prefix = source->getChannel(channel)->getUserPrefix(nick);
+		if (prefix != '\0')
+			msg += prefix;
 		msg += nick;
 		msg += "@IRC: ";
 		msg += Jupiter::ReferenceString::gotoWord(parameters, 1, WHITESPACE);
