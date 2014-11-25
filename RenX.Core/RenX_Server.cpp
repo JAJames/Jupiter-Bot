@@ -704,7 +704,7 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 				entry = entries.get(i);
 				if (entry->active)
 				{
-					if (entry->timestamp + entry->length > time(0))
+					if (entry->length != 0 && entry->timestamp + entry->length < time(0))
 						banDatabase->deactivate(i);
 					else if (server->localSteamBan && entry->steamid != 0 && entry->steamid == r->steamid)
 						server->kickPlayer(r);
