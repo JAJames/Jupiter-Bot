@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2014 Justin James.
+ * Copyright (C) 2014-2015 Justin James.
  *
  * This license must be preserved.
  * Any applications, libraries, or code which make any use of any
@@ -261,7 +261,7 @@ int RenX_ModSystemPlugin::getConfigAccess(const Jupiter::ReadableString &uuid) c
 	Jupiter::INIFile::Section *section = RenX_ModSystemPlugin::modsFile.getSection(uuid);
 	if (section == nullptr)
 		return RenX_ModSystemPlugin::groups.get(0)->access;
-	RenX_ModSystemPlugin::ModGroup *group = RenX_ModSystemPlugin::getGroupByName(section->get(STRING_LITERAL_AS_REFERENCE("Group")));
+	RenX_ModSystemPlugin::ModGroup *group = RenX_ModSystemPlugin::getGroupByName(section->get(STRING_LITERAL_AS_REFERENCE("Group")), groups.get(0));
 	return section->getInt(STRING_LITERAL_AS_REFERENCE("Access"), group->access);
 }
 
