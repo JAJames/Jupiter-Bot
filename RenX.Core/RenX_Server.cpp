@@ -572,18 +572,14 @@ void RenX::Server::sendLogChan(const Jupiter::ReadableString &msg) const
 	}
 }
 
-#define PARSE_PLAYER_DATA() \
+#define PARSE_PLAYER_DATA_P(playerData) \
 	Jupiter::ReferenceString name; \
 	TeamType team; \
 	int id; \
-	bool isBot = false; { \
-		Jupiter::ReferenceString idToken; \
-		name = playerData.gotoToken(2, ','); \
-		idToken = playerData.getToken(1, ','); \
-		if (playerData[0] == ',') team = Other; \
-		else team = RenX::getTeam(playerData[0]); \
-		if (idToken[0] == 'b') { idToken.shiftRight(1); isBot = true; } \
-		id = idToken.asInt(10); }
+	bool isBot; \
+	parsePlayerData(playerData, name, team, id, isBot);
+
+#define PARSE_PLAYER_DATA() PARSE_PLAYER_DATA_P(playerData)
 
 void RenX::Server::processLine(const Jupiter::ReadableString &line)
 {
@@ -666,6 +662,19 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 			this->firstAction = true;
 			this->silenceJoins = false;
 		}
+	};
+	auto parsePlayerData = [&](const Jupiter::ReadableString &data, Jupiter::ReferenceString &name, TeamType &team, int &id, bool &isBot)
+	{
+		Jupiter::ReferenceString idToken = playerData.getToken(1, ',');
+		name = Jupiter::ReferenceString::gotoToken(data, 2, ',');
+		if (idToken.get(0) == 'b')
+		{
+			idToken.shiftRight(1);
+			isBot = true;
+		}
+		else
+			isBot = false;
+		id = idToken.asInt(10);
 	};
 	auto getPlayerOrAdd = [&](RenX::Server *server, const Jupiter::ReadableString &name, int id, RenX::TeamType team, bool isBot, uint64_t steamid, const Jupiter::ReadableString &ip)
 	{
