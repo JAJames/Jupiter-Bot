@@ -667,6 +667,10 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 	{
 		Jupiter::ReferenceString idToken = playerData.getToken(1, ',');
 		name = Jupiter::ReferenceString::gotoToken(data, 2, ',');
+		if (playerData[0] == ',')
+			team = Other;
+		else
+			team = RenX::getTeam(playerData[0]);
 		if (idToken.get(0) == 'b')
 		{
 			idToken.shiftRight(1);
