@@ -90,6 +90,45 @@ Jupiter::ReferenceString translated_Vehicle_A10_DmgType_Bomb = STRING_LITERAL_AS
 Jupiter::ReferenceString translated_Vehicle_AC130_DmgType_HeavyCannon = STRING_LITERAL_AS_REFERENCE("AC130 Heavy Cannon");
 Jupiter::ReferenceString translated_Vehicle_AC130_DmgType_AutoCannon = STRING_LITERAL_AS_REFERENCE("AC130 Auto Cannon");
 
+/** Weapons */
+Jupiter::ReferenceString translated_Weapon_DeployedC4 = STRING_LITERAL_AS_REFERENCE("Timed C4");
+Jupiter::ReferenceString translated_Weapon_DeployedRemoteC4 = STRING_LITERAL_AS_REFERENCE("Remote C4");
+Jupiter::ReferenceString translated_Weapon_DeployedProxyC4 = STRING_LITERAL_AS_REFERENCE("Proximity C4");
+
+/** GDI Characters */
+Jupiter::ReferenceString translated_GDI_Deadeye = STRING_LITERAL_AS_REFERENCE("Deadeye");
+Jupiter::ReferenceString translated_GDI_Engineer = STRING_LITERAL_AS_REFERENCE("GDI Engineer");
+Jupiter::ReferenceString translated_GDI_Grenadier = STRING_LITERAL_AS_REFERENCE("Grenadier");
+Jupiter::ReferenceString translated_GDI_Gunner = STRING_LITERAL_AS_REFERENCE("Gunner");
+Jupiter::ReferenceString translated_GDI_Havoc = STRING_LITERAL_AS_REFERENCE("Havoc");
+Jupiter::ReferenceString translated_GDI_Hotwire = STRING_LITERAL_AS_REFERENCE("Hotwire");
+Jupiter::ReferenceString translated_GDI_Marksman = STRING_LITERAL_AS_REFERENCE("GDI Marksman");
+Jupiter::ReferenceString translated_GDI_McFarland = STRING_LITERAL_AS_REFERENCE("McFarland");
+Jupiter::ReferenceString translated_GDI_Mobius = STRING_LITERAL_AS_REFERENCE("Mobius");
+Jupiter::ReferenceString translated_GDI_Officer = STRING_LITERAL_AS_REFERENCE("GDI Officer");
+Jupiter::ReferenceString translated_GDI_Patch = STRING_LITERAL_AS_REFERENCE("Patch");
+Jupiter::ReferenceString translated_GDI_RocketSoldier = STRING_LITERAL_AS_REFERENCE("GDI Rocket Soldier");
+Jupiter::ReferenceString translated_GDI_Shotgunner = STRING_LITERAL_AS_REFERENCE("GDI Shotgunner");
+Jupiter::ReferenceString translated_GDI_Soldier = STRING_LITERAL_AS_REFERENCE("GDI Soldier");
+Jupiter::ReferenceString translated_GDI_Sydney = STRING_LITERAL_AS_REFERENCE("Sydney");
+
+/** Nod Characters */
+Jupiter::ReferenceString translated_Nod_BlackHandSniper = STRING_LITERAL_AS_REFERENCE("Black Hand Sniper");
+Jupiter::ReferenceString translated_Nod_ChemicalTrooper = STRING_LITERAL_AS_REFERENCE("Chemical Trooper");
+Jupiter::ReferenceString translated_Nod_Engineer = STRING_LITERAL_AS_REFERENCE("Nod Engineer");
+Jupiter::ReferenceString translated_Nod_FlameTrooper = STRING_LITERAL_AS_REFERENCE("Flame Trooper");
+Jupiter::ReferenceString translated_Nod_LaserChainGunner = STRING_LITERAL_AS_REFERENCE("Laser Chain Gunner");
+Jupiter::ReferenceString translated_Nod_Marksman = STRING_LITERAL_AS_REFERENCE("Nod Marksman");
+Jupiter::ReferenceString translated_Nod_Mendoza = STRING_LITERAL_AS_REFERENCE("Mendoza");
+Jupiter::ReferenceString translated_Nod_Officer = STRING_LITERAL_AS_REFERENCE("Nod Officer");
+Jupiter::ReferenceString translated_Nod_Raveshaw = STRING_LITERAL_AS_REFERENCE("Raveshaw");
+Jupiter::ReferenceString translated_Nod_RocketSoldier = STRING_LITERAL_AS_REFERENCE("Nod Rocket Soldier");
+Jupiter::ReferenceString translated_Nod_Sakura = STRING_LITERAL_AS_REFERENCE("Sakura");
+Jupiter::ReferenceString translated_Nod_Shotgunner = STRING_LITERAL_AS_REFERENCE("Nod Shotgunner");
+Jupiter::ReferenceString translated_Nod_Soldier = STRING_LITERAL_AS_REFERENCE("Nod Soldier");
+Jupiter::ReferenceString translated_Nod_StealthBlackHand = STRING_LITERAL_AS_REFERENCE("Stealth Black Hand");
+Jupiter::ReferenceString translated_Nod_Technician = STRING_LITERAL_AS_REFERENCE("Technician");
+
 /** Non-weapon damage types */
 Jupiter::ReferenceString translated_DmgType_Suicided = STRING_LITERAL_AS_REFERENCE("Suicide");
 Jupiter::ReferenceString translated_DmgType_Fell = STRING_LITERAL_AS_REFERENCE("Fall");
@@ -284,17 +323,56 @@ RenX::TeamType RenX::getEnemy(TeamType team)
 	}
 }
 
-inline const Jupiter::ReadableString &checkINIForValue(const Jupiter::ReadableString &section, const Jupiter::ReadableString &key)
-{
-	return RenX::getCore()->getTranslationsFile().get(section, key);
-}
-
 const Jupiter::ReadableString &RenX::translateName(const Jupiter::ReadableString &obj)
 {
+	auto translateCharacter = [](Jupiter::ReferenceString object)
+	{
+		if (object.find(STRING_LITERAL_AS_REFERENCE("GDI_")) == 0)
+		{
+			object.shiftRight(4);
+			if (object.equals(STRING_LITERAL_AS_REFERENCE("Deadeye"))) return translated_GDI_Deadeye;
+			if (object.equals(STRING_LITERAL_AS_REFERENCE("Engineer"))) return translated_GDI_Engineer;
+			if (object.equals(STRING_LITERAL_AS_REFERENCE("Grenadier"))) return translated_GDI_Grenadier;
+			if (object.equals(STRING_LITERAL_AS_REFERENCE("Gunner"))) return translated_GDI_Gunner;
+			if (object.equals(STRING_LITERAL_AS_REFERENCE("Havoc"))) return translated_GDI_Havoc;
+			if (object.equals(STRING_LITERAL_AS_REFERENCE("Hotwire"))) return translated_GDI_Hotwire;
+			if (object.equals(STRING_LITERAL_AS_REFERENCE("Marksman"))) return translated_GDI_Marksman;
+			if (object.equals(STRING_LITERAL_AS_REFERENCE("McFarland"))) return translated_GDI_McFarland;
+			if (object.equals(STRING_LITERAL_AS_REFERENCE("Mobius"))) return translated_GDI_Mobius;
+			if (object.equals(STRING_LITERAL_AS_REFERENCE("Officer"))) return translated_GDI_Officer;
+			if (object.equals(STRING_LITERAL_AS_REFERENCE("Patch"))) return translated_GDI_Patch;
+			if (object.equals(STRING_LITERAL_AS_REFERENCE("RocketSoldier"))) return translated_GDI_RocketSoldier;
+			if (object.equals(STRING_LITERAL_AS_REFERENCE("Shotgunner"))) return translated_GDI_Shotgunner;
+			if (object.equals(STRING_LITERAL_AS_REFERENCE("Soldier"))) return translated_GDI_Soldier;
+			if (object.equals(STRING_LITERAL_AS_REFERENCE("Sydney"))) return translated_GDI_Sydney;
+		}
+		else if (object.find(STRING_LITERAL_AS_REFERENCE("Nod_")) == 0)
+		{
+			object.shiftRight(4);
+			if (object.equals(STRING_LITERAL_AS_REFERENCE("BlackHandSniper"))) return translated_Nod_BlackHandSniper;
+			if (object.equals(STRING_LITERAL_AS_REFERENCE("ChemicalTrooper"))) return translated_Nod_ChemicalTrooper;
+			if (object.equals(STRING_LITERAL_AS_REFERENCE("Engineer"))) return translated_Nod_Engineer;
+			if (object.equals(STRING_LITERAL_AS_REFERENCE("FlameTrooper"))) return translated_Nod_FlameTrooper;
+			if (object.equals(STRING_LITERAL_AS_REFERENCE("LaserChainGunner"))) return translated_Nod_LaserChainGunner;
+			if (object.equals(STRING_LITERAL_AS_REFERENCE("Marksman"))) return translated_Nod_Marksman;
+			if (object.equals(STRING_LITERAL_AS_REFERENCE("Mendoza"))) return translated_Nod_Mendoza;
+			if (object.equals(STRING_LITERAL_AS_REFERENCE("Officer"))) return translated_Nod_Officer;
+			if (object.equals(STRING_LITERAL_AS_REFERENCE("Raveshaw"))) return translated_Nod_Raveshaw;
+			if (object.equals(STRING_LITERAL_AS_REFERENCE("RocketSoldier"))) return translated_Nod_RocketSoldier;
+			if (object.equals(STRING_LITERAL_AS_REFERENCE("Sakura"))) return translated_Nod_Sakura;
+			if (object.equals(STRING_LITERAL_AS_REFERENCE("Shotgunner"))) return translated_Nod_Shotgunner;
+			if (object.equals(STRING_LITERAL_AS_REFERENCE("Soldier"))) return translated_Nod_Soldier;
+			if (object.equals(STRING_LITERAL_AS_REFERENCE("StealthBlackHand"))) return translated_Nod_StealthBlackHand;
+			if (object.equals(STRING_LITERAL_AS_REFERENCE("Technician"))) return translated_Nod_Technician;
+		}
+
+		return object;
+	};
+
 	if (obj.isEmpty())
 		return Jupiter::ReferenceString::empty;
 
-	Jupiter::ReferenceString iniTranslation = checkINIForValue(STRING_LITERAL_AS_REFERENCE("Name"), obj);
+	Jupiter::ReferenceString iniTranslation = RenX::getCore()->getTranslationsFile().get(STRING_LITERAL_AS_REFERENCE("Name"), obj);
 	if (iniTranslation.isEmpty() == false)
 		return iniTranslation;
 
@@ -334,6 +412,24 @@ const Jupiter::ReadableString &RenX::translateName(const Jupiter::ReadableString
 		if (object.equals(STRING_LITERAL_AS_REFERENCE("A10_DmgType_Bomb"))) return translated_Vehicle_A10_DmgType_Bomb;
 		if (object.equals(STRING_LITERAL_AS_REFERENCE("AC130_DmgType_HeavyCannon"))) return translated_Vehicle_AC130_DmgType_HeavyCannon;
 		if (object.equals(STRING_LITERAL_AS_REFERENCE("AC130_DmgType_AutoCannon"))) return translated_Vehicle_AC130_DmgType_AutoCannon;
+	}
+	else if (object.find(STRING_LITERAL_AS_REFERENCE("Weapon_")) == 0)
+	{
+		object.shiftRight(7);
+		if (object.equals(STRING_LITERAL_AS_REFERENCE("DeployedC4"))) return translated_Weapon_DeployedC4;
+		if (object.equals(STRING_LITERAL_AS_REFERENCE("DeployedRemoteC4"))) return translated_Weapon_DeployedRemoteC4;
+		if (object.equals(STRING_LITERAL_AS_REFERENCE("DeployedProxyC4"))) return translated_Weapon_DeployedProxyC4;
+		// TODO: Add more translations.
+	}
+	else if (object.find(STRING_LITERAL_AS_REFERENCE("InventoryManager_")) == 0)
+	{
+		object.shiftRight(17);
+		return translateCharacter(object);
+	}
+	else if (object.find(STRING_LITERAL_AS_REFERENCE("FamilyInfo_")) == 0)
+	{
+		object.shiftRight(11);
+		return translateCharacter(object);
 	}
 	else if (object.find(STRING_LITERAL_AS_REFERENCE("DmgType_")) == 0)
 	{
@@ -471,7 +567,7 @@ const Jupiter::ReadableString &RenX::translateName(const Jupiter::ReadableString
 	else if (object.equals(STRING_LITERAL_AS_REFERENCE("IonCannonBeacon"))) return translated_IonCannonBeacon;
 	else if (object.equals(STRING_LITERAL_AS_REFERENCE("NukeBeacon"))) return translated_NukeBeacon;
 	else if (object.equals(STRING_LITERAL_AS_REFERENCE("KillZDamageType"))) return translated_KillZDamageType;
-	return object;
+	return translateCharacter(object);
 }
 
 const Jupiter::ReadableString &RenX::translateWinType(RenX::WinType winType)
