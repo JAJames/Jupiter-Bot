@@ -39,7 +39,6 @@ namespace RenX
 
 	/**
 	* @brief Provides an extendable interface from which in-game commands can be created.
-	* TODO: Add access levels
 	*/
 	class RENX_API GameCommand : public Jupiter::Command
 	{
