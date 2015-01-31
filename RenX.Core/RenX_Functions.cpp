@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2014 Justin James.
+ * Copyright (C) 2014-2015 Justin James.
  *
  * This license must be preserved.
  * Any applications, libraries, or code which make any use of any
@@ -181,18 +181,27 @@ Jupiter::ReferenceString translated_DmgType_VoltAutoRifle_Alt = STRING_LITERAL_A
 /** Vehicle weapons */
 Jupiter::ReferenceString translated_DmgType_MammothTank_Missile = STRING_LITERAL_AS_REFERENCE("Mammoth Tank Missile");
 Jupiter::ReferenceString translated_DmgType_MammothTank_Cannon = STRING_LITERAL_AS_REFERENCE("Mammoth Tank Cannon");
-Jupiter::ReferenceString translated_DmgType_Orca_Missile = STRING_LITERAL_AS_REFERENCE("Orca Missle");
+Jupiter::ReferenceString translated_DmgType_Orca_Missile = STRING_LITERAL_AS_REFERENCE("Orca Missile");
 Jupiter::ReferenceString translated_DmgType_Orca_Gun = STRING_LITERAL_AS_REFERENCE("Orca Gun");
+Jupiter::ReferenceString translated_DmgType_Orca_Passenger = STRING_LITERAL_AS_REFERENCE("Orca Passenger Missile");
 Jupiter::ReferenceString translated_DmgType_Apache_Rocket = STRING_LITERAL_AS_REFERENCE("Apache Rocket");
 Jupiter::ReferenceString translated_DmgType_Apache_Gun = STRING_LITERAL_AS_REFERENCE("Apache Gun");
+Jupiter::ReferenceString translated_DmgType_Apache_Passenger = STRING_LITERAL_AS_REFERENCE("Apache Passenger Missile");
 
 /** Other weapons */
-Jupiter::ReferenceString translated_DmgType_Nuke = STRING_LITERAL_AS_REFERENCE("Nuclear Missile Strike");
-Jupiter::ReferenceString translated_DmgType_IonCannon = STRING_LITERAL_AS_REFERENCE("Ion Cannon Strike");
+Jupiter::ReferenceString translated_DmgType_AGT_MG = STRING_LITERAL_AS_REFERENCE("Machine Gun");
+Jupiter::ReferenceString translated_DmgType_AGT_Rocket = STRING_LITERAL_AS_REFERENCE("Rocket");
+Jupiter::ReferenceString translated_DmgType_Obelisk = STRING_LITERAL_AS_REFERENCE("Obelisk Laser");
+Jupiter::ReferenceString translated_DmgType_GuardTower = STRING_LITERAL_AS_REFERENCE("Guard Tower");
+Jupiter::ReferenceString translated_DmgType_Turret = STRING_LITERAL_AS_REFERENCE("Turret");
+Jupiter::ReferenceString translated_DmgType_SAMSite = STRING_LITERAL_AS_REFERENCE("SAM Site");
+Jupiter::ReferenceString translated_DmgType_AATower = STRING_LITERAL_AS_REFERENCE("Anti-Air Guard Tower");
 Jupiter::ReferenceString translated_DmgType_GunEmpl = STRING_LITERAL_AS_REFERENCE("Gun Emplacement Gattling Gun");
 Jupiter::ReferenceString translated_DmgType_GunEmpl_Alt = STRING_LITERAL_AS_REFERENCE("Gun Emplacement Automatic Cannon");
 Jupiter::ReferenceString translated_DmgType_RocketEmpl_Swarm = STRING_LITERAL_AS_REFERENCE("Rocket Emplacement Swarm Missile");
 Jupiter::ReferenceString translated_DmgType_RocketEmpl_Missile = STRING_LITERAL_AS_REFERENCE("Rocket Emplacement Hellfire Missile");
+Jupiter::ReferenceString translated_DmgType_Nuke = STRING_LITERAL_AS_REFERENCE("Nuclear Missile Strike");
+Jupiter::ReferenceString translated_DmgType_IonCannon = STRING_LITERAL_AS_REFERENCE("Ion Cannon Strike");
 
 // Vehicles copied from above.
 
@@ -218,10 +227,7 @@ Jupiter::ReferenceString translated_DmgType_Chinook_GDI = STRING_LITERAL_AS_REFE
 Jupiter::ReferenceString translated_DmgType_Orca = STRING_LITERAL_AS_REFERENCE("Orca");
 
 /** Other Vehicles */
-Jupiter::ReferenceString translated_DmgType_A10_DmgType_GattlingGun = STRING_LITERAL_AS_REFERENCE("A10 Thunderbolt Gattling Gun");
-Jupiter::ReferenceString translated_DmgType_A10_DmgType_Bomb = STRING_LITERAL_AS_REFERENCE("A10 Thunderbolt Bomb");
-Jupiter::ReferenceString translated_DmgType_AC130_DmgType_HeavyCannon = STRING_LITERAL_AS_REFERENCE("AC130 Heavy Cannon");
-Jupiter::ReferenceString translated_DmgType_AC130_DmgType_AutoCannon = STRING_LITERAL_AS_REFERENCE("AC130 Auto Cannon");
+Jupiter::ReferenceString translated_DmgType_A10_Missile = STRING_LITERAL_AS_REFERENCE("A10 Missile");
 
 /** Nod structures */
 Jupiter::ReferenceString translated_Building_HandOfNod_Internals = STRING_LITERAL_AS_REFERENCE("Hand of Nod");
@@ -246,6 +252,11 @@ Jupiter::ReferenceString translated_Defence_SAMSite = STRING_LITERAL_AS_REFERENC
 Jupiter::ReferenceString translated_Defence_AATower = STRING_LITERAL_AS_REFERENCE("Anti-Air Guard Tower");
 Jupiter::ReferenceString translated_Defence_GunEmplacement = STRING_LITERAL_AS_REFERENCE("Gun Emplacement");
 Jupiter::ReferenceString translated_Defence_RocketEmplacement = STRING_LITERAL_AS_REFERENCE("Rocket Emplacement");
+
+/** Defences - Sentinels */
+Jupiter::ReferenceString translated_Sentinel_AGT_MG_Base = STRING_LITERAL_AS_REFERENCE("Advanced Guard Tower");
+Jupiter::ReferenceString translated_Sentinel_AGT_Rockets_Base = STRING_LITERAL_AS_REFERENCE("Advanced Guard Tower");
+Jupiter::ReferenceString translated_Sentinel_Obelisk_Laser_Base = STRING_LITERAL_AS_REFERENCE("Obelisk of Light");
 
 /** UT damage types */
 Jupiter::ReferenceString translated_UTDmgType_VehicleExplosion = STRING_LITERAL_AS_REFERENCE("Vehicle Explosion");
@@ -323,52 +334,67 @@ RenX::TeamType RenX::getEnemy(TeamType team)
 	}
 }
 
+const Jupiter::ReadableString &RenX::getCharacter(const Jupiter::ReadableString &chr)
+{
+	static Jupiter::ReferenceString object;
+
+	object = chr;
+	if (object.find(STRING_LITERAL_AS_REFERENCE("Rx_")) == 0)
+		object.shiftRight(3);
+	if (object.find(STRING_LITERAL_AS_REFERENCE("InventoryManager_")) == 0)
+		object.shiftRight(17);
+	else if (object.find(STRING_LITERAL_AS_REFERENCE("FamilyInfo_")) == 0)
+		object.shiftRight(11);
+
+	return object;
+}
+
+const Jupiter::ReferenceString &translateCharacter(Jupiter::ReferenceString &object)
+{
+	if (object.find(STRING_LITERAL_AS_REFERENCE("GDI_")) == 0)
+	{
+		object.shiftRight(4);
+		if (object.equals(STRING_LITERAL_AS_REFERENCE("Deadeye"))) return translated_GDI_Deadeye;
+		if (object.equals(STRING_LITERAL_AS_REFERENCE("Engineer"))) return translated_GDI_Engineer;
+		if (object.equals(STRING_LITERAL_AS_REFERENCE("Grenadier"))) return translated_GDI_Grenadier;
+		if (object.equals(STRING_LITERAL_AS_REFERENCE("Gunner"))) return translated_GDI_Gunner;
+		if (object.equals(STRING_LITERAL_AS_REFERENCE("Havoc"))) return translated_GDI_Havoc;
+		if (object.equals(STRING_LITERAL_AS_REFERENCE("Hotwire"))) return translated_GDI_Hotwire;
+		if (object.equals(STRING_LITERAL_AS_REFERENCE("Marksman"))) return translated_GDI_Marksman;
+		if (object.equals(STRING_LITERAL_AS_REFERENCE("McFarland"))) return translated_GDI_McFarland;
+		if (object.equals(STRING_LITERAL_AS_REFERENCE("Mobius"))) return translated_GDI_Mobius;
+		if (object.equals(STRING_LITERAL_AS_REFERENCE("Officer"))) return translated_GDI_Officer;
+		if (object.equals(STRING_LITERAL_AS_REFERENCE("Patch"))) return translated_GDI_Patch;
+		if (object.equals(STRING_LITERAL_AS_REFERENCE("RocketSoldier"))) return translated_GDI_RocketSoldier;
+		if (object.equals(STRING_LITERAL_AS_REFERENCE("Shotgunner"))) return translated_GDI_Shotgunner;
+		if (object.equals(STRING_LITERAL_AS_REFERENCE("Soldier"))) return translated_GDI_Soldier;
+		if (object.equals(STRING_LITERAL_AS_REFERENCE("Sydney"))) return translated_GDI_Sydney;
+	}
+	else if (object.find(STRING_LITERAL_AS_REFERENCE("Nod_")) == 0)
+	{
+		object.shiftRight(4);
+		if (object.equals(STRING_LITERAL_AS_REFERENCE("BlackHandSniper"))) return translated_Nod_BlackHandSniper;
+		if (object.equals(STRING_LITERAL_AS_REFERENCE("ChemicalTrooper"))) return translated_Nod_ChemicalTrooper;
+		if (object.equals(STRING_LITERAL_AS_REFERENCE("Engineer"))) return translated_Nod_Engineer;
+		if (object.equals(STRING_LITERAL_AS_REFERENCE("FlameTrooper"))) return translated_Nod_FlameTrooper;
+		if (object.equals(STRING_LITERAL_AS_REFERENCE("LaserChainGunner"))) return translated_Nod_LaserChainGunner;
+		if (object.equals(STRING_LITERAL_AS_REFERENCE("Marksman"))) return translated_Nod_Marksman;
+		if (object.equals(STRING_LITERAL_AS_REFERENCE("Mendoza"))) return translated_Nod_Mendoza;
+		if (object.equals(STRING_LITERAL_AS_REFERENCE("Officer"))) return translated_Nod_Officer;
+		if (object.equals(STRING_LITERAL_AS_REFERENCE("Raveshaw"))) return translated_Nod_Raveshaw;
+		if (object.equals(STRING_LITERAL_AS_REFERENCE("RocketSoldier"))) return translated_Nod_RocketSoldier;
+		if (object.equals(STRING_LITERAL_AS_REFERENCE("Sakura"))) return translated_Nod_Sakura;
+		if (object.equals(STRING_LITERAL_AS_REFERENCE("Shotgunner"))) return translated_Nod_Shotgunner;
+		if (object.equals(STRING_LITERAL_AS_REFERENCE("Soldier"))) return translated_Nod_Soldier;
+		if (object.equals(STRING_LITERAL_AS_REFERENCE("StealthBlackHand"))) return translated_Nod_StealthBlackHand;
+		if (object.equals(STRING_LITERAL_AS_REFERENCE("Technician"))) return translated_Nod_Technician;
+	}
+
+	return object;
+}
+
 const Jupiter::ReadableString &RenX::translateName(const Jupiter::ReadableString &obj)
 {
-	auto translateCharacter = [](Jupiter::ReferenceString object)
-	{
-		if (object.find(STRING_LITERAL_AS_REFERENCE("GDI_")) == 0)
-		{
-			object.shiftRight(4);
-			if (object.equals(STRING_LITERAL_AS_REFERENCE("Deadeye"))) return translated_GDI_Deadeye;
-			if (object.equals(STRING_LITERAL_AS_REFERENCE("Engineer"))) return translated_GDI_Engineer;
-			if (object.equals(STRING_LITERAL_AS_REFERENCE("Grenadier"))) return translated_GDI_Grenadier;
-			if (object.equals(STRING_LITERAL_AS_REFERENCE("Gunner"))) return translated_GDI_Gunner;
-			if (object.equals(STRING_LITERAL_AS_REFERENCE("Havoc"))) return translated_GDI_Havoc;
-			if (object.equals(STRING_LITERAL_AS_REFERENCE("Hotwire"))) return translated_GDI_Hotwire;
-			if (object.equals(STRING_LITERAL_AS_REFERENCE("Marksman"))) return translated_GDI_Marksman;
-			if (object.equals(STRING_LITERAL_AS_REFERENCE("McFarland"))) return translated_GDI_McFarland;
-			if (object.equals(STRING_LITERAL_AS_REFERENCE("Mobius"))) return translated_GDI_Mobius;
-			if (object.equals(STRING_LITERAL_AS_REFERENCE("Officer"))) return translated_GDI_Officer;
-			if (object.equals(STRING_LITERAL_AS_REFERENCE("Patch"))) return translated_GDI_Patch;
-			if (object.equals(STRING_LITERAL_AS_REFERENCE("RocketSoldier"))) return translated_GDI_RocketSoldier;
-			if (object.equals(STRING_LITERAL_AS_REFERENCE("Shotgunner"))) return translated_GDI_Shotgunner;
-			if (object.equals(STRING_LITERAL_AS_REFERENCE("Soldier"))) return translated_GDI_Soldier;
-			if (object.equals(STRING_LITERAL_AS_REFERENCE("Sydney"))) return translated_GDI_Sydney;
-		}
-		else if (object.find(STRING_LITERAL_AS_REFERENCE("Nod_")) == 0)
-		{
-			object.shiftRight(4);
-			if (object.equals(STRING_LITERAL_AS_REFERENCE("BlackHandSniper"))) return translated_Nod_BlackHandSniper;
-			if (object.equals(STRING_LITERAL_AS_REFERENCE("ChemicalTrooper"))) return translated_Nod_ChemicalTrooper;
-			if (object.equals(STRING_LITERAL_AS_REFERENCE("Engineer"))) return translated_Nod_Engineer;
-			if (object.equals(STRING_LITERAL_AS_REFERENCE("FlameTrooper"))) return translated_Nod_FlameTrooper;
-			if (object.equals(STRING_LITERAL_AS_REFERENCE("LaserChainGunner"))) return translated_Nod_LaserChainGunner;
-			if (object.equals(STRING_LITERAL_AS_REFERENCE("Marksman"))) return translated_Nod_Marksman;
-			if (object.equals(STRING_LITERAL_AS_REFERENCE("Mendoza"))) return translated_Nod_Mendoza;
-			if (object.equals(STRING_LITERAL_AS_REFERENCE("Officer"))) return translated_Nod_Officer;
-			if (object.equals(STRING_LITERAL_AS_REFERENCE("Raveshaw"))) return translated_Nod_Raveshaw;
-			if (object.equals(STRING_LITERAL_AS_REFERENCE("RocketSoldier"))) return translated_Nod_RocketSoldier;
-			if (object.equals(STRING_LITERAL_AS_REFERENCE("Sakura"))) return translated_Nod_Sakura;
-			if (object.equals(STRING_LITERAL_AS_REFERENCE("Shotgunner"))) return translated_Nod_Shotgunner;
-			if (object.equals(STRING_LITERAL_AS_REFERENCE("Soldier"))) return translated_Nod_Soldier;
-			if (object.equals(STRING_LITERAL_AS_REFERENCE("StealthBlackHand"))) return translated_Nod_StealthBlackHand;
-			if (object.equals(STRING_LITERAL_AS_REFERENCE("Technician"))) return translated_Nod_Technician;
-		}
-
-		return object;
-	};
-
 	if (obj.isEmpty())
 		return Jupiter::ReferenceString::empty;
 
@@ -489,18 +515,32 @@ const Jupiter::ReadableString &RenX::translateName(const Jupiter::ReadableString
 		if (object.equals(STRING_LITERAL_AS_REFERENCE("MammothTank_Cannon"))) return translated_DmgType_MammothTank_Cannon;
 		if (object.equals(STRING_LITERAL_AS_REFERENCE("Orca_Missile"))) return translated_DmgType_Orca_Missile;
 		if (object.equals(STRING_LITERAL_AS_REFERENCE("Orca_Gun"))) return translated_DmgType_Orca_Gun;
+		if (object.equals(STRING_LITERAL_AS_REFERENCE("Orca_Passenger"))) return translated_DmgType_Orca_Passenger;
 		if (object.equals(STRING_LITERAL_AS_REFERENCE("Apache_Rocket"))) return translated_DmgType_Apache_Rocket;
 		if (object.equals(STRING_LITERAL_AS_REFERENCE("Apache_Gun"))) return translated_DmgType_Apache_Gun;
+		if (object.equals(STRING_LITERAL_AS_REFERENCE("Apache_Passenger"))) return translated_DmgType_Apache_Passenger;
 
-		/** Other weapons */
-		if (object.equals(STRING_LITERAL_AS_REFERENCE("Nuke"))) return translated_DmgType_Nuke;
-		if (object.equals(STRING_LITERAL_AS_REFERENCE("IonCannon"))) return translated_DmgType_IonCannon;
+		/** Base Defence Weapons */
+		if (object.equals(STRING_LITERAL_AS_REFERENCE("AGT_MG"))) return translated_DmgType_AGT_MG;
+		if (object.equals(STRING_LITERAL_AS_REFERENCE("AGT_Rocket"))) return translated_DmgType_AGT_Rocket;
+		if (object.equals(STRING_LITERAL_AS_REFERENCE("Obelisk"))) return translated_DmgType_Obelisk;
+
+		/** Defence Structure Weapons */
+		if (object.equals(STRING_LITERAL_AS_REFERENCE("AGT_MG"))) return translated_DmgType_AGT_MG;
+		if (object.equals(STRING_LITERAL_AS_REFERENCE("AGT_Rocket"))) return translated_DmgType_AGT_Rocket;
+		if (object.equals(STRING_LITERAL_AS_REFERENCE("Obelisk"))) return translated_DmgType_Obelisk;
+		if (object.equals(STRING_LITERAL_AS_REFERENCE("GuardTower"))) return translated_DmgType_GuardTower;
+		if (object.equals(STRING_LITERAL_AS_REFERENCE("Turret"))) return translated_DmgType_Turret;
+		if (object.equals(STRING_LITERAL_AS_REFERENCE("SAMSite"))) return translated_DmgType_SAMSite;
+		if (object.equals(STRING_LITERAL_AS_REFERENCE("AATower"))) return translated_DmgType_AATower;
 		if (object.equals(STRING_LITERAL_AS_REFERENCE("GunEmpl"))) return translated_DmgType_GunEmpl;
 		if (object.equals(STRING_LITERAL_AS_REFERENCE("GunEmpl_Alt"))) return translated_DmgType_GunEmpl_Alt;
 		if (object.equals(STRING_LITERAL_AS_REFERENCE("RocketEmpl_Swarm"))) return translated_DmgType_RocketEmpl_Swarm;
 		if (object.equals(STRING_LITERAL_AS_REFERENCE("RocketEmpl_Missile"))) return translated_DmgType_RocketEmpl_Missile;
 
-		// Vehicles copied from above.
+		/** Other Weapons */
+		if (object.equals(STRING_LITERAL_AS_REFERENCE("Nuke"))) return translated_DmgType_Nuke;
+		if (object.equals(STRING_LITERAL_AS_REFERENCE("IonCannon"))) return translated_DmgType_IonCannon;
 
 		/** Nod Vehicles */
 		if (object.equals(STRING_LITERAL_AS_REFERENCE("Harvester_Nod"))) return translated_DmgType_Harvester_Nod;
@@ -524,10 +564,7 @@ const Jupiter::ReadableString &RenX::translateName(const Jupiter::ReadableString
 		if (object.equals(STRING_LITERAL_AS_REFERENCE("Orca"))) return translated_DmgType_Orca;
 
 		/** Other Vehicles */
-		if (object.equals(STRING_LITERAL_AS_REFERENCE("A10_DmgType_GattlingGun"))) return translated_DmgType_A10_DmgType_GattlingGun;
-		if (object.equals(STRING_LITERAL_AS_REFERENCE("A10_DmgType_Bomb"))) return translated_DmgType_A10_DmgType_Bomb;
-		if (object.equals(STRING_LITERAL_AS_REFERENCE("AC130_DmgType_HeavyCannon"))) return translated_DmgType_AC130_DmgType_HeavyCannon;
-		if (object.equals(STRING_LITERAL_AS_REFERENCE("AC130_DmgType_AutoCannon"))) return translated_DmgType_AC130_DmgType_AutoCannon;
+		if (object.equals(STRING_LITERAL_AS_REFERENCE("A10_Missile"))) return translated_DmgType_A10_Missile;
 	}
 	else if (object.find(STRING_LITERAL_AS_REFERENCE("Building_")) == 0)
 	{
@@ -557,6 +594,13 @@ const Jupiter::ReadableString &RenX::translateName(const Jupiter::ReadableString
 		if (object.equals(STRING_LITERAL_AS_REFERENCE("AATower"))) return translated_Defence_AATower;
 		if (object.equals(STRING_LITERAL_AS_REFERENCE("GunEmplacement"))) return translated_Defence_GunEmplacement;
 		if (object.equals(STRING_LITERAL_AS_REFERENCE("RocketEmplacement"))) return translated_Defence_RocketEmplacement;
+	}
+	else if (object.find(STRING_LITERAL_AS_REFERENCE("Sentinel_")) == 0)
+	{
+		object.shiftRight(9);
+		if (object.equals(STRING_LITERAL_AS_REFERENCE("AGT_MG_Base"))) return translated_Sentinel_AGT_MG_Base;
+		if (object.equals(STRING_LITERAL_AS_REFERENCE("AGT_Rockets_Base"))) return translated_Sentinel_AGT_Rockets_Base;
+		if (object.equals(STRING_LITERAL_AS_REFERENCE("Obelisk_Laser_Base"))) return translated_Sentinel_Obelisk_Laser_Base;
 	}
 	else if (object.find(STRING_LITERAL_AS_REFERENCE("UTDmgType_")) == 0)
 	{

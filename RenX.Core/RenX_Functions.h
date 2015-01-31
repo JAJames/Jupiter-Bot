@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2014 Justin James.
+ * Copyright (C) 2014-2015 Justin James.
  *
  * This license must be preserved.
  * Any applications, libraries, or code which make any use of any
@@ -74,6 +74,15 @@ namespace RenX
 	* @return Enemy TeamType of the input team.
 	*/
 	RENX_API TeamType getEnemy(TeamType team);
+
+	/**
+	* @brief Reduces a character-related preset to a simplified form.
+	* Example: Returns "Nod_Soldier" from "Rx_FamilyInfo_Nod_Soldier".
+	*
+	* @param preset Preset to simplify.
+	* @return Simplified form of preset.
+	*/
+	RENX_API const Jupiter::ReadableString &getCharacter(const Jupiter::ReadableString &preset);
 
 	/**
 	* @brief Translates a preset's name into a real name.
