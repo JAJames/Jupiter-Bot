@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2014 Justin James.
+ * Copyright (C) 2014-2015 Justin James.
  *
  * This license must be preserved.
  * Any applications, libraries, or code which make any use of any
@@ -33,6 +33,16 @@ RenX::Plugin::~Plugin()
 			break;
 		}
 	}
+}
+
+void RenX::Plugin::RenX_SanitizeTags(Jupiter::StringType &)
+{
+	return;
+}
+
+void RenX::Plugin::RenX_ProcessTags(Jupiter::StringType &, const RenX::Server *, const RenX::PlayerInfo *, const RenX::PlayerInfo *)
+{
+	return;
 }
 
 void RenX::Plugin::RenX_OnPlayerCreate(Server *, const RenX::PlayerInfo *)
@@ -95,12 +105,27 @@ void RenX::Plugin::RenX_OnKill(Server *, const RenX::PlayerInfo *, const RenX::P
 	return;
 }
 
+void RenX::Plugin::RenX_OnKill(Server *, const Jupiter::ReadableString &, TeamType, const RenX::PlayerInfo *, const Jupiter::ReadableString &)
+{
+	return;
+}
+
 void RenX::Plugin::RenX_OnDie(Server *, const RenX::PlayerInfo *, const Jupiter::ReadableString &)
 {
 	return;
 }
 
+void RenX::Plugin::RenX_OnDie(Server *, const Jupiter::ReadableString &, TeamType, const Jupiter::ReadableString &)
+{
+	return;
+}
+
 void RenX::Plugin::RenX_OnDestroy(Server *, const RenX::PlayerInfo *, const Jupiter::ReadableString &, const Jupiter::ReadableString &, ObjectType)
+{
+	return;
+}
+
+void RenX::Plugin::RenX_OnDestroy(Server *, const Jupiter::ReadableString &, TeamType, const Jupiter::ReadableString &, TeamType, const Jupiter::ReadableString &, ObjectType)
 {
 	return;
 }
@@ -151,6 +176,41 @@ void RenX::Plugin::RenX_OnAdmin(Server *, const Jupiter::ReadableString &)
 }
 
 void RenX::Plugin::RenX_OnLog(Server *, const Jupiter::ReadableString &)
+{
+	return;
+}
+
+void RenX::Plugin::RenX_XOnVersion(Server *, unsigned int)
+{
+	return;
+}
+
+void RenX::Plugin::RenX_OnGrantCharacter(Server *, const PlayerInfo *, const Jupiter::ReadableString &)
+{
+	return;
+}
+
+void RenX::Plugin::RenX_OnGrantWeapon(Server *, const PlayerInfo *, const Jupiter::ReadableString &)
+{
+	return;
+}
+
+void RenX::Plugin::RenX_OnSpawnVehicle(Server *, const PlayerInfo *, const Jupiter::ReadableString &)
+{
+	return;
+}
+
+void RenX::Plugin::RenX_OnSpawnVehicleNoOwner(Server *, const TeamType, const Jupiter::ReadableString &)
+{
+	return;
+}
+
+void RenX::Plugin::RenX_OnMinePlace(Server *, const PlayerInfo *, const Jupiter::ReadableString &)
+{
+	return;
+}
+
+void RenX::Plugin::RenX_XOnOther(Server *, const Jupiter::ReadableString &)
 {
 	return;
 }

@@ -50,6 +50,9 @@
     <ClInclude Include="RenX_BanDatabase.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="RenX_Tags.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="RenX_Plugin.cpp">
@@ -71,6 +74,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="RenX_BanDatabase.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="RenX_Tags.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

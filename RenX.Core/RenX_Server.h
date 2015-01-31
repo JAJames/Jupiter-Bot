@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2014 Justin James.
+ * Copyright (C) 2014-2015 Justin James.
  *
  * This license must be preserved.
  * Any applications, libraries, or code which make any use of any
@@ -474,6 +474,13 @@ namespace RenX
 		unsigned int getVersion() const;
 
 		/**
+		* @brief Fetches the eXtended-RCON version number, or 0 or none has been set.
+		*
+		* @return XRCON version number
+		*/
+		unsigned int getXVersion() const;
+
+		/**
 		* @brief Fetches the game version string, or an empty string if none has been set.
 		*
 		* @return String containing the Game version
@@ -513,6 +520,7 @@ namespace RenX
 		bool firstDeath = false;
 		bool firstAction = false;
 		unsigned int rconVersion = 0;
+		unsigned int xRconVersion = 0;
 		time_t lastAttempt = 0;
 		Jupiter::String lastLine;
 		Jupiter::StringS gameVersion;

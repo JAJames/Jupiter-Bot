@@ -35,8 +35,11 @@ public: // RenX::Plugin
 	void RenX_OnDeploy(RenX::Server *server, const RenX::PlayerInfo *player, const Jupiter::ReadableString &object) override;
 	void RenX_OnSuicide(RenX::Server *server, const RenX::PlayerInfo *player, const Jupiter::ReadableString &damageType) override;
 	void RenX_OnKill(RenX::Server *server, const RenX::PlayerInfo *player, const RenX::PlayerInfo *victim, const Jupiter::ReadableString &damageType) override;
+	void RenX_OnKill(RenX::Server *server, const Jupiter::ReadableString &killer, RenX::TeamType killerTeam, const RenX::PlayerInfo *victim, const Jupiter::ReadableString &damageType) override;
 	void RenX_OnDie(RenX::Server *server, const RenX::PlayerInfo *player, const Jupiter::ReadableString &damageType) override;
+	void RenX_OnDie(RenX::Server *server, const Jupiter::ReadableString &object, RenX::TeamType objectTeam, const Jupiter::ReadableString &damageType) override;
 	void RenX_OnDestroy(RenX::Server *server, const RenX::PlayerInfo *player, const Jupiter::ReadableString &objectName, const Jupiter::ReadableString &damageType, RenX::ObjectType type) override;
+	void RenX_OnDestroy(RenX::Server *server, const Jupiter::ReadableString &killer, RenX::TeamType killerTeam, const Jupiter::ReadableString &objectName, RenX::TeamType objectTeam, const Jupiter::ReadableString &damageType, RenX::ObjectType type) override;
 	void RenX_OnGameOver(RenX::Server *server, RenX::WinType winType, RenX::TeamType team, int gScore, int nScore) override;
 	void RenX_OnGame(RenX::Server *server, const Jupiter::ReadableString &raw) override;
 	
@@ -50,6 +53,14 @@ public: // RenX::Plugin
 	void RenX_OnAdmin(RenX::Server *server, const Jupiter::ReadableString &raw) override;
 
 	void RenX_OnLog(RenX::Server *server, const Jupiter::ReadableString &raw) override;
+
+	void RenX_XOnVersion(RenX::Server *server, unsigned int version) override;
+	void RenX_OnGrantCharacter(RenX::Server *server, const RenX::PlayerInfo *player, const Jupiter::ReadableString &character) override;
+	void RenX_OnSpawnVehicle(RenX::Server *server, const RenX::PlayerInfo *owner, const Jupiter::ReadableString &vehicle) override;
+	void RenX_OnSpawnVehicleNoOwner(RenX::Server *server, const RenX::TeamType team, const Jupiter::ReadableString &vehicle) override;
+	void RenX_OnMinePlace(RenX::Server *server, const RenX::PlayerInfo *player, const Jupiter::ReadableString &mine) override;
+	void RenX_XOnOther(RenX::Server *server, const Jupiter::ReadableString &raw) override;
+
 	void RenX_OnCommand(RenX::Server *server, const Jupiter::ReadableString &raw) override;
 	void RenX_OnError(RenX::Server *server, const Jupiter::ReadableString &raw) override;
 	void RenX_OnVersion(RenX::Server *server, const Jupiter::ReadableString &raw) override;
@@ -64,8 +75,6 @@ public: // Jupiter::Plugin
 
 private:
 	void init();
-	void sanitizeTags(Jupiter::StringType &fmt) const;
-	void processTags(Jupiter::StringType &msg, const RenX::Server *server, const RenX::PlayerInfo *player = nullptr, const RenX::PlayerInfo *victim = nullptr) const;
 
 	STRING_LITERAL_AS_NAMED_REFERENCE(name, "RenX.Logging");
 	unsigned int joinPublic : 1;
@@ -89,51 +98,17 @@ private:
 	unsigned int adminLogoutPublic : 1;
 	unsigned int adminPublic : 1;
 	unsigned int logPublic : 1;
+	unsigned int xVersionPublic : 1;
+	unsigned int grantCharacterPublic : 1;
+	unsigned int spawnVehiclePublic : 1;
+	unsigned int spawnVehicleNoOwnerPublic : 1;
+	unsigned int minePlacePublic : 1;
+	unsigned int xOtherPublic : 1;
 	unsigned int commandPublic : 1;
 	unsigned int errorPublic : 1;
 	unsigned int versionPublic : 1;
 	unsigned int authorizedPublic : 1;
 	unsigned int otherPublic : 1;
-
-	/** Server tags */
-	Jupiter::StringS rconVersionTag;
-	Jupiter::StringS gameVersionTag;
-
-	/** Player tags */
-	Jupiter::StringS nameTag;
-	Jupiter::StringS rawNameTag;
-	Jupiter::StringS ipTag;
-	Jupiter::StringS steamTag;
-	Jupiter::StringS uuidTag;
-	Jupiter::StringS idTag;
-	Jupiter::StringS adminTag;
-	Jupiter::StringS prefixTag;
-	Jupiter::StringS gamePrefixTag;
-	Jupiter::StringS teamColorTag;
-	Jupiter::StringS teamShortTag;
-	Jupiter::StringS teamLongTag;
-
-	/** Victim tags */
-	Jupiter::StringS victimNameTag;
-	Jupiter::StringS victimRawNameTag;
-	Jupiter::StringS victimIPTag;
-	Jupiter::StringS victimSteamTag;
-	Jupiter::StringS victimUUIDTag;
-	Jupiter::StringS victimIDTag;
-	Jupiter::StringS victimAdminTag;
-	Jupiter::StringS victimPrefixTag;
-	Jupiter::StringS victimGamePrefixTag;
-	Jupiter::StringS victimTeamColorTag;
-	Jupiter::StringS victimTeamShortTag;
-	Jupiter::StringS victimTeamLongTag;
-
-	/** Other tags */
-	Jupiter::StringS weaponTag;
-	Jupiter::StringS objectTag;
-	Jupiter::StringS messageTag;
-	Jupiter::StringS newNameTag;
-	Jupiter::StringS winScoreTag;
-	Jupiter::StringS loseScoreTag;
 
 	/** Event formats */
 	Jupiter::StringS joinPublicFmt, joinAdminFmt, joinNoSteamAdminFmt;
@@ -145,10 +120,15 @@ private:
 	Jupiter::StringS deployFmt;
 	Jupiter::StringS suicideFmt;
 	Jupiter::StringS dieFmt;
+	Jupiter::StringS dieFmt2;
 	Jupiter::StringS killFmt;
+	Jupiter::StringS killFmt2;
 	Jupiter::StringS destroyBuildingFmt;
+	Jupiter::StringS destroyBuildingFmt2;
 	Jupiter::StringS destroyDefenceFmt;
+	Jupiter::StringS destroyDefenceFmt2;
 	Jupiter::StringS destroyVehicleFmt;
+	Jupiter::StringS destroyVehicleFmt2;
 	Jupiter::StringS gameOverFmt;
 	Jupiter::StringS gameOverTieFmt;
 	Jupiter::StringS gameOverTieNoWinFmt;
@@ -162,6 +142,12 @@ private:
 	Jupiter::StringS adminLogoutFmt;
 	Jupiter::StringS adminFmt;
 	Jupiter::StringS logFmt;
+	Jupiter::StringS xVersionFmt;
+	Jupiter::StringS grantCharacterFmt;
+	Jupiter::StringS spawnVehicleFmt;
+	Jupiter::StringS spawnVehicleNoOwnerFmt;
+	Jupiter::StringS minePlaceFmt;
+	Jupiter::StringS xOtherFmt;
 	Jupiter::StringS commandFmt;
 	Jupiter::StringS errorFmt;
 	Jupiter::StringS versionFmt;

@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2014 Justin James.
+ * Copyright (C) 2014-2015 Justin James.
  *
  * This license must be preserved.
  * Any applications, libraries, or code which make any use of any
@@ -20,6 +20,7 @@
 #include "RenX_Announcements.h"
 #include "RenX_Core.h"
 #include "RenX_Server.h"
+#include "RenX_Tags.h"
 
 RenX_AnnouncementsPlugin pluginInstance;
 
@@ -43,8 +44,7 @@ void RenX_AnnouncementsPlugin::announce(unsigned int)
 		RenX_AnnouncementsPlugin::lastLine = trand;
 	}
 	Jupiter::StringS announcement = RenX_AnnouncementsPlugin::announcementsFile.getLine(RenX_AnnouncementsPlugin::lastLine);
-	announcement.replace(RenX_AnnouncementsPlugin::dateTag, Jupiter::ReferenceString(getTimeFormat(RenX_AnnouncementsPlugin::dateFmt.c_str())));
-	announcement.replace(RenX_AnnouncementsPlugin::timeTag, Jupiter::ReferenceString(getTimeFormat(RenX_AnnouncementsPlugin::timeFmt.c_str())));
+	RenX::sanitizeTags(announcement);
 	
 	Jupiter::String msg;
 	RenX::Core *core = RenX::getCore();
@@ -55,7 +55,7 @@ void RenX_AnnouncementsPlugin::announce(unsigned int)
 		if (server->players.size() != 0)
 		{
 			msg = announcement;
-			msg.replace(RenX_AnnouncementsPlugin::rulesTag, server->getRules());
+			RenX::processTags(msg, server);
 			server->sendMessage(msg);
 		}
 	}
@@ -69,11 +69,6 @@ int RenX_AnnouncementsPlugin::OnRehash()
 
 int RenX_AnnouncementsPlugin::init()
 {
-	RenX_AnnouncementsPlugin::dateTag = Jupiter::IRC::Client::Config->get(this->getName(), STRING_LITERAL_AS_REFERENCE("DateTag"), STRING_LITERAL_AS_REFERENCE("{DATE}"));
-	RenX_AnnouncementsPlugin::timeTag = Jupiter::IRC::Client::Config->get(this->getName(), STRING_LITERAL_AS_REFERENCE("TimeTag"), STRING_LITERAL_AS_REFERENCE("{TIME}"));
-	RenX_AnnouncementsPlugin::rulesTag = Jupiter::IRC::Client::Config->get(this->getName(), STRING_LITERAL_AS_REFERENCE("RulesTag"), STRING_LITERAL_AS_REFERENCE("{RULES}"));;
-	RenX_AnnouncementsPlugin::dateFmt = Jupiter::IRC::Client::Config->get(this->getName(), STRING_LITERAL_AS_REFERENCE("DateFormat"), STRING_LITERAL_AS_REFERENCE("%A, %B %d, %Y"));
-	RenX_AnnouncementsPlugin::timeFmt = Jupiter::IRC::Client::Config->get(this->getName(), STRING_LITERAL_AS_REFERENCE("TimeFormat"), STRING_LITERAL_AS_REFERENCE("%H:%M:%S"));
 	RenX_AnnouncementsPlugin::random = Jupiter::IRC::Client::Config->getBool(STRING_LITERAL_AS_REFERENCE("RenX.Announcements"), STRING_LITERAL_AS_REFERENCE("Random"));
 
 	RenX_AnnouncementsPlugin::announcementsFile.load(Jupiter::IRC::Client::Config->get(STRING_LITERAL_AS_REFERENCE("RenX.Announcements"), STRING_LITERAL_AS_REFERENCE("File"), STRING_LITERAL_AS_REFERENCE("Announcements.txt")));

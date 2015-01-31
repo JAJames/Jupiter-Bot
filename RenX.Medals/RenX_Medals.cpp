@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2014 Justin James.
+ * Copyright (C) 2014-2015 Justin James.
  *
  * This license must be preserved.
  * Any applications, libraries, or code which make any use of any
@@ -24,6 +24,11 @@
 #include "RenX_PlayerInfo.h"
 #include "RenX_Functions.h"
 #include "RenX_Core.h"
+#include "RenX_Tags.h"
+
+Jupiter::ReferenceString INTERNAL_RECS_TAG = STRING_LITERAL_AS_REFERENCE("\0RX.MEDALS.RECS\0");
+Jupiter::ReferenceString INTERNAL_NOOB_TAG = STRING_LITERAL_AS_REFERENCE("\0RX.MEDALS.NOOB\0");
+Jupiter::ReferenceString INTERNAL_WORTH_TAG = STRING_LITERAL_AS_REFERENCE("\0RX.MEDALS.WORTH\0");
 
 RenX_MedalsPlugin::RenX_MedalsPlugin()
 {
@@ -83,6 +88,26 @@ void congratPlayer(unsigned int, void *params)
 	delete congratPlayerData;
 }
 
+void RenX_MedalsPlugin::RenX_SanitizeTags(Jupiter::StringType &fmt)
+{
+	fmt.replace(RenX_MedalsPlugin::recsTag, INTERNAL_RECS_TAG);
+	fmt.replace(RenX_MedalsPlugin::noobTag, INTERNAL_NOOB_TAG);
+	fmt.replace(RenX_MedalsPlugin::worthTag, INTERNAL_WORTH_TAG);
+}
+
+void RenX_MedalsPlugin::RenX_ProcessTags(Jupiter::StringType &msg, const RenX::Server *server, const RenX::PlayerInfo *player, const RenX::PlayerInfo *victim)
+{
+	if (player != nullptr)
+	{
+		const Jupiter::ReadableString &recs = RenX_MedalsPlugin::medalsFile.get(player->uuid, STRING_LITERAL_AS_REFERENCE("Recs"));
+		const Jupiter::ReadableString &noobs = RenX_MedalsPlugin::medalsFile.get(player->uuid, STRING_LITERAL_AS_REFERENCE("Noobs"));
+
+		msg.replace(INTERNAL_RECS_TAG, recs);
+		msg.replace(INTERNAL_NOOB_TAG, noobs);
+		msg.replace(INTERNAL_WORTH_TAG, Jupiter::StringS::Format("%d", recs.asInt() - noobs.asInt()));
+	}
+}
+
 void RenX_MedalsPlugin::RenX_OnPlayerCreate(RenX::Server *server, const RenX::PlayerInfo *player)
 {
 	if (player->uuid.isEmpty() == false && player->isBot == false)
@@ -123,14 +148,9 @@ void RenX_MedalsPlugin::RenX_OnJoin(RenX::Server *server, const RenX::PlayerInfo
 					pair = section->getPair(r);
 				} while (pair->getKey().asInt() == 0);
 
-				const Jupiter::ReadableString &recs = RenX_MedalsPlugin::medalsFile.get(player->uuid, STRING_LITERAL_AS_REFERENCE("Recs"));
-				const Jupiter::ReadableString &noobs = RenX_MedalsPlugin::medalsFile.get(player->uuid, STRING_LITERAL_AS_REFERENCE("Noobs"));
-
 				Jupiter::StringS msg = pair->getValue();
-				msg.replace(RenX_MedalsPlugin::nameTag, player->name);
-				msg.replace(RenX_MedalsPlugin::recsTag, recs);
-				msg.replace(RenX_MedalsPlugin::noobTag, noobs);
-				msg.replace(RenX_MedalsPlugin::worthTag, Jupiter::StringS::Format("%d", recs.asInt() - noobs.asInt()));
+				RenX::sanitizeTags(msg);
+				RenX::processTags(msg, server, player);
 
 				server->sendMessage(msg);
 			}
@@ -237,7 +257,6 @@ void RenX_MedalsPlugin::init()
 	RenX_MedalsPlugin::medalsFile.readFile(RenX_MedalsPlugin::medalsFileName);
 	RenX_MedalsPlugin::joinMessageFile.readFile(RenX_MedalsPlugin::joinMessageFileName);
 	RenX_MedalsPlugin::firstSection = RenX_MedalsPlugin::joinMessageFile.get(Jupiter::StringS::empty, STRING_LITERAL_AS_REFERENCE("FirstSection"));
-	RenX_MedalsPlugin::nameTag = RenX_MedalsPlugin::joinMessageFile.get(Jupiter::String::empty, STRING_LITERAL_AS_REFERENCE("NameTag"), STRING_LITERAL_AS_REFERENCE("{NAME}"));
 	RenX_MedalsPlugin::recsTag = RenX_MedalsPlugin::joinMessageFile.get(Jupiter::String::empty, STRING_LITERAL_AS_REFERENCE("RecsTag"), STRING_LITERAL_AS_REFERENCE("{RECS}"));
 	RenX_MedalsPlugin::noobTag = RenX_MedalsPlugin::joinMessageFile.get(Jupiter::String::empty, STRING_LITERAL_AS_REFERENCE("NoobsTag"), STRING_LITERAL_AS_REFERENCE("{NOOBS}"));
 	RenX_MedalsPlugin::worthTag = RenX_MedalsPlugin::joinMessageFile.get(Jupiter::String::empty, STRING_LITERAL_AS_REFERENCE("WorthTag"), STRING_LITERAL_AS_REFERENCE("{WORTH}"));

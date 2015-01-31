@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2014 Justin James.
+ * Copyright (C) 2014-2015 Justin James.
  *
  * This license must be preserved.
  * Any applications, libraries, or code which make any use of any
@@ -38,6 +38,10 @@ namespace RenX
 	class RENX_API Plugin : public Jupiter::Plugin
 	{
 	public:
+		/** Tag-related events */
+		virtual void RenX_SanitizeTags(Jupiter::StringType &fmt);
+		virtual void RenX_ProcessTags(Jupiter::StringType &msg, const Server *server, const PlayerInfo *player, const PlayerInfo *victim);
+
 		/** Non-RCON RenX logs */
 		virtual void RenX_OnPlayerCreate(Server *server, const PlayerInfo *player);
 		virtual void RenX_OnPlayerDelete(Server *server, const PlayerInfo *player);
@@ -57,8 +61,11 @@ namespace RenX
 		virtual void RenX_OnDeploy(Server *server, const PlayerInfo *player, const Jupiter::ReadableString &object);
 		virtual void RenX_OnSuicide(Server *server, const PlayerInfo *player, const Jupiter::ReadableString &damageType);
 		virtual void RenX_OnKill(Server *server, const PlayerInfo *player, const PlayerInfo *victim, const Jupiter::ReadableString &damageType);
+		virtual void RenX_OnKill(Server *server, const Jupiter::ReadableString &killer, TeamType killerTeam, const PlayerInfo *victim, const Jupiter::ReadableString &damageType);
 		virtual void RenX_OnDie(Server *server, const PlayerInfo *player, const Jupiter::ReadableString &damageType);
+		virtual void RenX_OnDie(Server *server, const Jupiter::ReadableString &object, TeamType objectTeam, const Jupiter::ReadableString &damageType);
 		virtual void RenX_OnDestroy(Server *server, const PlayerInfo *player, const Jupiter::ReadableString &objectName, const Jupiter::ReadableString &damageType, ObjectType type);
+		virtual void RenX_OnDestroy(Server *server, const Jupiter::ReadableString &killer, TeamType killerTeam, const Jupiter::ReadableString &objectName, TeamType objectTeam, const Jupiter::ReadableString &damageType, ObjectType type);
 		virtual void RenX_OnGameOver(Server *server, WinType winType, TeamType team, int gScore, int nScore);
 		virtual void RenX_OnGame(Server *server, const Jupiter::ReadableString &raw);
 
@@ -76,6 +83,15 @@ namespace RenX
 		/** Other Logs */
 		virtual void RenX_OnLog(Server *server, const Jupiter::ReadableString &raw);
 		
+		/** eXtended RCON */
+		virtual void RenX_XOnVersion(Server *server, unsigned int version);
+		virtual void RenX_OnGrantCharacter(Server *server, const PlayerInfo *player, const Jupiter::ReadableString &character);
+		virtual void RenX_OnGrantWeapon(Server *server, const PlayerInfo *player, const Jupiter::ReadableString &weapon);
+		virtual void RenX_OnSpawnVehicle(Server *server, const PlayerInfo *owner, const Jupiter::ReadableString &vehicle);
+		virtual void RenX_OnSpawnVehicleNoOwner(Server *server, const TeamType team, const Jupiter::ReadableString &vehicle);
+		virtual void RenX_OnMinePlace(Server *server, const PlayerInfo *player, const Jupiter::ReadableString &mine);
+		virtual void RenX_XOnOther(Server *server, const Jupiter::ReadableString &raw);
+
 		/** Command type */
 		virtual void RenX_OnCommand(Server *server, const Jupiter::ReadableString &raw);
 		

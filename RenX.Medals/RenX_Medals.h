@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2014 Justin James.
+ * Copyright (C) 2014-2015 Justin James.
  *
  * This license must be preserved.
  * Any applications, libraries, or code which make any use of any
@@ -42,6 +42,8 @@ int getWorth(const RenX::PlayerInfo *player);
 class RenX_MedalsPlugin : public RenX::Plugin
 {
 public: // RenX::Plugin
+	void RenX_SanitizeTags(Jupiter::StringType &fmt) override;
+	void RenX_ProcessTags(Jupiter::StringType &msg, const RenX::Server *server, const RenX::PlayerInfo *player, const RenX::PlayerInfo *victim) override;
 	void RenX_OnPlayerCreate(RenX::Server *server, const RenX::PlayerInfo *player) override;
 	void RenX_OnPlayerDelete(RenX::Server *server, const RenX::PlayerInfo *player) override;
 	void RenX_OnJoin(RenX::Server *server, const RenX::PlayerInfo *player) override;
@@ -58,7 +60,6 @@ public:
 	time_t killCongratDelay;
 	time_t vehicleKillCongratDelay;
 	time_t kdrCongratDelay;
-	Jupiter::StringS nameTag;
 	Jupiter::StringS recsTag;
 	Jupiter::StringS noobTag;
 	Jupiter::StringS worthTag;

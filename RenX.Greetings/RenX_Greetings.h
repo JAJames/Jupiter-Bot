@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2014 Justin James.
+ * Copyright (C) 2014-2015 Justin James.
  *
  * This license must be preserved.
  * Any applications, libraries, or code which make any use of any
@@ -40,10 +40,6 @@ private:
 	unsigned int lastLine;
 	unsigned int sendMode = 0; /** 0 = Send greetings randomly, 1 = Send greetings sequentially, 2 = Send all greetings */
 	Jupiter::File greetingsFile;
-	Jupiter::StringS nameTag;
-	Jupiter::StringS ipTag;
-	Jupiter::StringS steamTag;
-	Jupiter::StringS uuidTag;
 	STRING_LITERAL_AS_NAMED_REFERENCE(name, "RenX.Greetings");
 };
 

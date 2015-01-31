@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2014 Justin James.
+ * Copyright (C) 2014-2015 Justin James.
  *
  * This license must be preserved.
  * Any applications, libraries, or code which make any use of any
@@ -15,21 +15,21 @@
  * Written by Justin James <justin.aj@hotmail.com>
  */
 
+#include "Jupiter/IRC_Client.h"
+#include "Jupiter/INIFile.h"
 #include "RenX_Greetings.h"
 #include "RenX_PlayerInfo.h"
 #include "RenX_Server.h"
-#include "Jupiter/IRC_Client.h"
-#include "Jupiter/INIFile.h"
+#include "RenX_Tags.h"
 
 void RenX_GreetingsPlugin::RenX_OnJoin(RenX::Server *server, const RenX::PlayerInfo *player)
 {
 	auto sendMessage = [&](const Jupiter::ReadableString &m)
 	{
 		Jupiter::String msg = m;
-		msg.replace(this->steamTag, server->formatSteamID(player));
-		msg.replace(this->ipTag, player->ip);
-		msg.replace(this->uuidTag, player->uuid);
-		msg.replace(this->nameTag, player->name);
+
+		RenX::sanitizeTags(msg);
+		RenX::processTags(msg, server, player);
 
 		if (this->sendPrivate)
 			server->sendMessage(player, msg);
@@ -79,11 +79,6 @@ void RenX_GreetingsPlugin::init()
 	if (RenX_GreetingsPlugin::greetingsFile.getLineCount() == 0)
 		RenX_GreetingsPlugin::greetingsFile.addData(STRING_LITERAL_AS_REFERENCE("Please notify the server administrator to properly configure or disable server greetings.\r\n"));
 	RenX_GreetingsPlugin::lastLine = RenX_GreetingsPlugin::greetingsFile.getLineCount() - 1;
-
-	RenX_GreetingsPlugin::nameTag = Jupiter::IRC::Client::Config->get(RenX_GreetingsPlugin::name, STRING_LITERAL_AS_REFERENCE("NameTag"), STRING_LITERAL_AS_REFERENCE("{NAME}"));
-	RenX_GreetingsPlugin::ipTag = Jupiter::IRC::Client::Config->get(RenX_GreetingsPlugin::name, STRING_LITERAL_AS_REFERENCE("IPTag"), STRING_LITERAL_AS_REFERENCE("{IP}"));
-	RenX_GreetingsPlugin::steamTag = Jupiter::IRC::Client::Config->get(RenX_GreetingsPlugin::name, STRING_LITERAL_AS_REFERENCE("SteamTag"), STRING_LITERAL_AS_REFERENCE("{STEAM}"));
-	RenX_GreetingsPlugin::uuidTag = Jupiter::IRC::Client::Config->get(RenX_GreetingsPlugin::name, STRING_LITERAL_AS_REFERENCE("UUIDTag"), STRING_LITERAL_AS_REFERENCE("{UUID}"));
 }
 
 // Plugin instantiation and entry point.

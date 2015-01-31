@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2014 Justin James.
+ * Copyright (C) 2014-2015 Justin James.
  *
  * This license must be preserved.
  * Any applications, libraries, or code which make any use of any
@@ -43,12 +43,7 @@ private:
 	bool random;
 	unsigned int lastLine;
 	Jupiter::Timer *timer;
-	Jupiter::StringS dateTag;
-	Jupiter::StringS timeTag;
-	Jupiter::StringS rulesTag;
 	//Jupiter::StringS modsTag;
-	Jupiter::CStringS dateFmt;
-	Jupiter::CStringS timeFmt;
 	Jupiter::File announcementsFile;
 };
 

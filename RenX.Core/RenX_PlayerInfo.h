@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2014 Justin James.
+ * Copyright (C) 2014-2015 Justin James.
  *
  * This license must be preserved.
  * Any applications, libraries, or code which make any use of any
@@ -41,16 +41,23 @@ namespace RenX
 	*/
 	struct RENX_API PlayerInfo
 	{
+		// TODO: Add backpack
 		Jupiter::StringS name;
 		Jupiter::StringS ip;
 		Jupiter::StringS adminType;
 		Jupiter::StringS uuid;
+		Jupiter::StringS character;
+		Jupiter::StringS vehicle;
 		uint64_t steamid = 0;
 		uint32_t ip32 = 0;
 		TeamType team = Other;
 		int id = 0;
 		bool isBot = false;
 		time_t joinTime = 0;
+
+		float ping = -1.0f;
+		float score = 0.0f;
+		float credits = 0.0f;
 		unsigned int kills = 0;
 		unsigned int deaths = 0;
 		unsigned int suicides = 0;
