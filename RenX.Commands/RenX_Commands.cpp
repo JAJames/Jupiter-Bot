@@ -24,6 +24,7 @@
 #include "RenX_PlayerInfo.h"
 #include "RenX_Functions.h"
 #include "RenX_BanDatabase.h"
+#include "RenX_Tags.h"
 
 inline bool togglePhasing(RenX::Server *server, bool newState)
 {
@@ -65,12 +66,27 @@ void RenX_CommandsPlugin::RenX_OnDie(RenX::Server *server, const RenX::PlayerInf
 int RenX_CommandsPlugin::OnRehash()
 {
 	RenX_CommandsPlugin::_defaultTempBanTime = Jupiter::IRC::Client::Config->getLongLong(RenX_CommandsPlugin::getName(), STRING_LITERAL_AS_REFERENCE("TBanTime"), 86400);
+	RenX_CommandsPlugin::playerInfoFormat = Jupiter::IRC::Client::Config->get(RenX_CommandsPlugin::getName(), STRING_LITERAL_AS_REFERENCE("PlayerInfoFormat"), STRING_LITERAL_AS_REFERENCE(IRCCOLOR "03[Player Info]" IRCCOLOR "04 Name: " IRCBOLD "{RNAME}" IRCBOLD " - ID: {ID} - Team: " IRCBOLD "{TEAML}" IRCBOLD " - Vehicle Kills: {VEHICLEKILLS} - Building Kills {BUILDINGKILLS} - Kills {KILLS} - Deaths: {DEATHS} - KDR: {KDR} - Access: {ACCESS}"));
+	RenX_CommandsPlugin::adminPlayerInfoFormat = Jupiter::IRC::Client::Config->get(RenX_CommandsPlugin::getName(), STRING_LITERAL_AS_REFERENCE("AdminPlayerInfoFormat"), Jupiter::StringS::Format("%.*s - IP: " IRCBOLD "{IP}" IRCBOLD " - Steam ID: " IRCBOLD "{STEAM}", RenX_CommandsPlugin::playerInfoFormat.size(), RenX_CommandsPlugin::playerInfoFormat.ptr()));
+
+	RenX::sanitizeTags(RenX_CommandsPlugin::playerInfoFormat);
+	RenX::sanitizeTags(RenX_CommandsPlugin::adminPlayerInfoFormat);
 	return 0;
 }
 
 time_t RenX_CommandsPlugin::getTBanTime()
 {
 	return RenX_CommandsPlugin::_defaultTempBanTime;
+}
+
+const Jupiter::ReadableString &RenX_CommandsPlugin::getPlayerInfoFormat() const
+{
+	return RenX_CommandsPlugin::playerInfoFormat;
+}
+
+const Jupiter::ReadableString &RenX_CommandsPlugin::getAdminPlayerInfoFormat() const
+{
+	return RenX_CommandsPlugin::adminPlayerInfoFormat;
 }
 
 RenX_CommandsPlugin::RenX_CommandsPlugin()
@@ -421,7 +437,13 @@ void PlayerInfoIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableStrin
 						player = node->data;
 						if (player->name.findi(parameters) != Jupiter::INVALID_INDEX)
 						{
-							const Jupiter::ReadableString &teamColor = RenX::getTeamColor(player->team);
+							if (source->getAccessLevel(channel, nick) > 1)
+								msg = pluginInstance.getAdminPlayerInfoFormat();
+							else
+								msg = pluginInstance.getPlayerInfoFormat();
+							RenX::processTags(msg, server, player);
+							source->sendMessage(channel, msg);
+							/*const Jupiter::ReadableString &teamColor = RenX::getTeamColor(player->team);
 							const Jupiter::ReadableString &teamName = RenX::getFullTeamName(player->team);
 							msg.format(IRCCOLOR "03[Player Info]" IRCCOLOR "%.*s Name: " IRCBOLD "%.*s" IRCBOLD " - ID: %d - Team: " IRCBOLD "%.*s" IRCBOLD " - Vehicle Kills: %u - Defence Kills: %u - Building Kills: %u - Kills: %u (%u headshots) - Deaths: %u (%u suicides) - KDR: %.2f - Access: %d", teamColor.size(), teamColor.ptr(), player->name.size(), player->name.ptr(), player->id, teamName.size(), teamName.ptr(), player->vehicleKills, player->defenceKills, player->buildingKills, player->kills, player->headshots, player->deaths, player->suicides, ((float)player->kills) / (player->deaths == 0 ? 1.0 : (float)player->deaths), player->access);
 							if (source->getAccessLevel(channel, nick) > 1)
@@ -446,7 +468,7 @@ void PlayerInfoIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableStrin
 								msg += player->adminType;
 								msg += IRCBOLD;
 							}
-							source->sendMessage(channel, msg);
+							source->sendMessage(channel, msg);*/
 						}
 					}
 				}

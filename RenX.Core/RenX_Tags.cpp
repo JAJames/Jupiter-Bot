@@ -68,6 +68,21 @@ TagsImp::TagsImp()
 	this->INTERNAL_TEAM_COLOR_TAG = STRING_LITERAL_AS_REFERENCE("\0TC\0");
 	this->INTERNAL_TEAM_SHORT_TAG = STRING_LITERAL_AS_REFERENCE("\0TS\0");
 	this->INTERNAL_TEAM_LONG_TAG = STRING_LITERAL_AS_REFERENCE("\0TL\0");
+	this->INTERNAL_PING_TAG = STRING_LITERAL_AS_REFERENCE("\0PNG\0");
+	this->INTERNAL_SCORE_TAG = STRING_LITERAL_AS_REFERENCE("\0SCR\0");
+	this->INTERNAL_CREDITS_TAG = STRING_LITERAL_AS_REFERENCE("\0CRD\0");
+	this->INTERNAL_KILLS_TAG = STRING_LITERAL_AS_REFERENCE("\0KIL\0");
+	this->INTERNAL_DEATHS_TAG = STRING_LITERAL_AS_REFERENCE("\0DTH\0");
+	this->INTERNAL_KDR_TAG = STRING_LITERAL_AS_REFERENCE("\0KDR\0");
+	this->INTERNAL_SUICIDES_TAG = STRING_LITERAL_AS_REFERENCE("\0SCD\0");
+	this->INTERNAL_HEADSHOTS_TAG = STRING_LITERAL_AS_REFERENCE("\0HDS\0");
+	this->INTERNAL_VEHICLE_KILLS_TAG = STRING_LITERAL_AS_REFERENCE("\0VKS\0");
+	this->INTERNAL_BUILDING_KILLS_TAG = STRING_LITERAL_AS_REFERENCE("\0BKS\0");
+	this->INTERNAL_DEFENCE_KILLS_TAG = STRING_LITERAL_AS_REFERENCE("\0DKS\0");
+	this->INTERNAL_WINS_TAG = STRING_LITERAL_AS_REFERENCE("\0WIN\0");
+	this->INTERNAL_LOSES_TAG = STRING_LITERAL_AS_REFERENCE("\0LOS\0");
+	this->INTERNAL_BEACON_PLACEMENTS_TAG = STRING_LITERAL_AS_REFERENCE("\0BPC\0");
+	this->INTERNAL_ACCESS_TAG = STRING_LITERAL_AS_REFERENCE("\0ACS\0");
 
 	/** Victim tags */
 	this->INTERNAL_VICTIM_NAME_TAG = STRING_LITERAL_AS_REFERENCE("\0VNAME\0");
@@ -84,6 +99,21 @@ TagsImp::TagsImp()
 	this->INTERNAL_VICTIM_TEAM_COLOR_TAG = STRING_LITERAL_AS_REFERENCE("\0VTC\0");
 	this->INTERNAL_VICTIM_TEAM_SHORT_TAG = STRING_LITERAL_AS_REFERENCE("\0VTS\0");
 	this->INTERNAL_VICTIM_TEAM_LONG_TAG = STRING_LITERAL_AS_REFERENCE("\0VTL\0");
+	this->INTERNAL_VICTIM_PING_TAG = STRING_LITERAL_AS_REFERENCE("\0VPNG\0");
+	this->INTERNAL_VICTIM_SCORE_TAG = STRING_LITERAL_AS_REFERENCE("\0VSCR\0");
+	this->INTERNAL_VICTIM_CREDITS_TAG = STRING_LITERAL_AS_REFERENCE("\0VCRD\0");
+	this->INTERNAL_VICTIM_KILLS_TAG = STRING_LITERAL_AS_REFERENCE("\0VKIL\0");
+	this->INTERNAL_VICTIM_DEATHS_TAG = STRING_LITERAL_AS_REFERENCE("\0VDTH\0");
+	this->INTERNAL_VICTIM_KDR_TAG = STRING_LITERAL_AS_REFERENCE("\0VKDR\0");
+	this->INTERNAL_VICTIM_SUICIDES_TAG = STRING_LITERAL_AS_REFERENCE("\0VSCD\0");
+	this->INTERNAL_VICTIM_HEADSHOTS_TAG = STRING_LITERAL_AS_REFERENCE("\0VHDS\0");
+	this->INTERNAL_VICTIM_VEHICLE_KILLS_TAG = STRING_LITERAL_AS_REFERENCE("\0VVKS\0");
+	this->INTERNAL_VICTIM_BUILDING_KILLS_TAG = STRING_LITERAL_AS_REFERENCE("\0VBKS\0");
+	this->INTERNAL_VICTIM_DEFENCE_KILLS_TAG = STRING_LITERAL_AS_REFERENCE("\0VDKS\0");
+	this->INTERNAL_VICTIM_WINS_TAG = STRING_LITERAL_AS_REFERENCE("\0VWIN\0");
+	this->INTERNAL_VICTIM_LOSES_TAG = STRING_LITERAL_AS_REFERENCE("\0VLOS\0");
+	this->INTERNAL_VICTIM_BEACON_PLACEMENTS_TAG = STRING_LITERAL_AS_REFERENCE("\0VBPC\0");
+	this->INTERNAL_VICTIM_ACCESS_TAG = STRING_LITERAL_AS_REFERENCE("\0VACS\0");
 
 	/** Other tags */
 	this->INTERNAL_WEAPON_TAG = STRING_LITERAL_AS_REFERENCE("\0WEP\0");
@@ -120,6 +150,21 @@ TagsImp::TagsImp()
 	this->teamColorTag = Jupiter::IRC::Client::Config->get(configSection, STRING_LITERAL_AS_REFERENCE("TeamColorTag"), STRING_LITERAL_AS_REFERENCE("{TCOLOR}"));
 	this->teamShortTag = Jupiter::IRC::Client::Config->get(configSection, STRING_LITERAL_AS_REFERENCE("ShortTeamTag"), STRING_LITERAL_AS_REFERENCE("{TEAMS}"));
 	this->teamLongTag = Jupiter::IRC::Client::Config->get(configSection, STRING_LITERAL_AS_REFERENCE("LongTeamTag"), STRING_LITERAL_AS_REFERENCE("{TEAML}"));
+	this->pingTag = Jupiter::IRC::Client::Config->get(configSection, STRING_LITERAL_AS_REFERENCE("PingTag"), STRING_LITERAL_AS_REFERENCE("{PING}"));
+	this->scoreTag = Jupiter::IRC::Client::Config->get(configSection, STRING_LITERAL_AS_REFERENCE("ScoreTag"), STRING_LITERAL_AS_REFERENCE("{SCORE}"));
+	this->creditsTag = Jupiter::IRC::Client::Config->get(configSection, STRING_LITERAL_AS_REFERENCE("CreditsTag"), STRING_LITERAL_AS_REFERENCE("{CREDITS}"));
+	this->killsTag = Jupiter::IRC::Client::Config->get(configSection, STRING_LITERAL_AS_REFERENCE("KillsTag"), STRING_LITERAL_AS_REFERENCE("{KILLS}"));
+	this->deathsTag = Jupiter::IRC::Client::Config->get(configSection, STRING_LITERAL_AS_REFERENCE("DeathsTag"), STRING_LITERAL_AS_REFERENCE("{DEATHS}"));
+	this->kdrTag = Jupiter::IRC::Client::Config->get(configSection, STRING_LITERAL_AS_REFERENCE("KDRTag"), STRING_LITERAL_AS_REFERENCE("{KDR}"));
+	this->suicidesTag = Jupiter::IRC::Client::Config->get(configSection, STRING_LITERAL_AS_REFERENCE("SuicidesTag"), STRING_LITERAL_AS_REFERENCE("{SUICIDES}"));
+	this->headshotsTag = Jupiter::IRC::Client::Config->get(configSection, STRING_LITERAL_AS_REFERENCE("HeadshotsTag"), STRING_LITERAL_AS_REFERENCE("{HEADSHOTS}"));
+	this->vehicleKillsTag = Jupiter::IRC::Client::Config->get(configSection, STRING_LITERAL_AS_REFERENCE("VehicleKillsTag"), STRING_LITERAL_AS_REFERENCE("{VEHICLEKILLS}"));
+	this->buildingKillsTag = Jupiter::IRC::Client::Config->get(configSection, STRING_LITERAL_AS_REFERENCE("BuildingKillsTag"), STRING_LITERAL_AS_REFERENCE("{BUILDINGKILLS}"));
+	this->defenceKillsTag = Jupiter::IRC::Client::Config->get(configSection, STRING_LITERAL_AS_REFERENCE("DefenceKillsTag"), STRING_LITERAL_AS_REFERENCE("{DEFENCEKILLS}"));
+	this->winsTag = Jupiter::IRC::Client::Config->get(configSection, STRING_LITERAL_AS_REFERENCE("WinsTag"), STRING_LITERAL_AS_REFERENCE("{WINS}"));
+	this->losesTag = Jupiter::IRC::Client::Config->get(configSection, STRING_LITERAL_AS_REFERENCE("LosesTag"), STRING_LITERAL_AS_REFERENCE("{LOSES}"));
+	this->beaconPlacementsTag = Jupiter::IRC::Client::Config->get(configSection, STRING_LITERAL_AS_REFERENCE("BeaconPlacementsTag"), STRING_LITERAL_AS_REFERENCE("{BEACONPLACEMENTS}"));
+	this->accessTag = Jupiter::IRC::Client::Config->get(configSection, STRING_LITERAL_AS_REFERENCE("AccessTag"), STRING_LITERAL_AS_REFERENCE("{ACCESS}"));
 
 	/** Victim player tags */
 	this->victimNameTag = Jupiter::IRC::Client::Config->get(configSection, STRING_LITERAL_AS_REFERENCE("VictimNameTag"), STRING_LITERAL_AS_REFERENCE("{VNAME}"));
@@ -136,6 +181,21 @@ TagsImp::TagsImp()
 	this->victimTeamColorTag = Jupiter::IRC::Client::Config->get(configSection, STRING_LITERAL_AS_REFERENCE("VictimTeamColorTag"), STRING_LITERAL_AS_REFERENCE("{VTCOLOR}"));
 	this->victimTeamShortTag = Jupiter::IRC::Client::Config->get(configSection, STRING_LITERAL_AS_REFERENCE("VictimShortTeamTag"), STRING_LITERAL_AS_REFERENCE("{VTEAMS}"));
 	this->victimTeamLongTag = Jupiter::IRC::Client::Config->get(configSection, STRING_LITERAL_AS_REFERENCE("VictimLongTeamTag"), STRING_LITERAL_AS_REFERENCE("{VTEAML}"));
+	this->victimPingTag = Jupiter::IRC::Client::Config->get(configSection, STRING_LITERAL_AS_REFERENCE("VictimPingTag"), STRING_LITERAL_AS_REFERENCE("{VPING}"));
+	this->victimScoreTag = Jupiter::IRC::Client::Config->get(configSection, STRING_LITERAL_AS_REFERENCE("VictimScoreTag"), STRING_LITERAL_AS_REFERENCE("{VSCORE}"));
+	this->victimCreditsTag = Jupiter::IRC::Client::Config->get(configSection, STRING_LITERAL_AS_REFERENCE("VictimCreditsTag"), STRING_LITERAL_AS_REFERENCE("{VCREDITS}"));
+	this->victimKillsTag = Jupiter::IRC::Client::Config->get(configSection, STRING_LITERAL_AS_REFERENCE("VictimKillsTag"), STRING_LITERAL_AS_REFERENCE("{VKILLS}"));
+	this->victimDeathsTag = Jupiter::IRC::Client::Config->get(configSection, STRING_LITERAL_AS_REFERENCE("VictimDeathsTag"), STRING_LITERAL_AS_REFERENCE("{VDEATHS}"));
+	this->victimKDRTag = Jupiter::IRC::Client::Config->get(configSection, STRING_LITERAL_AS_REFERENCE("VictimKDRTag"), STRING_LITERAL_AS_REFERENCE("{VKDR}"));
+	this->victimSuicidesTag = Jupiter::IRC::Client::Config->get(configSection, STRING_LITERAL_AS_REFERENCE("VictimSuicidesTag"), STRING_LITERAL_AS_REFERENCE("{VSUICIDES}"));
+	this->victimHeadshotsTag = Jupiter::IRC::Client::Config->get(configSection, STRING_LITERAL_AS_REFERENCE("VictimHeadshotsTag"), STRING_LITERAL_AS_REFERENCE("{VHEADSHOTS}"));
+	this->victimVehicleKillsTag = Jupiter::IRC::Client::Config->get(configSection, STRING_LITERAL_AS_REFERENCE("VictimVehicleKillsTag"), STRING_LITERAL_AS_REFERENCE("{VVEHICLEKILLS}"));
+	this->victimBuildingKillsTag = Jupiter::IRC::Client::Config->get(configSection, STRING_LITERAL_AS_REFERENCE("VictimBuildingKillsTag"), STRING_LITERAL_AS_REFERENCE("{VBUILDINGKILLS}"));
+	this->victimDefenceKillsTag = Jupiter::IRC::Client::Config->get(configSection, STRING_LITERAL_AS_REFERENCE("VictimDefenceKillsTag"), STRING_LITERAL_AS_REFERENCE("{VDEFENCEKILLS}"));
+	this->victimWinsTag = Jupiter::IRC::Client::Config->get(configSection, STRING_LITERAL_AS_REFERENCE("VictimWinsTag"), STRING_LITERAL_AS_REFERENCE("{VWINS}"));
+	this->victimLosesTag = Jupiter::IRC::Client::Config->get(configSection, STRING_LITERAL_AS_REFERENCE("VictimLosesTag"), STRING_LITERAL_AS_REFERENCE("{VLOSES}"));
+	this->victimBeaconPlacementsTag = Jupiter::IRC::Client::Config->get(configSection, STRING_LITERAL_AS_REFERENCE("VictimBeaconPlacementsTag"), STRING_LITERAL_AS_REFERENCE("{VBEACONPLACEMENTS}"));
+	this->victimAccessTag = Jupiter::IRC::Client::Config->get(configSection, STRING_LITERAL_AS_REFERENCE("VictimAccessTag"), STRING_LITERAL_AS_REFERENCE("{VACCESS}"));
 
 	/** Other tags */
 	this->weaponTag = Jupiter::IRC::Client::Config->get(configSection, STRING_LITERAL_AS_REFERENCE("WeaponTag"), STRING_LITERAL_AS_REFERENCE("{WEAPON}"));
@@ -180,6 +240,21 @@ void TagsImp::processTags(Jupiter::StringType &msg, const RenX::Server *server, 
 		msg.replace(this->INTERNAL_TEAM_COLOR_TAG, RenX::getTeamColor(player->team));
 		msg.replace(this->INTERNAL_TEAM_SHORT_TAG, RenX::getTeamName(player->team));
 		msg.replace(this->INTERNAL_TEAM_LONG_TAG, RenX::getFullTeamName(player->team));
+		msg.replace(this->INTERNAL_PING_TAG, Jupiter::StringS::Format("%.2f", player->ping));
+		msg.replace(this->INTERNAL_SCORE_TAG, Jupiter::StringS::Format("%.0f", player->score));
+		msg.replace(this->INTERNAL_CREDITS_TAG, Jupiter::StringS::Format("%.0f", player->credits));
+		msg.replace(this->INTERNAL_KILLS_TAG, Jupiter::StringS::Format("%u", player->kills));
+		msg.replace(this->INTERNAL_DEATHS_TAG, Jupiter::StringS::Format("%u", player->deaths));
+		msg.replace(this->INTERNAL_KDR_TAG, Jupiter::StringS::Format("%.2f", static_cast<float>(player->kills) / (player->deaths == 0 ? 1.0f : static_cast<float>(player->deaths))));
+		msg.replace(this->INTERNAL_SUICIDES_TAG, Jupiter::StringS::Format("%u", player->suicides));
+		msg.replace(this->INTERNAL_HEADSHOTS_TAG, Jupiter::StringS::Format("%u", player->headshots));
+		msg.replace(this->INTERNAL_VEHICLE_KILLS_TAG, Jupiter::StringS::Format("%u", player->vehicleKills));
+		msg.replace(this->INTERNAL_BUILDING_KILLS_TAG, Jupiter::StringS::Format("%u", player->buildingKills));
+		msg.replace(this->INTERNAL_DEFENCE_KILLS_TAG, Jupiter::StringS::Format("%u", player->defenceKills));
+		msg.replace(this->INTERNAL_WINS_TAG, Jupiter::StringS::Format("%u", player->wins));
+		msg.replace(this->INTERNAL_LOSES_TAG, Jupiter::StringS::Format("%u", player->loses));
+		msg.replace(this->INTERNAL_BEACON_PLACEMENTS_TAG, Jupiter::StringS::Format("%u", player->beaconPlacements));
+		msg.replace(this->INTERNAL_ACCESS_TAG, Jupiter::StringS::Format("%d", player->access));
 	}
 	if (victim != nullptr)
 	{
@@ -196,6 +271,21 @@ void TagsImp::processTags(Jupiter::StringType &msg, const RenX::Server *server, 
 		msg.replace(this->INTERNAL_VICTIM_TEAM_COLOR_TAG, RenX::getTeamColor(victim->team));
 		msg.replace(this->INTERNAL_VICTIM_TEAM_SHORT_TAG, RenX::getTeamName(victim->team));
 		msg.replace(this->INTERNAL_VICTIM_TEAM_LONG_TAG, RenX::getFullTeamName(victim->team));
+		msg.replace(this->INTERNAL_VICTIM_PING_TAG, Jupiter::StringS::Format("%f", victim->ping));
+		msg.replace(this->INTERNAL_VICTIM_SCORE_TAG, Jupiter::StringS::Format("%f", victim->score));
+		msg.replace(this->INTERNAL_VICTIM_CREDITS_TAG, Jupiter::StringS::Format("%f", victim->credits));
+		msg.replace(this->INTERNAL_VICTIM_KILLS_TAG, Jupiter::StringS::Format("%u", victim->kills));
+		msg.replace(this->INTERNAL_VICTIM_DEATHS_TAG, Jupiter::StringS::Format("%u", victim->deaths));
+		msg.replace(this->INTERNAL_VICTIM_KDR_TAG, Jupiter::StringS::Format("%.2f", static_cast<float>(victim->kills) / (victim->deaths == 0 ? 1.0f : static_cast<float>(victim->deaths))));
+		msg.replace(this->INTERNAL_VICTIM_SUICIDES_TAG, Jupiter::StringS::Format("%u", victim->suicides));
+		msg.replace(this->INTERNAL_VICTIM_HEADSHOTS_TAG, Jupiter::StringS::Format("%u", victim->headshots));
+		msg.replace(this->INTERNAL_VICTIM_VEHICLE_KILLS_TAG, Jupiter::StringS::Format("%u", victim->vehicleKills));
+		msg.replace(this->INTERNAL_VICTIM_BUILDING_KILLS_TAG, Jupiter::StringS::Format("%u", victim->buildingKills));
+		msg.replace(this->INTERNAL_VICTIM_DEFENCE_KILLS_TAG, Jupiter::StringS::Format("%u", victim->defenceKills));
+		msg.replace(this->INTERNAL_VICTIM_WINS_TAG, Jupiter::StringS::Format("%u", victim->wins));
+		msg.replace(this->INTERNAL_VICTIM_LOSES_TAG, Jupiter::StringS::Format("%u", victim->loses));
+		msg.replace(this->INTERNAL_VICTIM_BEACON_PLACEMENTS_TAG, Jupiter::StringS::Format("%u", victim->beaconPlacements));
+		msg.replace(this->INTERNAL_VICTIM_ACCESS_TAG, Jupiter::StringS::Format("%d", victim->access));
 	}
 
 	Jupiter::ArrayList<RenX::Plugin> &xPlugins = *RenX::getCore()->getPlugins();
@@ -230,6 +320,21 @@ void TagsImp::sanitizeTags(Jupiter::StringType &fmt)
 	fmt.replace(this->teamColorTag, this->INTERNAL_TEAM_COLOR_TAG);
 	fmt.replace(this->teamShortTag, this->INTERNAL_TEAM_SHORT_TAG);
 	fmt.replace(this->teamLongTag, this->INTERNAL_TEAM_LONG_TAG);
+	fmt.replace(this->pingTag, this->INTERNAL_PING_TAG);
+	fmt.replace(this->scoreTag, this->INTERNAL_SCORE_TAG);
+	fmt.replace(this->creditsTag, this->INTERNAL_CREDITS_TAG);
+	fmt.replace(this->killsTag, this->INTERNAL_KILLS_TAG);
+	fmt.replace(this->deathsTag, this->INTERNAL_DEATHS_TAG);
+	fmt.replace(this->kdrTag, this->INTERNAL_KDR_TAG);
+	fmt.replace(this->suicidesTag, this->INTERNAL_SUICIDES_TAG);
+	fmt.replace(this->headshotsTag, this->INTERNAL_HEADSHOTS_TAG);
+	fmt.replace(this->vehicleKillsTag, this->INTERNAL_VEHICLE_KILLS_TAG);
+	fmt.replace(this->buildingKillsTag, this->INTERNAL_BUILDING_KILLS_TAG);
+	fmt.replace(this->defenceKillsTag, this->INTERNAL_DEFENCE_KILLS_TAG);
+	fmt.replace(this->winsTag, this->INTERNAL_WINS_TAG);
+	fmt.replace(this->losesTag, this->INTERNAL_LOSES_TAG);
+	fmt.replace(this->beaconPlacementsTag, this->INTERNAL_BEACON_PLACEMENTS_TAG);
+	fmt.replace(this->accessTag, this->INTERNAL_ACCESS_TAG);
 
 	/** Victim tags */
 	fmt.replace(this->victimNameTag, this->INTERNAL_VICTIM_NAME_TAG);
@@ -246,6 +351,21 @@ void TagsImp::sanitizeTags(Jupiter::StringType &fmt)
 	fmt.replace(this->victimTeamColorTag, this->INTERNAL_VICTIM_TEAM_COLOR_TAG);
 	fmt.replace(this->victimTeamShortTag, this->INTERNAL_VICTIM_TEAM_SHORT_TAG);
 	fmt.replace(this->victimTeamLongTag, this->INTERNAL_VICTIM_TEAM_LONG_TAG);
+	fmt.replace(this->victimPingTag, this->INTERNAL_VICTIM_PING_TAG);
+	fmt.replace(this->victimScoreTag, this->INTERNAL_VICTIM_SCORE_TAG);
+	fmt.replace(this->victimCreditsTag, this->INTERNAL_VICTIM_CREDITS_TAG);
+	fmt.replace(this->victimKillsTag, this->INTERNAL_VICTIM_KILLS_TAG);
+	fmt.replace(this->victimDeathsTag, this->INTERNAL_VICTIM_DEATHS_TAG);
+	fmt.replace(this->victimKDRTag, this->INTERNAL_VICTIM_KDR_TAG);
+	fmt.replace(this->victimSuicidesTag, this->INTERNAL_VICTIM_SUICIDES_TAG);
+	fmt.replace(this->victimHeadshotsTag, this->INTERNAL_VICTIM_HEADSHOTS_TAG);
+	fmt.replace(this->victimVehicleKillsTag, this->INTERNAL_VICTIM_VEHICLE_KILLS_TAG);
+	fmt.replace(this->victimBuildingKillsTag, this->INTERNAL_VICTIM_BUILDING_KILLS_TAG);
+	fmt.replace(this->victimDefenceKillsTag, this->INTERNAL_VICTIM_DEFENCE_KILLS_TAG);
+	fmt.replace(this->victimWinsTag, this->INTERNAL_VICTIM_WINS_TAG);
+	fmt.replace(this->victimLosesTag, this->INTERNAL_VICTIM_LOSES_TAG);
+	fmt.replace(this->victimBeaconPlacementsTag, this->INTERNAL_VICTIM_BEACON_PLACEMENTS_TAG);
+	fmt.replace(this->victimAccessTag, this->INTERNAL_VICTIM_ACCESS_TAG);
 
 	/** Other tags */
 	fmt.replace(this->weaponTag, this->INTERNAL_WEAPON_TAG);

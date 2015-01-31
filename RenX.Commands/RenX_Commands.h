@@ -38,11 +38,15 @@ public: // Jupiter::Plugin
 
 public:
 	time_t getTBanTime();
+	const Jupiter::ReadableString &getPlayerInfoFormat() const;
+	const Jupiter::ReadableString &getAdminPlayerInfoFormat() const;
 	RenX_CommandsPlugin();
 
 private:
 	STRING_LITERAL_AS_NAMED_REFERENCE(name, "RenX.Commands");
 	time_t _defaultTempBanTime;
+	Jupiter::StringS playerInfoFormat;
+	Jupiter::StringS adminPlayerInfoFormat;
 };
 
 GENERIC_CONSOLE_COMMAND(RCONConsoleCommand)

@@ -75,6 +75,21 @@ namespace RenX
 		Jupiter::ReferenceString INTERNAL_TEAM_COLOR_TAG;
 		Jupiter::ReferenceString INTERNAL_TEAM_SHORT_TAG;
 		Jupiter::ReferenceString INTERNAL_TEAM_LONG_TAG;
+		Jupiter::ReferenceString INTERNAL_PING_TAG;
+		Jupiter::ReferenceString INTERNAL_SCORE_TAG;
+		Jupiter::ReferenceString INTERNAL_CREDITS_TAG;
+		Jupiter::ReferenceString INTERNAL_KILLS_TAG;
+		Jupiter::ReferenceString INTERNAL_DEATHS_TAG;
+		Jupiter::ReferenceString INTERNAL_KDR_TAG;
+		Jupiter::ReferenceString INTERNAL_SUICIDES_TAG;
+		Jupiter::ReferenceString INTERNAL_HEADSHOTS_TAG;
+		Jupiter::ReferenceString INTERNAL_VEHICLE_KILLS_TAG;
+		Jupiter::ReferenceString INTERNAL_BUILDING_KILLS_TAG;
+		Jupiter::ReferenceString INTERNAL_DEFENCE_KILLS_TAG;
+		Jupiter::ReferenceString INTERNAL_WINS_TAG;
+		Jupiter::ReferenceString INTERNAL_LOSES_TAG;
+		Jupiter::ReferenceString INTERNAL_BEACON_PLACEMENTS_TAG;
+		Jupiter::ReferenceString INTERNAL_ACCESS_TAG;
 
 		/** Victim tags */
 		Jupiter::ReferenceString INTERNAL_VICTIM_NAME_TAG;
@@ -91,6 +106,21 @@ namespace RenX
 		Jupiter::ReferenceString INTERNAL_VICTIM_TEAM_COLOR_TAG;
 		Jupiter::ReferenceString INTERNAL_VICTIM_TEAM_SHORT_TAG;
 		Jupiter::ReferenceString INTERNAL_VICTIM_TEAM_LONG_TAG;
+		Jupiter::ReferenceString INTERNAL_VICTIM_PING_TAG;
+		Jupiter::ReferenceString INTERNAL_VICTIM_SCORE_TAG;
+		Jupiter::ReferenceString INTERNAL_VICTIM_CREDITS_TAG;
+		Jupiter::ReferenceString INTERNAL_VICTIM_KILLS_TAG;
+		Jupiter::ReferenceString INTERNAL_VICTIM_DEATHS_TAG;
+		Jupiter::ReferenceString INTERNAL_VICTIM_KDR_TAG;
+		Jupiter::ReferenceString INTERNAL_VICTIM_SUICIDES_TAG;
+		Jupiter::ReferenceString INTERNAL_VICTIM_HEADSHOTS_TAG;
+		Jupiter::ReferenceString INTERNAL_VICTIM_VEHICLE_KILLS_TAG;
+		Jupiter::ReferenceString INTERNAL_VICTIM_BUILDING_KILLS_TAG;
+		Jupiter::ReferenceString INTERNAL_VICTIM_DEFENCE_KILLS_TAG;
+		Jupiter::ReferenceString INTERNAL_VICTIM_WINS_TAG;
+		Jupiter::ReferenceString INTERNAL_VICTIM_LOSES_TAG;
+		Jupiter::ReferenceString INTERNAL_VICTIM_BEACON_PLACEMENTS_TAG;
+		Jupiter::ReferenceString INTERNAL_VICTIM_ACCESS_TAG;
 
 		/** Other tags */
 		Jupiter::ReferenceString INTERNAL_WEAPON_TAG;
@@ -127,6 +157,21 @@ namespace RenX
 		Jupiter::StringS teamColorTag;
 		Jupiter::StringS teamShortTag;
 		Jupiter::StringS teamLongTag;
+		Jupiter::StringS pingTag;
+		Jupiter::StringS scoreTag;
+		Jupiter::StringS creditsTag;
+		Jupiter::StringS killsTag;
+		Jupiter::StringS deathsTag;
+		Jupiter::StringS kdrTag;
+		Jupiter::StringS suicidesTag;
+		Jupiter::StringS headshotsTag;
+		Jupiter::StringS vehicleKillsTag;
+		Jupiter::StringS buildingKillsTag;
+		Jupiter::StringS defenceKillsTag;
+		Jupiter::StringS winsTag;
+		Jupiter::StringS losesTag;
+		Jupiter::StringS beaconPlacementsTag;
+		Jupiter::StringS accessTag;
 
 		/** Victim tags */
 		Jupiter::StringS victimNameTag;
@@ -143,6 +188,21 @@ namespace RenX
 		Jupiter::StringS victimTeamColorTag;
 		Jupiter::StringS victimTeamShortTag;
 		Jupiter::StringS victimTeamLongTag;
+		Jupiter::StringS victimPingTag;
+		Jupiter::StringS victimScoreTag;
+		Jupiter::StringS victimCreditsTag;
+		Jupiter::StringS victimKillsTag;
+		Jupiter::StringS victimDeathsTag;
+		Jupiter::StringS victimKDRTag;
+		Jupiter::StringS victimSuicidesTag;
+		Jupiter::StringS victimHeadshotsTag;
+		Jupiter::StringS victimVehicleKillsTag;
+		Jupiter::StringS victimBuildingKillsTag;
+		Jupiter::StringS victimDefenceKillsTag;
+		Jupiter::StringS victimWinsTag;
+		Jupiter::StringS victimLosesTag;
+		Jupiter::StringS victimBeaconPlacementsTag;
+		Jupiter::StringS victimAccessTag;
 
 		/** Other tags */
 		Jupiter::StringS weaponTag;
