@@ -1158,6 +1158,7 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 				for (size_t i = 0; i < xPlugins.size(); i++)
 					xPlugins.get(i)->RenX_XOnVersion(this, RenX::Server::xRconVersion);
 				RenX::Server::sock.send(STRING_LITERAL_AS_REFERENCE("_x\x01\n"));
+				RenX::Server::sock.send(STRING_LITERAL_AS_REFERENCE("_x\x06\n"));
 			}
 			else if (header.equals("grant_character"))
 			{
