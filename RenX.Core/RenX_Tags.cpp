@@ -240,7 +240,7 @@ void TagsImp::processTags(Jupiter::StringType &msg, const RenX::Server *server, 
 		msg.replace(this->INTERNAL_TEAM_COLOR_TAG, RenX::getTeamColor(player->team));
 		msg.replace(this->INTERNAL_TEAM_SHORT_TAG, RenX::getTeamName(player->team));
 		msg.replace(this->INTERNAL_TEAM_LONG_TAG, RenX::getFullTeamName(player->team));
-		msg.replace(this->INTERNAL_PING_TAG, Jupiter::StringS::Format("%.2f", player->ping));
+		msg.replace(this->INTERNAL_PING_TAG, Jupiter::StringS::Format("%hu", player->ping));
 		msg.replace(this->INTERNAL_SCORE_TAG, Jupiter::StringS::Format("%.0f", player->score));
 		msg.replace(this->INTERNAL_CREDITS_TAG, Jupiter::StringS::Format("%.0f", player->credits));
 		msg.replace(this->INTERNAL_KILLS_TAG, Jupiter::StringS::Format("%u", player->kills));
@@ -271,9 +271,9 @@ void TagsImp::processTags(Jupiter::StringType &msg, const RenX::Server *server, 
 		msg.replace(this->INTERNAL_VICTIM_TEAM_COLOR_TAG, RenX::getTeamColor(victim->team));
 		msg.replace(this->INTERNAL_VICTIM_TEAM_SHORT_TAG, RenX::getTeamName(victim->team));
 		msg.replace(this->INTERNAL_VICTIM_TEAM_LONG_TAG, RenX::getFullTeamName(victim->team));
-		msg.replace(this->INTERNAL_VICTIM_PING_TAG, Jupiter::StringS::Format("%f", victim->ping));
-		msg.replace(this->INTERNAL_VICTIM_SCORE_TAG, Jupiter::StringS::Format("%f", victim->score));
-		msg.replace(this->INTERNAL_VICTIM_CREDITS_TAG, Jupiter::StringS::Format("%f", victim->credits));
+		msg.replace(this->INTERNAL_VICTIM_PING_TAG, Jupiter::StringS::Format("%hu", victim->ping));
+		msg.replace(this->INTERNAL_VICTIM_SCORE_TAG, Jupiter::StringS::Format("%.0f", victim->score));
+		msg.replace(this->INTERNAL_VICTIM_CREDITS_TAG, Jupiter::StringS::Format("%.0f", victim->credits));
 		msg.replace(this->INTERNAL_VICTIM_KILLS_TAG, Jupiter::StringS::Format("%u", victim->kills));
 		msg.replace(this->INTERNAL_VICTIM_DEATHS_TAG, Jupiter::StringS::Format("%u", victim->deaths));
 		msg.replace(this->INTERNAL_VICTIM_KDR_TAG, Jupiter::StringS::Format("%.2f", static_cast<float>(victim->kills) / (victim->deaths == 0 ? 1.0f : static_cast<float>(victim->deaths))));

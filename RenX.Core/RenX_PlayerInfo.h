@@ -55,7 +55,7 @@ namespace RenX
 		bool isBot = false;
 		time_t joinTime = 0;
 
-		float ping = -1.0f;
+		unsigned short ping = 0;
 		float score = 0.0f;
 		float credits = 0.0f;
 		unsigned int kills = 0;
