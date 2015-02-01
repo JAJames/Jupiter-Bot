@@ -1123,7 +1123,7 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 						{
 							player->ping = static_cast<unsigned char>(playerData.get(0)) * 4;
 							playerData.shiftRight(1);
-							player->score = playerData.asDouble();
+							player->score = static_cast<float>(playerData.asDouble());
 							playerData.shiftLeft(1);
 						}
 						player->credits = static_cast<float>(action.asDouble());
