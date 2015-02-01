@@ -99,6 +99,36 @@ RenX_CommandsPlugin pluginInstance;
 
 /** Console Commands */
 
+// RawRCON Console Command
+
+RawRCONConsoleCommand::RawRCONConsoleCommand()
+{
+	this->addTrigger(STRING_LITERAL_AS_REFERENCE("rrcon"));
+	this->addTrigger(STRING_LITERAL_AS_REFERENCE("rawrcon"));
+}
+
+void RawRCONConsoleCommand::trigger(const Jupiter::ReadableString &parameters)
+{
+	Jupiter::StringS msg = parameters;
+	msg += '\n';
+	int i = RenX::getCore()->getServerCount();
+	if (i == 0)
+		puts("Error: Not connected to any Renegade X servers.");
+	else if (parameters.isEmpty() == false)
+		while (--i >= 0)
+			RenX::getCore()->getServer(i)->sendData(msg);
+	else
+		puts("Error: Too Few Parameters. Syntax: rcon <input>");
+}
+
+const Jupiter::ReadableString &RawRCONConsoleCommand::getHelp(const Jupiter::ReadableString &)
+{
+	static STRING_LITERAL_AS_NAMED_REFERENCE(defaultHelp, "Sends data over the Renegade X server's rcon connection. Syntax: rrcon <data>");
+	return defaultHelp;
+}
+
+CONSOLE_COMMAND_INIT(RawRCONConsoleCommand)
+
 // RCON Console Command
 
 RCONConsoleCommand::RCONConsoleCommand()
@@ -113,21 +143,15 @@ void RCONConsoleCommand::trigger(const Jupiter::ReadableString &parameters)
 	if (i == 0)
 		puts("Error: Not connected to any Renegade X servers.");
 	else if (parameters != nullptr)
-	{
-		RenX::Server *server;
 		while (--i >= 0)
-		{
-			server = RenX::getCore()->getServer(i);
-			RenX::getCore()->send(server, parameters);
-		}
-	}
+			RenX::getCore()->getServer(i)->send(parameters);
 	else
 		puts("Error: Too Few Parameters. Syntax: rcon <input>");
 }
 
 const Jupiter::ReadableString &RCONConsoleCommand::getHelp(const Jupiter::ReadableString &)
 {
-	static STRING_LITERAL_AS_NAMED_REFERENCE(defaultHelp, "Sends data to the Renegade X server's rcon. Syntax: rcon <input>");
+	static STRING_LITERAL_AS_NAMED_REFERENCE(defaultHelp, "Executes a command over the Renegade X server's rcon connection. Syntax: rcon <input>");
 	return defaultHelp;
 }
 

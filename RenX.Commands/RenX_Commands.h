@@ -49,6 +49,7 @@ private:
 	Jupiter::StringS adminPlayerInfoFormat;
 };
 
+GENERIC_CONSOLE_COMMAND(RawRCONConsoleCommand)
 GENERIC_CONSOLE_COMMAND(RCONConsoleCommand)
 //GENERIC_CONSOLE_COMMAND(RCONSelectConsoleCommand)
 
