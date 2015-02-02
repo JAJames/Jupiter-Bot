@@ -467,32 +467,6 @@ void PlayerInfoIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableStrin
 								msg = pluginInstance.getPlayerInfoFormat();
 							RenX::processTags(msg, server, player);
 							source->sendMessage(channel, msg);
-							/*const Jupiter::ReadableString &teamColor = RenX::getTeamColor(player->team);
-							const Jupiter::ReadableString &teamName = RenX::getFullTeamName(player->team);
-							msg.format(IRCCOLOR "03[Player Info]" IRCCOLOR "%.*s Name: " IRCBOLD "%.*s" IRCBOLD " - ID: %d - Team: " IRCBOLD "%.*s" IRCBOLD " - Vehicle Kills: %u - Defence Kills: %u - Building Kills: %u - Kills: %u (%u headshots) - Deaths: %u (%u suicides) - KDR: %.2f - Access: %d", teamColor.size(), teamColor.ptr(), player->name.size(), player->name.ptr(), player->id, teamName.size(), teamName.ptr(), player->vehicleKills, player->defenceKills, player->buildingKills, player->kills, player->headshots, player->deaths, player->suicides, ((float)player->kills) / (player->deaths == 0 ? 1.0 : (float)player->deaths), player->access);
-							if (source->getAccessLevel(channel, nick) > 1)
-							{
-								msg += " - IP: " IRCBOLD;
-								if (player->ip.size() != 0)
-								{
-									msg += player->ip;
-									msg += IRCBOLD;
-								}
-								else msg += "IP Not Found" IRCBOLD;
-							}
-							if (player->steamid != 0)
-							{
-								msg += " - Steam ID: " IRCBOLD;
-								msg += server->formatSteamID(player);
-								msg += IRCBOLD;
-							}
-							if (player->adminType.size() != 0)
-							{
-								msg += " - Admin Type: " IRCBOLD;
-								msg += player->adminType;
-								msg += IRCBOLD;
-							}
-							source->sendMessage(channel, msg);*/
 						}
 					}
 				}
@@ -1517,6 +1491,63 @@ const Jupiter::ReadableString &RCONIRCCommand::getHelp(const Jupiter::ReadableSt
 }
 
 IRC_COMMAND_INIT(RCONIRCCommand)
+
+// Refund IRC Command
+
+void RefundIRCCommand::create()
+{
+	this->addTrigger(STRING_LITERAL_AS_REFERENCE("refund"));
+	this->addTrigger(STRING_LITERAL_AS_REFERENCE("givecredits"));
+	this->addTrigger(STRING_LITERAL_AS_REFERENCE("gc"));
+	this->addTrigger(STRING_LITERAL_AS_REFERENCE("money"));
+	this->addTrigger(STRING_LITERAL_AS_REFERENCE("credits"));
+	this->setAccessLevel(3);
+}
+
+void RefundIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &channel, const Jupiter::ReadableString &nick, const Jupiter::ReadableString &parameters)
+{
+	if (parameters.wordCount(WHITESPACE) >= 2)
+	{
+		Jupiter::IRC::Client::Channel *chan = source->getChannel(channel);
+		if (chan != nullptr)
+		{
+			int type = chan->getType();
+			Jupiter::ReferenceString playerName = Jupiter::ReferenceString::getWord(parameters, 0, WHITESPACE);
+			double credits = Jupiter::ReferenceString::getWord(parameters, 1, WHITESPACE).asDouble();
+			RenX::PlayerInfo *player;
+			Jupiter::StringL msg;
+			for (unsigned int i = 0; i != RenX::getCore()->getServerCount(); i++)
+			{
+				RenX::Server *server = RenX::getCore()->getServer(i);
+				if (server->isLogChanType(type) && server->players.size() != 0)
+				{
+					for (Jupiter::DLList<RenX::PlayerInfo>::Node *node = server->players.getNode(0); node != nullptr; node = node->next)
+					{
+						player = node->data;
+						if (player->name.findi(playerName) != Jupiter::INVALID_INDEX)
+						{
+							if (server->giveCredits(player, credits))
+								msg.format("%.*s has been refunded %.0f credits.", player->name.size(), player->name.ptr(), credits);
+							else
+								msg.set("Error: Server does not support refunds.");
+							source->sendMessage(channel, msg);
+						}
+					}
+				}
+			}
+			if (msg.isEmpty()) source->sendNotice(nick, STRING_LITERAL_AS_REFERENCE("Error: Player not found."));
+		}
+	}
+	else source->sendNotice(nick, STRING_LITERAL_AS_REFERENCE("Error: Too Few Parameters. Syntax: refund <player> <amount>"));
+}
+
+const Jupiter::ReadableString &RefundIRCCommand::getHelp(const Jupiter::ReadableString &)
+{
+	static STRING_LITERAL_AS_NAMED_REFERENCE(defaultHelp, "Refunds a player's credits. Syntax: refund <player> <amount>");
+	return defaultHelp;
+}
+
+IRC_COMMAND_INIT(RefundIRCCommand)
 
 /** Game Commands */
 
