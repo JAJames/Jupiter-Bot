@@ -1527,7 +1527,11 @@ void RefundIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &c
 						if (player->name.findi(playerName) != Jupiter::INVALID_INDEX)
 						{
 							if (server->giveCredits(player, credits))
+							{
+								msg.format("You have been refunded %.0f credits by %.*s.", credits, nick.size(), nick.ptr());
+								server->sendMessage(player, msg);
 								msg.format("%.*s has been refunded %.0f credits.", player->name.size(), player->name.ptr(), credits);
+							}
 							else
 								msg.set("Error: Server does not support refunds.");
 							source->sendMessage(channel, msg);
