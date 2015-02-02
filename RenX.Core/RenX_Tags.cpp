@@ -35,7 +35,7 @@ RenX::Tags *RenX::tags = &_tags;
 
 TagsImp::TagsImp()
 {
-	const Jupiter::ReadableString &configSection = Jupiter::IRC::Client::Config->get(RenX::getCore()->getName(), STRING_LITERAL_AS_REFERENCE("TagDefinitions"), STRING_LITERAL_AS_REFERENCE("TagDefinitions"));
+	const Jupiter::ReadableString &configSection = Jupiter::IRC::Client::Config->get(STRING_LITERAL_AS_REFERENCE("RenX"), STRING_LITERAL_AS_REFERENCE("TagDefinitions"), STRING_LITERAL_AS_REFERENCE("RenX.Tags"));
 
 	/** Global formats */
 	this->dateFmt = Jupiter::IRC::Client::Config->get(configSection, STRING_LITERAL_AS_REFERENCE("DateFormat"), STRING_LITERAL_AS_REFERENCE("%A, %B %d, %Y"));
