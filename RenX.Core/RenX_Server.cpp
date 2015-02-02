@@ -1105,38 +1105,28 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 				header.shiftRight(1);
 				switch (header[0])
 				{
-				case 1: // Client list: Normal Player Data | IP | Steam ID | Start Time | Ping Kills | Deaths | Score | Credits | Class
+				case 1: // Client list: Normal Player Data | IP | Steam ID | Start Time | Ping | Kills | Deaths | Score | Credits | Class
 					header.shiftRight(1);
 					{
 						PARSE_PLAYER_DATA_P(header);
 						PlayerInfo *player = getPlayerOrAdd(this, name, id, team, isBot, playerData.asUnsignedLongLong(0), action);
-						Jupiter::ReferenceString pingKillsToken = buff.getToken(4, RenX::DelimC);
-						if (pingKillsToken.isEmpty() == false)
-						{
-							player->ping = static_cast<unsigned char>(pingKillsToken.get(0)) * 4;
-							pingKillsToken.shiftRight(1);
-							player->kills = pingKillsToken.asUnsignedInt();
-						}
-						player->deaths = buff.getToken(5, RenX::DelimC).asUnsignedInt();
-						player->score = static_cast<float>(buff.getToken(6, RenX::DelimC).asDouble());
-						player->credits = static_cast<float>(buff.getToken(7, RenX::DelimC).asDouble());
-						player->character = RenX::getCharacter(buff.getToken(8, RenX::DelimC));
+						player->ping = buff.getToken(4, RenX::DelimC).asUnsignedInt() * 4;
+						player->kills = buff.getToken(5, RenX::DelimC).asUnsignedInt();
+						player->deaths = buff.getToken(6, RenX::DelimC).asUnsignedInt();
+						player->score = static_cast<float>(buff.getToken(7, RenX::DelimC).asDouble());
+						player->credits = static_cast<float>(buff.getToken(8, RenX::DelimC).asDouble());
+						player->character = RenX::getCharacter(buff.getToken(9, RenX::DelimC));
 					}
 					header.shiftLeft(1);
 					break;
-				case 2: // Ping, Score, Credits list: Normal Player Data | Ping Score | Credits
+				case 2: // Ping, Score, Credits list: Normal Player Data | Ping | Score | Credits
 					header.shiftRight(1);
 					{
 						PARSE_PLAYER_DATA_P(header);
 						PlayerInfo *player = getPlayerOrAdd(this, name, id, team, isBot, 0U, Jupiter::ReferenceString::empty);
-						if (playerData.isEmpty() == false)
-						{
-							player->ping = static_cast<unsigned char>(playerData.get(0)) * 4;
-							playerData.shiftRight(1);
-							player->score = static_cast<float>(playerData.asDouble());
-							playerData.shiftLeft(1);
-						}
-						player->credits = static_cast<float>(action.asDouble());
+						player->ping = playerData.asUnsignedInt();
+						player->score = static_cast<float>(action.asDouble());
+						player->credits = static_cast<float>(buff.getToken(4, RenX::DelimC).asDouble());
 					}
 					header.shiftLeft(1);
 					break;
