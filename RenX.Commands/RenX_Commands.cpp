@@ -66,7 +66,7 @@ void RenX_CommandsPlugin::RenX_OnDie(RenX::Server *server, const RenX::PlayerInf
 int RenX_CommandsPlugin::OnRehash()
 {
 	RenX_CommandsPlugin::_defaultTempBanTime = Jupiter::IRC::Client::Config->getLongLong(RenX_CommandsPlugin::getName(), STRING_LITERAL_AS_REFERENCE("TBanTime"), 86400);
-	RenX_CommandsPlugin::playerInfoFormat = Jupiter::IRC::Client::Config->get(RenX_CommandsPlugin::getName(), STRING_LITERAL_AS_REFERENCE("PlayerInfoFormat"), STRING_LITERAL_AS_REFERENCE(IRCCOLOR "03[Player Info]" IRCCOLOR "04 Name: " IRCBOLD "{RNAME}" IRCBOLD " - ID: {ID} - Team: " IRCBOLD "{TEAML}" IRCBOLD " - Vehicle Kills: {VEHICLEKILLS} - Building Kills {BUILDINGKILLS} - Kills {KILLS} - Deaths: {DEATHS} - KDR: {KDR} - Access: {ACCESS}"));
+	RenX_CommandsPlugin::playerInfoFormat = Jupiter::IRC::Client::Config->get(RenX_CommandsPlugin::getName(), STRING_LITERAL_AS_REFERENCE("PlayerInfoFormat"), STRING_LITERAL_AS_REFERENCE(IRCCOLOR "03[Player Info]" IRCCOLOR "{TCOLOR} Name: " IRCBOLD "{RNAME}" IRCBOLD " - ID: {ID} - Team: " IRCBOLD "{TEAML}" IRCBOLD " - Vehicle Kills: {VEHICLEKILLS} - Building Kills {BUILDINGKILLS} - Kills {KILLS} - Deaths: {DEATHS} - KDR: {KDR} - Access: {ACCESS}"));
 	RenX_CommandsPlugin::adminPlayerInfoFormat = Jupiter::IRC::Client::Config->get(RenX_CommandsPlugin::getName(), STRING_LITERAL_AS_REFERENCE("AdminPlayerInfoFormat"), Jupiter::StringS::Format("%.*s - IP: " IRCBOLD "{IP}" IRCBOLD " - Steam ID: " IRCBOLD "{STEAM}", RenX_CommandsPlugin::playerInfoFormat.size(), RenX_CommandsPlugin::playerInfoFormat.ptr()));
 
 	RenX::sanitizeTags(RenX_CommandsPlugin::playerInfoFormat);
