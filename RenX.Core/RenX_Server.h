@@ -279,6 +279,24 @@ namespace RenX
 		bool removePlayer(RenX::PlayerInfo *player);
 
 		/**
+		* @brief Gives a player additional credits, if the server supports it.
+		*
+		* @param id ID of the player to give credits to
+		* @param credits Credits to give to player
+		* @return True on success, false otherwise.
+		*/
+		bool giveCredits(int id, double credits);
+
+		/**
+		* @brief Gives a player additional credits, if the server supports it.
+		*
+		* @param player Player to give credits to
+		* @param credits Credits to give to player
+		* @return True on success, false otherwise.
+		*/
+		bool giveCredits(RenX::PlayerInfo *player, double credits);
+
+		/**
 		* @brief Fetches a server's IRC logging prefix.
 		*
 		* @return The server's logging prefix.

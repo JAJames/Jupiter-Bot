@@ -358,6 +358,16 @@ bool RenX::Server::removePlayer(RenX::PlayerInfo *player)
 	return RenX::Server::removePlayer(player->id);
 }
 
+bool RenX::Server::giveCredits(int id, double credits)
+{
+	return RenX::Server::xRconVersion != 0 && RenX::Server::sock.send(Jupiter::StringS::Format("_x\x04%d%c%.4f\n", id, RenX::DelimC, credits)) > 0;
+}
+
+bool RenX::Server::giveCredits(RenX::PlayerInfo *player, double credits)
+{
+	return RenX::Server::giveCredits(player->id, credits);
+}
+
 const Jupiter::ReadableString &RenX::Server::getPrefix() const
 {
 	return RenX::Server::IRCPrefix;
