@@ -240,7 +240,6 @@ void RenX_MedalsPlugin::RenX_OnDestroy(RenX::Server *server, const RenX::PlayerI
 int RenX_MedalsPlugin::OnRehash()
 {
 	RenX_MedalsPlugin::medalsFile.sync(RenX_MedalsPlugin::medalsFileName);
-	RenX_MedalsPlugin::joinMessageFile.sync(RenX_MedalsPlugin::joinMessageFileName);
 	RenX_MedalsPlugin::medalsFile.flushData();
 	RenX_MedalsPlugin::joinMessageFile.flushData();
 	init();
