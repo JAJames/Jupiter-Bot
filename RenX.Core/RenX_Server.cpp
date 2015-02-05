@@ -1145,6 +1145,29 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 					break;
 				case 6: // Command 2 on Timer: Time interval
 					break;
+				case 7: // Team change: Normal Player Data | Options (00<Reset Kills><Reset Deaths><Force-Zero(Never returned)><Reset Score><Reset Credits><Kill>)
+					header.shiftRight(1);
+					{
+						PARSE_PLAYER_DATA_P(header);
+						PlayerInfo *player = getPlayerOrAdd(this, name, id, team, isBot, 0U, Jupiter::ReferenceString::empty);
+						unsigned char options = 0;
+						if (playerData.isEmpty() == false)
+							options = playerData.get(0);
+						if (options & 0x02)
+							player->credits = 0.0f;
+						if (options & 0x04)
+							player->score = 0.0f;
+						// 0x08 unused.
+						if (options & 0x10)
+							player->deaths = 0;
+						if (options & 0x20)
+							player->kills = 0;
+
+						for (size_t i = 0; i < xPlugins.size(); i++)
+							xPlugins.get(i)->RenX_OnTeamChange(this, player);
+					}
+					header.shiftLeft(1);
+					break;
 				default:
 					break;
 				}
