@@ -368,6 +368,26 @@ bool RenX::Server::giveCredits(RenX::PlayerInfo *player, double credits)
 	return RenX::Server::giveCredits(player->id, credits);
 }
 
+bool RenX::Server::changeTeam(int id, unsigned char options)
+{
+	return RenX::Server::xRconVersion != 0 && RenX::Server::sock.send(Jupiter::StringS::Format("_x\x07%d%c%c\n", id, RenX::DelimC, options)) > 0;
+}
+
+bool RenX::Server::changeTeam(RenX::PlayerInfo *player, unsigned char options)
+{
+	return RenX::Server::changeTeam(player->id, options);
+}
+
+bool RenX::Server::setTeam(int id, int team, unsigned char options)
+{
+	return RenX::Server::xRconVersion != 0 && RenX::Server::sock.send(Jupiter::StringS::Format("_x\x07%d%c%c%c%d\n", id, RenX::DelimC, options, RenX::DelimC, team)) > 0;
+}
+
+bool RenX::Server::setTeam(RenX::PlayerInfo *player, int team, unsigned char options)
+{
+	return RenX::Server::setTeam(player->id, team, options);
+}
+
 const Jupiter::ReadableString &RenX::Server::getPrefix() const
 {
 	return RenX::Server::IRCPrefix;
@@ -1110,12 +1130,12 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 					{
 						PARSE_PLAYER_DATA_P(header);
 						PlayerInfo *player = getPlayerOrAdd(this, name, id, team, isBot, playerData.asUnsignedLongLong(0), action);
-						player->ping = buff.getToken(4, RenX::DelimC).asUnsignedInt() * 4;
-						player->kills = buff.getToken(5, RenX::DelimC).asUnsignedInt();
-						player->deaths = buff.getToken(6, RenX::DelimC).asUnsignedInt();
-						player->score = static_cast<float>(buff.getToken(7, RenX::DelimC).asDouble());
-						player->credits = static_cast<float>(buff.getToken(8, RenX::DelimC).asDouble());
-						player->character = RenX::getCharacter(buff.getToken(9, RenX::DelimC));
+						player->ping = buff.getToken(3, RenX::DelimC).asUnsignedInt() * 4;
+						player->kills = buff.getToken(4, RenX::DelimC).asUnsignedInt();
+						player->deaths = buff.getToken(5, RenX::DelimC).asUnsignedInt();
+						player->score = static_cast<float>(buff.getToken(6, RenX::DelimC).asDouble());
+						player->credits = static_cast<float>(buff.getToken(7, RenX::DelimC).asDouble());
+						player->character = RenX::getCharacter(buff.getToken(8, RenX::DelimC));
 					}
 					header.shiftLeft(1);
 					break;
@@ -1126,7 +1146,7 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 						PlayerInfo *player = getPlayerOrAdd(this, name, id, team, isBot, 0U, Jupiter::ReferenceString::empty);
 						player->ping = playerData.asUnsignedInt();
 						player->score = static_cast<float>(action.asDouble());
-						player->credits = static_cast<float>(buff.getToken(4, RenX::DelimC).asDouble());
+						player->credits = static_cast<float>(buff.getToken(3, RenX::DelimC).asDouble());
 					}
 					header.shiftLeft(1);
 					break;

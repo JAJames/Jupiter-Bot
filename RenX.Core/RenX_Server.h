@@ -297,6 +297,44 @@ namespace RenX
 		bool giveCredits(RenX::PlayerInfo *player, double credits);
 
 		/**
+		* @brief Forces a player to change teams, if the server supports it.
+		*
+		* @param id ID of the player to give credits to
+		* @param options Options to pass to the command
+		* @return True on success, false otherwise.
+		*/
+		bool changeTeam(int id, unsigned char options = 0x03);
+
+		/**
+		* @brief Forces a player to change teams, if the server supports it.
+		*
+		* @param player Player to change teams
+		* @param options Options to pass to the command
+		* @return True on success, false otherwise.
+		*/
+		bool changeTeam(RenX::PlayerInfo *player, unsigned char options = 0x03);
+
+		/**
+		* @brief Forces a player to change teams, if the server supports it.
+		*
+		* @param id ID of the player to give credits to
+		* @param team Team number to switch to
+		* @param options Options to pass to the command
+		* @return True on success, false otherwise.
+		*/
+		bool setTeam(int id, int team, unsigned char options = 0x03);
+
+		/**
+		* @brief Forces a player to change teams, if the server supports it.
+		*
+		* @param player Player to change teams
+		* @param team Team number to switch to
+		* @param options Options to pass to the command
+		* @return True on success, false otherwise.
+		*/
+		bool setTeam(RenX::PlayerInfo *player, int team, unsigned char options = 0x03);
+
+		/**
 		* @brief Fetches a server's IRC logging prefix.
 		*
 		* @return The server's logging prefix.
