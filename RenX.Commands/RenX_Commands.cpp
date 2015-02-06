@@ -1312,15 +1312,15 @@ void AddBotsIRCCommand::create()
 
 void AddBotsIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &channel, const Jupiter::ReadableString &nick, const Jupiter::ReadableString &parameters)
 {
-	if (parameters.size() != 0)
-	{
 		Jupiter::IRC::Client::Channel *chan = source->getChannel(channel);
 		if (chan != nullptr)
 		{
 			Jupiter::ArrayList<RenX::Server> servers = RenX::getCore()->getServers(source->getChannel(channel)->getType());
 			if (servers.size() != 0)
 			{
-				int amount = parameters.asInt();
+				int amount = 1;
+				if (parameters.isEmpty() == false)
+					amount = parameters.asInt();
 				if (amount != 0)
 				{
 					RenX::Server *server;
@@ -1357,13 +1357,11 @@ void AddBotsIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &
 			}
 			else source->sendMessage(channel, STRING_LITERAL_AS_REFERENCE("Error: Channel not attached to any connected Renegade X servers."));
 		}
-	}
-	else source->sendNotice(nick, STRING_LITERAL_AS_REFERENCE("Error: Too Few Parameters. Syntax: AddBots <Amount> [Team]"));
 }
 
 const Jupiter::ReadableString &AddBotsIRCCommand::getHelp(const Jupiter::ReadableString &)
 {
-	static STRING_LITERAL_AS_NAMED_REFERENCE(defaultHelp, "Adds bots to the game. Syntax: AddBots <Amount> [Team]");
+	static STRING_LITERAL_AS_NAMED_REFERENCE(defaultHelp, "Adds bots to the game. Syntax: AddBots [Amount=1] [Team]");
 	return defaultHelp;
 }
 
@@ -1552,6 +1550,118 @@ const Jupiter::ReadableString &RefundIRCCommand::getHelp(const Jupiter::Readable
 }
 
 IRC_COMMAND_INIT(RefundIRCCommand)
+
+// Team-Change IRC Command
+
+void TeamChangeIRCCommand::create()
+{
+	this->addTrigger(STRING_LITERAL_AS_REFERENCE("team"));
+	this->addTrigger(STRING_LITERAL_AS_REFERENCE("tc"));
+	this->addTrigger(STRING_LITERAL_AS_REFERENCE("ftc"));
+	this->addTrigger(STRING_LITERAL_AS_REFERENCE("forcetc"));
+	this->addTrigger(STRING_LITERAL_AS_REFERENCE("teamchange"));
+	this->setAccessLevel(3);
+}
+
+void TeamChangeIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &channel, const Jupiter::ReadableString &nick, const Jupiter::ReadableString &parameters)
+{
+	if (parameters.isEmpty() == false)
+	{
+		Jupiter::IRC::Client::Channel *chan = source->getChannel(channel);
+		if (chan != nullptr)
+		{
+			int type = chan->getType();
+			Jupiter::ReferenceString playerName = Jupiter::ReferenceString::getWord(parameters, 0, WHITESPACE);
+			double credits = Jupiter::ReferenceString::getWord(parameters, 1, WHITESPACE).asDouble();
+			RenX::PlayerInfo *player;
+			bool playerFound = false;
+			for (unsigned int i = 0; i != RenX::getCore()->getServerCount(); i++)
+			{
+				RenX::Server *server = RenX::getCore()->getServer(i);
+				if (server->isLogChanType(type) && server->players.size() != 0)
+				{
+					for (Jupiter::DLList<RenX::PlayerInfo>::Node *node = server->players.getNode(0); node != nullptr; node = node->next)
+					{
+						player = node->data;
+						if (player->name.findi(playerName) != Jupiter::INVALID_INDEX)
+						{
+							playerFound = true;
+							if (server->changeTeam(player) == false)
+								source->sendMessage(channel, STRING_LITERAL_AS_REFERENCE("Error: Server does not support team changing."));
+						}
+					}
+				}
+			}
+			if (playerFound == false)
+				source->sendNotice(nick, STRING_LITERAL_AS_REFERENCE("Error: Player not found."));
+		}
+	}
+	else source->sendNotice(nick, STRING_LITERAL_AS_REFERENCE("Error: Too Few Parameters. Syntax: team <player>"));
+}
+
+const Jupiter::ReadableString &TeamChangeIRCCommand::getHelp(const Jupiter::ReadableString &)
+{
+	static STRING_LITERAL_AS_NAMED_REFERENCE(defaultHelp, "Changes a player's team. Syntax: team <player>");
+	return defaultHelp;
+}
+
+IRC_COMMAND_INIT(TeamChangeIRCCommand)
+
+// TeamChange2 IRC Command
+
+void TeamChange2IRCCommand::create()
+{
+	this->addTrigger(STRING_LITERAL_AS_REFERENCE("team2"));
+	this->addTrigger(STRING_LITERAL_AS_REFERENCE("tc2"));
+	this->addTrigger(STRING_LITERAL_AS_REFERENCE("ftc2"));
+	this->addTrigger(STRING_LITERAL_AS_REFERENCE("forcetc2"));
+	this->addTrigger(STRING_LITERAL_AS_REFERENCE("teamchange2"));
+	this->setAccessLevel(3);
+}
+
+void TeamChange2IRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &channel, const Jupiter::ReadableString &nick, const Jupiter::ReadableString &parameters)
+{
+	if (parameters.isEmpty() == false)
+	{
+		Jupiter::IRC::Client::Channel *chan = source->getChannel(channel);
+		if (chan != nullptr)
+		{
+			int type = chan->getType();
+			Jupiter::ReferenceString playerName = Jupiter::ReferenceString::getWord(parameters, 0, WHITESPACE);
+			double credits = Jupiter::ReferenceString::getWord(parameters, 1, WHITESPACE).asDouble();
+			RenX::PlayerInfo *player;
+			bool playerFound = false;
+			for (unsigned int i = 0; i != RenX::getCore()->getServerCount(); i++)
+			{
+				RenX::Server *server = RenX::getCore()->getServer(i);
+				if (server->isLogChanType(type) && server->players.size() != 0)
+				{
+					for (Jupiter::DLList<RenX::PlayerInfo>::Node *node = server->players.getNode(0); node != nullptr; node = node->next)
+					{
+						player = node->data;
+						if (player->name.findi(playerName) != Jupiter::INVALID_INDEX)
+						{
+							playerFound = true;
+							if (server->changeTeam(player, 0x01) == false)
+								source->sendMessage(channel, STRING_LITERAL_AS_REFERENCE("Error: Server does not support team changing."));
+						}
+					}
+				}
+			}
+			if (playerFound == false)
+				source->sendNotice(nick, STRING_LITERAL_AS_REFERENCE("Error: Player not found."));
+		}
+	}
+	else source->sendNotice(nick, STRING_LITERAL_AS_REFERENCE("Error: Too Few Parameters. Syntax: team2 <player>"));
+}
+
+const Jupiter::ReadableString &TeamChange2IRCCommand::getHelp(const Jupiter::ReadableString &)
+{
+	static STRING_LITERAL_AS_NAMED_REFERENCE(defaultHelp, "Changes a player's team, without resetting their credits. Syntax: team2 <player>");
+	return defaultHelp;
+}
+
+IRC_COMMAND_INIT(TeamChange2IRCCommand)
 
 /** Game Commands */
 
