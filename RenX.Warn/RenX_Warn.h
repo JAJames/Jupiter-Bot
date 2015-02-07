@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2014 Justin James.
+ * Copyright (C) 2014-2015 Justin James.
  *
  * This license must be preserved.
  * Any applications, libraries, or code which make any use of any
@@ -34,7 +34,7 @@ public: // Jupiter::Plugin
 	int maxWarns;
 	int warnAction; /** -1 = kick; 0 = perm ban; other = temp ban */
 private:
-	STRING_LITERAL_AS_NAMED_REFERENCE(name, "RenX_TemplatePlugin");
+	STRING_LITERAL_AS_NAMED_REFERENCE(name, "RenX.Warn");
 };
 
 GENERIC_IRC_COMMAND(WarnIRCCommand)
