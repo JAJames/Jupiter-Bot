@@ -61,6 +61,17 @@ Jupiter::ReferenceString tieWinTypePlainTranslation = "Tie";
 Jupiter::ReferenceString shutdownWinTypePlainTranslation = "Shutdown";
 Jupiter::ReferenceString unknownWinTypePlainTranslation = "Unknown";
 
+/** Vote translations */
+
+Jupiter::ReferenceString translated_VoteMenuChoice_AddBots = STRING_LITERAL_AS_REFERENCE("Add Bots");
+Jupiter::ReferenceString translated_VoteMenuChoice_ChangeMap = STRING_LITERAL_AS_REFERENCE("Change Map");
+Jupiter::ReferenceString translated_VoteMenuChoice_Donate = STRING_LITERAL_AS_REFERENCE("Donate");
+Jupiter::ReferenceString translated_VoteMenuChoice_Kick = STRING_LITERAL_AS_REFERENCE("Kick");
+Jupiter::ReferenceString translated_VoteMenuChoice_RemoveBots = STRING_LITERAL_AS_REFERENCE("Remove Bots");
+Jupiter::ReferenceString translated_VoteMenuChoice_RestartMatch = STRING_LITERAL_AS_REFERENCE("Restart Match");
+Jupiter::ReferenceString translated_VoteMenuChoice_StartMatch = STRING_LITERAL_AS_REFERENCE("Start Match");
+Jupiter::ReferenceString translated_VoteMenuChoice_Survey = STRING_LITERAL_AS_REFERENCE("Survey");
+
 /** Object / damage type translations */
 
 /** Nod Vehicles */
@@ -203,8 +214,6 @@ Jupiter::ReferenceString translated_DmgType_RocketEmpl_Missile = STRING_LITERAL_
 Jupiter::ReferenceString translated_DmgType_Nuke = STRING_LITERAL_AS_REFERENCE("Nuclear Missile Strike");
 Jupiter::ReferenceString translated_DmgType_IonCannon = STRING_LITERAL_AS_REFERENCE("Ion Cannon Strike");
 
-// Vehicles copied from above.
-
 /** Nod Vehicles */
 Jupiter::ReferenceString translated_DmgType_Harvester_Nod = STRING_LITERAL_AS_REFERENCE("Nod Harvester");
 Jupiter::ReferenceString translated_DmgType_Buggy = STRING_LITERAL_AS_REFERENCE("Buggy");
@@ -273,12 +282,12 @@ RenX::TeamType RenX::getTeam(char team)
 	{
 	case 'g':
 	case 'G':
-		return GDI;
+		return RenX::TeamType::GDI;
 	case 'n':
 	case 'N':
-		return Nod;
+		return RenX::TeamType::Nod;
 	default:
-		return Other;
+		return RenX::TeamType::Other;
 	}
 }
 
@@ -286,9 +295,9 @@ const Jupiter::ReadableString &RenX::getTeamColor(TeamType team)
 {
 	switch (team)
 	{
-	case GDI:
+	case RenX::TeamType::GDI:
 		return GDIColor;
-	case Nod:
+	case RenX::TeamType::Nod:
 		return NodColor;
 	default:
 		return OtherColor;
@@ -299,9 +308,9 @@ const Jupiter::ReadableString &RenX::getTeamName(TeamType team)
 {
 	switch (team)
 	{
-	case GDI:
+	case RenX::TeamType::GDI:
 		return GDIShortName;
-	case Nod:
+	case RenX::TeamType::Nod:
 		return NodShortName;
 	default:
 		return OtherShortName;
@@ -312,9 +321,9 @@ const Jupiter::ReadableString &RenX::getFullTeamName(TeamType team)
 {
 	switch (team)
 	{
-	case GDI:
+	case RenX::TeamType::GDI:
 		return GDILongName;
-	case Nod:
+	case RenX::TeamType::Nod:
 		return NodLongName;
 	default:
 		return OtherLongName;
@@ -325,12 +334,12 @@ RenX::TeamType RenX::getEnemy(TeamType team)
 {
 	switch (team)
 	{
-	case GDI:
-		return Nod;
-	case Nod:
-		return GDI;
+	case RenX::TeamType::GDI:
+		return RenX::TeamType::Nod;
+	case RenX::TeamType::Nod:
+		return RenX::TeamType::GDI;
 	default:
-		return Other;
+		return RenX::TeamType::Other;
 	}
 }
 
@@ -608,6 +617,18 @@ const Jupiter::ReadableString &RenX::translateName(const Jupiter::ReadableString
 		if (object.equals(STRING_LITERAL_AS_REFERENCE("VehicleExplosion"))) return translated_UTDmgType_VehicleExplosion;
 		if (object.equals(STRING_LITERAL_AS_REFERENCE("Drowned"))) return translated_UTDmgType_Drowned;
 	}
+	else if (object.find(STRING_LITERAL_AS_REFERENCE("VoteMenuChoice_")) == 0)
+	{
+		object.shiftRight(15);
+		if (object.equals(STRING_LITERAL_AS_REFERENCE("AddBots"))) return translated_VoteMenuChoice_AddBots;
+		if (object.equals(STRING_LITERAL_AS_REFERENCE("ChangeMap"))) return translated_VoteMenuChoice_ChangeMap;
+		if (object.equals(STRING_LITERAL_AS_REFERENCE("Donate"))) return translated_VoteMenuChoice_Donate;
+		if (object.equals(STRING_LITERAL_AS_REFERENCE("Kick"))) return translated_VoteMenuChoice_Kick;
+		if (object.equals(STRING_LITERAL_AS_REFERENCE("RemoveBots"))) return translated_VoteMenuChoice_RemoveBots;
+		if (object.equals(STRING_LITERAL_AS_REFERENCE("RestartMatch"))) return translated_VoteMenuChoice_RestartMatch;
+		if (object.equals(STRING_LITERAL_AS_REFERENCE("StartMatch"))) return translated_VoteMenuChoice_StartMatch;
+		if (object.equals(STRING_LITERAL_AS_REFERENCE("Survey"))) return translated_VoteMenuChoice_Survey;
+	}
 	else if (object.equals(STRING_LITERAL_AS_REFERENCE("IonCannonBeacon"))) return translated_IonCannonBeacon;
 	else if (object.equals(STRING_LITERAL_AS_REFERENCE("NukeBeacon"))) return translated_NukeBeacon;
 	else if (object.equals(STRING_LITERAL_AS_REFERENCE("KillZDamageType"))) return translated_KillZDamageType;
@@ -618,17 +639,17 @@ const Jupiter::ReadableString &RenX::translateWinType(RenX::WinType winType)
 {
 	switch (winType)
 	{
-	case Score:
+	case RenX::WinType::Score:
 		return scoreWinTypeTranslation;
-	case Base:
+	case RenX::WinType::Base:
 		return baseWinTypeTranslation;
-	case Beacon:
+	case RenX::WinType::Beacon:
 		return beaconWinTypeTranslation;
-	case Tie:
+	case RenX::WinType::Tie:
 		return tieWinTypeTranslation;
-	case Shutdown:
+	case RenX::WinType::Shutdown:
 		return shutdownWinTypeTranslation;
-	case Unknown:
+	case RenX::WinType::Unknown:
 	default:
 		return unknownWinTypeTranslation;
 	}
@@ -638,17 +659,17 @@ const Jupiter::ReadableString &RenX::translateWinTypePlain(RenX::WinType winType
 {
 	switch (winType)
 	{
-	case Score:
+	case RenX::WinType::Score:
 		return scoreWinTypePlainTranslation;
-	case Base:
+	case RenX::WinType::Base:
 		return baseWinTypePlainTranslation;
-	case Beacon:
+	case RenX::WinType::Beacon:
 		return beaconWinTypePlainTranslation;
-	case Tie:
+	case RenX::WinType::Tie:
 		return tieWinTypePlainTranslation;
-	case Shutdown:
+	case RenX::WinType::Shutdown:
 		return shutdownWinTypePlainTranslation;
-	case Unknown:
+	case RenX::WinType::Unknown:
 	default:
 		return unknownWinTypePlainTranslation;
 	}
@@ -707,6 +728,16 @@ void RenX::sanitizeString(char *str)
 			break;
 		}
 		str++;
+	}
+}
+
+void RenX::sanitizeString(Jupiter::StringType &str)
+{
+	if (str.isEmpty() == false)
+	{
+		str.replace('|', '/');
+		if (str.get(str.size() - 1) == '\\')
+			str.set(str.size() - 1, '/');
 	}
 }
 

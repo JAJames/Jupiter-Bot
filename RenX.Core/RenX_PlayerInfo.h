@@ -50,7 +50,7 @@ namespace RenX
 		Jupiter::StringS vehicle;
 		uint64_t steamid = 0;
 		uint32_t ip32 = 0;
-		TeamType team = Other;
+		TeamType team = TeamType::Other;
 		int id = 0;
 		bool isBot = false;
 		time_t joinTime = 0;

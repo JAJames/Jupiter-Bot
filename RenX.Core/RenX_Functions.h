@@ -133,6 +133,7 @@ namespace RenX
 	* @brief str String to sanitize.
 	*/
 	RENX_API void sanitizeString(char *str);
+	RENX_API void sanitizeString(Jupiter::StringType &str);
 
 	/**
 	* @brief Calculates for how many seconds a player has been in-game.

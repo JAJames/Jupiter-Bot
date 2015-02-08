@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2014 Justin James.
+ * Copyright (C) 2014-2015 Justin James.
  *
  * This license must be preserved.
  * Any applications, libraries, or code which make any use of any
@@ -39,7 +39,7 @@
 
 namespace RenX
 {
-	enum WinType
+	enum class WinType
 	{
 		Score,
 		Base,
@@ -49,19 +49,21 @@ namespace RenX
 		Unknown
 	};
 
-	enum TeamType
+	enum class TeamType
 	{
 		GDI,
 		Nod,
-		Other
+		Other,
+		None
 	};
 
-	enum ObjectType
+	enum class ObjectType
 	{
 		Player,
 		Vehicle,
 		Building,
-		Defence
+		Defence,
+		None
 	};
 }
 

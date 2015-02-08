@@ -30,11 +30,28 @@ struct TagsImp : RenX::Tags
 	TagsImp();
 	void processTags(Jupiter::StringType &msg, const RenX::Server *server, const RenX::PlayerInfo *player, const RenX::PlayerInfo *victim);
 	void sanitizeTags(Jupiter::StringType &fmt);
+	const Jupiter::ReadableString &getUniqueInternalTag();
+private:
+	Jupiter::StringS uniqueTag;
+	union
+	{
+		uint32_t tagItr;
+		struct
+		{
+			uint8_t tagItrP1;
+			uint8_t tagItrP2;
+			uint8_t tagItrP3;
+			uint8_t tagItrP4;
+		};
+	};
 } _tags;
 RenX::Tags *RenX::tags = &_tags;
 
 TagsImp::TagsImp()
 {
+	this->tagItr = 0;
+	this->uniqueTag = STRING_LITERAL_AS_REFERENCE("\0\0\0\0\0\0");
+
 	const Jupiter::ReadableString &configSection = Jupiter::IRC::Client::Config->get(STRING_LITERAL_AS_REFERENCE("RenX"), STRING_LITERAL_AS_REFERENCE("TagDefinitions"), STRING_LITERAL_AS_REFERENCE("RenX.Tags"));
 
 	/** Global formats */
@@ -44,84 +61,87 @@ TagsImp::TagsImp()
 	/** Internal message tags */
 
 	/** Global tags */
-	this->INTERNAL_DATE_TAG = STRING_LITERAL_AS_REFERENCE("\0DAT\0");
-	this->INTERNAL_TIME_TAG = STRING_LITERAL_AS_REFERENCE("\0TIM\0");
+	this->INTERNAL_DATE_TAG = this->getUniqueInternalTag();
+	this->INTERNAL_TIME_TAG = this->getUniqueInternalTag();
 
 	/** Server tags */
-	this->INTERNAL_RCON_VERSION_TAG = STRING_LITERAL_AS_REFERENCE("\0RVER\0");
-	this->INTERNAL_GAME_VERSION_TAG = STRING_LITERAL_AS_REFERENCE("\0GVER\0");
-	this->INTERNAL_XRCON_VERSION_TAG = STRING_LITERAL_AS_REFERENCE("\0XVER\0");
-	this->INTERNAL_RULES_TAG = STRING_LITERAL_AS_REFERENCE("\0RUL\0");
+	this->INTERNAL_RCON_VERSION_TAG = this->getUniqueInternalTag();
+	this->INTERNAL_GAME_VERSION_TAG = this->getUniqueInternalTag();
+	this->INTERNAL_XRCON_VERSION_TAG = this->getUniqueInternalTag();
+	this->INTERNAL_RULES_TAG = this->getUniqueInternalTag();
+	this->INTERNAL_USER_TAG = this->getUniqueInternalTag();
+	this->INTERNAL_SERVER_NAME_TAG = this->getUniqueInternalTag();
+	this->INTERNAL_MAP_TAG = this->getUniqueInternalTag();
 
 	/** Player tags*/
-	this->INTERNAL_NAME_TAG = STRING_LITERAL_AS_REFERENCE("\0NAME\0");
-	this->INTERNAL_RAW_NAME_TAG = STRING_LITERAL_AS_REFERENCE("\0RNAME\0");
-	this->INTERNAL_IP_TAG = STRING_LITERAL_AS_REFERENCE("\0IP\0");
-	this->INTERNAL_STEAM_TAG = STRING_LITERAL_AS_REFERENCE("\0STEAM\0");
-	this->INTERNAL_UUID_TAG = STRING_LITERAL_AS_REFERENCE("\0UUID\0");
-	this->INTERNAL_ID_TAG = STRING_LITERAL_AS_REFERENCE("\0ID\0");
-	this->INTERNAL_CHARACTER_TAG = STRING_LITERAL_AS_REFERENCE("\0CHR\0");
-	this->INTERNAL_VEHICLE_TAG = STRING_LITERAL_AS_REFERENCE("\0VEH\0");
-	this->INTERNAL_ADMIN_TAG = STRING_LITERAL_AS_REFERENCE("\0ADM\0");
-	this->INTERNAL_PREFIX_TAG = STRING_LITERAL_AS_REFERENCE("\0PFX\0");
-	this->INTERNAL_GAME_PREFIX_TAG = STRING_LITERAL_AS_REFERENCE("\0GPF\0");
-	this->INTERNAL_TEAM_COLOR_TAG = STRING_LITERAL_AS_REFERENCE("\0TC\0");
-	this->INTERNAL_TEAM_SHORT_TAG = STRING_LITERAL_AS_REFERENCE("\0TS\0");
-	this->INTERNAL_TEAM_LONG_TAG = STRING_LITERAL_AS_REFERENCE("\0TL\0");
-	this->INTERNAL_PING_TAG = STRING_LITERAL_AS_REFERENCE("\0PNG\0");
-	this->INTERNAL_SCORE_TAG = STRING_LITERAL_AS_REFERENCE("\0SCR\0");
-	this->INTERNAL_CREDITS_TAG = STRING_LITERAL_AS_REFERENCE("\0CRD\0");
-	this->INTERNAL_KILLS_TAG = STRING_LITERAL_AS_REFERENCE("\0KIL\0");
-	this->INTERNAL_DEATHS_TAG = STRING_LITERAL_AS_REFERENCE("\0DTH\0");
-	this->INTERNAL_KDR_TAG = STRING_LITERAL_AS_REFERENCE("\0KDR\0");
-	this->INTERNAL_SUICIDES_TAG = STRING_LITERAL_AS_REFERENCE("\0SCD\0");
-	this->INTERNAL_HEADSHOTS_TAG = STRING_LITERAL_AS_REFERENCE("\0HDS\0");
-	this->INTERNAL_VEHICLE_KILLS_TAG = STRING_LITERAL_AS_REFERENCE("\0VKS\0");
-	this->INTERNAL_BUILDING_KILLS_TAG = STRING_LITERAL_AS_REFERENCE("\0BKS\0");
-	this->INTERNAL_DEFENCE_KILLS_TAG = STRING_LITERAL_AS_REFERENCE("\0DKS\0");
-	this->INTERNAL_WINS_TAG = STRING_LITERAL_AS_REFERENCE("\0WIN\0");
-	this->INTERNAL_LOSES_TAG = STRING_LITERAL_AS_REFERENCE("\0LOS\0");
-	this->INTERNAL_BEACON_PLACEMENTS_TAG = STRING_LITERAL_AS_REFERENCE("\0BPC\0");
-	this->INTERNAL_ACCESS_TAG = STRING_LITERAL_AS_REFERENCE("\0ACS\0");
+	this->INTERNAL_NAME_TAG = this->getUniqueInternalTag();
+	this->INTERNAL_RAW_NAME_TAG = this->getUniqueInternalTag();
+	this->INTERNAL_IP_TAG = this->getUniqueInternalTag();
+	this->INTERNAL_STEAM_TAG = this->getUniqueInternalTag();
+	this->INTERNAL_UUID_TAG = this->getUniqueInternalTag();
+	this->INTERNAL_ID_TAG = this->getUniqueInternalTag();
+	this->INTERNAL_CHARACTER_TAG = this->getUniqueInternalTag();
+	this->INTERNAL_VEHICLE_TAG = this->getUniqueInternalTag();
+	this->INTERNAL_ADMIN_TAG = this->getUniqueInternalTag();
+	this->INTERNAL_PREFIX_TAG = this->getUniqueInternalTag();
+	this->INTERNAL_GAME_PREFIX_TAG = this->getUniqueInternalTag();
+	this->INTERNAL_TEAM_COLOR_TAG = this->getUniqueInternalTag();
+	this->INTERNAL_TEAM_SHORT_TAG = this->getUniqueInternalTag();
+	this->INTERNAL_TEAM_LONG_TAG = this->getUniqueInternalTag();
+	this->INTERNAL_PING_TAG = this->getUniqueInternalTag();
+	this->INTERNAL_SCORE_TAG = this->getUniqueInternalTag();
+	this->INTERNAL_CREDITS_TAG = this->getUniqueInternalTag();
+	this->INTERNAL_KILLS_TAG = this->getUniqueInternalTag();
+	this->INTERNAL_DEATHS_TAG = this->getUniqueInternalTag();
+	this->INTERNAL_KDR_TAG = this->getUniqueInternalTag();
+	this->INTERNAL_SUICIDES_TAG = this->getUniqueInternalTag();
+	this->INTERNAL_HEADSHOTS_TAG = this->getUniqueInternalTag();
+	this->INTERNAL_VEHICLE_KILLS_TAG = this->getUniqueInternalTag();
+	this->INTERNAL_BUILDING_KILLS_TAG = this->getUniqueInternalTag();
+	this->INTERNAL_DEFENCE_KILLS_TAG = this->getUniqueInternalTag();
+	this->INTERNAL_WINS_TAG = this->getUniqueInternalTag();
+	this->INTERNAL_LOSES_TAG = this->getUniqueInternalTag();
+	this->INTERNAL_BEACON_PLACEMENTS_TAG = this->getUniqueInternalTag();
+	this->INTERNAL_ACCESS_TAG = this->getUniqueInternalTag();
 
 	/** Victim tags */
-	this->INTERNAL_VICTIM_NAME_TAG = STRING_LITERAL_AS_REFERENCE("\0VNAME\0");
-	this->INTERNAL_VICTIM_RAW_NAME_TAG = STRING_LITERAL_AS_REFERENCE("\0VRNAME\0");
-	this->INTERNAL_VICTIM_IP_TAG = STRING_LITERAL_AS_REFERENCE("\0VIP\0");
-	this->INTERNAL_VICTIM_STEAM_TAG = STRING_LITERAL_AS_REFERENCE("\0VSTEAM\0");
-	this->INTERNAL_VICTIM_UUID_TAG = STRING_LITERAL_AS_REFERENCE("\0VUUID\0");
-	this->INTERNAL_VICTIM_ID_TAG = STRING_LITERAL_AS_REFERENCE("\0VID\0");
-	this->INTERNAL_VICTIM_CHARACTER_TAG = STRING_LITERAL_AS_REFERENCE("\0VCHR\0");
-	this->INTERNAL_VICTIM_VEHICLE_TAG = STRING_LITERAL_AS_REFERENCE("\0VVEH\0");
-	this->INTERNAL_VICTIM_ADMIN_TAG = STRING_LITERAL_AS_REFERENCE("\0VADM\0");
-	this->INTERNAL_VICTIM_PREFIX_TAG = STRING_LITERAL_AS_REFERENCE("\0VPFX\0");
-	this->INTERNAL_VICTIM_GAME_PREFIX_TAG = STRING_LITERAL_AS_REFERENCE("\0VGPF\0");
-	this->INTERNAL_VICTIM_TEAM_COLOR_TAG = STRING_LITERAL_AS_REFERENCE("\0VTC\0");
-	this->INTERNAL_VICTIM_TEAM_SHORT_TAG = STRING_LITERAL_AS_REFERENCE("\0VTS\0");
-	this->INTERNAL_VICTIM_TEAM_LONG_TAG = STRING_LITERAL_AS_REFERENCE("\0VTL\0");
-	this->INTERNAL_VICTIM_PING_TAG = STRING_LITERAL_AS_REFERENCE("\0VPNG\0");
-	this->INTERNAL_VICTIM_SCORE_TAG = STRING_LITERAL_AS_REFERENCE("\0VSCR\0");
-	this->INTERNAL_VICTIM_CREDITS_TAG = STRING_LITERAL_AS_REFERENCE("\0VCRD\0");
-	this->INTERNAL_VICTIM_KILLS_TAG = STRING_LITERAL_AS_REFERENCE("\0VKIL\0");
-	this->INTERNAL_VICTIM_DEATHS_TAG = STRING_LITERAL_AS_REFERENCE("\0VDTH\0");
-	this->INTERNAL_VICTIM_KDR_TAG = STRING_LITERAL_AS_REFERENCE("\0VKDR\0");
-	this->INTERNAL_VICTIM_SUICIDES_TAG = STRING_LITERAL_AS_REFERENCE("\0VSCD\0");
-	this->INTERNAL_VICTIM_HEADSHOTS_TAG = STRING_LITERAL_AS_REFERENCE("\0VHDS\0");
-	this->INTERNAL_VICTIM_VEHICLE_KILLS_TAG = STRING_LITERAL_AS_REFERENCE("\0VVKS\0");
-	this->INTERNAL_VICTIM_BUILDING_KILLS_TAG = STRING_LITERAL_AS_REFERENCE("\0VBKS\0");
-	this->INTERNAL_VICTIM_DEFENCE_KILLS_TAG = STRING_LITERAL_AS_REFERENCE("\0VDKS\0");
-	this->INTERNAL_VICTIM_WINS_TAG = STRING_LITERAL_AS_REFERENCE("\0VWIN\0");
-	this->INTERNAL_VICTIM_LOSES_TAG = STRING_LITERAL_AS_REFERENCE("\0VLOS\0");
-	this->INTERNAL_VICTIM_BEACON_PLACEMENTS_TAG = STRING_LITERAL_AS_REFERENCE("\0VBPC\0");
-	this->INTERNAL_VICTIM_ACCESS_TAG = STRING_LITERAL_AS_REFERENCE("\0VACS\0");
+	this->INTERNAL_VICTIM_NAME_TAG = this->getUniqueInternalTag();
+	this->INTERNAL_VICTIM_RAW_NAME_TAG = this->getUniqueInternalTag();
+	this->INTERNAL_VICTIM_IP_TAG = this->getUniqueInternalTag();
+	this->INTERNAL_VICTIM_STEAM_TAG = this->getUniqueInternalTag();
+	this->INTERNAL_VICTIM_UUID_TAG = this->getUniqueInternalTag();
+	this->INTERNAL_VICTIM_ID_TAG = this->getUniqueInternalTag();
+	this->INTERNAL_VICTIM_CHARACTER_TAG = this->getUniqueInternalTag();
+	this->INTERNAL_VICTIM_VEHICLE_TAG = this->getUniqueInternalTag();
+	this->INTERNAL_VICTIM_ADMIN_TAG = this->getUniqueInternalTag();
+	this->INTERNAL_VICTIM_PREFIX_TAG = this->getUniqueInternalTag();
+	this->INTERNAL_VICTIM_GAME_PREFIX_TAG = this->getUniqueInternalTag();
+	this->INTERNAL_VICTIM_TEAM_COLOR_TAG = this->getUniqueInternalTag();
+	this->INTERNAL_VICTIM_TEAM_SHORT_TAG = this->getUniqueInternalTag();
+	this->INTERNAL_VICTIM_TEAM_LONG_TAG = this->getUniqueInternalTag();
+	this->INTERNAL_VICTIM_PING_TAG = this->getUniqueInternalTag();
+	this->INTERNAL_VICTIM_SCORE_TAG = this->getUniqueInternalTag();
+	this->INTERNAL_VICTIM_CREDITS_TAG = this->getUniqueInternalTag();
+	this->INTERNAL_VICTIM_KILLS_TAG = this->getUniqueInternalTag();
+	this->INTERNAL_VICTIM_DEATHS_TAG = this->getUniqueInternalTag();
+	this->INTERNAL_VICTIM_KDR_TAG = this->getUniqueInternalTag();
+	this->INTERNAL_VICTIM_SUICIDES_TAG = this->getUniqueInternalTag();
+	this->INTERNAL_VICTIM_HEADSHOTS_TAG = this->getUniqueInternalTag();
+	this->INTERNAL_VICTIM_VEHICLE_KILLS_TAG = this->getUniqueInternalTag();
+	this->INTERNAL_VICTIM_BUILDING_KILLS_TAG = this->getUniqueInternalTag();
+	this->INTERNAL_VICTIM_DEFENCE_KILLS_TAG = this->getUniqueInternalTag();
+	this->INTERNAL_VICTIM_WINS_TAG = this->getUniqueInternalTag();
+	this->INTERNAL_VICTIM_LOSES_TAG = this->getUniqueInternalTag();
+	this->INTERNAL_VICTIM_BEACON_PLACEMENTS_TAG = this->getUniqueInternalTag();
+	this->INTERNAL_VICTIM_ACCESS_TAG = this->getUniqueInternalTag();
 
 	/** Other tags */
-	this->INTERNAL_WEAPON_TAG = STRING_LITERAL_AS_REFERENCE("\0WEP\0");
-	this->INTERNAL_OBJECT_TAG = STRING_LITERAL_AS_REFERENCE("\0OBJ\0");
-	this->INTERNAL_MESSAGE_TAG = STRING_LITERAL_AS_REFERENCE("\0MSG\0");
-	this->INTERNAL_NEW_NAME_TAG = STRING_LITERAL_AS_REFERENCE("\0NNAME\0");
-	this->INTERNAL_WIN_SCORE_TAG = STRING_LITERAL_AS_REFERENCE("\0WSC\0");
-	this->INTERNAL_LOSE_SCORE_TAG = STRING_LITERAL_AS_REFERENCE("\0LSC\0");
+	this->INTERNAL_WEAPON_TAG = this->getUniqueInternalTag();
+	this->INTERNAL_OBJECT_TAG = this->getUniqueInternalTag();
+	this->INTERNAL_MESSAGE_TAG = this->getUniqueInternalTag();
+	this->INTERNAL_NEW_NAME_TAG = this->getUniqueInternalTag();
+	this->INTERNAL_WIN_SCORE_TAG = this->getUniqueInternalTag();
+	this->INTERNAL_LOSE_SCORE_TAG = this->getUniqueInternalTag();
 
 	/** External (config) tags */
 
@@ -134,6 +154,9 @@ TagsImp::TagsImp()
 	this->gameVersionTag = Jupiter::IRC::Client::Config->get(configSection, STRING_LITERAL_AS_REFERENCE("GameVersionTag"), STRING_LITERAL_AS_REFERENCE("{GVER}"));
 	this->xRconVersionTag = Jupiter::IRC::Client::Config->get(configSection, STRING_LITERAL_AS_REFERENCE("XRCONVersionTag"), STRING_LITERAL_AS_REFERENCE("{XVER}"));
 	this->rulesTag = Jupiter::IRC::Client::Config->get(configSection, STRING_LITERAL_AS_REFERENCE("RulesTag"), STRING_LITERAL_AS_REFERENCE("{RULES}"));
+	this->userTag = Jupiter::IRC::Client::Config->get(configSection, STRING_LITERAL_AS_REFERENCE("UserTag"), STRING_LITERAL_AS_REFERENCE("{USER}"));
+	this->serverNameTag = Jupiter::IRC::Client::Config->get(configSection, STRING_LITERAL_AS_REFERENCE("ServerNameTag"), STRING_LITERAL_AS_REFERENCE("{SERVERNAME}"));
+	this->mapTag = Jupiter::IRC::Client::Config->get(configSection, STRING_LITERAL_AS_REFERENCE("MapTag"), STRING_LITERAL_AS_REFERENCE("{MAP}"));
 
 	/** Player tags */
 	this->nameTag = Jupiter::IRC::Client::Config->get(configSection, STRING_LITERAL_AS_REFERENCE("NameTag"), STRING_LITERAL_AS_REFERENCE("{NAME}"));
@@ -214,8 +237,11 @@ void TagsImp::processTags(Jupiter::StringType &msg, const RenX::Server *server, 
 	{
 		msg.replace(this->INTERNAL_RCON_VERSION_TAG, Jupiter::StringS::Format("%u", server->getVersion()));
 		msg.replace(this->INTERNAL_GAME_VERSION_TAG, server->getGameVersion());
-		msg.replace(this->INTERNAL_XRCON_VERSION_TAG, Jupiter::StringS::Format("%u", server->getXVersion()));
+		msg.replace(this->INTERNAL_XRCON_VERSION_TAG, Jupiter::StringS::Format("%u.%u", server->getXVersion(), server->getXRevision()));
 		msg.replace(this->INTERNAL_RULES_TAG, server->getRules());
+		msg.replace(this->INTERNAL_USER_TAG, server->getUser());
+		msg.replace(this->INTERNAL_SERVER_NAME_TAG, server->getName());
+		msg.replace(this->INTERNAL_MAP_TAG, server->getMap());
 		if (player != nullptr)
 		{
 			msg.replace(this->INTERNAL_STEAM_TAG, server->formatSteamID(player));
@@ -304,6 +330,9 @@ void TagsImp::sanitizeTags(Jupiter::StringType &fmt)
 	fmt.replace(this->gameVersionTag, this->INTERNAL_GAME_VERSION_TAG);
 	fmt.replace(this->xRconVersionTag, this->INTERNAL_XRCON_VERSION_TAG);
 	fmt.replace(this->rulesTag, this->INTERNAL_RULES_TAG);
+	fmt.replace(this->userTag, this->INTERNAL_USER_TAG);
+	fmt.replace(this->serverNameTag, this->INTERNAL_SERVER_NAME_TAG);
+	fmt.replace(this->mapTag, this->INTERNAL_MAP_TAG);
 
 	/** Player tags */
 	fmt.replace(this->nameTag, this->INTERNAL_NAME_TAG);
@@ -378,6 +407,16 @@ void TagsImp::sanitizeTags(Jupiter::StringType &fmt)
 	Jupiter::ArrayList<RenX::Plugin> &xPlugins = *RenX::getCore()->getPlugins();
 	for (size_t i = 0; i < xPlugins.size(); i++)
 		xPlugins.get(i)->RenX_SanitizeTags(fmt);
+}
+
+const Jupiter::ReadableString &TagsImp::getUniqueInternalTag()
+{
+	this->uniqueTag.set(1, this->tagItrP1);
+	this->uniqueTag.set(2, this->tagItrP2);
+	this->uniqueTag.set(3, this->tagItrP3);
+	this->uniqueTag.set(4, this->tagItrP4);
+	this->tagItr++;
+	return this->uniqueTag;
 }
 
 /** Foward functions */

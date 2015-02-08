@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2014 Justin James.
+ * Copyright (C) 2014-2015 Justin James.
  *
  * This license must be preserved.
  * Any applications, libraries, or code which make any use of any
@@ -27,20 +27,30 @@ public: // RenX::Plugin
 	void RenX_OnJoin(RenX::Server *server, const RenX::PlayerInfo *player) override;
 	void RenX_OnPart(RenX::Server *server, const RenX::PlayerInfo *player) override;
 	void RenX_OnNameChange(RenX::Server *server, const RenX::PlayerInfo *player, const Jupiter::ReadableString &newPlayerName) override;
-	void RenX_OnTeamChange(RenX::Server *server, const RenX::PlayerInfo *player) override;
+	void RenX_OnTeamChange(RenX::Server *server, const RenX::PlayerInfo *player, const RenX::TeamType &oldTeam) override;
+	void RenX_OnExecute(RenX::Server *server, const RenX::PlayerInfo *player, const Jupiter::ReadableString &command) override;
+	void RenX_OnPlayer(RenX::Server *server, const Jupiter::ReadableString &raw) override;
 	
 	void RenX_OnChat(RenX::Server *server, const RenX::PlayerInfo *player, const Jupiter::ReadableString &message) override;
 	void RenX_OnTeamChat(RenX::Server *server, const RenX::PlayerInfo *player, const Jupiter::ReadableString &message) override;
+	void RenX_OnHostChat(RenX::Server *server, const Jupiter::ReadableString &message) override;
+	void RenX_OnHostPage(RenX::Server *server, const RenX::PlayerInfo *player, const Jupiter::ReadableString &message) override;
+	void RenX_OnOtherChat(RenX::Server *server, const Jupiter::ReadableString &raw) override;
 	
 	void RenX_OnDeploy(RenX::Server *server, const RenX::PlayerInfo *player, const Jupiter::ReadableString &object) override;
+	void RenX_OnDisarm(RenX::Server *server, const RenX::PlayerInfo *player, const Jupiter::ReadableString &object) override;
 	void RenX_OnSuicide(RenX::Server *server, const RenX::PlayerInfo *player, const Jupiter::ReadableString &damageType) override;
 	void RenX_OnKill(RenX::Server *server, const RenX::PlayerInfo *player, const RenX::PlayerInfo *victim, const Jupiter::ReadableString &damageType) override;
-	void RenX_OnKill(RenX::Server *server, const Jupiter::ReadableString &killer, RenX::TeamType killerTeam, const RenX::PlayerInfo *victim, const Jupiter::ReadableString &damageType) override;
+	void RenX_OnKill(RenX::Server *server, const Jupiter::ReadableString &killer, const RenX::TeamType &killerTeam, const RenX::PlayerInfo *victim, const Jupiter::ReadableString &damageType) override;
 	void RenX_OnDie(RenX::Server *server, const RenX::PlayerInfo *player, const Jupiter::ReadableString &damageType) override;
-	void RenX_OnDie(RenX::Server *server, const Jupiter::ReadableString &object, RenX::TeamType objectTeam, const Jupiter::ReadableString &damageType) override;
+	void RenX_OnDie(RenX::Server *server, const Jupiter::ReadableString &object, const RenX::TeamType &objectTeam, const Jupiter::ReadableString &damageType) override;
 	void RenX_OnDestroy(RenX::Server *server, const RenX::PlayerInfo *player, const Jupiter::ReadableString &objectName, const Jupiter::ReadableString &damageType, RenX::ObjectType type) override;
-	void RenX_OnDestroy(RenX::Server *server, const Jupiter::ReadableString &killer, RenX::TeamType killerTeam, const Jupiter::ReadableString &objectName, RenX::TeamType objectTeam, const Jupiter::ReadableString &damageType, RenX::ObjectType type) override;
-	void RenX_OnGameOver(RenX::Server *server, RenX::WinType winType, RenX::TeamType team, int gScore, int nScore) override;
+	void RenX_OnDestroy(RenX::Server *server, const Jupiter::ReadableString &killer, const RenX::TeamType &killerTeam, const Jupiter::ReadableString &objectName, const RenX::TeamType &objectTeam, const Jupiter::ReadableString &damageType, RenX::ObjectType type) override;
+	void RenX_OnCapture(RenX::Server *server, const RenX::PlayerInfo *player, const Jupiter::ReadableString &building, const RenX::TeamType &oldTeam) override;
+	void RenX_OnNeutralize(RenX::Server *server, const RenX::PlayerInfo *player, const Jupiter::ReadableString &building, const RenX::TeamType &oldTeam) override;
+	void RenX_OnSteal(RenX::Server *server, const RenX::PlayerInfo *player, const Jupiter::ReadableString &vehicle) override;
+	void RenX_OnSteal(RenX::Server *server, const RenX::PlayerInfo *player, const Jupiter::ReadableString &vehicle, const RenX::PlayerInfo *victim) override;
+	void RenX_OnGameOver(RenX::Server *server, RenX::WinType winType, const RenX::TeamType &team, int gScore, int nScore) override;
 	void RenX_OnGame(RenX::Server *server, const Jupiter::ReadableString &raw) override;
 	
 	void RenX_OnExecute(RenX::Server *server, const Jupiter::ReadableString &user, const Jupiter::ReadableString &command) override;
@@ -52,12 +62,25 @@ public: // RenX::Plugin
 	void RenX_OnAdminLogout(RenX::Server *server, const RenX::PlayerInfo *player) override;
 	void RenX_OnAdmin(RenX::Server *server, const Jupiter::ReadableString &raw) override;
 
+	void RenX_OnVoteCall(RenX::Server *server, const RenX::TeamType &team, const Jupiter::ReadableString &type, const RenX::PlayerInfo *player, const Jupiter::ReadableString &parameters) override;
+	void RenX_OnVoteOver(RenX::Server *server, const RenX::TeamType &team, const Jupiter::ReadableString &type, bool success, int yesVotes, int noVotes) override;
+	void RenX_OnVoteCancel(RenX::Server *server, const RenX::TeamType &team, const Jupiter::ReadableString &type) override;
+	void RenX_OnVote(RenX::Server *server, const Jupiter::ReadableString &raw) override;
+
+	void RenX_OnMapChange(RenX::Server *server, const Jupiter::ReadableString &map, bool seamless) override;
+	void RenX_OnMapLoad(RenX::Server *server, const Jupiter::ReadableString &map) override;
+	void RenX_OnMap(RenX::Server *server, const Jupiter::ReadableString &raw) override;
+
+	void RenX_OnDemoRecord(RenX::Server *server, const RenX::PlayerInfo *player) override;
+	void RenX_OnDemoRecord(RenX::Server *server, const Jupiter::ReadableString &user) override;
+	void RenX_OnDemo(RenX::Server *server, const Jupiter::ReadableString &raw) override;
+
 	void RenX_OnLog(RenX::Server *server, const Jupiter::ReadableString &raw) override;
 
 	void RenX_XOnVersion(RenX::Server *server, unsigned int version) override;
 	void RenX_OnGrantCharacter(RenX::Server *server, const RenX::PlayerInfo *player, const Jupiter::ReadableString &character) override;
 	void RenX_OnSpawnVehicle(RenX::Server *server, const RenX::PlayerInfo *owner, const Jupiter::ReadableString &vehicle) override;
-	void RenX_OnSpawnVehicleNoOwner(RenX::Server *server, const RenX::TeamType team, const Jupiter::ReadableString &vehicle) override;
+	void RenX_OnSpawnVehicleNoOwner(RenX::Server *server, const RenX::TeamType &team, const Jupiter::ReadableString &vehicle) override;
 	void RenX_OnMinePlace(RenX::Server *server, const RenX::PlayerInfo *player, const Jupiter::ReadableString &mine) override;
 	void RenX_XOnOther(RenX::Server *server, const Jupiter::ReadableString &raw) override;
 
@@ -81,15 +104,23 @@ private:
 	unsigned int partPublic : 1;
 	unsigned int nameChangePublic : 1;
 	unsigned int teamChangePublic : 1;
+	unsigned int playerPublic : 1;
 	unsigned int chatPublic : 1;
 	unsigned int teamChatPublic : 1;
+	unsigned int hostChatPublic : 1;
+	unsigned int hostPagePublic : 1;
+	unsigned int otherChatPublic : 1;
 	unsigned int deployPublic : 1;
+	unsigned int disarmPublic : 1;
 	unsigned int suicidePublic : 1;
 	unsigned int killPublic : 1;
 	unsigned int diePublic : 1;
 	unsigned int destroyPublic : 1;
-	unsigned int gamePublic : 1;
+	unsigned int capturePublic : 1;
+	unsigned int neutralizePublic : 1;
+	unsigned int stealPublic : 1;
 	unsigned int gameOverPublic : 1;
+	unsigned int gamePublic : 1;
 	unsigned int executePublic : 1;
 	unsigned int subscribePublic : 1;
 	unsigned int RCONPublic : 1;
@@ -97,6 +128,15 @@ private:
 	unsigned int adminGrantPublic : 1;
 	unsigned int adminLogoutPublic : 1;
 	unsigned int adminPublic : 1;
+	unsigned int voteCallPublic : 1;
+	unsigned int voteOverPublic : 1;
+	unsigned int voteCancelPublic : 1;
+	unsigned int votePublic : 1;
+	unsigned int mapChangePublic : 1;
+	unsigned int mapLoadPublic : 1;
+	unsigned int mapPublic : 1;
+	unsigned int demoRecordPublic : 1;
+	unsigned int demoPublic : 1;
 	unsigned int logPublic : 1;
 	unsigned int xVersionPublic : 1;
 	unsigned int grantCharacterPublic : 1;
@@ -115,9 +155,14 @@ private:
 	Jupiter::StringS partFmt;
 	Jupiter::StringS nameChangeFmt;
 	Jupiter::StringS teamChangeFmt;
+	Jupiter::StringS playerFmt;
 	Jupiter::StringS chatFmt;
 	Jupiter::StringS teamChatFmt;
+	Jupiter::StringS hostChatFmt;
+	Jupiter::StringS hostPageFmt;
+	Jupiter::StringS otherChatFmt;
 	Jupiter::StringS deployFmt;
+	Jupiter::StringS disarmFmt;
 	Jupiter::StringS suicideFmt;
 	Jupiter::StringS dieFmt;
 	Jupiter::StringS dieFmt2;
@@ -129,18 +174,32 @@ private:
 	Jupiter::StringS destroyDefenceFmt2;
 	Jupiter::StringS destroyVehicleFmt;
 	Jupiter::StringS destroyVehicleFmt2;
+	Jupiter::StringS captureFmt;
+	Jupiter::StringS neutralizeFmt;
+	Jupiter::StringS stealFmt;
+	Jupiter::StringS stealNoOwnerFmt;
 	Jupiter::StringS gameOverFmt;
 	Jupiter::StringS gameOverTieFmt;
 	Jupiter::StringS gameOverTieNoWinFmt;
 	Jupiter::StringS gameOverScoreFmt;
 	Jupiter::StringS gameFmt;
-	Jupiter::StringS executeFmt, evaFmt, evaPrivateFmt;
+	Jupiter::StringS executeFmt, playerExecuteFmt;
 	Jupiter::StringS subscribeFmt;
 	Jupiter::StringS rconFmt;
 	Jupiter::StringS adminLoginFmt;
 	Jupiter::StringS adminGrantFmt;
 	Jupiter::StringS adminLogoutFmt;
 	Jupiter::StringS adminFmt;
+	Jupiter::StringS voteCallFmt;
+	Jupiter::StringS voteOverSuccessFmt;
+	Jupiter::StringS voteOverFailFmt;
+	Jupiter::StringS voteCancelFmt;
+	Jupiter::StringS voteFmt;
+	Jupiter::StringS mapChangeFmt;
+	Jupiter::StringS mapLoadFmt;
+	Jupiter::StringS mapFmt;
+	Jupiter::StringS demoRecordFmt, rconDemoRecordFmt;
+	Jupiter::StringS demoFmt;
 	Jupiter::StringS logFmt;
 	Jupiter::StringS xVersionFmt;
 	Jupiter::StringS grantCharacterFmt;

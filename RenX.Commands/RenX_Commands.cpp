@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2014 Justin James.
+ * Copyright (C) 2014-2015 Justin James.
  *
  * This license must be preserved.
  * Any applications, libraries, or code which make any use of any
@@ -170,15 +170,27 @@ void MsgIRCCommand::create()
 void MsgIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &channel, const Jupiter::ReadableString &nick, const Jupiter::ReadableString &parameters)
 {
 	if (parameters.isEmpty() == false)
-	{	
-		Jupiter::StringL msg = "say ";
+	{
+		int type = source->getChannel(channel)->getType();
+		Jupiter::StringL msg;
 		char prefix = source->getChannel(channel)->getUserPrefix(nick);
 		if (prefix != '\0')
 			msg += prefix;
 		msg += nick;
 		msg += "@IRC: ";
 		msg += parameters;
-		if (RenX::getCore()->send(source->getChannel(channel)->getType(), msg) == 0)
+
+		prefix = '\0'; // Reusing prefix to check if a match is ever found.
+		for (unsigned int i = 0; i != RenX::getCore()->getServerCount(); i++)
+		{
+			RenX::Server *server = RenX::getCore()->getServer(i);
+			if (server->isLogChanType(type))
+			{
+				server->sendMessage(msg);
+				prefix = 1;
+			}
+		}
+		if (prefix == '\0')
 			source->sendMessage(channel, STRING_LITERAL_AS_REFERENCE("Error: Channel not attached to any connected Renegade X servers."));
 	}
 	else source->sendNotice(nick, STRING_LITERAL_AS_REFERENCE("Error: Too Few Parameters. Syntax: Msg <Message>"));
@@ -1747,7 +1759,7 @@ void ModsGameCommand::create()
 void ModsGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *, const Jupiter::ReadableString &)
 {
 	RenX::PlayerInfo *player;
-	Jupiter::StringL msg = "say ";
+	Jupiter::StringL msg;
 	for (Jupiter::DLList<RenX::PlayerInfo>::Node *node = source->players.getNode(0); node != nullptr; node = node->next)
 	{
 		player = node->data;
@@ -1767,7 +1779,7 @@ void ModsGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *, const Ju
 			msg.aformat("; please use \"%.*s%.*s\" if you require assistance.", source->getCommandPrefix().size(), source->getCommandPrefix().ptr(), cmd->getTrigger().size(), cmd->getTrigger().ptr());
 		else msg += '.';
 	}
-	source->send(msg);
+	source->sendMessage(msg);
 }
 
 const Jupiter::ReadableString &ModsGameCommand::getHelp(const Jupiter::ReadableString &)

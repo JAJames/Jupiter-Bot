@@ -158,7 +158,7 @@ void RenX_MedalsPlugin::RenX_OnJoin(RenX::Server *server, const RenX::PlayerInfo
 	}
 }
 
-void RenX_MedalsPlugin::RenX_OnGameOver(RenX::Server *server, RenX::WinType winType, RenX::TeamType team, int gScore, int nScore)
+void RenX_MedalsPlugin::RenX_OnGameOver(RenX::Server *server, RenX::WinType winType, const RenX::TeamType &team, int gScore, int nScore)
 {
 	if (server->isFirstGame() == false) // No unfair medals for the first game! :D
 	{

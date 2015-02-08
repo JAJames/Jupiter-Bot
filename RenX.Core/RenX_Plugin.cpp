@@ -75,7 +75,17 @@ void RenX::Plugin::RenX_OnNameChange(Server *, const PlayerInfo *, const Jupiter
 	return;
 }
 
-void RenX::Plugin::RenX_OnTeamChange(Server *, const PlayerInfo *)
+void RenX::Plugin::RenX_OnTeamChange(Server *, const PlayerInfo *, const TeamType &)
+{
+	return;
+}
+
+void RenX::Plugin::RenX_OnExecute(Server *, const PlayerInfo *, const Jupiter::ReadableString &)
+{
+	return;
+}
+
+void RenX::Plugin::RenX_OnPlayer(Server *, const Jupiter::ReadableString &)
 {
 	return;
 }
@@ -90,7 +100,27 @@ void RenX::Plugin::RenX_OnTeamChat(Server *, const RenX::PlayerInfo *, const Jup
 	return;
 }
 
+void RenX::Plugin::RenX_OnHostChat(Server *, const Jupiter::ReadableString &)
+{
+	return;
+}
+
+void RenX::Plugin::RenX_OnHostPage(Server *, const RenX::PlayerInfo *, const Jupiter::ReadableString &)
+{
+	return;
+}
+
+void RenX::Plugin::RenX_OnOtherChat(Server *, const Jupiter::ReadableString &)
+{
+	return;
+}
+
 void RenX::Plugin::RenX_OnDeploy(Server *, const RenX::PlayerInfo *, const Jupiter::ReadableString &)
+{
+	return;
+}
+
+void RenX::Plugin::RenX_OnDisarm(Server *, const RenX::PlayerInfo *, const Jupiter::ReadableString &)
 {
 	return;
 }
@@ -105,7 +135,7 @@ void RenX::Plugin::RenX_OnKill(Server *, const RenX::PlayerInfo *, const RenX::P
 	return;
 }
 
-void RenX::Plugin::RenX_OnKill(Server *, const Jupiter::ReadableString &, TeamType, const RenX::PlayerInfo *, const Jupiter::ReadableString &)
+void RenX::Plugin::RenX_OnKill(Server *, const Jupiter::ReadableString &, const TeamType &, const RenX::PlayerInfo *, const Jupiter::ReadableString &)
 {
 	return;
 }
@@ -115,7 +145,7 @@ void RenX::Plugin::RenX_OnDie(Server *, const RenX::PlayerInfo *, const Jupiter:
 	return;
 }
 
-void RenX::Plugin::RenX_OnDie(Server *, const Jupiter::ReadableString &, TeamType, const Jupiter::ReadableString &)
+void RenX::Plugin::RenX_OnDie(Server *, const Jupiter::ReadableString &, const TeamType &, const Jupiter::ReadableString &)
 {
 	return;
 }
@@ -125,12 +155,32 @@ void RenX::Plugin::RenX_OnDestroy(Server *, const RenX::PlayerInfo *, const Jupi
 	return;
 }
 
-void RenX::Plugin::RenX_OnDestroy(Server *, const Jupiter::ReadableString &, TeamType, const Jupiter::ReadableString &, TeamType, const Jupiter::ReadableString &, ObjectType)
+void RenX::Plugin::RenX_OnDestroy(Server *, const Jupiter::ReadableString &, const TeamType &, const Jupiter::ReadableString &, const TeamType &, const Jupiter::ReadableString &, ObjectType)
 {
 	return;
 }
 
-void RenX::Plugin::RenX_OnGameOver(Server *, RenX::WinType, TeamType, int, int)
+void RenX::Plugin::RenX_OnCapture(Server *, const PlayerInfo *, const Jupiter::ReadableString &, const TeamType &)
+{
+	return;
+}
+
+void RenX::Plugin::RenX_OnNeutralize(Server *, const PlayerInfo *, const Jupiter::ReadableString &, const TeamType &)
+{
+	return;
+}
+
+void RenX::Plugin::RenX_OnSteal(Server *, const PlayerInfo *, const Jupiter::ReadableString &)
+{
+	return;
+}
+
+void RenX::Plugin::RenX_OnSteal(Server *, const PlayerInfo *, const Jupiter::ReadableString &, const PlayerInfo *)
+{
+	return;
+}
+
+void RenX::Plugin::RenX_OnGameOver(Server *, RenX::WinType, const TeamType &, int, int)
 {
 	return;
 }
@@ -146,6 +196,11 @@ void RenX::Plugin::RenX_OnExecute(Server *, const Jupiter::ReadableString &, con
 }
 
 void RenX::Plugin::RenX_OnSubscribe(Server *, const Jupiter::ReadableString &)
+{
+	return;
+}
+
+void RenX::Plugin::RenX_OnUnsubscribe(Server *, const Jupiter::ReadableString &)
 {
 	return;
 }
@@ -175,6 +230,57 @@ void RenX::Plugin::RenX_OnAdmin(Server *, const Jupiter::ReadableString &)
 	return;
 }
 
+void RenX::Plugin::RenX_OnVoteCall(Server *, const TeamType &, const Jupiter::ReadableString &, const PlayerInfo *, const Jupiter::ReadableString &)
+{
+	return;
+}
+
+void RenX::Plugin::RenX_OnVoteOver(Server *server, const TeamType &, const Jupiter::ReadableString &, bool, int, int)
+{
+	return;
+}
+
+void RenX::Plugin::RenX_OnVoteCancel(Server *, const TeamType &, const Jupiter::ReadableString &)
+{
+	return;
+}
+
+void RenX::Plugin::RenX_OnVote(Server *, const Jupiter::ReadableString &)
+{
+	return;
+}
+
+void RenX::Plugin::RenX_OnMapChange(Server *, const Jupiter::ReadableString &, bool)
+{
+	return;
+}
+
+void RenX::Plugin::RenX_OnMapLoad(Server *, const Jupiter::ReadableString &)
+{
+	return;
+}
+
+void RenX::Plugin::RenX_OnMap(Server *, const Jupiter::ReadableString &)
+{
+	return;
+}
+
+void RenX::Plugin::RenX_OnDemoRecord(Server *server, const PlayerInfo *)
+{
+	return;
+}
+
+void RenX::Plugin::RenX_OnDemoRecord(Server *server, const Jupiter::ReadableString &)
+{
+	return;
+}
+
+
+void RenX::Plugin::RenX_OnDemo(Server *server, const Jupiter::ReadableString &)
+{
+	return;
+}
+
 void RenX::Plugin::RenX_OnLog(Server *, const Jupiter::ReadableString &)
 {
 	return;
@@ -200,7 +306,7 @@ void RenX::Plugin::RenX_OnSpawnVehicle(Server *, const PlayerInfo *, const Jupit
 	return;
 }
 
-void RenX::Plugin::RenX_OnSpawnVehicleNoOwner(Server *, const TeamType, const Jupiter::ReadableString &)
+void RenX::Plugin::RenX_OnSpawnVehicleNoOwner(Server *, const TeamType &, const Jupiter::ReadableString &)
 {
 	return;
 }

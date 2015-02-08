@@ -279,6 +279,13 @@ namespace RenX
 		bool removePlayer(RenX::PlayerInfo *player);
 
 		/**
+		* @brief Sends a client list request.
+		*
+		* @return True on success, false otherwise.
+		*/
+		bool updateClientList();
+
+		/**
 		* @brief Gives a player additional credits, if the server supports it.
 		*
 		* @param id ID of the player to give credits to
@@ -413,6 +420,27 @@ namespace RenX
 		const Jupiter::ReadableString &getPassword() const;
 
 		/**
+		* @brief Fetches this connection's RCON user name.
+		*
+		* @return String containing the RCON user name.
+		*/
+		const Jupiter::ReadableString &getUser() const;
+
+		/**
+		* @brief Fetches the name of this server.
+		*
+		* @return String containing the server name.
+		*/
+		const Jupiter::ReadableString &getName() const;
+
+		/**
+		* @brief Fetches the current map.
+		*
+		* @return String containing the current map.
+		*/
+		const Jupiter::ReadableString &getMap() const;
+
+		/**
 		* @brief Fetches a command from the list.
 		*
 		* @param index Index of the command to return.
@@ -530,11 +558,18 @@ namespace RenX
 		unsigned int getVersion() const;
 
 		/**
-		* @brief Fetches the eXtended-RCON version number, or 0 or none has been set.
+		* @brief Fetches the eXtended-RCON version number, or 0 if none has been set.
 		*
 		* @return XRCON version number
 		*/
 		unsigned int getXVersion() const;
+
+		/**
+		* @brief Fetches the eXtended-RCON revision number, or 0 if none has been set.
+		*
+		* @return XRCON revision number
+		*/
+		unsigned int getXRevision() const;
 
 		/**
 		* @brief Fetches the game version string, or an empty string if none has been set.
@@ -577,6 +612,7 @@ namespace RenX
 		bool firstAction = false;
 		unsigned int rconVersion = 0;
 		unsigned int xRconVersion = 0;
+		unsigned int xRconRevision = 0;
 		time_t lastAttempt = 0;
 		Jupiter::String lastLine;
 		Jupiter::StringS gameVersion;
@@ -604,6 +640,9 @@ namespace RenX
 		Jupiter::StringS IRCPrefix;
 		Jupiter::StringS CommandPrefix;
 		Jupiter::StringS rconUser;
+		Jupiter::StringS serverName;
+		Jupiter::StringS lastCommand;
+		Jupiter::StringS map;
 		Jupiter::INIFile::Section *commandAccessLevels;
 		Jupiter::INIFile::Section *commandAliases;
 	};
