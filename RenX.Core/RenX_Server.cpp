@@ -154,7 +154,8 @@ int RenX::Server::send(const Jupiter::ReadableString &command)
 {
 	char *t = new char[command.size() + 2];
 	*t = 'c';
-	for (size_t i = 0; i != command.size(); i++) t[i + 1] = command.get(i);
+	for (size_t i = 0; i != command.size(); i++)
+		t[i + 1] = command.get(i);
 	t[command.size() + 1] = '\n';
 	int r;
 	if (RenX::Server::profile->mustSanitize)
@@ -211,7 +212,9 @@ int RenX::Server::sendData(const Jupiter::ReadableString &data)
 RenX::PlayerInfo *RenX::Server::getPlayer(int id) const
 {
 	if (RenX::Server::players.size() == 0) return nullptr;
-	for (Jupiter::DLList<RenX::PlayerInfo>::Node *node = RenX::Server::players.getNode(0); node != nullptr; node = node->next) if (node->data->id == id) return node->data;
+	for (Jupiter::DLList<RenX::PlayerInfo>::Node *node = RenX::Server::players.getNode(0); node != nullptr; node = node->next)
+		if (node->data->id == id)
+			return node->data;
 	return nullptr;
 }
 
@@ -485,9 +488,10 @@ RenX::GameCommand *RenX::Server::getCommand(unsigned int index) const
 
 RenX::GameCommand *RenX::Server::getCommand(const Jupiter::ReadableString &trigger) const
 {
+	RenX::GameCommand *cmd;
 	for (size_t i = 0; i != RenX::Server::commands.size(); i++)
 	{
-		RenX::GameCommand *cmd = RenX::Server::commands.get(i);
+		cmd = RenX::Server::commands.get(i);
 		if (cmd->matches(trigger))
 			return cmd;
 	}
@@ -539,26 +543,22 @@ void RenX::Server::addCommand(RenX::GameCommand *command)
 bool RenX::Server::removeCommand(RenX::GameCommand *command)
 {
 	for (size_t i = 0; i != RenX::Server::commands.size(); i++)
-	{
 		if (RenX::Server::commands.get(i) == command)
 		{
 			delete RenX::Server::commands.remove(i);
 			return true;
 		}
-	}
 	return false;
 }
 
 bool RenX::Server::removeCommand(const Jupiter::ReadableString &trigger)
 {
 	for (size_t i = 0; i != RenX::Server::commands.size(); i++)
-	{
 		if (RenX::Server::commands.get(i)->matches(trigger))
 		{
 			delete RenX::Server::commands.remove(i);
 			return true;
 		}
-	}
 	return false;
 }
 
@@ -682,6 +682,8 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 				player = n->data;
 				if (player != nullptr)
 				{
+					player->score = 0.0f;
+					player->credits = 0.0f;
 					player->kills = 0;
 					player->deaths = 0;
 					player->suicides = 0;
@@ -689,6 +691,11 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 					player->vehicleKills = 0;
 					player->buildingKills = 0;
 					player->defenceKills = 0;
+					player->beaconPlacements = 0;
+					player->beaconDisarms = 0;
+					player->captures = 0;
+					player->steals = 0;
+					player->stolen = 0;
 				}
 			}
 		}
@@ -878,7 +885,7 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 						RenX::PlayerInfo *player = parseGetPlayerOrAdd(buff.getToken(4, RenX::DelimC));
 						Jupiter::ReferenceString objectType = buff.getToken(2, RenX::DelimC);
 						if (objectType.match("*Beacon"))
-							player->beaconPlacements++;
+							player->beaconDisarms++;
 						for (size_t i = 0; i < xPlugins.size(); i++)
 							xPlugins.get(i)->RenX_OnDisarm(this, player, objectType);
 						onAction();
@@ -903,6 +910,7 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 						}
 						TeamType oldTeam = teamToken.isEmpty() ? TeamType::None : RenX::getTeam(teamToken.get(0));
 						RenX::PlayerInfo *player = parseGetPlayerOrAdd(buff.getToken(4, RenX::DelimC));
+						player->captures++;
 						for (size_t i = 0; i < xPlugins.size(); i++)
 							xPlugins.get(i)->RenX_OnCapture(this, player, building, oldTeam);
 						onAction();
@@ -936,6 +944,7 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 						if (playerToken.isEmpty() == false)
 						{
 							RenX::PlayerInfo *player = parseGetPlayerOrAdd(playerToken);
+							player->deaths++;
 							Jupiter::ReferenceString type = buff.getToken(4, RenX::DelimC);
 							Jupiter::ReferenceString damageType;
 							if (type.equals("by"))
@@ -965,6 +974,9 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 									else
 										kID = kIDToken.asInt();
 									RenX::PlayerInfo *killer = getPlayerOrAdd(kName, kID, vTeam, kIsBot, 0, Jupiter::ReferenceString::empty);
+									killer->kills++;
+									if (damageType.equals("Rx_DmgType_Headshot"))
+										killer->headshots++;
 									for (size_t i = 0; i < xPlugins.size(); i++)
 										xPlugins.get(i)->RenX_OnKill(this, killer, player, damageType);
 								}
@@ -977,6 +989,7 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 							}
 							else if (type.equals("suicide by"))
 							{
+								player->suicides++;
 								damageType = buff.getToken(5, RenX::DelimC);
 								for (size_t i = 0; i < xPlugins.size(); i++)
 									xPlugins.get(i)->RenX_OnSuicide(this, player, damageType);
@@ -993,6 +1006,7 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 						if (byLine.equals("by"))
 						{
 							RenX::PlayerInfo *player = parseGetPlayerOrAdd(buff.getToken(4, RenX::DelimC));
+							player->steals++;
 							for (size_t i = 0; i < xPlugins.size(); i++)
 								xPlugins.get(i)->RenX_OnSteal(this, player, vehicle);
 						}
@@ -1000,6 +1014,8 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 						{
 							RenX::PlayerInfo *victim = parseGetPlayerOrAdd(buff.getToken(4, RenX::DelimC));
 							RenX::PlayerInfo *player = parseGetPlayerOrAdd(buff.getToken(6, RenX::DelimC));
+							player->steals++;
+							victim->stolen++;
 							for (size_t i = 0; i < xPlugins.size(); i++)
 								xPlugins.get(i)->RenX_OnSteal(this, player, vehicle, victim);
 						}
@@ -1036,10 +1052,8 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 									team = RenX::getTeam(teamToken.get(0));
 
 								if (idToken.equals("ai") || idToken.isEmpty())
-								{
 									for (size_t i = 0; i < xPlugins.size(); i++)
 										xPlugins.get(i)->RenX_OnDestroy(this, name, team, objectName, RenX::getEnemy(team), damageType, type);
-								}
 								else
 								{
 									int id;
@@ -1051,6 +1065,20 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 									}
 									id = idToken.asInt();
 									RenX::PlayerInfo *player = getPlayerOrAdd(name, id, team, isBot, 0, Jupiter::ReferenceString::empty);
+									switch (type)
+									{
+									case RenX::ObjectType::Vehicle:
+										player->vehicleKills++;
+										break;
+									case RenX::ObjectType::Building:
+										player->buildingKills++;
+										break;
+									case RenX::ObjectType::Defence:
+										player->defenceKills++;
+										break;
+									default:
+										break;
+									}
 									for (size_t i = 0; i < xPlugins.size(); i++)
 										xPlugins.get(i)->RenX_OnDestroy(this, player, objectName, damageType, type);
 								}
@@ -1149,6 +1177,7 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 						if (buff.getToken(5, RenX::DelimC).equals("steamid"))
 							steamid = buff.getToken(6, RenX::DelimC).asUnsignedLongLong();
 						RenX::PlayerInfo *player = getPlayerOrAdd(name, id, team, isBot, steamid, buff.getToken(4, RenX::DelimC));
+						player->joinTime = time(0);
 						for (size_t i = 0; i < xPlugins.size(); i++)
 							xPlugins.get(i)->RenX_OnJoin(this, player);
 					}

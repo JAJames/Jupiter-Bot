@@ -68,6 +68,10 @@ namespace RenX
 		unsigned int wins = 0;
 		unsigned int loses = 0;
 		unsigned int beaconPlacements = 0;
+		unsigned int beaconDisarms = 0;
+		unsigned int captures = 0;
+		unsigned int steals = 0;
+		unsigned int stolen = 0;
 		
 		mutable Jupiter::StringS gamePrefix;
 		mutable Jupiter::StringS formatNamePrefix;

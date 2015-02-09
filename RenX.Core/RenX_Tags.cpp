@@ -102,6 +102,10 @@ TagsImp::TagsImp()
 	this->INTERNAL_WINS_TAG = this->getUniqueInternalTag();
 	this->INTERNAL_LOSES_TAG = this->getUniqueInternalTag();
 	this->INTERNAL_BEACON_PLACEMENTS_TAG = this->getUniqueInternalTag();
+	this->INTERNAL_BEACON_DISARMS_TAG = this->getUniqueInternalTag();
+	this->INTERNAL_CAPTURES_TAG = this->getUniqueInternalTag();
+	this->INTERNAL_STEALS_TAG = this->getUniqueInternalTag();
+	this->INTERNAL_STOLEN_TAG = this->getUniqueInternalTag();
 	this->INTERNAL_ACCESS_TAG = this->getUniqueInternalTag();
 
 	/** Victim tags */
@@ -133,6 +137,10 @@ TagsImp::TagsImp()
 	this->INTERNAL_VICTIM_WINS_TAG = this->getUniqueInternalTag();
 	this->INTERNAL_VICTIM_LOSES_TAG = this->getUniqueInternalTag();
 	this->INTERNAL_VICTIM_BEACON_PLACEMENTS_TAG = this->getUniqueInternalTag();
+	this->INTERNAL_VICTIM_BEACON_DISARMS_TAG = this->getUniqueInternalTag();
+	this->INTERNAL_VICTIM_CAPTURES_TAG = this->getUniqueInternalTag();
+	this->INTERNAL_VICTIM_STEALS_TAG = this->getUniqueInternalTag();
+	this->INTERNAL_VICTIM_STOLEN_TAG = this->getUniqueInternalTag();
 	this->INTERNAL_VICTIM_ACCESS_TAG = this->getUniqueInternalTag();
 
 	/** Other tags */
@@ -187,6 +195,10 @@ TagsImp::TagsImp()
 	this->winsTag = Jupiter::IRC::Client::Config->get(configSection, STRING_LITERAL_AS_REFERENCE("WinsTag"), STRING_LITERAL_AS_REFERENCE("{WINS}"));
 	this->losesTag = Jupiter::IRC::Client::Config->get(configSection, STRING_LITERAL_AS_REFERENCE("LosesTag"), STRING_LITERAL_AS_REFERENCE("{LOSES}"));
 	this->beaconPlacementsTag = Jupiter::IRC::Client::Config->get(configSection, STRING_LITERAL_AS_REFERENCE("BeaconPlacementsTag"), STRING_LITERAL_AS_REFERENCE("{BEACONPLACEMENTS}"));
+	this->beaconDisarmsTag = Jupiter::IRC::Client::Config->get(configSection, STRING_LITERAL_AS_REFERENCE("BeaconDisarmsTag"), STRING_LITERAL_AS_REFERENCE("{BEACONDISARMS}"));
+	this->capturesTag = Jupiter::IRC::Client::Config->get(configSection, STRING_LITERAL_AS_REFERENCE("CapturesTag"), STRING_LITERAL_AS_REFERENCE("{CAPTURES}"));
+	this->stealsTag = Jupiter::IRC::Client::Config->get(configSection, STRING_LITERAL_AS_REFERENCE("StealsTag"), STRING_LITERAL_AS_REFERENCE("{STEALS}"));
+	this->stolenTag = Jupiter::IRC::Client::Config->get(configSection, STRING_LITERAL_AS_REFERENCE("StolenTag"), STRING_LITERAL_AS_REFERENCE("{STOLEN}"));
 	this->accessTag = Jupiter::IRC::Client::Config->get(configSection, STRING_LITERAL_AS_REFERENCE("AccessTag"), STRING_LITERAL_AS_REFERENCE("{ACCESS}"));
 
 	/** Victim player tags */
@@ -218,6 +230,10 @@ TagsImp::TagsImp()
 	this->victimWinsTag = Jupiter::IRC::Client::Config->get(configSection, STRING_LITERAL_AS_REFERENCE("VictimWinsTag"), STRING_LITERAL_AS_REFERENCE("{VWINS}"));
 	this->victimLosesTag = Jupiter::IRC::Client::Config->get(configSection, STRING_LITERAL_AS_REFERENCE("VictimLosesTag"), STRING_LITERAL_AS_REFERENCE("{VLOSES}"));
 	this->victimBeaconPlacementsTag = Jupiter::IRC::Client::Config->get(configSection, STRING_LITERAL_AS_REFERENCE("VictimBeaconPlacementsTag"), STRING_LITERAL_AS_REFERENCE("{VBEACONPLACEMENTS}"));
+	this->victimBeaconDisarmsTag = Jupiter::IRC::Client::Config->get(configSection, STRING_LITERAL_AS_REFERENCE("VictimBeaconDisarmsTag"), STRING_LITERAL_AS_REFERENCE("{VBEACONDISARMS}"));
+	this->victimCapturesTag = Jupiter::IRC::Client::Config->get(configSection, STRING_LITERAL_AS_REFERENCE("VictimCapturesTag"), STRING_LITERAL_AS_REFERENCE("{VCAPTURES}"));
+	this->victimStealsTag = Jupiter::IRC::Client::Config->get(configSection, STRING_LITERAL_AS_REFERENCE("VictimStealsTag"), STRING_LITERAL_AS_REFERENCE("{VSTEALS}"));
+	this->victimStolenTag = Jupiter::IRC::Client::Config->get(configSection, STRING_LITERAL_AS_REFERENCE("VictimStolenTag"), STRING_LITERAL_AS_REFERENCE("{VSTOLEN}"));
 	this->victimAccessTag = Jupiter::IRC::Client::Config->get(configSection, STRING_LITERAL_AS_REFERENCE("VictimAccessTag"), STRING_LITERAL_AS_REFERENCE("{VACCESS}"));
 
 	/** Other tags */
@@ -280,6 +296,10 @@ void TagsImp::processTags(Jupiter::StringType &msg, const RenX::Server *server, 
 		msg.replace(this->INTERNAL_WINS_TAG, Jupiter::StringS::Format("%u", player->wins));
 		msg.replace(this->INTERNAL_LOSES_TAG, Jupiter::StringS::Format("%u", player->loses));
 		msg.replace(this->INTERNAL_BEACON_PLACEMENTS_TAG, Jupiter::StringS::Format("%u", player->beaconPlacements));
+		msg.replace(this->INTERNAL_BEACON_DISARMS_TAG, Jupiter::StringS::Format("%u", player->beaconDisarms));
+		msg.replace(this->INTERNAL_CAPTURES_TAG, Jupiter::StringS::Format("%u", player->captures));
+		msg.replace(this->INTERNAL_STEALS_TAG, Jupiter::StringS::Format("%u", player->steals));
+		msg.replace(this->INTERNAL_STOLEN_TAG, Jupiter::StringS::Format("%u", player->stolen));
 		msg.replace(this->INTERNAL_ACCESS_TAG, Jupiter::StringS::Format("%d", player->access));
 	}
 	if (victim != nullptr)
@@ -311,6 +331,10 @@ void TagsImp::processTags(Jupiter::StringType &msg, const RenX::Server *server, 
 		msg.replace(this->INTERNAL_VICTIM_WINS_TAG, Jupiter::StringS::Format("%u", victim->wins));
 		msg.replace(this->INTERNAL_VICTIM_LOSES_TAG, Jupiter::StringS::Format("%u", victim->loses));
 		msg.replace(this->INTERNAL_VICTIM_BEACON_PLACEMENTS_TAG, Jupiter::StringS::Format("%u", victim->beaconPlacements));
+		msg.replace(this->INTERNAL_VICTIM_BEACON_DISARMS_TAG, Jupiter::StringS::Format("%u", victim->beaconDisarms));
+		msg.replace(this->INTERNAL_VICTIM_CAPTURES_TAG, Jupiter::StringS::Format("%u", victim->captures));
+		msg.replace(this->INTERNAL_VICTIM_STEALS_TAG, Jupiter::StringS::Format("%u", victim->steals));
+		msg.replace(this->INTERNAL_VICTIM_STOLEN_TAG, Jupiter::StringS::Format("%u", victim->stolen));
 		msg.replace(this->INTERNAL_VICTIM_ACCESS_TAG, Jupiter::StringS::Format("%d", victim->access));
 	}
 
@@ -363,6 +387,10 @@ void TagsImp::sanitizeTags(Jupiter::StringType &fmt)
 	fmt.replace(this->winsTag, this->INTERNAL_WINS_TAG);
 	fmt.replace(this->losesTag, this->INTERNAL_LOSES_TAG);
 	fmt.replace(this->beaconPlacementsTag, this->INTERNAL_BEACON_PLACEMENTS_TAG);
+	fmt.replace(this->beaconDisarmsTag, this->INTERNAL_BEACON_DISARMS_TAG);
+	fmt.replace(this->capturesTag, this->INTERNAL_CAPTURES_TAG);
+	fmt.replace(this->stealsTag, this->INTERNAL_STEALS_TAG);
+	fmt.replace(this->stolenTag, this->INTERNAL_STOLEN_TAG);
 	fmt.replace(this->accessTag, this->INTERNAL_ACCESS_TAG);
 
 	/** Victim tags */
@@ -394,6 +422,10 @@ void TagsImp::sanitizeTags(Jupiter::StringType &fmt)
 	fmt.replace(this->victimWinsTag, this->INTERNAL_VICTIM_WINS_TAG);
 	fmt.replace(this->victimLosesTag, this->INTERNAL_VICTIM_LOSES_TAG);
 	fmt.replace(this->victimBeaconPlacementsTag, this->INTERNAL_VICTIM_BEACON_PLACEMENTS_TAG);
+	fmt.replace(this->victimBeaconDisarmsTag, this->INTERNAL_VICTIM_BEACON_DISARMS_TAG);
+	fmt.replace(this->victimCapturesTag, this->INTERNAL_VICTIM_CAPTURES_TAG);
+	fmt.replace(this->victimStealsTag, this->INTERNAL_VICTIM_STEALS_TAG);
+	fmt.replace(this->victimStolenTag, this->INTERNAL_VICTIM_STOLEN_TAG);
 	fmt.replace(this->victimAccessTag, this->INTERNAL_VICTIM_ACCESS_TAG);
 
 	/** Other tags */

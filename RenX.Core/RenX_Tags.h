@@ -92,6 +92,10 @@ namespace RenX
 		Jupiter::StringS INTERNAL_WINS_TAG;
 		Jupiter::StringS INTERNAL_LOSES_TAG;
 		Jupiter::StringS INTERNAL_BEACON_PLACEMENTS_TAG;
+		Jupiter::StringS INTERNAL_BEACON_DISARMS_TAG;
+		Jupiter::StringS INTERNAL_CAPTURES_TAG;
+		Jupiter::StringS INTERNAL_STEALS_TAG;
+		Jupiter::StringS INTERNAL_STOLEN_TAG;
 		Jupiter::StringS INTERNAL_ACCESS_TAG;
 
 		/** Victim tags */
@@ -123,6 +127,10 @@ namespace RenX
 		Jupiter::StringS INTERNAL_VICTIM_WINS_TAG;
 		Jupiter::StringS INTERNAL_VICTIM_LOSES_TAG;
 		Jupiter::StringS INTERNAL_VICTIM_BEACON_PLACEMENTS_TAG;
+		Jupiter::StringS INTERNAL_VICTIM_BEACON_DISARMS_TAG;
+		Jupiter::StringS INTERNAL_VICTIM_CAPTURES_TAG;
+		Jupiter::StringS INTERNAL_VICTIM_STEALS_TAG;
+		Jupiter::StringS INTERNAL_VICTIM_STOLEN_TAG;
 		Jupiter::StringS INTERNAL_VICTIM_ACCESS_TAG;
 
 		/** Other tags */
@@ -177,6 +185,10 @@ namespace RenX
 		Jupiter::StringS winsTag;
 		Jupiter::StringS losesTag;
 		Jupiter::StringS beaconPlacementsTag;
+		Jupiter::StringS beaconDisarmsTag;
+		Jupiter::StringS capturesTag;
+		Jupiter::StringS stealsTag;
+		Jupiter::StringS stolenTag;
 		Jupiter::StringS accessTag;
 
 		/** Victim tags */
@@ -208,6 +220,10 @@ namespace RenX
 		Jupiter::StringS victimWinsTag;
 		Jupiter::StringS victimLosesTag;
 		Jupiter::StringS victimBeaconPlacementsTag;
+		Jupiter::StringS victimBeaconDisarmsTag;
+		Jupiter::StringS victimCapturesTag;
+		Jupiter::StringS victimStealsTag;
+		Jupiter::StringS victimStolenTag;
 		Jupiter::StringS victimAccessTag;
 
 		/** Other tags */
