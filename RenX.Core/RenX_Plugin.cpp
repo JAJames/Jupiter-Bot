@@ -205,6 +205,56 @@ void RenX::Plugin::RenX_OnUnsubscribe(Server *, const Jupiter::ReadableString &)
 	return;
 }
 
+void RenX::Plugin::RenX_OnBlock(Server *, const Jupiter::ReadableString &, const Jupiter::ReadableString &)
+{
+	return;
+}
+
+void RenX::Plugin::RenX_OnConnect(Server *, const Jupiter::ReadableString &)
+{
+	return;
+}
+
+void RenX::Plugin::RenX_OnAuthenticate(Server *, const Jupiter::ReadableString &)
+{
+	return;
+}
+
+void RenX::Plugin::RenX_OnBan(Server *, const Jupiter::ReadableString &, const Jupiter::ReadableString &)
+{
+	return;
+}
+
+void RenX::Plugin::RenX_OnInvalidPassword(Server *, const Jupiter::ReadableString &)
+{
+	return;
+}
+
+void RenX::Plugin::RenX_OnDrop(Server *, const Jupiter::ReadableString &, const Jupiter::ReadableString &)
+{
+	return;
+}
+
+void RenX::Plugin::RenX_OnDisconnect(Server *, const Jupiter::ReadableString &)
+{
+	return;
+}
+
+void RenX::Plugin::RenX_OnStopListen(Server *, const Jupiter::ReadableString &)
+{
+	return;
+}
+
+void RenX::Plugin::RenX_OnResumeListen(Server *, const Jupiter::ReadableString &)
+{
+	return;
+}
+
+void RenX::Plugin::RenX_OnWarning(Server *, const Jupiter::ReadableString &)
+{
+	return;
+}
+
 void RenX::Plugin::RenX_OnRCON(Server *, const Jupiter::ReadableString &)
 {
 	return;

@@ -964,9 +964,9 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 									}
 									else
 										kID = kIDToken.asInt();
-									RenX::PlayerInfo *victim = getPlayerOrAdd(kName, kID, vTeam, kIsBot, 0, Jupiter::ReferenceString::empty);
+									RenX::PlayerInfo *killer = getPlayerOrAdd(kName, kID, vTeam, kIsBot, 0, Jupiter::ReferenceString::empty);
 									for (size_t i = 0; i < xPlugins.size(); i++)
-										xPlugins.get(i)->RenX_OnKill(this, player, victim, damageType);
+										xPlugins.get(i)->RenX_OnKill(this, killer, player, damageType);
 								}
 							}
 							else if (type.equals("died by"))
@@ -1246,42 +1246,75 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 					else if (subHeader.equals("Blocked;"))
 					{
 						// User | Reason="(Denied by IP Policy)" / "(Not on Whitelist)"
+						Jupiter::ReferenceString user = buff.getToken(2, RenX::DelimC);
+						Jupiter::ReferenceString message = buff.gotoToken(3, RenX::DelimC);
+						for (size_t i = 0; i < xPlugins.size(); i++)
+							xPlugins.get(i)->RenX_OnBlock(this, user, message);
 					}
 					else if (subHeader.equals("Connected;"))
 					{
 						// User
+						Jupiter::ReferenceString user = buff.getToken(2, RenX::DelimC);
+						for (size_t i = 0; i < xPlugins.size(); i++)
+							xPlugins.get(i)->RenX_OnConnect(this, user);
 					}
 					else if (subHeader.equals("Authenticated;"))
 					{
 						// User
+						Jupiter::ReferenceString user = buff.getToken(2, RenX::DelimC);
+						for (size_t i = 0; i < xPlugins.size(); i++)
+							xPlugins.get(i)->RenX_OnAuthenticate(this, user);
 					}
 					else if (subHeader.equals("Banned;"))
 					{
 						// User | "reason" | Reason="(Too many password attempts)"
+						Jupiter::ReferenceString user = buff.getToken(2, RenX::DelimC);
+						Jupiter::ReferenceString message = buff.gotoToken(4, RenX::DelimC);
+						for (size_t i = 0; i < xPlugins.size(); i++)
+							xPlugins.get(i)->RenX_OnBan(this, user, message);
 					}
 					else if (subHeader.equals("InvalidPassword;"))
 					{
 						// User
+						Jupiter::ReferenceString user = buff.getToken(2, RenX::DelimC);
+						for (size_t i = 0; i < xPlugins.size(); i++)
+							xPlugins.get(i)->RenX_OnInvalidPassword(this, user);
 					}
 					else if (subHeader.equals("Dropped;"))
 					{
 						// User | "reason" | Reason="(Auth Timeout)"
+						Jupiter::ReferenceString user = buff.getToken(2, RenX::DelimC);
+						Jupiter::ReferenceString message = buff.gotoToken(4, RenX::DelimC);
+						for (size_t i = 0; i < xPlugins.size(); i++)
+							xPlugins.get(i)->RenX_OnDrop(this, user, message);
 					}
 					else if (subHeader.equals("Disconnected;"))
 					{
 						// User
+						Jupiter::ReferenceString user = buff.getToken(2, RenX::DelimC);
+						for (size_t i = 0; i < xPlugins.size(); i++)
+							xPlugins.get(i)->RenX_OnDisconnect(this, user);
 					}
 					else if (subHeader.equals("StoppedListen;"))
 					{
 						// Reason="(Reached Connection Limit)"
+						Jupiter::ReferenceString message = buff.gotoToken(2, RenX::DelimC);
+						for (size_t i = 0; i < xPlugins.size(); i++)
+							xPlugins.get(i)->RenX_OnStopListen(this, message);
 					}
 					else if (subHeader.equals("ResumedListen;"))
 					{
 						// Reason="(No longer at Connection Limit)"
+						Jupiter::ReferenceString message = buff.gotoToken(2, RenX::DelimC);
+						for (size_t i = 0; i < xPlugins.size(); i++)
+							xPlugins.get(i)->RenX_OnResumeListen(this, message);
 					}
 					else if (subHeader.equals("Warning;"))
 					{
 						// Warning="(Hit Max Attempt Records - You should investigate Rcon attempts and/or decrease prune time)"
+						Jupiter::ReferenceString message = buff.gotoToken(2, RenX::DelimC);
+						for (size_t i = 0; i < xPlugins.size(); i++)
+							xPlugins.get(i)->RenX_OnWarning(this, message);
 					}
 					else
 					{

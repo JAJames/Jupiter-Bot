@@ -83,6 +83,16 @@ namespace RenX
 		virtual void RenX_OnExecute(Server *server, const Jupiter::ReadableString &user, const Jupiter::ReadableString &command);
 		virtual void RenX_OnSubscribe(Server *server, const Jupiter::ReadableString &user);
 		virtual void RenX_OnUnsubscribe(Server *server, const Jupiter::ReadableString &user);
+		virtual void RenX_OnBlock(Server *server, const Jupiter::ReadableString &user, const Jupiter::ReadableString &message);
+		virtual void RenX_OnConnect(Server *server, const Jupiter::ReadableString &user);
+		virtual void RenX_OnAuthenticate(Server *server, const Jupiter::ReadableString &user);
+		virtual void RenX_OnBan(Server *server, const Jupiter::ReadableString &user, const Jupiter::ReadableString &message);
+		virtual void RenX_OnInvalidPassword(Server *server, const Jupiter::ReadableString &user);
+		virtual void RenX_OnDrop(Server *server, const Jupiter::ReadableString &user, const Jupiter::ReadableString &message);
+		virtual void RenX_OnDisconnect(Server *server, const Jupiter::ReadableString &user);
+		virtual void RenX_OnStopListen(Server *server, const Jupiter::ReadableString &message);
+		virtual void RenX_OnResumeListen(Server *server, const Jupiter::ReadableString &message);
+		virtual void RenX_OnWarning(Server *server, const Jupiter::ReadableString &message);
 		virtual void RenX_OnRCON(Server *server, const Jupiter::ReadableString &raw);
 		
 		/** Admin Type Logs */
