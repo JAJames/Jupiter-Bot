@@ -151,55 +151,58 @@ int RenX_ModSystemPlugin::auth(RenX::Server *server, const RenX::PlayerInfo *pla
 {
 	if (player->isBot)
 		return 0;
-
 	ModGroup *group;
-	Jupiter::INIFile::Section *section = RenX_ModSystemPlugin::modsFile.getSection(player->uuid);
-	if (section != nullptr)
+	if (player->uuid.isEmpty() == false)
 	{
-		const Jupiter::ReadableString &groupName = section->get(STRING_LITERAL_AS_REFERENCE("Group"));
-		if (groupName.isEmpty())
-			group = RenX_ModSystemPlugin::groups.get(0);
-		else if ((group = RenX_ModSystemPlugin::getGroupByName(groupName)) == nullptr)
-			group = RenX_ModSystemPlugin::groups.get(0);
-
-		auto sectionAuth = [&]
+		Jupiter::INIFile::Section *section = RenX_ModSystemPlugin::modsFile.getSection(player->uuid);
+		if (section != nullptr)
 		{
-			player->varData.set(this->name, STRING_LITERAL_AS_REFERENCE("Group"), group->name);
-			player->formatNamePrefix = section->get(STRING_LITERAL_AS_REFERENCE("Prefix"), group->prefix);
-			player->gamePrefix = section->get(STRING_LITERAL_AS_REFERENCE("GamePrefix"), group->gamePrefix);
-			player->access = section->getInt(STRING_LITERAL_AS_REFERENCE("Access"), group->access);
-			server->sendMessage(player, Jupiter::StringS::Format("You are now authenticated with access level %d; group: %.*s.", player->access, group->name.size(), group->name.ptr()));
-			Jupiter::String playerName = RenX::getFormattedPlayerName(player);
-			server->sendLogChan(IRCCOLOR "03[Authentication] " IRCBOLD "%.*s" IRCBOLD IRCCOLOR " is now authenticated with access level %d; group: %.*s.", playerName.size(), playerName.ptr(), player->access, group->name.size(), group->name.ptr());
-			return player->access;
-		};
+			const Jupiter::ReadableString &groupName = section->get(STRING_LITERAL_AS_REFERENCE("Group"));
+			if (groupName.isEmpty())
+				group = RenX_ModSystemPlugin::groups.get(0);
+			else if ((group = RenX_ModSystemPlugin::getGroupByName(groupName)) == nullptr)
+				group = RenX_ModSystemPlugin::groups.get(0);
 
-		if (forceAuth)
-			return sectionAuth();
+			auto sectionAuth = [&]
+			{
+				player->varData.set(this->name, STRING_LITERAL_AS_REFERENCE("Group"), group->name);
+				player->formatNamePrefix = section->get(STRING_LITERAL_AS_REFERENCE("Prefix"), group->prefix);
+				player->gamePrefix = section->get(STRING_LITERAL_AS_REFERENCE("GamePrefix"), group->gamePrefix);
+				player->access = section->getInt(STRING_LITERAL_AS_REFERENCE("Access"), group->access);
+				if (player->access != 0)
+					server->sendMessage(player, Jupiter::StringS::Format("You are now authenticated with access level %d; group: %.*s.", player->access, group->name.size(), group->name.ptr()));
+				Jupiter::String playerName = RenX::getFormattedPlayerName(player);
+				server->sendLogChan(IRCCOLOR "03[Authentication] " IRCBOLD "%.*s" IRCBOLD IRCCOLOR " is now authenticated with access level %d; group: %.*s.", playerName.size(), playerName.ptr(), player->access, group->name.size(), group->name.ptr());
+				return player->access;
+			};
 
-		bool lockSteam_l = section->getBool(STRING_LITERAL_AS_REFERENCE("LockSteam"), group->lockSteam);
-		bool lockIP_l = section->getBool(STRING_LITERAL_AS_REFERENCE("LockIP"), group->lockIP);
-		bool lockName_l = section->getBool(STRING_LITERAL_AS_REFERENCE("LockName"), group->lockName);
-		bool kickLockMismatch_l = section->getBool(STRING_LITERAL_AS_REFERENCE("KickLockMismatch"), group->kickLockMismatch);
-		bool autoAuthSteam_l = section->getBool(STRING_LITERAL_AS_REFERENCE("AutoAuthSteam"), group->autoAuthSteam);
-		bool autoAuthIP_l = section->getBool(STRING_LITERAL_AS_REFERENCE("AutoAuthIP"), group->autoAuthIP);
-
-		uint64_t steamid = section->get(STRING_LITERAL_AS_REFERENCE("SteamID")).asUnsignedLongLong();
-		const Jupiter::ReadableString &ip = section->get(STRING_LITERAL_AS_REFERENCE("LastIP"));
-		const Jupiter::ReadableString &name = section->get(STRING_LITERAL_AS_REFERENCE("Name"));
-
-		if ((lockSteam_l == false || player->steamid == steamid) && (lockIP_l == false || player->ip.equalsi(ip)) && (lockName_l == false || player->name.equalsi(name)))
-		{
-			if (checkAuto == false || (autoAuthSteam_l && player->steamid == steamid) || (autoAuthIP_l && player->ip.equalsi(ip)))
+			if (forceAuth)
 				return sectionAuth();
-		}
-		else if (kickLockMismatch_l)
-		{
-			server->kickPlayer(player);
-			return -1;
+
+			bool lockSteam_l = section->getBool(STRING_LITERAL_AS_REFERENCE("LockSteam"), group->lockSteam);
+			bool lockIP_l = section->getBool(STRING_LITERAL_AS_REFERENCE("LockIP"), group->lockIP);
+			bool lockName_l = section->getBool(STRING_LITERAL_AS_REFERENCE("LockName"), group->lockName);
+			bool kickLockMismatch_l = section->getBool(STRING_LITERAL_AS_REFERENCE("KickLockMismatch"), group->kickLockMismatch);
+			bool autoAuthSteam_l = section->getBool(STRING_LITERAL_AS_REFERENCE("AutoAuthSteam"), group->autoAuthSteam);
+			bool autoAuthIP_l = section->getBool(STRING_LITERAL_AS_REFERENCE("AutoAuthIP"), group->autoAuthIP);
+
+			uint64_t steamid = section->get(STRING_LITERAL_AS_REFERENCE("SteamID")).asUnsignedLongLong();
+			const Jupiter::ReadableString &ip = section->get(STRING_LITERAL_AS_REFERENCE("LastIP"));
+			const Jupiter::ReadableString &name = section->get(STRING_LITERAL_AS_REFERENCE("Name"));
+
+			if ((lockSteam_l == false || player->steamid == steamid) && (lockIP_l == false || player->ip.equalsi(ip)) && (lockName_l == false || player->name.equalsi(name)))
+			{
+				if (checkAuto == false || (autoAuthSteam_l && player->steamid == steamid) || (autoAuthIP_l && player->ip.equalsi(ip)))
+					return sectionAuth();
+			}
+			else if (kickLockMismatch_l)
+			{
+				server->kickPlayer(player);
+				return -1;
+			}
 		}
 	}
-	group = RenX_ModSystemPlugin::groups.get(0);
+	group = this->getDefaultGroup();
 
 	player->varData.set(this->name, STRING_LITERAL_AS_REFERENCE("Group"), group->name);
 	player->formatNamePrefix = group->prefix;
