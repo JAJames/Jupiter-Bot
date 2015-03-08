@@ -128,6 +128,13 @@ namespace RenX
 		bool isFirstAction() const;
 
 		/**
+		* @brief Checks if the server travel mode is seamless.
+		*
+		* @return True if the server is using seamless travel, false otherwise.
+		*/
+		bool isSeamless() const;
+
+		/**
 		* @brief Checks if a channel type is a public channel type.
 		*
 		* @param type Type to check against.
@@ -286,6 +293,69 @@ namespace RenX
 		bool updateClientList();
 
 		/**
+		* @brief Forces the current game to end, if the server supports it.
+		*
+		* @return True on success, false otherwise.
+		*/
+		bool gameover();
+
+		/**
+		* @brief Forces the current game to end and changes the map, if the server supports it.
+		*
+		* @return True on success, false otherwise.
+		*/
+		bool setMap(const Jupiter::ReadableString &map);
+
+		/**
+		* @brief Forces the current game to end, if the server supports it.
+		*
+		* @return True on success, false otherwise.
+		*/
+		bool loadMutator(const Jupiter::ReadableString &mutator);
+
+		/**
+		* @brief Forces the current game to end, if the server supports it.
+		*
+		* @return True on success, false otherwise.
+		*/
+		bool unloadMutator(const Jupiter::ReadableString &mutator);
+
+		/**
+		* @brief Forcefully ends the current vote, if the server supports it.
+		*
+		* @return True on success, false otherwise.
+		*/
+		bool cancelVote(const RenX::TeamType team);
+
+		/**
+		* @brief Swaps the teams, if the server supports it.
+		*
+		* @return True on success, false otherwise.
+		*/
+		bool swapTeams();
+
+		/**
+		* @brief Starts a demo recording, if the server supports it.
+		*
+		* @return True on success, false otherwise.
+		*/
+		bool recordDemo();
+
+		/**
+		* @brief Mutes a player from the game chat, if the server supports it.
+		*
+		* @return True on success, false otherwise.
+		*/
+		bool mute(const RenX::PlayerInfo *player);
+
+		/**
+		* @brief Allows a player to use the game chat, if the server supports it.
+		*
+		* @return True on success, false otherwise.
+		*/
+		bool unmute(const RenX::PlayerInfo *player);
+
+		/**
 		* @brief Gives a player additional credits, if the server supports it.
 		*
 		* @param id ID of the player to give credits to
@@ -307,19 +377,19 @@ namespace RenX
 		* @brief Forces a player to change teams, if the server supports it.
 		*
 		* @param id ID of the player to give credits to
-		* @param options Options to pass to the command
+		* @param resetCredits True to reset the player's credits, false otherwise.
 		* @return True on success, false otherwise.
 		*/
-		bool changeTeam(int id, unsigned char options = 0x03);
+		bool changeTeam(int id, bool resetCredits = true);
 
 		/**
 		* @brief Forces a player to change teams, if the server supports it.
 		*
 		* @param player Player to change teams
-		* @param options Options to pass to the command
+		* @param resetCredits True to reset the player's credits, false otherwise.
 		* @return True on success, false otherwise.
 		*/
-		bool changeTeam(RenX::PlayerInfo *player, unsigned char options = 0x03);
+		bool changeTeam(RenX::PlayerInfo *player, bool resetCredits = true);
 
 		/**
 		* @brief Forces a player to change teams, if the server supports it.
@@ -603,6 +673,7 @@ namespace RenX
 
 		/** Tracking variables */
 		bool connected = false;
+		bool seamless = false;
 		bool needsCList = false;
 		bool silenceParts = false;
 		bool silenceJoins = false;
@@ -615,6 +686,7 @@ namespace RenX
 		unsigned int xRconRevision = 0;
 		time_t lastAttempt = 0;
 		Jupiter::String lastLine;
+		Jupiter::StringS commandListFormat;
 		Jupiter::StringS gameVersion;
 		Jupiter::ArrayList<RenX::GameCommand> commands;
 

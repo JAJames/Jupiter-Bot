@@ -34,12 +34,20 @@ namespace RenX
 	class Server;
 
 	/**
-	* @brief Translates the first character of a team's name into a TeamType.
+	* @brief Translates a team's number into a TeamType.
 	*
-	* @param First character of the team name.
+	* @param teamNum Team number
 	* @return A corresponding TeamType.
 	*/
-	RENX_API TeamType getTeam(char team);
+	RENX_API TeamType getTeam(int teamNum);
+
+	/**
+	* @brief Translates team number into a TeamType.
+	*
+	* @param team Team name
+	* @return A corresponding TeamType.
+	*/
+	RENX_API TeamType getTeam(const Jupiter::ReadableString &team);
 
 	/**
 	* @brief Fetches the corresponding IRC color code for a team.
@@ -127,12 +135,12 @@ namespace RenX
 	RENX_API Jupiter::String getFormattedPlayerName(const RenX::PlayerInfo *player);
 
 	/**
-	* @brief Sanitizes a string into a RCON-ready state.
+	* @brief Sanitizes a string into a RCON-ready state by replacing special
+	* characters with HTML-style character codes.
 	* Note: This resolves the pipe character ('|') exploit.
 	*
 	* @brief str String to sanitize.
 	*/
-	RENX_API void sanitizeString(char *str);
 	RENX_API void sanitizeString(Jupiter::StringType &str);
 
 	/**

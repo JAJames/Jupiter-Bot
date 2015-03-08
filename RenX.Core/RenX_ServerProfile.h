@@ -44,6 +44,7 @@ namespace RenX
 	RENX_API extern const ServerProfile *openBeta1Profile;	/** Open Beta 1 server profile */
 	RENX_API extern const ServerProfile *openBeta2Profile;	/** Open Beta 2 server profile */
 	RENX_API extern const ServerProfile *openBeta3Profile;	/** Open Beta 3 server profile */
+	RENX_API extern const ServerProfile *openBeta4Profile;	/** Open Beta 4 server profile */
 	
 }
 

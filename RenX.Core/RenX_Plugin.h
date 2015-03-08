@@ -65,17 +65,35 @@ namespace RenX
 		/** Game type logs */
 		virtual void RenX_OnDeploy(Server *server, const PlayerInfo *player, const Jupiter::ReadableString &object);
 		virtual void RenX_OnDisarm(Server *server, const PlayerInfo *player, const Jupiter::ReadableString &object);
+		virtual void RenX_OnDisarm(Server *server, const PlayerInfo *player, const Jupiter::ReadableString &object, const PlayerInfo *victim);
+		virtual void RenX_OnExplode(Server *server, const PlayerInfo *player, const Jupiter::ReadableString &object);
+		virtual void RenX_OnExplode(Server *server, const Jupiter::ReadableString &object);
 		virtual void RenX_OnSuicide(Server *server, const PlayerInfo *player, const Jupiter::ReadableString &damageType);
 		virtual void RenX_OnKill(Server *server, const PlayerInfo *player, const PlayerInfo *victim, const Jupiter::ReadableString &damageType);
 		virtual void RenX_OnKill(Server *server, const Jupiter::ReadableString &killer, const TeamType &killerTeam, const PlayerInfo *victim, const Jupiter::ReadableString &damageType);
 		virtual void RenX_OnDie(Server *server, const PlayerInfo *player, const Jupiter::ReadableString &damageType);
 		virtual void RenX_OnDie(Server *server, const Jupiter::ReadableString &object, const TeamType &objectTeam, const Jupiter::ReadableString &damageType);
-		virtual void RenX_OnDestroy(Server *server, const PlayerInfo *player, const Jupiter::ReadableString &objectName, const Jupiter::ReadableString &damageType, ObjectType type);
+		virtual void RenX_OnDestroy(Server *server, const PlayerInfo *player, const Jupiter::ReadableString &objectName, const TeamType &victimTeam, const Jupiter::ReadableString &damageType, ObjectType type);
 		virtual void RenX_OnDestroy(Server *server, const Jupiter::ReadableString &killer, const TeamType &killerTeam, const Jupiter::ReadableString &objectName, const TeamType &objectTeam, const Jupiter::ReadableString &damageType, ObjectType type);
 		virtual void RenX_OnCapture(Server *server, const PlayerInfo *player, const Jupiter::ReadableString &building, const TeamType &oldTeam);
 		virtual void RenX_OnNeutralize(Server *server, const PlayerInfo *player, const Jupiter::ReadableString &building, const TeamType &oldTeam);
+		virtual void RenX_OnCharacterPurchase(Server *server, const PlayerInfo *player, const Jupiter::ReadableString &character);
+		virtual void RenX_OnItemPurchase(Server *server, const PlayerInfo *player, const Jupiter::ReadableString &item);
+		virtual void RenX_OnWeaponPurchase(Server *server, const PlayerInfo *player, const Jupiter::ReadableString &weapon);
+		virtual void RenX_OnRefillPurchase(Server *server, const PlayerInfo *player);
+		virtual void RenX_OnVehiclePurchase(Server *server, const PlayerInfo *owner, const Jupiter::ReadableString &vehicle);
+		virtual void RenX_OnVehicleSpawn(Server *server, const TeamType &team, const Jupiter::ReadableString &vehicle);
+		virtual void RenX_OnSpawn(Server *server, const PlayerInfo *player, const Jupiter::ReadableString &character);
+		virtual void RenX_OnBotJoin(Server *server, const PlayerInfo *player);
+		virtual void RenX_OnVehicleCrate(Server *server, const PlayerInfo *owner, const Jupiter::ReadableString &vehicle);
+		virtual void RenX_OnDeathCrate(Server *server, const PlayerInfo *player);
+		virtual void RenX_OnMoneyCrate(Server *server, const PlayerInfo *player, int amount);
+		virtual void RenX_OnCharacterCrate(Server *server, const PlayerInfo *player, const Jupiter::ReadableString &character);
+		virtual void RenX_OnSpyCrate(Server *server, const PlayerInfo *player, const Jupiter::ReadableString &character);
+		virtual void RenX_OnRefillCrate(Server *server, const PlayerInfo *player);
 		virtual void RenX_OnSteal(Server *server, const PlayerInfo *player, const Jupiter::ReadableString &vehicle);
 		virtual void RenX_OnSteal(Server *server, const PlayerInfo *player, const Jupiter::ReadableString &vehicle, const PlayerInfo *victim);
+		virtual void RenX_OnDonate(Server *server, const PlayerInfo *donor, const PlayerInfo *player, double amount);
 		virtual void RenX_OnGameOver(Server *server, WinType winType, const TeamType &team, int gScore, int nScore);
 		virtual void RenX_OnGame(Server *server, const Jupiter::ReadableString &raw);
 
@@ -115,6 +133,7 @@ namespace RenX
 		/** Demo Type Logs */
 		virtual void RenX_OnDemoRecord(Server *server, const PlayerInfo *player);
 		virtual void RenX_OnDemoRecord(Server *server, const Jupiter::ReadableString &user); // Note: user is currently always empty.
+		virtual void RenX_OnDemoRecordStop(Server *server);
 		virtual void RenX_OnDemo(Server *server, const Jupiter::ReadableString &raw);
 
 		/** Other Logs */
@@ -122,11 +141,6 @@ namespace RenX
 		
 		/** eXtended RCON */
 		virtual void RenX_XOnVersion(Server *server, unsigned int version);
-		virtual void RenX_OnGrantCharacter(Server *server, const PlayerInfo *player, const Jupiter::ReadableString &character);
-		virtual void RenX_OnGrantWeapon(Server *server, const PlayerInfo *player, const Jupiter::ReadableString &weapon);
-		virtual void RenX_OnSpawnVehicle(Server *server, const PlayerInfo *owner, const Jupiter::ReadableString &vehicle);
-		virtual void RenX_OnSpawnVehicleNoOwner(Server *server, const TeamType &team, const Jupiter::ReadableString &vehicle);
-		virtual void RenX_OnMinePlace(Server *server, const PlayerInfo *player, const Jupiter::ReadableString &mine);
 		virtual void RenX_XOnOther(Server *server, const Jupiter::ReadableString &raw);
 
 		/** Command type */

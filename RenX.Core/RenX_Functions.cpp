@@ -102,9 +102,31 @@ Jupiter::ReferenceString translated_Vehicle_AC130_DmgType_HeavyCannon = STRING_L
 Jupiter::ReferenceString translated_Vehicle_AC130_DmgType_AutoCannon = STRING_LITERAL_AS_REFERENCE("AC130 Auto Cannon");
 
 /** Weapons */
+Jupiter::ReferenceString translated_Weapon_HeavyPistol = STRING_LITERAL_AS_REFERENCE("Heavy Pistol");
+Jupiter::ReferenceString translated_Weapon_Carbine = STRING_LITERAL_AS_REFERENCE("Carbine");
+Jupiter::ReferenceString translated_Weapon_Airstrike_GDI = STRING_LITERAL_AS_REFERENCE("GDI Airstrike");
+Jupiter::ReferenceString translated_Weapon_Airstrike_Nod = STRING_LITERAL_AS_REFERENCE("Nod Airstrike");
+Jupiter::ReferenceString translated_Weapon_TiberiumFlechetteRifle = STRING_LITERAL_AS_REFERENCE("Tiberium Flechette Gun");
+Jupiter::ReferenceString translated_Weapon_TiberiumAutoRifle = STRING_LITERAL_AS_REFERENCE("Tiberium Automatic Rifle");
+Jupiter::ReferenceString translated_Weapon_EMPGrenade = STRING_LITERAL_AS_REFERENCE("EMP Grenade");
+Jupiter::ReferenceString translated_Weapon_SmokeGrenade = STRING_LITERAL_AS_REFERENCE("Smoke Grenade");
+Jupiter::ReferenceString translated_Weapon_TimedC4 = STRING_LITERAL_AS_REFERENCE("Timed C4");
+Jupiter::ReferenceString translated_Weapon_RemoteC4 = STRING_LITERAL_AS_REFERENCE("Remote C4");
+Jupiter::ReferenceString translated_Weapon_ProxyC4 = STRING_LITERAL_AS_REFERENCE("Proximity C4");
+Jupiter::ReferenceString translated_Weapon_ATMine = STRING_LITERAL_AS_REFERENCE("Anti-Tank Mine");
+Jupiter::ReferenceString translated_Weapon_IonCannonBeacon = STRING_LITERAL_AS_REFERENCE("Ion Cannon Beacon");
+Jupiter::ReferenceString translated_Weapon_NukeBeacon = STRING_LITERAL_AS_REFERENCE("Nuclear Missile Beacon");
 Jupiter::ReferenceString translated_Weapon_DeployedC4 = STRING_LITERAL_AS_REFERENCE("Timed C4");
+Jupiter::ReferenceString translated_Weapon_DeployedTimedC4 = STRING_LITERAL_AS_REFERENCE("Timed C4");
 Jupiter::ReferenceString translated_Weapon_DeployedRemoteC4 = STRING_LITERAL_AS_REFERENCE("Remote C4");
 Jupiter::ReferenceString translated_Weapon_DeployedProxyC4 = STRING_LITERAL_AS_REFERENCE("Proximity C4");
+Jupiter::ReferenceString translated_Weapon_DeployedATMine = STRING_LITERAL_AS_REFERENCE("Anti-Tank Mine");
+Jupiter::ReferenceString translated_Weapon_DeployedIonCannonBeacon = STRING_LITERAL_AS_REFERENCE("Ion Cannon Beacon");
+Jupiter::ReferenceString translated_Weapon_DeployedNukeBeacon = STRING_LITERAL_AS_REFERENCE("Nuclear Missile Beacon");
+
+/** Projectiles */
+Jupiter::ReferenceString translated_Projectile_EMPGrenade = STRING_LITERAL_AS_REFERENCE("EMP Grenade");
+Jupiter::ReferenceString translated_Projectile_SmokeGrenade = STRING_LITERAL_AS_REFERENCE("Smoke Grenade");
 
 /** GDI Characters */
 Jupiter::ReferenceString translated_GDI_Deadeye = STRING_LITERAL_AS_REFERENCE("Deadeye");
@@ -254,6 +276,9 @@ Jupiter::ReferenceString translated_Building_PowerPlant_GDI_Internals = STRING_L
 Jupiter::ReferenceString translated_Building_AdvancedGuardTower_Internals = STRING_LITERAL_AS_REFERENCE("Advanced Guard Tower");
 Jupiter::ReferenceString translated_Building_Obelisk_Internals = STRING_LITERAL_AS_REFERENCE("Obelisk of Light");
 
+/** Other structures */
+Jupiter::ReferenceString translated_Building_Silo_Internals = STRING_LITERAL_AS_REFERENCE("Tiberium Silo");
+
 /** Defences */
 Jupiter::ReferenceString translated_Defence_GuardTower = STRING_LITERAL_AS_REFERENCE("Guard Tower");
 Jupiter::ReferenceString translated_Defence_Turret = STRING_LITERAL_AS_REFERENCE("Turret");
@@ -276,19 +301,30 @@ Jupiter::ReferenceString translated_IonCannonBeacon = STRING_LITERAL_AS_REFERENC
 Jupiter::ReferenceString translated_NukeBeacon = STRING_LITERAL_AS_REFERENCE("Nuclear Strike Beacon");
 Jupiter::ReferenceString translated_KillZDamageType = STRING_LITERAL_AS_REFERENCE("Kill Zone");
 
-RenX::TeamType RenX::getTeam(char team)
+RenX::TeamType RenX::getTeam(int teamNum)
 {
-	switch (team)
+	switch (teamNum)
 	{
-	case 'g':
-	case 'G':
+	case 0:
 		return RenX::TeamType::GDI;
-	case 'n':
-	case 'N':
+	case 1:
 		return RenX::TeamType::Nod;
+	case 255:
+		return RenX::TeamType::None;
 	default:
 		return RenX::TeamType::Other;
 	}
+}
+
+RenX::TeamType RenX::getTeam(const Jupiter::ReadableString &team)
+{
+	if (team.equalsi("GDI"))
+		return RenX::TeamType::GDI;
+	if (team.equalsi("Nod"))
+		return RenX::TeamType::Nod;
+	if (team.isEmpty() || team.equalsi("Neutral") || team.equalsi("Civilians"))
+		return RenX::TeamType::None;
+	return RenX::TeamType::Other;
 }
 
 const Jupiter::ReadableString &RenX::getTeamColor(TeamType team)
@@ -451,10 +487,33 @@ const Jupiter::ReadableString &RenX::translateName(const Jupiter::ReadableString
 	else if (object.find(STRING_LITERAL_AS_REFERENCE("Weapon_")) == 0)
 	{
 		object.shiftRight(7);
+		if (object.equals(STRING_LITERAL_AS_REFERENCE("HeavyPistol"))) return translated_Weapon_HeavyPistol;
+		if (object.equals(STRING_LITERAL_AS_REFERENCE("Carbine"))) return translated_Weapon_Carbine;
+		if (object.equals(STRING_LITERAL_AS_REFERENCE("Airstrike_GDI"))) return translated_Weapon_Airstrike_GDI;
+		if (object.equals(STRING_LITERAL_AS_REFERENCE("Airstrike_Nod"))) return translated_Weapon_Airstrike_Nod;
+		if (object.equals(STRING_LITERAL_AS_REFERENCE("TiberiumFlechetteRifle"))) return translated_Weapon_TiberiumFlechetteRifle;
+		if (object.equals(STRING_LITERAL_AS_REFERENCE("TiberiumAutoRifle"))) return translated_Weapon_TiberiumAutoRifle;
+		if (object.equals(STRING_LITERAL_AS_REFERENCE("EMPGrenade"))) return translated_Weapon_EMPGrenade;
+		if (object.equals(STRING_LITERAL_AS_REFERENCE("SmokeGrenade"))) return translated_Weapon_SmokeGrenade;
+		if (object.equals(STRING_LITERAL_AS_REFERENCE("TimedC4"))) return translated_Weapon_TimedC4;
+		if (object.equals(STRING_LITERAL_AS_REFERENCE("RemoteC4"))) return translated_Weapon_RemoteC4;
+		if (object.equals(STRING_LITERAL_AS_REFERENCE("ProxyC4"))) return translated_Weapon_ProxyC4;
+		if (object.equals(STRING_LITERAL_AS_REFERENCE("ATMine"))) return translated_Weapon_ATMine;
+		if (object.equals(STRING_LITERAL_AS_REFERENCE("IonCannonBeacon"))) return translated_Weapon_IonCannonBeacon;
+		if (object.equals(STRING_LITERAL_AS_REFERENCE("NukeBeacon"))) return translated_Weapon_NukeBeacon;
 		if (object.equals(STRING_LITERAL_AS_REFERENCE("DeployedC4"))) return translated_Weapon_DeployedC4;
+		if (object.equals(STRING_LITERAL_AS_REFERENCE("DeployedTimedC4"))) return translated_Weapon_DeployedTimedC4;
 		if (object.equals(STRING_LITERAL_AS_REFERENCE("DeployedRemoteC4"))) return translated_Weapon_DeployedRemoteC4;
 		if (object.equals(STRING_LITERAL_AS_REFERENCE("DeployedProxyC4"))) return translated_Weapon_DeployedProxyC4;
-		// TODO: Add more translations.
+		if (object.equals(STRING_LITERAL_AS_REFERENCE("DeployedATMine"))) return translated_Weapon_DeployedATMine;
+		if (object.equals(STRING_LITERAL_AS_REFERENCE("DeployedIonCannonBeacon"))) return translated_Weapon_DeployedIonCannonBeacon;
+		if (object.equals(STRING_LITERAL_AS_REFERENCE("DeployedNukeBeacon"))) return translated_Weapon_DeployedNukeBeacon;
+	}
+	else if (object.find(STRING_LITERAL_AS_REFERENCE("Projectile_")) == 0)
+	{
+		object.shiftRight(11);
+		if (object.equals(STRING_LITERAL_AS_REFERENCE("EMPGrenade"))) return translated_Projectile_EMPGrenade;
+		if (object.equals(STRING_LITERAL_AS_REFERENCE("SmokeGrenade"))) return translated_Projectile_SmokeGrenade;
 	}
 	else if (object.find(STRING_LITERAL_AS_REFERENCE("InventoryManager_")) == 0)
 	{
@@ -593,6 +652,9 @@ const Jupiter::ReadableString &RenX::translateName(const Jupiter::ReadableString
 		/** Defense structures */
 		if (object.equals(STRING_LITERAL_AS_REFERENCE("AdvancedGuardTower_Internals"))) return translated_Building_AdvancedGuardTower_Internals;
 		if (object.equals(STRING_LITERAL_AS_REFERENCE("Obelisk_Internals"))) return translated_Building_Obelisk_Internals;
+
+		/** Other structures */
+		if (object.equals(STRING_LITERAL_AS_REFERENCE("Silo_Internals"))) return translated_Building_Silo_Internals;
 	}
 	else if (object.find(STRING_LITERAL_AS_REFERENCE("Defence_")) == 0)
 	{
@@ -710,25 +772,6 @@ Jupiter::String RenX::getFormattedPlayerName(const RenX::PlayerInfo *player)
 	r += RenX::getTeamColor(player->team);
 	r += player->name;
 	return r;
-}
-
-void RenX::sanitizeString(char *str)
-{
-	while (*str != 0)
-	{
-		switch (*str)
-		{
-		case '|':
-			*str = '/';
-			break;
-		case '\\':
-			if (*(str + 1) == 0) *str = '/'; // So users get something at least.
-			break;
-		default:
-			break;
-		}
-		str++;
-	}
 }
 
 void RenX::sanitizeString(Jupiter::StringType &str)

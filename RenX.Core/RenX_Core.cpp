@@ -62,11 +62,6 @@ RenX::Core::~Core()
 	RenX::Core::servers.emptyAndDelete();
 }
 
-int RenX::Core::send(RenX::Server *server, const Jupiter::ReadableString &msg)
-{
-	return server->send(msg);
-}
-
 unsigned int RenX::Core::send(int type, const Jupiter::ReadableString &msg)
 {
 	unsigned int r = 0;
@@ -74,7 +69,7 @@ unsigned int RenX::Core::send(int type, const Jupiter::ReadableString &msg)
 	for (size_t i = 0; i != RenX::Core::servers.size(); i++)
 	{
 		server = RenX::Core::getServer(i);
-		if (server->isLogChanType(type) && RenX::Core::send(server, msg) > 0) r++;
+		if (server->isLogChanType(type) && server->send(msg) > 0) r++;
 	}
 	return r;
 }

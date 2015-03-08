@@ -269,7 +269,16 @@ void HostMsgIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &
 {
 	if (parameters.isEmpty() == false)
 	{
-		if (RenX::getCore()->send(source->getChannel(channel)->getType(), Jupiter::StringS::Format("say %.*s", parameters.size(), parameters.ptr())) == 0)
+		int type = source->getChannel(channel)->getType();
+
+		bool success = false;
+		for (unsigned int i = 0; i != RenX::getCore()->getServerCount(); i++)
+		{
+			RenX::Server *server = RenX::getCore()->getServer(i);
+			if (server->isLogChanType(type))
+				success = server->sendMessage(parameters) > 0;
+		}
+		if (!success)
 			source->sendMessage(channel, STRING_LITERAL_AS_REFERENCE("Error: Channel not attached to any connected Renegade X servers."));
 	}
 	else source->sendNotice(nick, STRING_LITERAL_AS_REFERENCE("Error: Too Few Parameters. Syntax: hmsg <Message>"));
@@ -948,7 +957,7 @@ IRC_COMMAND_INIT(SetRulesIRCCommand)
 void ReconnectIRCCommand::create()
 {
 	this->addTrigger(STRING_LITERAL_AS_REFERENCE("reconnect"));
-	this->setAccessLevel(4);
+	this->setAccessLevel(3);
 }
 
 void ReconnectIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &channel, const Jupiter::ReadableString &nick, const Jupiter::ReadableString &)
@@ -963,7 +972,7 @@ void ReconnectIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString
 			RenX::Server *server = RenX::getCore()->getServer(i);
 			if (server->isLogChanType(type))
 			{
-				if (server->reconnect()) msg.format("Connection established");
+				if (server->reconnect()) msg.set("Connection established");
 				else msg.format("[RenX] ERROR: Failed to connect to %.*s on port %u." ENDL, server->getHostname().size(), server->getHostname().ptr(), server->getPort());
 				source->sendMessage(channel, msg);
 			}
@@ -971,7 +980,7 @@ void ReconnectIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString
 		if (msg.isEmpty())
 		{
 			// We didn't connect anywhere!!
-			msg.format("ERROR: No servers found to connect to.");
+			msg.set("ERROR: No servers found to connect to.");
 			source->sendMessage(channel, msg);
 		}
 	}
@@ -979,102 +988,139 @@ void ReconnectIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString
 
 const Jupiter::ReadableString &ReconnectIRCCommand::getHelp(const Jupiter::ReadableString &)
 {
-	static STRING_LITERAL_AS_NAMED_REFERENCE(defaultHelp, "Gets information about a player. Syntax: Reconnect");
+	static STRING_LITERAL_AS_NAMED_REFERENCE(defaultHelp, "Resets the RCON connection. Syntax: Reconnect");
 	return defaultHelp;
 }
 
 IRC_COMMAND_INIT(ReconnectIRCCommand)
 
-// RestartMap IRC Command
+// GameOver IRC Command
 
-/*void RestartMapIRCCommand::create()
+void GameOverIRCCommand::create()
 {
-	this->addTrigger("restartmap");
-	this->setAccessLevel(2);
+	this->addTrigger(STRING_LITERAL_AS_REFERENCE("gameover"));
+	this->addTrigger(STRING_LITERAL_AS_REFERENCE("endmap"));
+	this->setAccessLevel(3);
 }
 
-void RestartMapIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &channel, const Jupiter::ReadableString &nick, const Jupiter::ReadableString &parameters)
+void GameOverIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &channel, const Jupiter::ReadableString &nick, const Jupiter::ReadableString &)
 {
-	int r = RenX::getCore()->send(source->getChannel(channel.c_str())->getType(), "adminrestartmap");
-	if (r > 0)
+	Jupiter::IRC::Client::Channel *chan = source->getChannel(channel);
+	if (chan != nullptr)
 	{
-		char t[256];
-		sprintf(t, "Command sent to %d servers.", r);
-		source->sendMessage(channel.c_str(), t);
+		int type = chan->getType();
+		bool match = false;
+		for (unsigned int i = 0; i != RenX::getCore()->getServerCount(); i++)
+		{
+			RenX::Server *server = RenX::getCore()->getServer(i);
+			if (server->isLogChanType(type))
+			{
+				match = true;
+				if (server->gameover() == false)
+					source->sendMessage(channel, STRING_LITERAL_AS_REFERENCE("Error: Server does not support gameover."));
+			}
+		}
+		if (match == false)
+			source->sendMessage(channel, STRING_LITERAL_AS_REFERENCE("Error: Channel not attached to any connected Renegade X servers."));
 	}
-	else source->sendMessage(channel.c_str(), "Error: Channel not attached to any connected Renegade X servers.");
 }
 
-const char *RestartMapIRCCommand::getHelp()
+const Jupiter::ReadableString &GameOverIRCCommand::getHelp(const Jupiter::ReadableString &)
 {
-	return "Restarts the current map. Syntax: RestartMap";
+	static STRING_LITERAL_AS_NAMED_REFERENCE(defaultHelp, "Ends the game immediately. Syntax: Gameover");
+	return defaultHelp;
 }
 
-IRC_COMMAND_INIT(RestartMapIRCCommand)
+IRC_COMMAND_INIT(GameOverIRCCommand)
 
 // SetMap IRC Command
 
 void SetMapIRCCommand::create()
 {
-	this->addTrigger("setmap");
-	this->setAccessLevel(3);
+	this->addTrigger(STRING_LITERAL_AS_REFERENCE("setmap"));
+	this->setAccessLevel(4);
 }
 
 void SetMapIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &channel, const Jupiter::ReadableString &nick, const Jupiter::ReadableString &parameters)
 {
-	if (parameters != nullptr)
+	if (parameters.isEmpty() == false)
 	{
-		Jupiter::StringL cmd = "adminrestartmap ";
-		cmd += parameters;
-		int r = RenX::getCore()->send(source->getChannel(channel.c_str())->getType(), cmd.c_str());
-		if (r > 0)
+		Jupiter::IRC::Client::Channel *chan = source->getChannel(channel);
+		if (chan != nullptr)
 		{
-			char t[256];
-			sprintf(t, "Command sent to %d servers.", r);
-			source->sendMessage(channel.c_str(), t);
+			int type = chan->getType();
+			bool match = false;
+			for (unsigned int i = 0; i != RenX::getCore()->getServerCount(); i++)
+			{
+				RenX::Server *server = RenX::getCore()->getServer(i);
+				if (server->isLogChanType(type))
+				{
+					match = true;
+					if (server->setMap(parameters) == false)
+						source->sendMessage(channel, STRING_LITERAL_AS_REFERENCE("Error: Server does not support setmap."));
+				}
+			}
+			if (match == false)
+				source->sendMessage(channel, STRING_LITERAL_AS_REFERENCE("Error: Channel not attached to any connected Renegade X servers."));
 		}
-		else source->sendMessage(channel.c_str(), "Error: Channel not attached to any connected Renegade X servers.");
 	}
-	else source->sendNotice(nick.c_str(), "Error: Too Few Parameters. Syntax: SetMap <Map Name>");
+	else
+		source->sendNotice(nick, STRING_LITERAL_AS_REFERENCE("Error: Too few parameters. Syntax: setmap <map>"));
 }
 
-const char *SetMapIRCCommand::getHelp()
+const Jupiter::ReadableString &SetMapIRCCommand::getHelp(const Jupiter::ReadableString &)
 {
-	return "Sets the next map, and ends the current map. Syntax: SetMap <Map Name>";
+	static STRING_LITERAL_AS_NAMED_REFERENCE(defaultHelp, "Ends the game immediately. Syntax: setmap <map>");
+	return defaultHelp;
 }
 
-IRC_COMMAND_INIT(SetMapIRCCommand)*/
+IRC_COMMAND_INIT(SetMapIRCCommand)
 
 // Mute IRC Command
 
-/*void MuteIRCCommand::create()
+void MuteIRCCommand::create()
 {
-	this->addTrigger("mute");
-	this->addTrigger("silence");
+	this->addTrigger(STRING_LITERAL_AS_REFERENCE("mute"));
 	this->setAccessLevel(2);
 }
 
 void MuteIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &channel, const Jupiter::ReadableString &nick, const Jupiter::ReadableString &parameters)
 {
-	if (parameters != nullptr)
+	if (parameters.isEmpty() == false)
 	{
-		Jupiter::StringL cmd = "AdminForceTextMute ";
-		cmd += parameters;
-		int r = RenX::getCore()->send(source->getChannel(channel.c_str())->getType(), cmd.c_str());
-		if (r > 0)
+		Jupiter::IRC::Client::Channel *chan = source->getChannel(channel);
+		if (chan != nullptr)
 		{
-			char t[256];
-			sprintf(t, "Command sent to %d servers.", r);
-			source->sendMessage(channel.c_str(), t);
+			int type = chan->getType();
+			RenX::PlayerInfo *player;
+			bool match = false;
+			for (unsigned int i = 0; i != RenX::getCore()->getServerCount(); i++)
+			{
+				RenX::Server *server = RenX::getCore()->getServer(i);
+				if (server->isLogChanType(type))
+				{
+					match = true;
+					player = server->getPlayerByPartName(parameters);
+					if (player != nullptr)
+					{
+						if (server->mute(player) == false)
+							source->sendMessage(channel, STRING_LITERAL_AS_REFERENCE("Error: Server does not support muting players."));
+					}
+					else
+						source->sendNotice(nick, STRING_LITERAL_AS_REFERENCE("Error: Player not found."));
+				}
+			}
+			if (match == false)
+				source->sendNotice(nick, STRING_LITERAL_AS_REFERENCE("Error: Channel not attached to any connected Renegade X servers."));
 		}
-		else source->sendMessage(channel.c_str(), "Error: Channel not attached to any connected Renegade X servers.");
 	}
-	else source->sendNotice(nick.c_str(), "Error: Too Few Parameters. Syntax: Mute <Player Name>");
+	else source->sendNotice(nick, STRING_LITERAL_AS_REFERENCE("Error: Too Few Parameters. Syntax: mute <player>"));
 }
 
-const char *MuteIRCCommand::getHelp()
+const Jupiter::ReadableString &MuteIRCCommand::getHelp(const Jupiter::ReadableString &)
 {
-	return "Mutes a player from the game chat. Syntax: Mute <Player Name>";
+	static STRING_LITERAL_AS_NAMED_REFERENCE(defaultHelp, "Mutes a player. Syntax: mute <player>");
+	return defaultHelp;
 }
 
 IRC_COMMAND_INIT(MuteIRCCommand)
@@ -1083,34 +1129,50 @@ IRC_COMMAND_INIT(MuteIRCCommand)
 
 void UnMuteIRCCommand::create()
 {
-	this->addTrigger("unmute");
+	this->addTrigger(STRING_LITERAL_AS_REFERENCE("unmute"));
 	this->setAccessLevel(2);
 }
 
 void UnMuteIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &channel, const Jupiter::ReadableString &nick, const Jupiter::ReadableString &parameters)
 {
-	if (parameters != nullptr)
+	if (parameters.isEmpty() == false)
 	{
-		Jupiter::StringL cmd = "AdminForceTextUnMute ";
-		cmd += parameters;
-		int r = RenX::getCore()->send(source->getChannel(channel.c_str())->getType(), cmd.c_str());
-		if (r > 0)
+		Jupiter::IRC::Client::Channel *chan = source->getChannel(channel);
+		if (chan != nullptr)
 		{
-			char t[256];
-			sprintf(t, "Command sent to %d servers.", r);
-			source->sendMessage(channel.c_str(), t);
+			int type = chan->getType();
+			RenX::PlayerInfo *player;
+			bool match = false;
+			for (unsigned int i = 0; i != RenX::getCore()->getServerCount(); i++)
+			{
+				RenX::Server *server = RenX::getCore()->getServer(i);
+				if (server->isLogChanType(type))
+				{
+					match = true;
+					player = server->getPlayerByPartName(parameters);
+					if (player != nullptr)
+					{
+						if (server->unmute(player) == false)
+							source->sendMessage(channel, STRING_LITERAL_AS_REFERENCE("Error: Server does not support muting players."));
+					}
+					else
+						source->sendNotice(nick, STRING_LITERAL_AS_REFERENCE("Error: Player not found."));
+				}
+			}
+			if (match == false)
+				source->sendNotice(nick, STRING_LITERAL_AS_REFERENCE("Error: Channel not attached to any connected Renegade X servers."));
 		}
-		else source->sendMessage(channel.c_str(), "Error: Channel not attached to any connected Renegade X servers.");
 	}
-	else source->sendNotice(nick.c_str(), "Error: Too Few Parameters. Syntax: UnMute <Player Name>");
+	else source->sendNotice(nick, STRING_LITERAL_AS_REFERENCE("Error: Too Few Parameters. Syntax: unmute <player>"));
 }
 
-const char *UnMuteIRCCommand::getHelp()
+const Jupiter::ReadableString &UnMuteIRCCommand::getHelp(const Jupiter::ReadableString &)
 {
-	return "UnMutes a player from the game chat. Syntax: UnMute <Player Name>";
+	static STRING_LITERAL_AS_NAMED_REFERENCE(defaultHelp, "Unmutes a player. Syntax: unmute <player>");
+	return defaultHelp;
 }
 
-IRC_COMMAND_INIT(UnMuteIRCCommand)*/
+IRC_COMMAND_INIT(UnMuteIRCCommand)
 
 // Kick IRC Command
 
@@ -1337,8 +1399,7 @@ void AddBotsIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &
 				{
 					RenX::Server *server;
 					Jupiter::StringL cmd;
-					Jupiter::ReferenceString targetTeam = Jupiter::ReferenceString::getWord(parameters, 1, WHITESPACE);
-					RenX::TeamType team = targetTeam.isEmpty() ? RenX::TeamType::Other : RenX::getTeam(targetTeam[0]);
+					RenX::TeamType team = RenX::getTeam(Jupiter::ReferenceString::getWord(parameters, 1, WHITESPACE));
 
 					switch (team)
 					{
@@ -1348,6 +1409,7 @@ void AddBotsIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &
 					case RenX::TeamType::Nod:
 						cmd = "addbluebots ";
 						break;
+					case RenX::TeamType::None:
 					case RenX::TeamType::Other:
 						cmd = "addbots ";
 						break;
@@ -1584,7 +1646,6 @@ void TeamChangeIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableStrin
 		{
 			int type = chan->getType();
 			Jupiter::ReferenceString playerName = Jupiter::ReferenceString::getWord(parameters, 0, WHITESPACE);
-			double credits = Jupiter::ReferenceString::getWord(parameters, 1, WHITESPACE).asDouble();
 			RenX::PlayerInfo *player;
 			bool playerFound = false;
 			for (unsigned int i = 0; i != RenX::getCore()->getServerCount(); i++)
@@ -1640,7 +1701,6 @@ void TeamChange2IRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableStri
 		{
 			int type = chan->getType();
 			Jupiter::ReferenceString playerName = Jupiter::ReferenceString::getWord(parameters, 0, WHITESPACE);
-			double credits = Jupiter::ReferenceString::getWord(parameters, 1, WHITESPACE).asDouble();
 			RenX::PlayerInfo *player;
 			bool playerFound = false;
 			for (unsigned int i = 0; i != RenX::getCore()->getServerCount(); i++)
@@ -1654,7 +1714,7 @@ void TeamChange2IRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableStri
 						if (player->name.findi(playerName) != Jupiter::INVALID_INDEX)
 						{
 							playerFound = true;
-							if (server->changeTeam(player, 0x01) == false)
+							if (server->changeTeam(player, false) == false)
 								source->sendMessage(channel, STRING_LITERAL_AS_REFERENCE("Error: Server does not support team changing."));
 						}
 					}
@@ -2007,10 +2067,9 @@ void AddBotsGameCommand::create()
 
 void AddBotsGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *player, const Jupiter::ReadableString &parameters)
 {
-	Jupiter::ReferenceString targetTeam = Jupiter::ReferenceString::getWord(parameters, 1, WHITESPACE);
-	RenX::TeamType team = targetTeam.isEmpty() ? RenX::TeamType::Other : RenX::getTeam(targetTeam[0]);
+	RenX::TeamType team = RenX::getTeam(Jupiter::ReferenceString::getWord(parameters, 1, WHITESPACE));
 
-	const char *cmd;
+	Jupiter::StringS cmd;
 	switch (team)
 	{
 	case RenX::TeamType::GDI:
@@ -2020,6 +2079,7 @@ void AddBotsGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *player,
 		cmd = "addbluebots ";
 		break;
 	default:
+	case RenX::TeamType::None:
 	case RenX::TeamType::Other:
 		cmd = "addbots ";
 		break;
@@ -2030,7 +2090,9 @@ void AddBotsGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *player,
 		amount = 1;
 	else
 		amount = parameters.asUnsignedInt();
-	source->send(Jupiter::StringS::Format("%s %u", cmd, amount));
+	cmd += Jupiter::StringS::Format("%u", amount);
+
+	source->send(cmd);
 	source->sendMessage(player, Jupiter::StringS::Format("%u bots have been added to the server.", amount));
 }
 

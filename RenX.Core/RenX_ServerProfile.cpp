@@ -25,7 +25,7 @@ struct BaseProfile : RenX::ServerProfile
 		privateMessages = true;
 		disconnectOnGameOver = false;
 		pidbug = false;
-		mustSanitize = true;
+		mustSanitize = false;
 		tieFormat = 1;
 	}
 } _baseProfile;
@@ -37,6 +37,7 @@ struct OpenBeta1Profile : BaseProfile
 	{
 		supported = false;
 		privateMessages = false;
+		mustSanitize = true;
 	}
 } _openBeta1Profile;
 const RenX::ServerProfile *RenX::openBeta1Profile = &_openBeta1Profile;
@@ -48,6 +49,7 @@ struct OpenBeta2Profile : BaseProfile
 		privateMessages = false;
 		pidbug = true;
 		tieFormat = 0;
+		mustSanitize = true;
 	}
 } _openBeta2Profile;
 const RenX::ServerProfile *RenX::openBeta2Profile = &_openBeta2Profile;
@@ -57,6 +59,15 @@ struct OpenBeta3Profile : BaseProfile
 	OpenBeta3Profile()
 	{
 		disconnectOnGameOver = true;
+		mustSanitize = true;
 	}
 } _openBeta3Profile;
 const RenX::ServerProfile *RenX::openBeta3Profile = &_openBeta3Profile;
+
+struct OpenBeta4Profile : BaseProfile
+{
+	OpenBeta4Profile()
+	{
+	}
+} _openBeta4Profile;
+const RenX::ServerProfile *RenX::openBeta4Profile = &_openBeta4Profile;

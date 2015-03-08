@@ -67,15 +67,6 @@ namespace RenX
 		const Jupiter::ReadableString &getName() override { return name; }
 
 		/**
-		* @brief Sends a command to a specific server.
-		*
-		* @param server Server to send the command to.
-		* @param data Command to send.
-		* @return Number of bytes sent on success, less than or equal to 0 otherwise.
-		*/
-		int send(Server *server, const Jupiter::ReadableString &data);
-
-		/**
 		* @brief Sends a command to all servers of a specific type.
 		*
 		* @param type Server type to send the command to.
