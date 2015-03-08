@@ -854,7 +854,7 @@ void ModListIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &
 			section = pluginInstance.modsFile.getSection(--i);
 			if (section->get(STRING_LITERAL_AS_REFERENCE("Group")).equalsi(group->name))
 			{
-				msg += section->getName();
+				msg += section->get(STRING_LITERAL_AS_REFERENCE("Name"), section->getName());
 				msg += STRING_LITERAL_AS_REFERENCE(", ");
 			}
 		}
