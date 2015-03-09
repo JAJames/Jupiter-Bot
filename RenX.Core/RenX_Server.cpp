@@ -2465,9 +2465,6 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 			{
 				RenX::PlayerInfo *player = parseGetPlayerOrAdd(buff.getToken(1, RenX::DelimC));
 				Jupiter::ReferenceString character = buff.getToken(2, RenX::DelimC);
-				fputs("Character: \"", stdout);
-				character.print(stdout);
-				puts("\"");
 				if (character.match("Rx_InventoryManager_???_Soldier") == false && player->character != RenX::getCharacter(character))
 					for (size_t i = 0; i < xPlugins.size(); i++)
 						xPlugins.get(i)->RenX_OnCharacterPurchase(this, player, character);
