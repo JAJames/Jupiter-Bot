@@ -96,9 +96,6 @@ public: // RenX::Plugin
 
 	void RenX_OnLog(RenX::Server *server, const Jupiter::ReadableString &raw) override;
 
-	void RenX_XOnVersion(RenX::Server *server, unsigned int version) override;
-	void RenX_XOnOther(RenX::Server *server, const Jupiter::ReadableString &raw) override;
-
 	void RenX_OnCommand(RenX::Server *server, const Jupiter::ReadableString &raw) override;
 	void RenX_OnError(RenX::Server *server, const Jupiter::ReadableString &raw) override;
 	void RenX_OnVersion(RenX::Server *server, const Jupiter::ReadableString &raw) override;
@@ -172,8 +169,6 @@ private:
 	unsigned int demoRecordStopPublic : 1;
 	unsigned int demoPublic : 1;
 	unsigned int logPublic : 1;
-	unsigned int xVersionPublic : 1;
-	unsigned int xOtherPublic : 1;
 	unsigned int commandPublic : 1;
 	unsigned int errorPublic : 1;
 	unsigned int versionPublic : 1;
@@ -253,8 +248,6 @@ private:
 	Jupiter::StringS demoRecordStopFmt;
 	Jupiter::StringS demoFmt;
 	Jupiter::StringS logFmt;
-	Jupiter::StringS xVersionFmt;
-	Jupiter::StringS xOtherFmt;
 	Jupiter::StringS commandFmt;
 	Jupiter::StringS errorFmt;
 	Jupiter::StringS versionFmt;

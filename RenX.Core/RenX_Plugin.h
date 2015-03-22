@@ -138,10 +138,6 @@ namespace RenX
 
 		/** Other Logs */
 		virtual void RenX_OnLog(Server *server, const Jupiter::ReadableString &raw);
-		
-		/** eXtended RCON */
-		virtual void RenX_XOnVersion(Server *server, unsigned int version);
-		virtual void RenX_XOnOther(Server *server, const Jupiter::ReadableString &raw);
 
 		/** Command type */
 		virtual void RenX_OnCommand(Server *server, const Jupiter::ReadableString &raw);

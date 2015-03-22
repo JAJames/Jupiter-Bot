@@ -430,16 +430,6 @@ void RenX::Plugin::RenX_OnLog(Server *, const Jupiter::ReadableString &)
 	return;
 }
 
-void RenX::Plugin::RenX_XOnVersion(Server *, unsigned int)
-{
-	return;
-}
-
-void RenX::Plugin::RenX_XOnOther(Server *, const Jupiter::ReadableString &)
-{
-	return;
-}
-
 void RenX::Plugin::RenX_OnCommand(Server *, const Jupiter::ReadableString &)
 {
 	return;

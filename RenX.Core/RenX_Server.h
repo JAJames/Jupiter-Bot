@@ -33,7 +33,6 @@
 #include "Jupiter/Thinker.h"
 #include "Jupiter/Rehash.h"
 #include "RenX.h"
-#include "RenX_ServerProfile.h"
 
 /** DLL Linkage Nagging */
 #if defined _MSC_VER
@@ -83,7 +82,6 @@ namespace RenX
 	public: // RenX::Server
 		Jupiter::DLList<RenX::PlayerInfo> players; /** A list of players in the server */
 		Jupiter::INIFile varData; /** This may be replaced later with a more dedicated type. */
-		const RenX::ServerProfile *profile = RenX::defaultProfile;
 
 		/**
 		* @brief Checks if the server is connected to RCON.
@@ -293,70 +291,70 @@ namespace RenX
 		bool updateClientList();
 
 		/**
-		* @brief Forces the current game to end, if the server supports it.
+		* @brief Forces the current game to end.
 		*
 		* @return True on success, false otherwise.
 		*/
 		bool gameover();
 
 		/**
-		* @brief Forces the current game to end and changes the map, if the server supports it.
+		* @brief Forces the current game to end and changes the map.
 		*
 		* @return True on success, false otherwise.
 		*/
 		bool setMap(const Jupiter::ReadableString &map);
 
 		/**
-		* @brief Forces the current game to end, if the server supports it.
+		* @brief Forces the current game to end.
 		*
 		* @return True on success, false otherwise.
 		*/
 		bool loadMutator(const Jupiter::ReadableString &mutator);
 
 		/**
-		* @brief Forces the current game to end, if the server supports it.
+		* @brief Forces the current game to end.
 		*
 		* @return True on success, false otherwise.
 		*/
 		bool unloadMutator(const Jupiter::ReadableString &mutator);
 
 		/**
-		* @brief Forcefully ends the current vote, if the server supports it.
+		* @brief Forcefully ends the current vote.
 		*
 		* @return True on success, false otherwise.
 		*/
 		bool cancelVote(const RenX::TeamType team);
 
 		/**
-		* @brief Swaps the teams, if the server supports it.
+		* @brief Swaps the teams.
 		*
 		* @return True on success, false otherwise.
 		*/
 		bool swapTeams();
 
 		/**
-		* @brief Starts a demo recording, if the server supports it.
+		* @brief Starts a demo recording.
 		*
 		* @return True on success, false otherwise.
 		*/
 		bool recordDemo();
 
 		/**
-		* @brief Mutes a player from the game chat, if the server supports it.
+		* @brief Mutes a player from the game chat.
 		*
 		* @return True on success, false otherwise.
 		*/
 		bool mute(const RenX::PlayerInfo *player);
 
 		/**
-		* @brief Allows a player to use the game chat, if the server supports it.
+		* @brief Allows a player to use the game chat.
 		*
 		* @return True on success, false otherwise.
 		*/
 		bool unmute(const RenX::PlayerInfo *player);
 
 		/**
-		* @brief Gives a player additional credits, if the server supports it.
+		* @brief Gives a player additional credits.
 		*
 		* @param id ID of the player to give credits to
 		* @param credits Credits to give to player
@@ -365,7 +363,7 @@ namespace RenX
 		bool giveCredits(int id, double credits);
 
 		/**
-		* @brief Gives a player additional credits, if the server supports it.
+		* @brief Gives a player additional credits.
 		*
 		* @param player Player to give credits to
 		* @param credits Credits to give to player
@@ -374,7 +372,23 @@ namespace RenX
 		bool giveCredits(RenX::PlayerInfo *player, double credits);
 
 		/**
-		* @brief Forces a player to change teams, if the server supports it.
+		* @brief Kills a player.
+		*
+		* @param id ID of the player to kill
+		* @return True on success, false otherwise.
+		*/
+		bool kill(int id);
+
+		/**
+		* @brief Kills a player.
+		*
+		* @param player Player to kill
+		* @return True on success, false otherwise.
+		*/
+		bool kill(RenX::PlayerInfo *player);
+
+		/**
+		* @brief Forces a player to change teams.
 		*
 		* @param id ID of the player to give credits to
 		* @param resetCredits True to reset the player's credits, false otherwise.
@@ -383,33 +397,13 @@ namespace RenX
 		bool changeTeam(int id, bool resetCredits = true);
 
 		/**
-		* @brief Forces a player to change teams, if the server supports it.
+		* @brief Forces a player to change teams.
 		*
 		* @param player Player to change teams
 		* @param resetCredits True to reset the player's credits, false otherwise.
 		* @return True on success, false otherwise.
 		*/
 		bool changeTeam(RenX::PlayerInfo *player, bool resetCredits = true);
-
-		/**
-		* @brief Forces a player to change teams, if the server supports it.
-		*
-		* @param id ID of the player to give credits to
-		* @param team Team number to switch to
-		* @param options Options to pass to the command
-		* @return True on success, false otherwise.
-		*/
-		bool setTeam(int id, int team, unsigned char options = 0x03);
-
-		/**
-		* @brief Forces a player to change teams, if the server supports it.
-		*
-		* @param player Player to change teams
-		* @param team Team number to switch to
-		* @param options Options to pass to the command
-		* @return True on success, false otherwise.
-		*/
-		bool setTeam(RenX::PlayerInfo *player, int team, unsigned char options = 0x03);
 
 		/**
 		* @brief Fetches a server's IRC logging prefix.
@@ -628,20 +622,6 @@ namespace RenX
 		unsigned int getVersion() const;
 
 		/**
-		* @brief Fetches the eXtended-RCON version number, or 0 if none has been set.
-		*
-		* @return XRCON version number
-		*/
-		unsigned int getXVersion() const;
-
-		/**
-		* @brief Fetches the eXtended-RCON revision number, or 0 if none has been set.
-		*
-		* @return XRCON revision number
-		*/
-		unsigned int getXRevision() const;
-
-		/**
 		* @brief Fetches the game version string, or an empty string if none has been set.
 		*
 		* @return String containing the Game version
@@ -682,8 +662,6 @@ namespace RenX
 		bool firstDeath = false;
 		bool firstAction = false;
 		unsigned int rconVersion = 0;
-		unsigned int xRconVersion = 0;
-		unsigned int xRconRevision = 0;
 		time_t lastAttempt = 0;
 		Jupiter::String lastLine;
 		Jupiter::StringS commandListFormat;

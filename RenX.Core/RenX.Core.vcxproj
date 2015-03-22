@@ -78,7 +78,6 @@
     <ClInclude Include="RenX_PlayerInfo.h" />
     <ClInclude Include="RenX_Plugin.h" />
     <ClInclude Include="RenX_Server.h" />
-    <ClInclude Include="RenX_ServerProfile.h" />
     <ClInclude Include="RenX_Tags.h" />
   </ItemGroup>
   <ItemGroup>
@@ -88,7 +87,6 @@
     <ClCompile Include="RenX_GameCommand.cpp" />
     <ClCompile Include="RenX_Plugin.cpp" />
     <ClCompile Include="RenX_Server.cpp" />
-    <ClCompile Include="RenX_ServerProfile.cpp" />
     <ClCompile Include="RenX_Tags.cpp" />
   </ItemGroup>
   <ItemGroup>

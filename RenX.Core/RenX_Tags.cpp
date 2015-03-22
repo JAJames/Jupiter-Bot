@@ -67,7 +67,6 @@ TagsImp::TagsImp()
 	/** Server tags */
 	this->INTERNAL_RCON_VERSION_TAG = this->getUniqueInternalTag();
 	this->INTERNAL_GAME_VERSION_TAG = this->getUniqueInternalTag();
-	this->INTERNAL_XRCON_VERSION_TAG = this->getUniqueInternalTag();
 	this->INTERNAL_RULES_TAG = this->getUniqueInternalTag();
 	this->INTERNAL_USER_TAG = this->getUniqueInternalTag();
 	this->INTERNAL_SERVER_NAME_TAG = this->getUniqueInternalTag();
@@ -160,7 +159,6 @@ TagsImp::TagsImp()
 	/** Server tags */
 	this->rconVersionTag = Jupiter::IRC::Client::Config->get(configSection, STRING_LITERAL_AS_REFERENCE("RCONVersionTag"), STRING_LITERAL_AS_REFERENCE("{RVER}"));
 	this->gameVersionTag = Jupiter::IRC::Client::Config->get(configSection, STRING_LITERAL_AS_REFERENCE("GameVersionTag"), STRING_LITERAL_AS_REFERENCE("{GVER}"));
-	this->xRconVersionTag = Jupiter::IRC::Client::Config->get(configSection, STRING_LITERAL_AS_REFERENCE("XRCONVersionTag"), STRING_LITERAL_AS_REFERENCE("{XVER}"));
 	this->rulesTag = Jupiter::IRC::Client::Config->get(configSection, STRING_LITERAL_AS_REFERENCE("RulesTag"), STRING_LITERAL_AS_REFERENCE("{RULES}"));
 	this->userTag = Jupiter::IRC::Client::Config->get(configSection, STRING_LITERAL_AS_REFERENCE("UserTag"), STRING_LITERAL_AS_REFERENCE("{USER}"));
 	this->serverNameTag = Jupiter::IRC::Client::Config->get(configSection, STRING_LITERAL_AS_REFERENCE("ServerNameTag"), STRING_LITERAL_AS_REFERENCE("{SERVERNAME}"));
@@ -253,7 +251,6 @@ void TagsImp::processTags(Jupiter::StringType &msg, const RenX::Server *server, 
 	{
 		msg.replace(this->INTERNAL_RCON_VERSION_TAG, Jupiter::StringS::Format("%u", server->getVersion()));
 		msg.replace(this->INTERNAL_GAME_VERSION_TAG, server->getGameVersion());
-		msg.replace(this->INTERNAL_XRCON_VERSION_TAG, Jupiter::StringS::Format("%u.%u", server->getXVersion(), server->getXRevision()));
 		msg.replace(this->INTERNAL_RULES_TAG, server->getRules());
 		msg.replace(this->INTERNAL_USER_TAG, server->getUser());
 		msg.replace(this->INTERNAL_SERVER_NAME_TAG, server->getName());
@@ -352,7 +349,6 @@ void TagsImp::sanitizeTags(Jupiter::StringType &fmt)
 	/** Server tags */
 	fmt.replace(this->rconVersionTag, this->INTERNAL_RCON_VERSION_TAG);
 	fmt.replace(this->gameVersionTag, this->INTERNAL_GAME_VERSION_TAG);
-	fmt.replace(this->xRconVersionTag, this->INTERNAL_XRCON_VERSION_TAG);
 	fmt.replace(this->rulesTag, this->INTERNAL_RULES_TAG);
 	fmt.replace(this->userTag, this->INTERNAL_USER_TAG);
 	fmt.replace(this->serverNameTag, this->INTERNAL_SERVER_NAME_TAG);

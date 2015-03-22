@@ -83,8 +83,6 @@ void RenX_LoggingPlugin::init()
 	RenX_LoggingPlugin::demoRecordStopPublic = Jupiter::IRC::Client::Config->getBool(RenX_LoggingPlugin::getName(), STRING_LITERAL_AS_REFERENCE("DemoRecordStopPublic"), true);
 	RenX_LoggingPlugin::demoPublic = Jupiter::IRC::Client::Config->getBool(RenX_LoggingPlugin::getName(), STRING_LITERAL_AS_REFERENCE("DemoPublic"), false);
 	RenX_LoggingPlugin::logPublic = Jupiter::IRC::Client::Config->getBool(RenX_LoggingPlugin::getName(), STRING_LITERAL_AS_REFERENCE("LogPublic"), false);
-	RenX_LoggingPlugin::xVersionPublic = Jupiter::IRC::Client::Config->getBool(RenX_LoggingPlugin::getName(), STRING_LITERAL_AS_REFERENCE("XVersionPublic"), true);
-	RenX_LoggingPlugin::xOtherPublic = Jupiter::IRC::Client::Config->getBool(RenX_LoggingPlugin::getName(), STRING_LITERAL_AS_REFERENCE("XOtherPublic"), false);
 	RenX_LoggingPlugin::commandPublic = Jupiter::IRC::Client::Config->getBool(RenX_LoggingPlugin::getName(), STRING_LITERAL_AS_REFERENCE("CommandPublic"), false);
 	RenX_LoggingPlugin::errorPublic = Jupiter::IRC::Client::Config->getBool(RenX_LoggingPlugin::getName(), STRING_LITERAL_AS_REFERENCE("ErrorPublic"), false);
 	RenX_LoggingPlugin::versionPublic = Jupiter::IRC::Client::Config->getBool(RenX_LoggingPlugin::getName(), STRING_LITERAL_AS_REFERENCE("VersionPublic"), true);
@@ -320,12 +318,6 @@ void RenX_LoggingPlugin::init()
 	RenX_LoggingPlugin::logFmt = Jupiter::IRC::Client::Config->get(this->getName(), STRING_LITERAL_AS_REFERENCE("LogFormat"),
 		Jupiter::StringS::Format(IRCCOLOR "07[Log]" IRCCOLOR " %.*s", RenX::tags->messageTag.size(), RenX::tags->messageTag.ptr()));
 
-	RenX_LoggingPlugin::xVersionFmt = Jupiter::IRC::Client::Config->get(this->getName(), STRING_LITERAL_AS_REFERENCE("XVersionFormat"),
-		Jupiter::StringS::Format(IRCCOLOR "03This server is using eXtended RCON version %.*s", RenX::tags->xRconVersionTag.size(), RenX::tags->xRconVersionTag.ptr()));
-
-	RenX_LoggingPlugin::xOtherFmt = Jupiter::IRC::Client::Config->get(this->getName(), STRING_LITERAL_AS_REFERENCE("XOtherFormat"),
-		Jupiter::StringS::Format(IRCCOLOR "06[XOther]" IRCCOLOR " %.*s", RenX::tags->messageTag.size(), RenX::tags->messageTag.ptr()));
-
 	RenX_LoggingPlugin::commandFmt = Jupiter::IRC::Client::Config->get(this->getName(), STRING_LITERAL_AS_REFERENCE("CommandFormat"),
 		Jupiter::StringS::Format("")); // Disabled by default.
 
@@ -418,8 +410,6 @@ void RenX_LoggingPlugin::init()
 	RenX::sanitizeTags(demoRecordStopFmt);
 	RenX::sanitizeTags(demoFmt);
 	RenX::sanitizeTags(logFmt);
-	RenX::sanitizeTags(xVersionFmt);
-	RenX::sanitizeTags(xOtherFmt);
 	RenX::sanitizeTags(commandFmt);
 	RenX::sanitizeTags(errorFmt);
 	RenX::sanitizeTags(versionFmt);
@@ -1322,9 +1312,6 @@ void RenX_LoggingPlugin::RenX_OnGameOver(RenX::Server *server, RenX::WinType win
 		msg.replace(RenX::tags->INTERNAL_MESSAGE_TAG, RenX::translateWinType(winType));
 		(server->*func)(msg);
 	}
-
-	if (server->profile->disconnectOnGameOver)
-		server->sendLogChan(IRCCOLOR "07[Warning]" IRCCOLOR " Game version \"%.*s\" gets disconnected when a map unloads; to prevent disconnect spam, player disconnects are silenced until the bot reconnects.", server->getGameVersion().size(), server->getGameVersion().ptr());
 }
 
 void RenX_LoggingPlugin::RenX_OnGame(RenX::Server *server, const Jupiter::ReadableString &raw)
@@ -1675,40 +1662,6 @@ void RenX_LoggingPlugin::RenX_OnLog(RenX::Server *server, const Jupiter::Readabl
 		func = &RenX::Server::sendAdmChan;
 	
 	Jupiter::String msg = this->logFmt;
-	if (msg.isEmpty() == false)
-	{
-		RenX::processTags(msg, server);
-		msg.replace(RenX::tags->INTERNAL_MESSAGE_TAG, raw);
-		(server->*func)(msg);
-	}
-}
-
-void RenX_LoggingPlugin::RenX_XOnVersion(RenX::Server *server, unsigned int version)
-{
-	logFuncType func;
-	if (RenX_LoggingPlugin::xVersionPublic)
-		func = &RenX::Server::sendLogChan;
-	else
-		func = &RenX::Server::sendAdmChan;
-
-	Jupiter::String msg = this->xVersionFmt;
-	if (msg.isEmpty() == false)
-	{
-		RenX::processTags(msg, server);
-		msg.replace(RenX::tags->INTERNAL_XRCON_VERSION_TAG, Jupiter::StringS::Format("%u", version));
-		(server->*func)(msg);
-	}
-}
-
-void RenX_LoggingPlugin::RenX_XOnOther(RenX::Server *server, const Jupiter::ReadableString &raw)
-{
-	logFuncType func;
-	if (RenX_LoggingPlugin::xOtherPublic)
-		func = &RenX::Server::sendLogChan;
-	else
-		func = &RenX::Server::sendAdmChan;
-
-	Jupiter::String msg = this->xOtherFmt;
 	if (msg.isEmpty() == false)
 	{
 		RenX::processTags(msg, server);

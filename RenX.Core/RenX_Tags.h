@@ -57,7 +57,6 @@ namespace RenX
 		/** Server tags */
 		Jupiter::StringS INTERNAL_RCON_VERSION_TAG;
 		Jupiter::StringS INTERNAL_GAME_VERSION_TAG;
-		Jupiter::StringS INTERNAL_XRCON_VERSION_TAG;
 		Jupiter::StringS INTERNAL_RULES_TAG;
 		Jupiter::StringS INTERNAL_USER_TAG;
 		Jupiter::StringS INTERNAL_SERVER_NAME_TAG;
@@ -150,7 +149,6 @@ namespace RenX
 		/** Server tags */
 		Jupiter::StringS rconVersionTag;
 		Jupiter::StringS gameVersionTag;
-		Jupiter::StringS xRconVersionTag;
 		Jupiter::StringS rulesTag;
 		Jupiter::StringS userTag;
 		Jupiter::StringS serverNameTag;
