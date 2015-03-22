@@ -304,7 +304,7 @@ Jupiter::StringS RenX::Server::formatSteamID(uint64_t id) const
 
 void RenX::Server::kickPlayer(int id)
 {
-	RenX::Server::sock.send(Jupiter::StringS::Format("cadminkick pid%d\n", id));
+	RenX::Server::sock.send(Jupiter::StringS::Format(this->rconVersion >= 3 ? "ckick pid%d\n" : "cadminkick pid%d\n", id));
 }
 
 void RenX::Server::kickPlayer(const RenX::PlayerInfo *player)
@@ -327,7 +327,7 @@ void RenX::Server::kickPlayer(const RenX::PlayerInfo *player)
 void RenX::Server::banPlayer(int id)
 {
 	if (RenX::Server::rconBan)
-		RenX::Server::sock.send(Jupiter::StringS::Format("cadminkickban pid%d\n", id));
+		RenX::Server::sock.send(Jupiter::StringS::Format(this->rconVersion >= 3 ? "ckickban pid%d\n" : "cadminkickban pid%d\n", id));
 	else
 	{
 		RenX::PlayerInfo *player = RenX::Server::getPlayer(id);
