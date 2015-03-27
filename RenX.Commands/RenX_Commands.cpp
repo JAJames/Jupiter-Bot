@@ -2132,6 +2132,148 @@ const Jupiter::ReadableString &ModRequestGameCommand::getHelp(const Jupiter::Rea
 
 GAME_COMMAND_INIT(ModRequestGameCommand)
 
+// Kill Game Command
+
+void KillGameCommand::create()
+{
+	this->addTrigger(STRING_LITERAL_AS_REFERENCE("kill"));
+	this->setAccessLevel(1);
+}
+
+void KillGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *player, const Jupiter::ReadableString &parameters)
+{
+	if (parameters.isEmpty() == false)
+	{
+		RenX::PlayerInfo *target = source->getPlayerByPartName(parameters);
+		if (target == nullptr)
+			source->sendMessage(player, STRING_LITERAL_AS_REFERENCE("Error: Player not found."));
+		else if (target->access >= player->access)
+			source->sendMessage(player, STRING_LITERAL_AS_REFERENCE("Error: You can not kill higher level moderators."));
+		else
+		{
+			source->kill(target);
+			source->sendMessage(player, STRING_LITERAL_AS_REFERENCE("Player has been killed."));
+		}
+	}
+	else
+		source->sendMessage(player, STRING_LITERAL_AS_REFERENCE("Error: Too few parameters. Syntax: kill <player>"));
+}
+
+const Jupiter::ReadableString &KillGameCommand::getHelp(const Jupiter::ReadableString &)
+{
+	static STRING_LITERAL_AS_NAMED_REFERENCE(defaultHelp, "Kills a player in the game. Syntax: kill <player>");
+	return defaultHelp;
+}
+
+GAME_COMMAND_INIT(KillGameCommand)
+
+// Disarm Game Command
+
+void DisarmGameCommand::create()
+{
+	this->addTrigger(STRING_LITERAL_AS_REFERENCE("disarm"));
+	this->setAccessLevel(1);
+}
+
+void DisarmGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *player, const Jupiter::ReadableString &parameters)
+{
+	if (parameters.isEmpty() == false)
+	{
+		RenX::PlayerInfo *target = source->getPlayerByPartName(parameters);
+		if (target == nullptr)
+			source->sendMessage(player, STRING_LITERAL_AS_REFERENCE("Error: Player not found."));
+		else if (target->access >= player->access)
+			source->sendMessage(player, STRING_LITERAL_AS_REFERENCE("Error: You can not disarm higher level moderators."));
+		else
+		{
+			source->disarm(target);
+			source->sendMessage(player, STRING_LITERAL_AS_REFERENCE("Player has been disarmed."));
+		}
+	}
+	else
+		source->sendMessage(player, STRING_LITERAL_AS_REFERENCE("Error: Too few parameters. Syntax: disarm <player>"));
+}
+
+const Jupiter::ReadableString &DisarmGameCommand::getHelp(const Jupiter::ReadableString &)
+{
+	static STRING_LITERAL_AS_NAMED_REFERENCE(defaultHelp, "Disarms all of a player's deployed objects in the game. Syntax: disarm <player>");
+	return defaultHelp;
+}
+
+GAME_COMMAND_INIT(DisarmGameCommand)
+
+// DisarmC4 Game Command
+
+void DisarmC4GameCommand::create()
+{
+	this->addTrigger(STRING_LITERAL_AS_REFERENCE("disarmc4"));
+	this->setAccessLevel(1);
+}
+
+void DisarmC4GameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *player, const Jupiter::ReadableString &parameters)
+{
+	if (parameters.isEmpty() == false)
+	{
+		RenX::PlayerInfo *target = source->getPlayerByPartName(parameters);
+		if (target == nullptr)
+			source->sendMessage(player, STRING_LITERAL_AS_REFERENCE("Error: Player not found."));
+		else if (target->access >= player->access)
+			source->sendMessage(player, STRING_LITERAL_AS_REFERENCE("Error: You can not disarm higher level moderators."));
+		else
+		{
+			source->disarmC4(target);
+			source->sendMessage(player, STRING_LITERAL_AS_REFERENCE("Player has been disarmed."));
+		}
+	}
+	else
+		source->sendMessage(player, STRING_LITERAL_AS_REFERENCE("Error: Too few parameters. Syntax: disarmc4 <player>"));
+}
+
+const Jupiter::ReadableString &DisarmC4GameCommand::getHelp(const Jupiter::ReadableString &)
+{
+	static STRING_LITERAL_AS_NAMED_REFERENCE(defaultHelp, "Disarms all of a player's deployed mines in the game. Syntax: disarmc4 <player>");
+	return defaultHelp;
+}
+
+GAME_COMMAND_INIT(DisarmC4GameCommand)
+
+// DisarmBeacon Game Command
+
+void DisarmBeaconGameCommand::create()
+{
+	this->addTrigger(STRING_LITERAL_AS_REFERENCE("disarmb"));
+	this->addTrigger(STRING_LITERAL_AS_REFERENCE("disarmbeacon"));
+	this->addTrigger(STRING_LITERAL_AS_REFERENCE("disarmbeacons"));
+	this->setAccessLevel(1);
+}
+
+void DisarmBeaconGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *player, const Jupiter::ReadableString &parameters)
+{
+	if (parameters.isEmpty() == false)
+	{
+		RenX::PlayerInfo *target = source->getPlayerByPartName(parameters);
+		if (target == nullptr)
+			source->sendMessage(player, STRING_LITERAL_AS_REFERENCE("Error: Player not found."));
+		else if (target->access >= player->access)
+			source->sendMessage(player, STRING_LITERAL_AS_REFERENCE("Error: You can not disarm higher level moderators."));
+		else
+		{
+			source->disarmBeacon(target);
+			source->sendMessage(player, STRING_LITERAL_AS_REFERENCE("Player has been disarmed."));
+		}
+	}
+	else
+		source->sendMessage(player, STRING_LITERAL_AS_REFERENCE("Error: Too few parameters. Syntax: disarmb <player>"));
+}
+
+const Jupiter::ReadableString &DisarmBeaconGameCommand::getHelp(const Jupiter::ReadableString &)
+{
+	static STRING_LITERAL_AS_NAMED_REFERENCE(defaultHelp, "Disarms all of a player's deployed beacons in the game. Syntax: disarmb <player>");
+	return defaultHelp;
+}
+
+GAME_COMMAND_INIT(DisarmBeaconGameCommand)
+
 // Kick Game Command
 
 void KickGameCommand::create()
