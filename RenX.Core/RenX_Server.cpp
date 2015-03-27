@@ -590,7 +590,7 @@ void RenX::Server::sendPubChan(const char *fmt, ...) const
 	va_list args;
 	va_start(args, fmt);
 	Jupiter::StringL msg;
-	const Jupiter::ReadableString &serverPrefix = RenX::Server::IRCPrefix;
+	const Jupiter::ReadableString &serverPrefix = RenX::Server::getPrefix();
 	if (serverPrefix.isEmpty() == false)
 	{
 		msg += serverPrefix;
@@ -599,13 +599,25 @@ void RenX::Server::sendPubChan(const char *fmt, ...) const
 	}
 	else msg.vformat(fmt, args);
 	va_end(args);
-	RenX::Server::sendPubChan(msg);
+	for (size_t i = 0; i != serverManager->size(); i++)
+		serverManager->getServer(i)->messageChannels(RenX::Server::logChanType, msg);
 }
 
 void RenX::Server::sendPubChan(const Jupiter::ReadableString &msg) const
 {
-	for (size_t i = 0; i != serverManager->size(); i++)
-		serverManager->getServer(i)->messageChannels(RenX::Server::logChanType, msg);
+	const Jupiter::ReadableString &prefix = this->getPrefix();
+	if (prefix.isEmpty() == false)
+	{
+		Jupiter::String m(msg.size() + prefix.size() + 1);
+		m.set(prefix);
+		m += ' ';
+		m += msg;
+		for (size_t i = 0; i != serverManager->size(); i++)
+			serverManager->getServer(i)->messageChannels(RenX::Server::logChanType, m);
+	}
+	else
+		for (size_t i = 0; i != serverManager->size(); i++)
+			serverManager->getServer(i)->messageChannels(RenX::Server::logChanType, msg);
 }
 
 void RenX::Server::sendAdmChan(const char *fmt, ...) const
@@ -622,17 +634,30 @@ void RenX::Server::sendAdmChan(const char *fmt, ...) const
 	}
 	else msg.vformat(fmt, args);
 	va_end(args);
-	RenX::Server::sendAdmChan(msg);
-}
-
-void RenX::Server::sendAdmChan(const Jupiter::ReadableString &msg) const
-{
 	for (size_t i = 0; i != serverManager->size(); i++)
 		serverManager->getServer(i)->messageChannels(RenX::Server::adminLogChanType, msg);
 }
 
+void RenX::Server::sendAdmChan(const Jupiter::ReadableString &msg) const
+{
+	const Jupiter::ReadableString &prefix = this->getPrefix();
+	if (prefix.isEmpty() == false)
+	{
+		Jupiter::String m(msg.size() + prefix.size() + 1);
+		m.set(prefix);
+		m += ' ';
+		m += msg;
+		for (size_t i = 0; i != serverManager->size(); i++)
+			serverManager->getServer(i)->messageChannels(RenX::Server::adminLogChanType, m);
+	}
+	else
+		for (size_t i = 0; i != serverManager->size(); i++)
+			serverManager->getServer(i)->messageChannels(RenX::Server::adminLogChanType, msg);
+}
+
 void RenX::Server::sendLogChan(const char *fmt, ...) const
 {
+	IRC_Bot *server;
 	va_list args;
 	va_start(args, fmt);
 	Jupiter::StringL msg;
@@ -645,17 +670,38 @@ void RenX::Server::sendLogChan(const char *fmt, ...) const
 	}
 	else msg.vformat(fmt, args);
 	va_end(args);
-	RenX::Server::sendLogChan(msg);
+	for (size_t i = 0; i != serverManager->size(); i++)
+	{
+		server = serverManager->getServer(i);
+		server->messageChannels(RenX::Server::logChanType, msg);
+		server->messageChannels(RenX::Server::adminLogChanType, msg);
+	}
 }
 
 void RenX::Server::sendLogChan(const Jupiter::ReadableString &msg) const
 {
-	for (size_t i = 0; i != serverManager->size(); i++)
+	IRC_Bot *server;
+	const Jupiter::ReadableString &prefix = this->getPrefix();
+	if (prefix.isEmpty() == false)
 	{
-		IRC_Bot *server = serverManager->getServer(i);
-		server->messageChannels(RenX::Server::logChanType, msg);
-		server->messageChannels(RenX::Server::adminLogChanType, msg);
+		Jupiter::String m(msg.size() + prefix.size() + 1);
+		m.set(prefix);
+		m += ' ';
+		m += msg;
+		for (size_t i = 0; i != serverManager->size(); i++)
+		{
+			server = serverManager->getServer(i);
+			server->messageChannels(RenX::Server::logChanType, m);
+			server->messageChannels(RenX::Server::adminLogChanType, m);
+		}
 	}
+	else
+		for (size_t i = 0; i != serverManager->size(); i++)
+		{
+			server = serverManager->getServer(i);
+			server->messageChannels(RenX::Server::logChanType, msg);
+			server->messageChannels(RenX::Server::adminLogChanType, msg);
+		}
 }
 
 #define PARSE_PLAYER_DATA_P(DATA) \
@@ -1611,6 +1657,18 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 							xPlugins.get(i)->RenX_OnNameChange(this, player, newName);
 						player->name = newName;
 						onAction();
+					}
+					else if (subHeader.equals("ChangeID;"))
+					{
+						// "to" | New ID | "from" | Old ID
+						int oldID = buff.getToken(5, RenX::DelimC).asInt();
+						RenX::PlayerInfo *player = this->getPlayer(oldID);
+						if (player != nullptr)
+						{
+							player->id = buff.getToken(3, RenX::DelimC).asInt();
+							for (size_t i = 0; i < xPlugins.size(); i++)
+								xPlugins.get(i)->RenX_OnIDChange(this, player, oldID);
+						}
 					}
 					else
 					{

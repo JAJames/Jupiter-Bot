@@ -80,6 +80,11 @@ void RenX::Plugin::RenX_OnTeamChange(Server *, const PlayerInfo *, const TeamTyp
 	return;
 }
 
+void RenX::Plugin::RenX_OnIDChange(Server *, const PlayerInfo *, int)
+{
+	return;
+}
+
 void RenX::Plugin::RenX_OnExecute(Server *, const PlayerInfo *, const Jupiter::ReadableString &)
 {
 	return;
