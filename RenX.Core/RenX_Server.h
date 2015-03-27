@@ -388,6 +388,54 @@ namespace RenX
 		bool kill(RenX::PlayerInfo *player);
 
 		/**
+		* @brief Disarms all of a player's deployed objects.
+		*
+		* @param id ID of the player to disarm
+		* @return True on success, false otherwise.
+		*/
+		bool disarm(int id);
+
+		/**
+		* @brief Disarms all of a player's deployed objects.
+		*
+		* @param player Player to disarm
+		* @return True on success, false otherwise.
+		*/
+		bool disarm(RenX::PlayerInfo *player);
+
+		/**
+		* @brief Disarms all of a player's deployed C4.
+		*
+		* @param id ID of the player to disarm
+		* @return True on success, false otherwise.
+		*/
+		bool disarmC4(int id);
+
+		/**
+		* @brief Disarms all of a player's deployed C4.
+		*
+		* @param player Player to disarm
+		* @return True on success, false otherwise.
+		*/
+		bool disarmC4(RenX::PlayerInfo *player);
+
+		/**
+		* @brief Disarms all of a player's deployed beacons.
+		*
+		* @param id ID of the player to disarm
+		* @return True on success, false otherwise.
+		*/
+		bool disarmBeacon(int id);
+
+		/**
+		* @brief Disarms all of a player's deployed beacons.
+		*
+		* @param player Player to disarm
+		* @return True on success, false otherwise.
+		*/
+		bool disarmBeacon(RenX::PlayerInfo *player);
+
+		/**
 		* @brief Forces a player to change teams.
 		*
 		* @param id ID of the player to give credits to

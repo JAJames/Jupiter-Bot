@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2014 Justin James.
+ * Copyright (C) 2014-2015 Justin James.
  *
  * This license must be preserved.
  * Any applications, libraries, or code which make any use of any
@@ -71,6 +71,10 @@ GENERIC_IRC_COMMAND(GameOverIRCCommand)
 GENERIC_IRC_COMMAND(SetMapIRCCommand)
 GENERIC_IRC_COMMAND(MuteIRCCommand)
 GENERIC_IRC_COMMAND(UnMuteIRCCommand)
+GENERIC_IRC_COMMAND(KillIRCCommand)
+GENERIC_IRC_COMMAND(DisarmIRCCommand)
+GENERIC_IRC_COMMAND(DisarmC4IRCCommand)
+GENERIC_IRC_COMMAND(DisarmBeaconIRCCommand)
 GENERIC_IRC_COMMAND(KickIRCCommand)
 GENERIC_IRC_COMMAND(TempBanIRCCommand)
 GENERIC_IRC_COMMAND(KickBanIRCCommand)

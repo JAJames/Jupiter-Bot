@@ -422,6 +422,36 @@ bool RenX::Server::kill(RenX::PlayerInfo *player)
 	return RenX::Server::kill(player->id);
 }
 
+bool RenX::Server::disarm(int id)
+{
+	return RenX::Server::send(Jupiter::StringS::Format("disarm pid%d", id)) > 0;
+}
+
+bool RenX::Server::disarm(RenX::PlayerInfo *player)
+{
+	return RenX::Server::disarm(player->id);
+}
+
+bool RenX::Server::disarmC4(int id)
+{
+	return RenX::Server::send(Jupiter::StringS::Format("disarmc4 pid%d", id)) > 0;
+}
+
+bool RenX::Server::disarmC4(RenX::PlayerInfo *player)
+{
+	return RenX::Server::disarmC4(player->id);
+}
+
+bool RenX::Server::disarmBeacon(int id)
+{
+	return RenX::Server::send(Jupiter::StringS::Format("disarmb pid%d", id)) > 0;
+}
+
+bool RenX::Server::disarmBeacon(RenX::PlayerInfo *player)
+{
+	return RenX::Server::disarmBeacon(player->id);
+}
+
 bool RenX::Server::changeTeam(int id, bool resetCredits)
 {
 	return RenX::Server::send(Jupiter::StringS::Format(resetCredits ? "team pid%d" : "team2 pid%d", id)) > 0;

@@ -1174,6 +1174,204 @@ const Jupiter::ReadableString &UnMuteIRCCommand::getHelp(const Jupiter::Readable
 
 IRC_COMMAND_INIT(UnMuteIRCCommand)
 
+// Kill IRC Command
+
+void KillIRCCommand::create()
+{
+	this->addTrigger(STRING_LITERAL_AS_REFERENCE("kill"));
+	this->setAccessLevel(2);
+}
+
+void KillIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &channel, const Jupiter::ReadableString &nick, const Jupiter::ReadableString &parameters)
+{
+	if (parameters.isEmpty() == false)
+	{
+		Jupiter::IRC::Client::Channel *chan = source->getChannel(channel);
+		if (chan != nullptr)
+		{
+			int type = chan->getType();
+			RenX::PlayerInfo *player;
+			bool match = false;
+			for (unsigned int i = 0; i != RenX::getCore()->getServerCount(); i++)
+			{
+				RenX::Server *server = RenX::getCore()->getServer(i);
+				if (server->isLogChanType(type))
+				{
+					match = true;
+					player = server->getPlayerByPartName(parameters);
+					if (player != nullptr)
+					{
+						if (server->kill(player) == false)
+							source->sendMessage(channel, STRING_LITERAL_AS_REFERENCE("Error: Server does not support muting players."));
+					}
+					else
+						source->sendNotice(nick, STRING_LITERAL_AS_REFERENCE("Error: Player not found."));
+				}
+			}
+			if (match == false)
+				source->sendNotice(nick, STRING_LITERAL_AS_REFERENCE("Error: Channel not attached to any connected Renegade X servers."));
+		}
+	}
+	else source->sendNotice(nick, STRING_LITERAL_AS_REFERENCE("Error: Too Few Parameters. Syntax: kill <player>"));
+}
+
+const Jupiter::ReadableString &KillIRCCommand::getHelp(const Jupiter::ReadableString &)
+{
+	static STRING_LITERAL_AS_NAMED_REFERENCE(defaultHelp, "Kills a player. Syntax: kill <player>");
+	return defaultHelp;
+}
+
+IRC_COMMAND_INIT(KillIRCCommand)
+
+// Disarm IRC Command
+
+void DisarmIRCCommand::create()
+{
+	this->addTrigger(STRING_LITERAL_AS_REFERENCE("disarm"));
+	this->setAccessLevel(2);
+}
+
+void DisarmIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &channel, const Jupiter::ReadableString &nick, const Jupiter::ReadableString &parameters)
+{
+	if (parameters.isEmpty() == false)
+	{
+		Jupiter::IRC::Client::Channel *chan = source->getChannel(channel);
+		if (chan != nullptr)
+		{
+			int type = chan->getType();
+			RenX::PlayerInfo *player;
+			bool match = false;
+			for (unsigned int i = 0; i != RenX::getCore()->getServerCount(); i++)
+			{
+				RenX::Server *server = RenX::getCore()->getServer(i);
+				if (server->isLogChanType(type))
+				{
+					match = true;
+					player = server->getPlayerByPartName(parameters);
+					if (player != nullptr)
+					{
+						if (server->disarm(player) == false)
+							source->sendMessage(channel, STRING_LITERAL_AS_REFERENCE("Error: Server does not support muting players."));
+					}
+					else
+						source->sendNotice(nick, STRING_LITERAL_AS_REFERENCE("Error: Player not found."));
+				}
+			}
+			if (match == false)
+				source->sendNotice(nick, STRING_LITERAL_AS_REFERENCE("Error: Channel not attached to any connected Renegade X servers."));
+		}
+	}
+	else source->sendNotice(nick, STRING_LITERAL_AS_REFERENCE("Error: Too Few Parameters. Syntax: disarm <player>"));
+}
+
+const Jupiter::ReadableString &DisarmIRCCommand::getHelp(const Jupiter::ReadableString &)
+{
+	static STRING_LITERAL_AS_NAMED_REFERENCE(defaultHelp, "Disarms all of a player's deployed objects. Syntax: disarm <player>");
+	return defaultHelp;
+}
+
+IRC_COMMAND_INIT(DisarmIRCCommand)
+
+// DisarmC4 IRC Command
+
+void DisarmC4IRCCommand::create()
+{
+	this->addTrigger(STRING_LITERAL_AS_REFERENCE("disarmc4"));
+	this->setAccessLevel(2);
+}
+
+void DisarmC4IRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &channel, const Jupiter::ReadableString &nick, const Jupiter::ReadableString &parameters)
+{
+	if (parameters.isEmpty() == false)
+	{
+		Jupiter::IRC::Client::Channel *chan = source->getChannel(channel);
+		if (chan != nullptr)
+		{
+			int type = chan->getType();
+			RenX::PlayerInfo *player;
+			bool match = false;
+			for (unsigned int i = 0; i != RenX::getCore()->getServerCount(); i++)
+			{
+				RenX::Server *server = RenX::getCore()->getServer(i);
+				if (server->isLogChanType(type))
+				{
+					match = true;
+					player = server->getPlayerByPartName(parameters);
+					if (player != nullptr)
+					{
+						if (server->disarmC4(player) == false)
+							source->sendMessage(channel, STRING_LITERAL_AS_REFERENCE("Error: Server does not support muting players."));
+					}
+					else
+						source->sendNotice(nick, STRING_LITERAL_AS_REFERENCE("Error: Player not found."));
+				}
+			}
+			if (match == false)
+				source->sendNotice(nick, STRING_LITERAL_AS_REFERENCE("Error: Channel not attached to any connected Renegade X servers."));
+		}
+	}
+	else source->sendNotice(nick, STRING_LITERAL_AS_REFERENCE("Error: Too Few Parameters. Syntax: disarmC4 <player>"));
+}
+
+const Jupiter::ReadableString &DisarmC4IRCCommand::getHelp(const Jupiter::ReadableString &)
+{
+	static STRING_LITERAL_AS_NAMED_REFERENCE(defaultHelp, "Disarms all of a player's deployed C4s. Syntax: disarmc4 <player>");
+	return defaultHelp;
+}
+
+IRC_COMMAND_INIT(DisarmC4IRCCommand)
+
+// DisarmBeacon IRC Command
+
+void DisarmBeaconIRCCommand::create()
+{
+	this->addTrigger(STRING_LITERAL_AS_REFERENCE("disarmb"));
+	this->addTrigger(STRING_LITERAL_AS_REFERENCE("disarmbeacon"));
+	this->addTrigger(STRING_LITERAL_AS_REFERENCE("disarmbeacons"));
+	this->setAccessLevel(2);
+}
+
+void DisarmBeaconIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &channel, const Jupiter::ReadableString &nick, const Jupiter::ReadableString &parameters)
+{
+	if (parameters.isEmpty() == false)
+	{
+		Jupiter::IRC::Client::Channel *chan = source->getChannel(channel);
+		if (chan != nullptr)
+		{
+			int type = chan->getType();
+			RenX::PlayerInfo *player;
+			bool match = false;
+			for (unsigned int i = 0; i != RenX::getCore()->getServerCount(); i++)
+			{
+				RenX::Server *server = RenX::getCore()->getServer(i);
+				if (server->isLogChanType(type))
+				{
+					match = true;
+					player = server->getPlayerByPartName(parameters);
+					if (player != nullptr)
+					{
+						if (server->disarmBeacon(player) == false)
+							source->sendMessage(channel, STRING_LITERAL_AS_REFERENCE("Error: Server does not support muting players."));
+					}
+					else
+						source->sendNotice(nick, STRING_LITERAL_AS_REFERENCE("Error: Player not found."));
+				}
+			}
+			if (match == false)
+				source->sendNotice(nick, STRING_LITERAL_AS_REFERENCE("Error: Channel not attached to any connected Renegade X servers."));
+		}
+	}
+	else source->sendNotice(nick, STRING_LITERAL_AS_REFERENCE("Error: Too Few Parameters. Syntax: disarmb <player>"));
+}
+
+const Jupiter::ReadableString &DisarmBeaconIRCCommand::getHelp(const Jupiter::ReadableString &)
+{
+	static STRING_LITERAL_AS_NAMED_REFERENCE(defaultHelp, "Disarms all of a player's deployed beacons. Syntax: disarmb <player>");
+	return defaultHelp;
+}
+
+IRC_COMMAND_INIT(DisarmBeaconIRCCommand)
+
 // Kick IRC Command
 
 void KickIRCCommand::create()
