@@ -449,6 +449,11 @@ const Jupiter::ReadableString &TagsImp::getUniqueInternalTag()
 
 /** Foward functions */
 
+const Jupiter::ReadableString &RenX::getUniqueInternalTag()
+{
+	return _tags.getUniqueInternalTag();
+}
+
 void RenX::processTags(Jupiter::StringType &msg, const RenX::Server *server, const RenX::PlayerInfo *player, const RenX::PlayerInfo *victim)
 {
 	_tags.processTags(msg, server, player, victim);

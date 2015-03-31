@@ -41,14 +41,13 @@ namespace RenX
 
 	RENX_API void processTags(Jupiter::StringType &msg, const RenX::Server *server = nullptr, const RenX::PlayerInfo *player = nullptr, const RenX::PlayerInfo *victim = nullptr);
 	RENX_API void sanitizeTags(Jupiter::StringType &fmt);
+	RENX_API const Jupiter::ReadableString &getUniqueInternalTag();
 
 	struct RENX_API Tags
 	{
 		/** Global formats */
 		Jupiter::CStringS dateFmt;
 		Jupiter::CStringS timeFmt;
-
-		/** Internal message tags */
 
 		/** Global tags */
 		Jupiter::StringS INTERNAL_DATE_TAG;
