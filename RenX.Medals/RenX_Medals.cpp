@@ -26,12 +26,11 @@
 #include "RenX_Core.h"
 #include "RenX_Tags.h"
 
-Jupiter::ReferenceString INTERNAL_RECS_TAG = STRING_LITERAL_AS_REFERENCE("\0RX.MEDALS.RECS\0");
-Jupiter::ReferenceString INTERNAL_NOOB_TAG = STRING_LITERAL_AS_REFERENCE("\0RX.MEDALS.NOOB\0");
-Jupiter::ReferenceString INTERNAL_WORTH_TAG = STRING_LITERAL_AS_REFERENCE("\0RX.MEDALS.WORTH\0");
-
 RenX_MedalsPlugin::RenX_MedalsPlugin()
 {
+	this->INTERNAL_RECS_TAG = RenX::getUniqueInternalTag();
+	this->INTERNAL_NOOB_TAG = RenX::getUniqueInternalTag();
+	this->INTERNAL_WORTH_TAG = RenX::getUniqueInternalTag();
 	init();
 }
 
@@ -90,9 +89,9 @@ void congratPlayer(unsigned int, void *params)
 
 void RenX_MedalsPlugin::RenX_SanitizeTags(Jupiter::StringType &fmt)
 {
-	fmt.replace(RenX_MedalsPlugin::recsTag, INTERNAL_RECS_TAG);
-	fmt.replace(RenX_MedalsPlugin::noobTag, INTERNAL_NOOB_TAG);
-	fmt.replace(RenX_MedalsPlugin::worthTag, INTERNAL_WORTH_TAG);
+	fmt.replace(RenX_MedalsPlugin::recsTag, this->INTERNAL_RECS_TAG);
+	fmt.replace(RenX_MedalsPlugin::noobTag, this->INTERNAL_NOOB_TAG);
+	fmt.replace(RenX_MedalsPlugin::worthTag, this->INTERNAL_WORTH_TAG);
 }
 
 void RenX_MedalsPlugin::RenX_ProcessTags(Jupiter::StringType &msg, const RenX::Server *server, const RenX::PlayerInfo *player, const RenX::PlayerInfo *victim)
@@ -102,9 +101,9 @@ void RenX_MedalsPlugin::RenX_ProcessTags(Jupiter::StringType &msg, const RenX::S
 		const Jupiter::ReadableString &recs = RenX_MedalsPlugin::medalsFile.get(player->uuid, STRING_LITERAL_AS_REFERENCE("Recs"));
 		const Jupiter::ReadableString &noobs = RenX_MedalsPlugin::medalsFile.get(player->uuid, STRING_LITERAL_AS_REFERENCE("Noobs"));
 
-		msg.replace(INTERNAL_RECS_TAG, recs);
-		msg.replace(INTERNAL_NOOB_TAG, noobs);
-		msg.replace(INTERNAL_WORTH_TAG, Jupiter::StringS::Format("%d", recs.asInt() - noobs.asInt()));
+		msg.replace(this->INTERNAL_RECS_TAG, recs);
+		msg.replace(this->INTERNAL_NOOB_TAG, noobs);
+		msg.replace(this->INTERNAL_WORTH_TAG, Jupiter::StringS::Format("%d", recs.asInt() - noobs.asInt()));
 	}
 }
 

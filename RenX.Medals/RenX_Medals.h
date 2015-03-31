@@ -71,6 +71,9 @@ public:
 
 private:
 	STRING_LITERAL_AS_NAMED_REFERENCE(name, "RenX.Medals");
+	Jupiter::StringS INTERNAL_RECS_TAG;
+	Jupiter::StringS INTERNAL_NOOB_TAG;
+	Jupiter::StringS INTERNAL_WORTH_TAG;
 	void init();
 };
 
