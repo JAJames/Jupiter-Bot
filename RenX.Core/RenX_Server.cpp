@@ -66,7 +66,10 @@ int RenX::Server::think()
 				RenX::Server::sendLogChan(IRCCOLOR "06[Progress]" IRCCOLOR " Connection to Renegade-X server reestablished. Initializing Renegade-X RCON protocol...");
 			else
 				RenX::Server::sendLogChan(IRCCOLOR "04[Error]" IRCCOLOR " Connection to Renegade-X server lost. Reconnection attempt failed.");
+			return 0;
 		}
+		if (RenX::Server::rconVersion >= 3 && std::chrono::steady_clock::now() > RenX::Server::lastClientListUpdate + RenX::Server::clientUpdateRate)
+			RenX::Server::updateClientList();
 	}
 	return 0;
 }
@@ -342,11 +345,32 @@ bool RenX::Server::removePlayer(RenX::PlayerInfo *player)
 	return RenX::Server::removePlayer(player->id);
 }
 
-bool RenX::Server::updateClientList()
+bool RenX::Server::fetchClientList()
 {
+	RenX::Server::lastClientListUpdate = std::chrono::steady_clock::now();
 	return RenX::Server::sock.send(STRING_LITERAL_AS_REFERENCE("cclientvarlist KILLS\xA0""DEATHS\xA0""SCORE\xA0""CREDITS\xA0""CHARACTER\xA0""VEHICLE\xA0""PING\xA0""ADMIN\xA0""STEAM\xA0""IP\xA0""PLAYERLOG\n")) > 0
 		&& RenX::Server::sock.send(STRING_LITERAL_AS_REFERENCE("cbotvarlist KILLS\xA0""DEATHS\xA0""SCORE\xA0""CREDITS\xA0""CHARACTER\xA0""VEHICLE\xA0""PLAYERLOG\n")) > 0;
-	//return RenX::Server::sock.send(STRING_LITERAL_AS_REFERENCE("cclientlist\n")) > 0;
+}
+
+bool RenX::Server::updateClientList()
+{
+	RenX::Server::lastClientListUpdate = std::chrono::steady_clock::now();
+	if (RenX::Server::players.size() == 0)
+		return true;
+
+	size_t botCount = 0;
+	for (size_t i = 0; i != RenX::Server::players.size(); i++)
+		if (RenX::Server::players.get(i)->isBot)
+			botCount++;
+
+	bool r;
+	if (RenX::Server::players.size() != botCount)
+		r = RenX::Server::sock.send(STRING_LITERAL_AS_REFERENCE("cclientvarlist ID\xA0""SCORE\xA0""CREDITS\xA0""PING\n")) > 0;
+
+	if (botCount != 0)
+		r |= RenX::Server::sock.send(STRING_LITERAL_AS_REFERENCE("cbotvarlist ID\xA0""SCORE\xA0""CREDITS\n")) > 0;
+
+	return r;
 }
 
 bool RenX::Server::gameover()
@@ -2081,7 +2105,7 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 
 			if (this->rconVersion >= 3)
 			{
-				RenX::Server::updateClientList();
+				RenX::Server::fetchClientList();
 
 				this->firstGame = true;
 				this->seamless = true;
@@ -2151,6 +2175,7 @@ bool RenX::Server::reconnect()
 
 void RenX::Server::wipeData()
 {
+	RenX::Server::rconVersion = 0;
 	RenX::Server::rconUser.truncate(RenX::Server::rconUser.size());
 	while (RenX::Server::players.size() != 0)
 		delete RenX::Server::players.remove(0U);
@@ -2200,6 +2225,7 @@ void RenX::Server::init()
 	RenX::Server::localBan = RenX::Server::localIPBan || RenX::Server::localSteamBan || RenX::Server::localNameBan;
 	RenX::Server::steamFormat = Jupiter::IRC::Client::Config->getInt(RenX::Server::configSection, STRING_LITERAL_AS_REFERENCE("SteamFormat"), 16);
 	RenX::Server::neverSay = Jupiter::IRC::Client::Config->getBool(RenX::Server::configSection, STRING_LITERAL_AS_REFERENCE("NeverSay"), false);
+	RenX::Server::clientUpdateRate = std::chrono::milliseconds(Jupiter::IRC::Client::Config->getInt(RenX::Server::configSection, STRING_LITERAL_AS_REFERENCE("ClientUpdateRate"), 2500));
 
 	Jupiter::INIFile &commandsFile = RenX::getCore()->getCommandsFile();
 	RenX::Server::commandAccessLevels = commandsFile.getSection(RenX::Server::configSection);

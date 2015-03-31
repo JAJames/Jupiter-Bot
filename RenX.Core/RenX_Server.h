@@ -24,6 +24,7 @@
  */
 
 #include <ctime>
+#include <chrono>
 #include "Jupiter/TCPSocket.h"
 #include "Jupiter/DLList.h"
 #include "Jupiter/ArrayList.h"
@@ -284,7 +285,16 @@ namespace RenX
 		bool removePlayer(RenX::PlayerInfo *player);
 
 		/**
-		* @brief Sends a client list request.
+		* @brief Sends a full client list request.
+		* Note: This is used to build the initial player list.
+		*
+		* @return True on success, false otherwise.
+		*/
+		bool fetchClientList();
+
+		/**
+		* @brief Sends a patrial client list request.
+		* Note: This only updates score, credits, and ping for known players.
 		*
 		* @return True on success, false otherwise.
 		*/
@@ -711,6 +721,7 @@ namespace RenX
 		bool firstAction = false;
 		unsigned int rconVersion = 0;
 		time_t lastAttempt = 0;
+		std::chrono::steady_clock::time_point lastClientListUpdate = std::chrono::steady_clock::now();
 		Jupiter::String lastLine;
 		Jupiter::StringS commandListFormat;
 		Jupiter::StringS gameVersion;
@@ -721,6 +732,7 @@ namespace RenX
 		int logChanType;
 		int adminLogChanType;
 		time_t delay;
+		std::chrono::milliseconds clientUpdateRate;
 		int steamFormat; /** 16 = hex, 10 = base 10, 8 = octal, -2 = SteamID 2, -3 = SteamID 3 */
 		unsigned int uuidMode; /** 0 = steam, 1 = nickname */
 		bool rconBan;
