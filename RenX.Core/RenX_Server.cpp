@@ -1222,6 +1222,10 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 				}
 				buff.shiftLeft(1);
 			}
+			else if (this->lastCommand.equalsi("map"))
+			{
+				this->map = buff.substring(1);
+			}
 			break;
 		case 'l':
 			if (RenX::Server::rconVersion >= 3)
@@ -2105,6 +2109,7 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 
 			if (this->rconVersion >= 3)
 			{
+				RenX::Server::send(STRING_LITERAL_AS_REFERENCE("map"));
 				RenX::Server::fetchClientList();
 
 				this->firstGame = true;
