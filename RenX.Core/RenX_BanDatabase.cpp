@@ -41,7 +41,7 @@ bool RenX::BanDatabase::load(const Jupiter::ReadableString &fname)
 		Jupiter::String key(32);
 		Jupiter::String value(32);
 		Entry *entry;
-		char c;
+		int c;
 		while (!feof(file))
 		{
 			entry = new Entry();
@@ -56,41 +56,55 @@ bool RenX::BanDatabase::load(const Jupiter::ReadableString &fname)
 				delete entry;
 				break;
 			}
+
+			// load name
 			c = fgetc(file);
-			while (c != '\n' && c != EOF)
+			while (c != '\n' && c != '\0')
 			{
-				if (c == '\0')
+				if (c == EOF)
 				{
-					key.truncate(key.size());
-					value.truncate(value.size());
-					c = fgetc(file);
-					while (c != '\n' && c != EOF)
-					{
-						while (c != '\0')
-						{
-							key += c;
-							c = fgetc(file);
-							if (c == EOF)
-							{
-								fprintf(stderr, "ERROR: Unexpected EOF in %s at %lu", RenX::BanDatabase::filename.c_str(), ftell(file));
-								break;
-							}
-						}
-						c = fgetc(file);
-						while (c != '\n' && c != EOF)
-						{
-							value += c;
-							c = fgetc(file);
-						}
-						entry->varData.set(key, value);
-						c = fgetc(file);
-					}
+					fprintf(stderr, "ERROR: Unexpected EOF in %s at %lu", RenX::BanDatabase::filename.c_str(), ftell(file));
 					break;
 				}
 				playerName += c;
 				c = fgetc(file);
 			}
 			entry->name = playerName;
+
+			// load variable data
+			while (c == '\0')
+			{
+				key.truncate(key.size());
+				value.truncate(value.size());
+
+				// load key
+				c = fgetc(file);
+				while (c != '\0' && c != EOF)
+				{
+					key += c;
+					c = fgetc(file);
+				}
+				if (c == EOF)
+				{
+					fprintf(stderr, "ERROR: Unexpected EOF in %s at %lu", RenX::BanDatabase::filename.c_str(), ftell(file));
+					break;
+				}
+
+				// load value
+				c = fgetc(file);
+				while (c != '\n' && c != '\0' && c != EOF)
+				{
+					value += c;
+					c = fgetc(file);
+				}
+				if (c == EOF)
+				{
+					fprintf(stderr, "ERROR: Unexpected EOF in %s at %lu", RenX::BanDatabase::filename.c_str(), ftell(file));
+					break;
+				}
+
+				entry->varData.set(key, value);
+			}
 			entries.add(entry);
 		}
 		fclose(file);
