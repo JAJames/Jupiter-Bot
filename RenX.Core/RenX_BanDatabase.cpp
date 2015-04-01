@@ -58,6 +58,7 @@ bool RenX::BanDatabase::load(const Jupiter::ReadableString &fname)
 			}
 
 			// load name
+			playerName.truncate(playerName.size());
 			c = fgetc(file);
 			while (c != '\n' && c != '\0')
 			{
