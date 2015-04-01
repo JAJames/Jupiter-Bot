@@ -1051,7 +1051,12 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 
 						pair = table.getPair(STRING_LITERAL_AS_REFERENCE("Admin"));
 						if (pair != nullptr)
-							player->adminType = pair->getValue();
+						{
+							if (pair->getValue().equals("None"))
+								player->adminType = "";
+							else
+								player->adminType = pair->getValue();
+						}
 					};
 					Jupiter::INIFile::Section::KeyValuePair *pair = table.getPair(STRING_LITERAL_AS_REFERENCE("PlayerLog"));
 					if (pair != nullptr)
