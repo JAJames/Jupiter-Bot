@@ -708,7 +708,7 @@ void ModsIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &cha
 						for (Jupiter::DLList<RenX::PlayerInfo>::Node *node = server->players.getNode(0); node != nullptr; node = node->next)
 						{
 							player = node->data;
-							if (player->isBot == false && (player->adminType.size() != 0 || (player->access != 0 && (player->gamePrefix.isEmpty() == false || player->formatNamePrefix.isEmpty() == false))))
+							if (player->isBot == false && (player->adminType.isEmpty() == false || (player->access != 0 && (player->gamePrefix.isEmpty() == false || player->formatNamePrefix.isEmpty() == false))))
 							{
 								if (msg.size() != 0) msg += ", ";
 								else msg += "Moderators in-game: ";
@@ -2023,13 +2023,15 @@ void ModsGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *, const Ju
 		player = node->data;
 		if (player->isBot == false && (player->adminType.size() != 0 || (player->access != 0 && (player->gamePrefix.isEmpty() == false || player->formatNamePrefix.isEmpty() == false))))
 		{
-			if (msg.size() != 4) msg += ", ";
-			else msg += "Moderators in-game: ";
+			if (msg.isEmpty())
+				msg = "Moderators in-game: "; 
+			else
+				msg += ", ";
 			msg += player->gamePrefix;
 			msg += player->name;
 		}
 	}
-	if (msg.size() == 4)
+	if (msg.isEmpty())
 	{
 		msg += "No moderators are in-game";
 		RenX::GameCommand *cmd = source->getCommand(STRING_LITERAL_AS_REFERENCE("modrequest"));
