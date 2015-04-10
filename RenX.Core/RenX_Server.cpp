@@ -878,6 +878,27 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 			isBot = false;
 		id = idToken.asInt(10);
 	};
+	auto banCheck = [this](const RenX::PlayerInfo *player)
+	{
+		const Jupiter::ArrayList<RenX::BanDatabase::Entry> &entries = RenX::banDatabase->getEntries();
+		RenX::BanDatabase::Entry *entry;
+		for (size_t i = 0; i != entries.size(); i++)
+		{
+			entry = entries.get(i);
+			if (entry->active)
+			{
+				if (entry->length != 0 && entry->timestamp + entry->length < time(0))
+					banDatabase->deactivate(i);
+				else if (this->localSteamBan && entry->steamid != 0 && entry->steamid == player->steamid)
+					return true;
+				else if (this->localIPBan && entry->ip != 0 && entry->ip == player->ip32)
+					return true;
+				else if (this->localNameBan && entry->name.isEmpty() == false && entry->name.equalsi(player->name))
+					return true;
+			}
+		}
+		return false;
+	};
 	auto getPlayerOrAdd = [&](const Jupiter::ReadableString &name, int id, RenX::TeamType team, bool isBot, uint64_t steamid, const Jupiter::ReadableString &ip)
 	{
 		bool checkBans = false;
@@ -920,25 +941,8 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 		}
 		r->team = team;
 		if (checkBans)
-		{
-			const Jupiter::ArrayList<RenX::BanDatabase::Entry> &entries = RenX::banDatabase->getEntries();
-			RenX::BanDatabase::Entry *entry;
-			for (size_t i = 0; i != entries.size(); i++)
-			{
-				entry = entries.get(i);
-				if (entry->active)
-				{
-					if (entry->length != 0 && entry->timestamp + entry->length < time(0))
-						banDatabase->deactivate(i);
-					else if (this->localSteamBan && entry->steamid != 0 && entry->steamid == r->steamid)
-						this->kickPlayer(r);
-					else if (this->localIPBan && entry->ip != 0 && entry->ip == r->ip32)
-						this->kickPlayer(r);
-					else if (this->localNameBan && entry->name.isEmpty() == false && entry->name.equalsi(r->name))
-						this->kickPlayer(r);
-				}
-			}
-		}
+			if (banCheck(r))
+				this->kickPlayer(r);
 		return r;
 	};
 	auto parseGetPlayerOrAdd = [&parsePlayerData, &getPlayerOrAdd](const Jupiter::ReadableString &token)
@@ -1729,6 +1733,8 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 						if (player != nullptr)
 						{
 							player->id = buff.getToken(3, RenX::DelimC).asInt();
+							if (banCheck(player))
+								this->kickPlayer(player);
 							for (size_t i = 0; i < xPlugins.size(); i++)
 								xPlugins.get(i)->RenX_OnIDChange(this, player, oldID);
 						}
