@@ -617,6 +617,47 @@ namespace RenX
 		bool removeCommand(const Jupiter::ReadableString &trigger);
 
 		/**
+		* @brief Prototype of UUID calculation function.
+		* Note: Every player's UUID should be either unique, or empty.
+		*
+		* @param player Player to calculate UUID of
+		* @return UUID calculated from player.
+		*/
+		typedef Jupiter::StringS(*uuid_func)(RenX::Server *server, RenX::PlayerInfo *player);
+
+		/**
+		* @brief Sets the player UUID calculation function.
+		* Note: This also recalculates the UUIDs of all current players.
+		*
+		* @param function Function to calculate UUIDs with.
+		*/
+		void setUUIDFunction(uuid_func);
+
+		/**
+		* @brief Fetches the current UUID calculation function.
+		*
+		* @return Function used to calculate UUIDs.
+		*/
+		uuid_func getUUIDFunction() const;
+
+		/**
+		* @brief Changes a player's UUID.
+		*
+		* @param player Player with UUID to change
+		* @param uuid Player's new UUID
+		*/
+		void setUUID(RenX::PlayerInfo *player, const Jupiter::ReadableString &uuid);
+
+		/**
+		* @brief Changes a player's UUID only if it is different than their current UUID
+		*
+		* @param player Player with UUID to change
+		* @param uuid Player's new UUID
+		* @return True if the UUIDs did not match, false otherwise.
+		*/
+		bool setUUIDIfDifferent(RenX::PlayerInfo *player, const Jupiter::ReadableString &uuid);
+
+		/**
 		* @brief Formats and sends a message to a server's corresponding public channels.
 		*
 		* @param fmt String containing the format specifiers indicating what message to send.
@@ -734,13 +775,13 @@ namespace RenX
 		time_t delay;
 		std::chrono::milliseconds clientUpdateRate;
 		int steamFormat; /** 16 = hex, 10 = base 10, 8 = octal, -2 = SteamID 2, -3 = SteamID 3 */
-		unsigned int uuidMode; /** 0 = steam, 1 = nickname */
 		bool rconBan;
 		bool localBan;
 		bool localSteamBan;
 		bool localIPBan;
 		bool localNameBan;
 		bool neverSay;
+		uuid_func calc_uuid;
 		Jupiter::TCPSocket sock;
 		Jupiter::CStringS clientHostname;
 		Jupiter::CStringS hostname;

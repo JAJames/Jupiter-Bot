@@ -27,6 +27,11 @@
 #include "RenX_Plugin.h"
 #include "RenX_BanDatabase.h"
 
+Jupiter::StringS default_uuid_func(RenX::Server *server, RenX::PlayerInfo *player)
+{
+	return server->formatSteamID(player);
+}
+
 int RenX::Server::think()
 {
 	if (RenX::Server::connected == false)
@@ -80,35 +85,10 @@ int RenX::Server::OnRehash()
 	unsigned short oldPort = RenX::Server::port;
 	Jupiter::StringS oldClientHostname = RenX::Server::clientHostname;
 	Jupiter::StringS oldPass = RenX::Server::pass;
-	unsigned int oldUUIDMode = RenX::Server::uuidMode;
 	int oldSteamFormat = RenX::Server::steamFormat;
 	RenX::Server::commands.emptyAndDelete();
 	RenX::Server::init();
-	if (oldHostname.equalsi(RenX::Server::hostname) && oldPort == RenX::Server::port && oldClientHostname.equalsi(RenX::Server::clientHostname) && oldPass.equalsi(RenX::Server::pass))
-	{
-		if ((oldUUIDMode != RenX::Server::uuidMode || (RenX::Server::uuidMode == 0 && oldSteamFormat != RenX::Server::steamFormat)) && RenX::Server::players.size() != 0)
-		{
-			RenX::PlayerInfo *player;
-			for (Jupiter::DLList<RenX::PlayerInfo>::Node *n = RenX::Server::players.getNode(0); n != nullptr; n = n->next)
-			{
-				player = n->data;
-				switch (this->uuidMode)
-				{
-				default:
-				case 0:
-					if (player->steamid != 0)
-						player->uuid = this->formatSteamID(player);
-					else
-						player->uuid = Jupiter::ReferenceString::empty;
-					break;
-				case 1:
-					player->uuid = player->name;
-					break;
-				}
-			}
-		}
-	}
-	else
+	if (oldHostname.equalsi(RenX::Server::hostname) == false || oldPort != RenX::Server::port || oldClientHostname.equalsi(RenX::Server::clientHostname) == false || oldPass.equalsi(RenX::Server::pass) == false)
 		RenX::Server::reconnect();
 	return 0;
 }
@@ -639,6 +619,42 @@ bool RenX::Server::removeCommand(const Jupiter::ReadableString &trigger)
 	return false;
 }
 
+void RenX::Server::setUUIDFunction(RenX::Server::uuid_func func)
+{
+	RenX::Server::calc_uuid = func;
+	if (RenX::Server::players.size() != 0)
+	{
+		Jupiter::DLList<PlayerInfo>::Node *node = RenX::Server::players.getNode(0);
+		do
+		{
+			RenX::Server::setUUIDIfDifferent(node->data, RenX::Server::calc_uuid(this, node->data));
+			node = node->next;
+		}
+		while (node != nullptr);
+	}
+}
+
+RenX::Server::uuid_func RenX::Server::getUUIDFunction() const
+{
+	return RenX::Server::calc_uuid;
+}
+
+void RenX::Server::setUUID(RenX::PlayerInfo *player, const Jupiter::ReadableString &uuid)
+{
+	Jupiter::ArrayList<RenX::Plugin> &xPlugins = *getCore()->getPlugins();
+	for (size_t index = 0; index < xPlugins.size(); index++)
+		xPlugins.get(index)->RenX_OnPlayerUUIDChange(this, player, uuid);
+	player->uuid = uuid;
+}
+
+bool RenX::Server::setUUIDIfDifferent(RenX::PlayerInfo *player, const Jupiter::ReadableString &uuid)
+{
+	if (player->uuid.equals(uuid))
+		return false;
+	setUUID(player, uuid);
+	return true;
+}
+
 void RenX::Server::sendPubChan(const char *fmt, ...) const
 {
 	va_list args;
@@ -852,18 +868,6 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 			this->silenceJoins = false;
 		}
 	};
-	auto setPlayerSteamID = [this](RenX::PlayerInfo *player, uint64_t steamid)
-	{
-		player->steamid = steamid;
-		if (this->uuidMode == 0)
-			player->uuid = this->formatSteamID(steamid);
-	};
-	auto setPlayerName = [this](RenX::PlayerInfo *player, const Jupiter::ReadableString &name)
-	{
-		player->name = name;
-		if (this->uuidMode == 1)
-			player->uuid = name;
-	};
 	auto parsePlayerData = [this](const Jupiter::ReadableString &data, Jupiter::ReferenceString &name, TeamType &team, int &id, bool &isBot)
 	{
 		Jupiter::ReferenceString idToken = Jupiter::ReferenceString::getToken(data, 1, ',');
@@ -901,69 +905,60 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 	};
 	auto getPlayerOrAdd = [&](const Jupiter::ReadableString &name, int id, RenX::TeamType team, bool isBot, uint64_t steamid, const Jupiter::ReadableString &ip)
 	{
-		bool checkBans = false;
 		RenX::PlayerInfo *r = this->getPlayer(id);
-		auto checkMissing = [&]()
-		{
-			if (r->ip32 == 0 && ip.isEmpty() == false)
-			{
-				r->ip = ip;
-				r->ip32 = Jupiter::Socket::pton4(Jupiter::CStringS(r->ip).c_str());
-				checkBans = true;
-			}
-			if (r->steamid == 0U && steamid != 0U)
-			{
-				setPlayerSteamID(r, steamid);
-				checkBans = true;
-			}
-		};
 		if (r == nullptr)
 		{
-			checkBans = true;
 			r = new RenX::PlayerInfo();
 			r->id = id;
-			setPlayerName(r, name);
-			checkMissing();
+			r->name = name;
+			r->team = team;
+			r->ip = ip;
+			r->ip32 = Jupiter::Socket::pton4(Jupiter::CStringS(r->ip).c_str());
+			r->steamid = steamid;
 			if (r->isBot = isBot)
 				r->formatNamePrefix = IRCCOLOR "05[B]";
 			r->joinTime = time(nullptr);
 			if (id != 0)
 				this->players.add(r);
 
+			r->uuid = calc_uuid(this, r);
+
 			for (size_t i = 0; i < xPlugins.size(); i++)
 				xPlugins.get(i)->RenX_OnPlayerCreate(this, r);
 		}
 		else
 		{
-			checkMissing();
+			bool recalcUUID = false;
+			r->team = team;
+			if (r->ip32 == 0 && ip.isEmpty() == false)
+			{
+				r->ip = ip;
+				r->ip32 = Jupiter::Socket::pton4(Jupiter::CStringS(r->ip).c_str());
+				recalcUUID = true;
+			}
+			if (r->steamid == 0U && steamid != 0U)
+			{
+				r->steamid = steamid;
+				recalcUUID = true;
+			}
 			if (r->name.size() == 0)
+			{
 				r->name = name;
+				recalcUUID = true;
+			}
+			if (recalcUUID)
+			{
+				this->setUUIDIfDifferent(r, calc_uuid(this, r));
+				if (banCheck(r))
+					this->kickPlayer(r);
+			}
 		}
-		r->team = team;
-		if (checkBans)
-			if (banCheck(r))
-				this->kickPlayer(r);
 		return r;
 	};
 	auto parseGetPlayerOrAdd = [&parsePlayerData, &getPlayerOrAdd](const Jupiter::ReadableString &token)
 	{
 		PARSE_PLAYER_DATA_P(token);
 		return getPlayerOrAdd(name, id, team, isBot, 0U, Jupiter::ReferenceString::empty);
-	};
-	auto resetPlayerCharacter = [](PlayerInfo *player)
-	{
-		switch (player->team)
-		{
-		case TeamType::GDI:
-			player->character = STRING_LITERAL_AS_REFERENCE("Rx_FamilyInfo_GDI_Soldier");
-			break;
-		case TeamType::Nod:
-			player->character = STRING_LITERAL_AS_REFERENCE("Rx_FamilyInfo_Nod_Soldier");
-			break;
-		default:
-			player->character = Jupiter::ReferenceString::empty;
-			break;
-		}
 	};
 
 	if (buff.size() != 0)
@@ -1080,7 +1075,17 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 								if (player->ip.isEmpty())
 									player->ip = table.get(STRING_LITERAL_AS_REFERENCE("IP"));
 								if (player->steamid == 0)
-									setPlayerSteamID(player, table.get(STRING_LITERAL_AS_REFERENCE("STEAM")).asUnsignedLongLong());
+								{
+									uint64_t steamid = table.get(STRING_LITERAL_AS_REFERENCE("STEAM")).asUnsignedLongLong();
+									if (steamid != 0)
+									{
+										player->steamid = steamid;
+										if (calc_uuid == default_uuid_func)
+											setUUID(player, this->formatSteamID(steamid));
+										else
+											this->setUUIDIfDifferent(player, calc_uuid(this, player));
+									}
+								}
 
 								pair = table.getPair(STRING_LITERAL_AS_REFERENCE("TeamNum"));
 								if (pair != nullptr)
@@ -1105,7 +1110,17 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 								if (player->ip.isEmpty())
 									player->ip = table.get(STRING_LITERAL_AS_REFERENCE("IP"));
 								if (player->steamid == 0)
-									setPlayerSteamID(player, table.get(STRING_LITERAL_AS_REFERENCE("STEAM")).asUnsignedLongLong());
+								{
+									uint64_t steamid = table.get(STRING_LITERAL_AS_REFERENCE("STEAM")).asUnsignedLongLong();
+									if (steamid != 0)
+									{
+										player->steamid = steamid;
+										if (calc_uuid == default_uuid_func)
+											setUUID(player, this->formatSteamID(steamid));
+										else
+											this->setUUIDIfDifferent(player, calc_uuid(this, player));
+									}
+								}
 
 								pair = table.getPair(STRING_LITERAL_AS_REFERENCE("TeamNum"));
 								if (pair != nullptr)
@@ -1498,7 +1513,7 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 								for (size_t i = 0; i < xPlugins.size(); i++)
 									xPlugins.get(i)->RenX_OnSuicide(this, player, damageType);
 							}
-							resetPlayerCharacter(player);
+							player->character = Jupiter::ReferenceString::empty;
 						}
 						onAction();
 					}
@@ -1697,7 +1712,7 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 						// Player | "joined" | Team
 						// Player | "joined" | Team | "left" | Old Team
 						RenX::PlayerInfo *player = parseGetPlayerOrAdd(buff.getToken(2, RenX::DelimC));
-						resetPlayerCharacter(player);
+						player->character = Jupiter::ReferenceString::empty;
 						if (buff.tokenCount(RenX::DelimC) > 4)
 						{
 							RenX::TeamType oldTeam = RenX::getTeam(buff.getToken(6, RenX::DelimC));
@@ -2215,6 +2230,7 @@ const Jupiter::ReadableString &RenX::Server::getRCONUsername() const
 RenX::Server::Server(const Jupiter::ReadableString &configurationSection)
 {
 	RenX::Server::configSection = configurationSection;
+	RenX::Server::calc_uuid = default_uuid_func;
 	init();
 }
 
@@ -2233,7 +2249,6 @@ void RenX::Server::init()
 
 	RenX::Server::rules = Jupiter::IRC::Client::Config->get(RenX::Server::configSection, STRING_LITERAL_AS_REFERENCE("Rules"), STRING_LITERAL_AS_REFERENCE("Anarchy!"));
 	RenX::Server::delay = Jupiter::IRC::Client::Config->getInt(RenX::Server::configSection, STRING_LITERAL_AS_REFERENCE("ReconnectDelay"), 10);
-	RenX::Server::uuidMode = Jupiter::IRC::Client::Config->getInt(RenX::Server::configSection, STRING_LITERAL_AS_REFERENCE("UUIDMode"), 0);
 	RenX::Server::rconBan = Jupiter::IRC::Client::Config->getBool(RenX::Server::configSection, STRING_LITERAL_AS_REFERENCE("RCONBan"), false);
 	RenX::Server::localSteamBan = Jupiter::IRC::Client::Config->getBool(RenX::Server::configSection, STRING_LITERAL_AS_REFERENCE("LocalSteamBan"), true);
 	RenX::Server::localIPBan = Jupiter::IRC::Client::Config->getBool(RenX::Server::configSection, STRING_LITERAL_AS_REFERENCE("LocalIPBan"), true);

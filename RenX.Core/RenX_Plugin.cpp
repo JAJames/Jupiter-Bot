@@ -55,6 +55,11 @@ void RenX::Plugin::RenX_OnPlayerDelete(Server *, const RenX::PlayerInfo *)
 	return;
 }
 
+void RenX::Plugin::RenX_OnPlayerUUIDChange(Server *, const RenX::PlayerInfo *, const Jupiter::ReadableString &)
+{
+	return;
+}
+
 bool RenX::Plugin::RenX_OnBan(Server *, const RenX::PlayerInfo *, Jupiter::StringType &)
 {
 	return false;

@@ -45,6 +45,7 @@ namespace RenX
 		/** Non-RCON RenX logs */
 		virtual void RenX_OnPlayerCreate(Server *server, const PlayerInfo *player);
 		virtual void RenX_OnPlayerDelete(Server *server, const PlayerInfo *player);
+		virtual void RenX_OnPlayerUUIDChange(Server *server, const PlayerInfo *player, const Jupiter::ReadableString &newUUID);
 		virtual bool RenX_OnBan(Server *server, const PlayerInfo *player, Jupiter::StringType &data);
 
 		/** Player type logs */
