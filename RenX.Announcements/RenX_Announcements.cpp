@@ -63,6 +63,7 @@ void RenX_AnnouncementsPlugin::announce(unsigned int)
 
 int RenX_AnnouncementsPlugin::OnRehash()
 {
+	RenX_AnnouncementsPlugin::timer->kill();
 	RenX_AnnouncementsPlugin::announcementsFile.unload();
 	return RenX_AnnouncementsPlugin::init();
 }
