@@ -623,7 +623,7 @@ namespace RenX
 		* @param player Player to calculate UUID of
 		* @return UUID calculated from player.
 		*/
-		typedef Jupiter::StringS(*uuid_func)(RenX::Server *server, RenX::PlayerInfo *player);
+		typedef Jupiter::StringS(*uuid_func)(RenX::PlayerInfo *player);
 
 		/**
 		* @brief Sets the player UUID calculation function.

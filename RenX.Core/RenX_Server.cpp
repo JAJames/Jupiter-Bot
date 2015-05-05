@@ -622,7 +622,7 @@ void RenX::Server::setUUIDFunction(RenX::Server::uuid_func func)
 		Jupiter::DLList<PlayerInfo>::Node *node = RenX::Server::players.getNode(0);
 		do
 		{
-			RenX::Server::setUUIDIfDifferent(node->data, RenX::Server::calc_uuid(this, node->data));
+			RenX::Server::setUUIDIfDifferent(node->data, RenX::Server::calc_uuid(node->data));
 			node = node->next;
 		}
 		while (node != nullptr);
@@ -916,7 +916,7 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 			if (id != 0)
 				this->players.add(r);
 
-			r->uuid = calc_uuid(this, r);
+			r->uuid = calc_uuid(r);
 
 			for (size_t i = 0; i < xPlugins.size(); i++)
 				xPlugins.get(i)->RenX_OnPlayerCreate(this, r);
@@ -943,7 +943,7 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 			}
 			if (recalcUUID)
 			{
-				this->setUUIDIfDifferent(r, calc_uuid(this, r));
+				this->setUUIDIfDifferent(r, calc_uuid(r));
 				if (banCheck(r))
 					this->kickPlayer(r);
 			}
@@ -1078,7 +1078,7 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 										if (calc_uuid == RenX::default_uuid_func)
 											setUUID(player, this->formatSteamID(steamid));
 										else
-											this->setUUIDIfDifferent(player, calc_uuid(this, player));
+											this->setUUIDIfDifferent(player, calc_uuid(player));
 									}
 								}
 
@@ -1113,7 +1113,7 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 										if (calc_uuid == RenX::default_uuid_func)
 											setUUID(player, this->formatSteamID(steamid));
 										else
-											this->setUUIDIfDifferent(player, calc_uuid(this, player));
+											this->setUUIDIfDifferent(player, calc_uuid(player));
 									}
 								}
 

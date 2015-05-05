@@ -791,9 +791,9 @@ time_t RenX::getGameTime(const RenX::PlayerInfo *player)
 	return currentTime - player->joinTime;
 }
 
-Jupiter::StringS RenX::default_uuid_func(RenX::Server *server, RenX::PlayerInfo *player)
+Jupiter::StringS RenX::default_uuid_func(RenX::PlayerInfo *player)
 {
-	return server->formatSteamID(player);
+	return Jupiter::StringS::Format("0x%.16llX", player->steamid);
 }
 
 double RenX::getKillDeathRatio(const RenX::PlayerInfo *player, bool includeSuicides)

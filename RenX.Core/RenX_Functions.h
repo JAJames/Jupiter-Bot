@@ -159,7 +159,7 @@ namespace RenX
 	* @param player Player to calculate UUID of
 	* @return UUID of the player based on their steam ID.
 	*/
-	RENX_API Jupiter::StringS default_uuid_func(RenX::Server *server, RenX::PlayerInfo *player);
+	RENX_API Jupiter::StringS default_uuid_func(RenX::PlayerInfo *player);
 
 	/**
 	* @brief Calculates a player's Kill-Death ratio, based on their data.
