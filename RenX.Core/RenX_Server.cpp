@@ -2232,6 +2232,9 @@ RenX::Server::Server(const Jupiter::ReadableString &configurationSection)
 	RenX::Server::configSection = configurationSection;
 	RenX::Server::calc_uuid = default_uuid_func;
 	init();
+	Jupiter::ArrayList<RenX::Plugin> &xPlugins = *RenX::getCore()->getPlugins();
+	for (size_t i = 0; i < xPlugins.size(); i++)
+		xPlugins.get(i)->RenX_OnServerCreate(this);
 }
 
 void RenX::Server::init()
