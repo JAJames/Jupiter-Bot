@@ -358,7 +358,7 @@ void RecGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *player, con
 			addNoob(player);
 			source->sendMessage(player, STRING_LITERAL_AS_REFERENCE("You can't recommend yourself, you noob! (+1 noob)"));
 		}
-		else if (player->varData.get(STRING_LITERAL_AS_REFERENCE("RenX.Medals"), STRING_LITERAL_AS_REFERENCE("gn")) != nullptr && player->adminType.isEmpty())
+		else if (player->varData.get(STRING_LITERAL_AS_REFERENCE("RenX.Medals"), STRING_LITERAL_AS_REFERENCE("gr")) != nullptr && player->adminType.isEmpty())
 			source->sendMessage(player, STRING_LITERAL_AS_REFERENCE("You can only give one recommendation per game."));
 		else
 		{
