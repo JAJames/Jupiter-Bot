@@ -153,6 +153,15 @@ namespace RenX
 	RENX_API time_t getGameTime(const RenX::PlayerInfo *player);
 
 	/**
+	* @brief Calculates a player's UUID, based on their steam ID.
+	*
+	* @param server Server the player is in
+	* @param player Player to calculate UUID of
+	* @return UUID of the player based on their steam ID.
+	*/
+	RENX_API Jupiter::StringS default_uuid_func(RenX::Server *server, RenX::PlayerInfo *player);
+
+	/**
 	* @brief Calculates a player's Kill-Death ratio, based on their data.
 	* Note: If the player has not died, this function will use 1 for their death count.
 	*

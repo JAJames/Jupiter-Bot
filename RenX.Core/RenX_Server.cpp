@@ -27,11 +27,6 @@
 #include "RenX_Plugin.h"
 #include "RenX_BanDatabase.h"
 
-Jupiter::StringS default_uuid_func(RenX::Server *server, RenX::PlayerInfo *player)
-{
-	return server->formatSteamID(player);
-}
-
 int RenX::Server::think()
 {
 	if (RenX::Server::connected == false)
@@ -1080,7 +1075,7 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 									if (steamid != 0)
 									{
 										player->steamid = steamid;
-										if (calc_uuid == default_uuid_func)
+										if (calc_uuid == RenX::default_uuid_func)
 											setUUID(player, this->formatSteamID(steamid));
 										else
 											this->setUUIDIfDifferent(player, calc_uuid(this, player));
@@ -1115,7 +1110,7 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 									if (steamid != 0)
 									{
 										player->steamid = steamid;
-										if (calc_uuid == default_uuid_func)
+										if (calc_uuid == RenX::default_uuid_func)
 											setUUID(player, this->formatSteamID(steamid));
 										else
 											this->setUUIDIfDifferent(player, calc_uuid(this, player));
@@ -2230,7 +2225,7 @@ const Jupiter::ReadableString &RenX::Server::getRCONUsername() const
 RenX::Server::Server(const Jupiter::ReadableString &configurationSection)
 {
 	RenX::Server::configSection = configurationSection;
-	RenX::Server::calc_uuid = default_uuid_func;
+	RenX::Server::calc_uuid = RenX::default_uuid_func;
 	init();
 	Jupiter::ArrayList<RenX::Plugin> &xPlugins = *RenX::getCore()->getPlugins();
 	for (size_t i = 0; i < xPlugins.size(); i++)
