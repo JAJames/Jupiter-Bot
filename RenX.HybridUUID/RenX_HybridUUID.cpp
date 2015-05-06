@@ -26,7 +26,7 @@ Jupiter::StringS calc_uuid(RenX::PlayerInfo *player)
 {
 	if (player->steamid != 0U)
 		return Jupiter::StringS::Format("S%.16llX", player->steamid);
-	return Jupiter::StringS::Format("N%.*s", player->name.size(), player->name.ptr());;
+	return Jupiter::StringS::Format("N%.*s", player->name.size(), player->name.ptr());
 }
 
 RenX_HybridUUIDPlugin::RenX_HybridUUIDPlugin()
