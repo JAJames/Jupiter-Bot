@@ -146,6 +146,10 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "RenX.NicknameUUID", "RenX.N
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "RenX.HybridUUID", "RenX.HybridUUID\RenX.HybridUUID.vcxproj", "{FF61361F-CB09-4C72-80E2-9CA2DA63910E}"
+	ProjectSection(ProjectDependencies) = postProject
+		{C188871B-5F32-4946-B301-24CA2EBB275D} = {C188871B-5F32-4946-B301-24CA2EBB275D}
+		{9103DF3D-8B4A-48E5-A6B3-CBE2554630E2} = {9103DF3D-8B4A-48E5-A6B3-CBE2554630E2}
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

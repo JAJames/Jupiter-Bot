@@ -298,6 +298,7 @@ void PlayersIRCCommand::create()
 {
 	this->addTrigger(STRING_LITERAL_AS_REFERENCE("players"));
 	this->addTrigger(STRING_LITERAL_AS_REFERENCE("pl"));
+	this->addTrigger(STRING_LITERAL_AS_REFERENCE("playerlist"));
 }
 
 const size_t STRING_LENGTH = 240;
@@ -450,6 +451,127 @@ const Jupiter::ReadableString &PlayersIRCCommand::getHelp(const Jupiter::Readabl
 }
 
 IRC_COMMAND_INIT(PlayersIRCCommand)
+
+// PlayerTable IRC Command
+#include "Jupiter/SLList.h"
+void PlayerTableIRCCommand::create()
+{
+	this->addTrigger(STRING_LITERAL_AS_REFERENCE("pt"));
+	this->addTrigger(STRING_LITERAL_AS_REFERENCE("playertable"));
+}
+
+void PlayerTableIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &channel, const Jupiter::ReadableString &nick, const Jupiter::ReadableString &)
+{
+	int type = source->getChannel(channel)->getType();
+
+	// Team colors
+	const Jupiter::ReadableString &gTeamColor = RenX::getTeamColor(RenX::TeamType::GDI);
+	const Jupiter::ReadableString &nTeamColor = RenX::getTeamColor(RenX::TeamType::Nod);
+	const Jupiter::ReadableString &oTeamColor = RenX::getTeamColor(RenX::TeamType::Other);
+
+	// Team names
+	const Jupiter::ReadableString &gTeam = RenX::getTeamName(RenX::TeamType::GDI);
+	const Jupiter::ReadableString &nTeam = RenX::getTeamName(RenX::TeamType::Nod);
+	const Jupiter::ReadableString &oTeam = RenX::getTeamName(RenX::TeamType::Other);
+
+	bool noServers = true;
+	for (unsigned int i = 0; i != RenX::getCore()->getServerCount(); i++)
+	{
+		RenX::Server *server = RenX::getCore()->getServer(i);
+		if (server->isLogChanType(type))
+		{
+			noServers = false;
+			if (server->players.size() != 0)
+			{
+				Jupiter::SLList<RenX::PlayerInfo> gPlayers;
+				Jupiter::SLList<RenX::PlayerInfo> nPlayers;
+				Jupiter::SLList<RenX::PlayerInfo> oPlayers;
+
+				STRING_LITERAL_AS_NAMED_REFERENCE(NICK_COL_HEADER, "Nickname");
+				size_t maxNickLen = 8;
+				int highID = 999;
+				float highScore = 99999.0;
+				float highCredits = 9999999.0;
+
+				RenX::PlayerInfo *player;
+				for (Jupiter::DLList<RenX::PlayerInfo>::Node *node = server->players.getNode(0); node != nullptr; node = node->next)
+				{
+					player = node->data;
+					if (player != nullptr && player->isBot == false)
+					{
+						if (player->name.size() > maxNickLen)
+							maxNickLen = player->name.size();
+
+						if (player->id > highID)
+							highID = player->id;
+
+						if (player->score > highScore)
+							highScore = player->score;
+
+						if (player->credits > highCredits)
+							highCredits = player->credits;
+
+						switch (player->team)
+						{
+						case RenX::TeamType::GDI:
+							gPlayers.add(player);
+							break;
+						case RenX::TeamType::Nod:
+							nPlayers.add(player);
+							break;
+						default:
+							oPlayers.add(player);
+							break;
+						}
+					}
+				}
+
+				size_t idColLen = 1, scoreColLen = 1, creditColLen = 1;
+
+				while ((highID /= 10) > 0)
+					++idColLen;
+
+				while ((highScore /= 10) >= 1.0)
+					++scoreColLen;
+
+				while ((highCredits /= 10) >= 1.0)
+					++creditColLen;
+
+				source->sendMessage(channel, Jupiter::StringS::Format(IRCUNDERLINE IRCCOLOR "03%*.*s | %*s | %*s | %*s", maxNickLen, NICK_COL_HEADER.size(), NICK_COL_HEADER.ptr(), idColLen, "ID", scoreColLen, "Score", creditColLen, "Credits"));
+
+				auto output_player = [source, &channel, maxNickLen, idColLen, scoreColLen, creditColLen](RenX::PlayerInfo *player, const Jupiter::ReadableString &color)
+				{
+					source->sendMessage(channel, Jupiter::StringS::Format(IRCCOLOR "%.*s%*.*s" IRCCOLOR " " IRCCOLOR "03|" IRCCOLOR " %*d " IRCCOLOR "03|" IRCCOLOR " %*.0f " IRCCOLOR "03|" IRCCOLOR " %*.0f", color.size(), color.ptr(), maxNickLen, player->name.size(), player->name.ptr(), idColLen, player->id, scoreColLen, player->score, creditColLen, player->credits));
+				};
+
+				// Team colors
+				const Jupiter::ReadableString &gTeamColor = RenX::getTeamColor(RenX::TeamType::GDI);
+				const Jupiter::ReadableString &nTeamColor = RenX::getTeamColor(RenX::TeamType::Nod);
+				const Jupiter::ReadableString &oTeamColor = RenX::getTeamColor(RenX::TeamType::Other);
+
+				for (Jupiter::SLList<RenX::PlayerInfo>::Node *node = gPlayers.getNode(0); node != nullptr; node = node->next)
+					output_player(node->data, gTeamColor);
+
+				for (Jupiter::SLList<RenX::PlayerInfo>::Node *node = nPlayers.getNode(0); node != nullptr; node = node->next)
+					output_player(node->data, nTeamColor);
+
+				for (Jupiter::SLList<RenX::PlayerInfo>::Node *node = oPlayers.getNode(0); node != nullptr; node = node->next)
+					output_player(node->data, oTeamColor);
+			}
+			else source->sendMessage(channel, STRING_LITERAL_AS_REFERENCE("No players are in-game."));
+		}
+	}
+	if (noServers)
+		source->sendMessage(channel, STRING_LITERAL_AS_REFERENCE("Error: Channel not attached to any connected Renegade X servers."));
+}
+
+const Jupiter::ReadableString &PlayerTableIRCCommand::getHelp(const Jupiter::ReadableString &)
+{
+	static STRING_LITERAL_AS_NAMED_REFERENCE(defaultHelp, "Generates a table of all the players in-game. Syntax: PT");
+	return defaultHelp;
+}
+
+IRC_COMMAND_INIT(PlayerTableIRCCommand)
 
 // PlayerInfo IRC Command
 
