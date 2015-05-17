@@ -669,6 +669,8 @@ void AddIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &chan
 							source->sendNotice(nick, STRING_LITERAL_AS_REFERENCE("Error: Player not found."));
 						else if (player->isBot)
 							source->sendNotice(nick, STRING_LITERAL_AS_REFERENCE("Error: A bot can not be a moderator."));
+						else if (player->uuid.isEmpty())
+							source->sendNotice(nick, STRING_LITERAL_AS_REFERENCE("Error: Player has no UUID."));
 						else
 						{
 							pluginInstance.resetAccess(player);
@@ -846,7 +848,7 @@ void ModListIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &
 		group = n->data;
 		msg = group->prefix;
 		msg += group->name;
-		msg.aformat(" (Access: %d): ", group->access);
+		msg.aformat(IRCNORMAL " (Access: %d): ", group->access);
 		msgBaseSize = msg.size();
 		i = pluginInstance.modsFile.getSections();
 		while (i != 0)
