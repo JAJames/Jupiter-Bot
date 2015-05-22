@@ -31,12 +31,17 @@ int RenX::Server::think()
 {
 	if (RenX::Server::connected == false)
 	{
-		if (time(0) >= RenX::Server::lastAttempt + RenX::Server::delay)
+		if (RenX::Server::maxAttempts < 0 || RenX::Server::attempts < RenX::Server::maxAttempts)
 		{
-			if (RenX::Server::connect())
-				RenX::Server::sendLogChan(IRCCOLOR "03[RenX]" IRCCOLOR " Socket successfully reconnected to Renegade-X server.");
-			else RenX::Server::sendLogChan(IRCCOLOR "04[Error]" IRCCOLOR " Failed to reconnect to Renegade-X server.");
+			if (time(0) >= RenX::Server::lastAttempt + RenX::Server::delay)
+			{
+				if (RenX::Server::connect())
+					RenX::Server::sendLogChan(IRCCOLOR "03[RenX]" IRCCOLOR " Socket successfully reconnected to Renegade-X server.");
+				else RenX::Server::sendLogChan(IRCCOLOR "04[Error]" IRCCOLOR " Failed to reconnect to Renegade-X server.");
+			}
 		}
+		else
+			return 1;
 	}
 	else
 	{
@@ -61,11 +66,19 @@ int RenX::Server::think()
 		else if (Jupiter::Socket::getLastError() != 10035) // This is a serious error
 		{
 			RenX::Server::wipeData();
-			RenX::Server::sendLogChan(IRCCOLOR "07[Warning]" IRCCOLOR " Connection to Renegade-X server lost. Reconnection attempt in progress.");
-			if (RenX::Server::reconnect())
-				RenX::Server::sendLogChan(IRCCOLOR "06[Progress]" IRCCOLOR " Connection to Renegade-X server reestablished. Initializing Renegade-X RCON protocol...");
+			if (RenX::Server::maxAttempts != 0)
+			{
+				RenX::Server::sendLogChan(IRCCOLOR "07[Warning]" IRCCOLOR " Connection to Renegade-X server lost. Reconnection attempt in progress.");
+				if (RenX::Server::reconnect())
+					RenX::Server::sendLogChan(IRCCOLOR "06[Progress]" IRCCOLOR " Connection to Renegade-X server reestablished. Initializing Renegade-X RCON protocol...");
+				else
+					RenX::Server::sendLogChan(IRCCOLOR "04[Error]" IRCCOLOR " Connection to Renegade-X server lost. Reconnection attempt failed.");
+			}
 			else
-				RenX::Server::sendLogChan(IRCCOLOR "04[Error]" IRCCOLOR " Connection to Renegade-X server lost. Reconnection attempt failed.");
+			{
+				RenX::Server::sendLogChan(IRCCOLOR "04[Error]" IRCCOLOR " Connection to Renegade-X server lost. No attempt will be made to reconnect.");
+				return 1;
+			}
 			return 0;
 		}
 		if (RenX::Server::rconVersion >= 3 && std::chrono::steady_clock::now() > RenX::Server::lastClientListUpdate + RenX::Server::clientUpdateRate)
@@ -501,6 +514,16 @@ const Jupiter::ReadableString &RenX::Server::getHostname() const
 unsigned short RenX::Server::getPort() const
 {
 	return RenX::Server::port;
+}
+
+const Jupiter::ReadableString &RenX::Server::getSocketHostname() const
+{
+	return RenX::Server::sock.getHostname();
+}
+
+unsigned short RenX::Server::getSocketPort() const
+{
+	return RenX::Server::sock.getPort();
 }
 
 time_t RenX::Server::getLastAttempt() const
@@ -2200,6 +2223,7 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 
 			if (this->rconVersion >= 3)
 			{
+				RenX::Server::sock.send(STRING_LITERAL_AS_REFERENCE("s\n"));
 				RenX::Server::send(STRING_LITERAL_AS_REFERENCE("map"));
 				RenX::Server::fetchClientList();
 
@@ -2250,16 +2274,17 @@ void RenX::Server::disconnect()
 bool RenX::Server::connect()
 {
 	RenX::Server::lastAttempt = time(0);
-	if (RenX::Server::sock.connectToHost(RenX::Server::hostname.c_str(), RenX::Server::port, RenX::Server::clientHostname.isEmpty() ? nullptr : RenX::Server::clientHostname.c_str()))
+	if (RenX::Server::sock.connect(RenX::Server::hostname.c_str(), RenX::Server::port, RenX::Server::clientHostname.isEmpty() ? nullptr : RenX::Server::clientHostname.c_str()))
 	{
 		RenX::Server::sock.setBlocking(false);
 		RenX::Server::sock.send(Jupiter::StringS::Format("a%.*s\n", RenX::Server::pass.size(), RenX::Server::pass.ptr()));
-		RenX::Server::sock.send(STRING_LITERAL_AS_REFERENCE("s\n"));
 		RenX::Server::connected = true;
 		RenX::Server::silenceParts = false;
+		RenX::Server::attempts = 0;
 		return true;
 	}
 	RenX::Server::connected = false;
+	++RenX::Server::attempts;
 	return false;
 }
 
@@ -2292,6 +2317,14 @@ const Jupiter::ReadableString &RenX::Server::getRCONUsername() const
 	return RenX::Server::rconUser;
 }
 
+RenX::Server::Server(Jupiter::Socket &&socket, const Jupiter::ReadableString &configurationSection) : Server(configurationSection)
+{
+	RenX::Server::sock = std::move(socket);
+	RenX::Server::sock.send(Jupiter::StringS::Format("a%.*s\n", RenX::Server::pass.size(), RenX::Server::pass.ptr()));
+	RenX::Server::connected = true;
+	RenX::Server::silenceParts = false;
+}
+
 RenX::Server::Server(const Jupiter::ReadableString &configurationSection)
 {
 	RenX::Server::configSection = configurationSection;
@@ -2317,6 +2350,7 @@ void RenX::Server::init()
 
 	RenX::Server::rules = Jupiter::IRC::Client::Config->get(RenX::Server::configSection, STRING_LITERAL_AS_REFERENCE("Rules"), STRING_LITERAL_AS_REFERENCE("Anarchy!"));
 	RenX::Server::delay = Jupiter::IRC::Client::Config->getInt(RenX::Server::configSection, STRING_LITERAL_AS_REFERENCE("ReconnectDelay"), 10);
+	RenX::Server::maxAttempts = Jupiter::IRC::Client::Config->getInt(RenX::Server::configSection, STRING_LITERAL_AS_REFERENCE("MaxReconnectAttempts"), -1);
 	RenX::Server::rconBan = Jupiter::IRC::Client::Config->getBool(RenX::Server::configSection, STRING_LITERAL_AS_REFERENCE("RCONBan"), false);
 	RenX::Server::localSteamBan = Jupiter::IRC::Client::Config->getBool(RenX::Server::configSection, STRING_LITERAL_AS_REFERENCE("LocalSteamBan"), true);
 	RenX::Server::localIPBan = Jupiter::IRC::Client::Config->getBool(RenX::Server::configSection, STRING_LITERAL_AS_REFERENCE("LocalIPBan"), true);

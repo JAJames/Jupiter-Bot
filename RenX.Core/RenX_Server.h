@@ -520,6 +520,20 @@ namespace RenX
 		unsigned short getPort() const;
 
 		/**
+		* @brief Fetches the hostname from the server socket.
+		*
+		* @return String containing the hostname of the server.
+		*/
+		const Jupiter::ReadableString &getSocketHostname() const;
+
+		/**
+		* @brief Fetches the port from the server socket.
+		*
+		* @return Port of the server.
+		*/
+		unsigned short getSocketPort() const;
+
+		/**
 		* @brief Fetches the time of the last connection attempt.
 		* Note: This includes both successful and failed connection attempts.
 		*
@@ -735,6 +749,14 @@ namespace RenX
 		const Jupiter::ReadableString &getRCONUsername() const;
 
 		/**
+		* @brief Creates a server object using the provided socket, and loads settings from the specified configuration section.
+		*
+		* @param socket Initialized Socket to use for the connection
+		* @param configurationSection Configuration section to load from.
+		*/
+		Server(Jupiter::Socket &&socket, const Jupiter::ReadableString &configurationSection);
+
+		/**
 		* @brief Creates the Server object, and loads settings from the specified configuration section.
 		*
 		* @param configurationSection Configuration section to load from.
@@ -762,6 +784,7 @@ namespace RenX
 		bool firstAction = false;
 		unsigned int rconVersion = 0;
 		time_t lastAttempt = 0;
+		int attempts = 0;
 		std::chrono::steady_clock::time_point lastClientListUpdate = std::chrono::steady_clock::now();
 		Jupiter::String lastLine;
 		Jupiter::StringS commandListFormat;
@@ -773,6 +796,7 @@ namespace RenX
 		int logChanType;
 		int adminLogChanType;
 		time_t delay;
+		int maxAttempts;
 		std::chrono::milliseconds clientUpdateRate;
 		int steamFormat; /** 16 = hex, 10 = base 10, 8 = octal, -2 = SteamID 2, -3 = SteamID 3 */
 		bool rconBan;
