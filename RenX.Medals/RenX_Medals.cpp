@@ -326,7 +326,7 @@ void RecsGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *player, co
 
 const Jupiter::ReadableString &RecsGameCommand::getHelp(const Jupiter::ReadableString &)
 {
-	STRING_LITERAL_AS_NAMED_REFERENCE(defaultHelp, "Gets a count of a player's recommendations and noobs. Syntax: recs [player]");
+	static STRING_LITERAL_AS_NAMED_REFERENCE(defaultHelp, "Gets a count of a player's recommendations and noobs. Syntax: recs [player]");
 	return defaultHelp;
 }
 
@@ -372,7 +372,7 @@ void RecGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *player, con
 
 const Jupiter::ReadableString &RecGameCommand::getHelp(const Jupiter::ReadableString &)
 {
-	STRING_LITERAL_AS_NAMED_REFERENCE(defaultHelp, "Recommends a player for their gameplay. Syntax: rec [player]");
+	static STRING_LITERAL_AS_NAMED_REFERENCE(defaultHelp, "Recommends a player for their gameplay. Syntax: rec [player]");
 	return defaultHelp;
 }
 
@@ -413,7 +413,7 @@ void NoobGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *player, co
 
 const Jupiter::ReadableString &NoobGameCommand::getHelp(const Jupiter::ReadableString &)
 {
-	STRING_LITERAL_AS_NAMED_REFERENCE(defaultHelp, "Tells people that a player is bad. Syntax: noob [player]");
+	static STRING_LITERAL_AS_NAMED_REFERENCE(defaultHelp, "Tells people that a player is bad. Syntax: noob [player]");
 	return defaultHelp;
 }
 

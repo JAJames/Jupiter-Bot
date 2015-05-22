@@ -906,6 +906,7 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 			r = new RenX::PlayerInfo();
 			r->id = id;
 			r->name = name;
+			r->name.processEscapeSequences();
 			r->team = team;
 			r->ip = ip;
 			r->ip32 = Jupiter::Socket::pton4(Jupiter::CStringS(r->ip).c_str());
@@ -1066,7 +1067,10 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 							if (player != nullptr)
 							{
 								if (player->name.isEmpty())
+								{
 									player->name = table.get(STRING_LITERAL_AS_REFERENCE("Name"));
+									player->name.processEscapeSequences();
+								}
 								if (player->ip.isEmpty())
 									player->ip = table.get(STRING_LITERAL_AS_REFERENCE("IP"));
 								if (player->steamid == 0)
@@ -1203,7 +1207,10 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 							if (player != nullptr)
 							{
 								if (player->name.isEmpty())
+								{
 									player->name = table.get(STRING_LITERAL_AS_REFERENCE("Name"));
+									player->name.processEscapeSequences();
+								}
 
 								pair = table.getPair(STRING_LITERAL_AS_REFERENCE("TeamNum"));
 								if (pair != nullptr)
@@ -1242,8 +1249,16 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 				buff.shiftLeft(1);
 			}
 			else if (this->lastCommand.equalsi("map"))
-			{
 				this->map = buff.substring(1);
+			else if (this->lastCommand.equalsi("changename"))
+			{
+				buff.shiftRight(1);
+				RenX::PlayerInfo *player = parseGetPlayerOrAdd(buff.getToken(0, RenX::DelimC));
+				Jupiter::StringS newName = buff.getToken(2, RenX::DelimC);
+				newName.processEscapeSequences();
+				for (size_t i = 0; i < xPlugins.size(); i++)
+					xPlugins.get(i)->RenX_OnNameChange(this, player, newName);
+				player->name = newName;
 			}
 			break;
 		case 'l':
@@ -1398,10 +1413,16 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 					{
 						// "vehicle" | Vehicle | "by" | Player
 						// "death" | "by" | Player
+						// "suicide" | "by" | Player
 						// "money" | Amount | "by" | Player
 						// "character" | Character | "by" | Player
 						// "spy" | Character | "by" | Player
 						// "refill" | "by" | Player
+						// "timebomb" | "by" | Player
+						// "speed" | "by" | Player
+						// "nuke" | "by" | Player
+						// "abduction" | "by" | Player
+						// "by" | Player
 						Jupiter::ReferenceString type = buff.getToken(2, RenX::DelimC);
 						if (type.equals("vehicle"))
 						{
@@ -1410,7 +1431,7 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 							for (size_t i = 0; i < xPlugins.size(); i++)
 								xPlugins.get(i)->RenX_OnVehicleCrate(this, player, vehicle);
 						}
-						else if (type.equals("death"))
+						else if (type.equals("death") || type.equals("suicide"))
 						{
 							RenX::PlayerInfo *player = parseGetPlayerOrAdd(buff.getToken(4, RenX::DelimC));
 							for (size_t i = 0; i < xPlugins.size(); i++)
@@ -1444,6 +1465,46 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 							RenX::PlayerInfo *player = parseGetPlayerOrAdd(buff.getToken(4, RenX::DelimC));
 							for (size_t i = 0; i < xPlugins.size(); i++)
 								xPlugins.get(i)->RenX_OnRefillCrate(this, player);
+						}
+						else if (type.equals("timebomb"))
+						{
+							RenX::PlayerInfo *player = parseGetPlayerOrAdd(buff.getToken(4, RenX::DelimC));
+							for (size_t i = 0; i < xPlugins.size(); i++)
+								xPlugins.get(i)->RenX_OnTimeBombCrate(this, player);
+						}
+						else if (type.equals("speed"))
+						{
+							RenX::PlayerInfo *player = parseGetPlayerOrAdd(buff.getToken(4, RenX::DelimC));
+							for (size_t i = 0; i < xPlugins.size(); i++)
+								xPlugins.get(i)->RenX_OnSpeedCrate(this, player);
+						}
+						else if (type.equals("nuke"))
+						{
+							RenX::PlayerInfo *player = parseGetPlayerOrAdd(buff.getToken(4, RenX::DelimC));
+							for (size_t i = 0; i < xPlugins.size(); i++)
+								xPlugins.get(i)->RenX_OnNukeCrate(this, player);
+						}
+						else if (type.equals("abduction"))
+						{
+							RenX::PlayerInfo *player = parseGetPlayerOrAdd(buff.getToken(4, RenX::DelimC));
+							for (size_t i = 0; i < xPlugins.size(); i++)
+								xPlugins.get(i)->RenX_OnAbductionCrate(this, player);
+						}
+						else if (type.equals("by"))
+						{
+							RenX::PlayerInfo *player = parseGetPlayerOrAdd(buff.getToken(3, RenX::DelimC));
+							for (size_t i = 0; i < xPlugins.size(); i++)
+								xPlugins.get(i)->RenX_OnUnspecifiedCrate(this, player);
+						}
+						else
+						{
+							RenX::PlayerInfo *player = nullptr;
+							if (buff.getToken(3, RenX::DelimC).equals("by"))
+								player = parseGetPlayerOrAdd(buff.getToken(4, RenX::DelimC));
+
+							if (player != nullptr)
+								for (size_t i = 0; i < xPlugins.size(); i++)
+									xPlugins.get(i)->RenX_OnOtherCrate(this, player, type);
 						}
 					}
 					else if (subHeader.equals("Death;"))
@@ -1725,11 +1786,20 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 								xPlugins.get(i)->RenX_OnPart(this, player);
 						this->removePlayer(player);
 					}
+					else if (subHeader.equals("Kick;"))
+					{
+						// Player | "for" | Reason
+						const Jupiter::ReadableString &reason = buff.getToken(4, RenX::DelimC);
+						RenX::PlayerInfo *player = parseGetPlayerOrAdd(buff.getToken(2, RenX::DelimC));
+						for (size_t i = 0; i < xPlugins.size(); i++)
+							xPlugins.get(i)->RenX_OnKick(this, player, reason);
+					}
 					else if (subHeader.equals("NameChange;"))
 					{
 						// Player | "to:" | New Name
 						RenX::PlayerInfo *player = parseGetPlayerOrAdd(buff.getToken(2, RenX::DelimC));
-						Jupiter::ReferenceString newName = buff.getToken(4, RenX::DelimC);
+						Jupiter::StringS newName = buff.getToken(4, RenX::DelimC);
+						newName.processEscapeSequences();
 						for (size_t i = 0; i < xPlugins.size(); i++)
 							xPlugins.get(i)->RenX_OnNameChange(this, player, newName);
 						player->name = newName;

@@ -98,7 +98,7 @@ namespace RenX
 	* @param object Preset to translate.
 	* @return Translated name of the preset.
 	*/
-	RENX_API const Jupiter::ReadableString &translateName(const Jupiter::ReadableString &object);
+	RENX_API const Jupiter::ReferenceString translateName(const Jupiter::ReadableString &object);
 
 	/**
 	* @brief Translates a WinType into a human-readable string.

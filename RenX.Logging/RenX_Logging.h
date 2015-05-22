@@ -26,6 +26,7 @@ class RenX_LoggingPlugin : public RenX::Plugin
 public: // RenX::Plugin
 	void RenX_OnJoin(RenX::Server *server, const RenX::PlayerInfo *player) override;
 	void RenX_OnPart(RenX::Server *server, const RenX::PlayerInfo *player) override;
+	void RenX_OnKick(RenX::Server *server, const RenX::PlayerInfo *player, const Jupiter::ReadableString &reason) override;
 	void RenX_OnNameChange(RenX::Server *server, const RenX::PlayerInfo *player, const Jupiter::ReadableString &newPlayerName) override;
 	void RenX_OnTeamChange(RenX::Server *server, const RenX::PlayerInfo *player, const RenX::TeamType &oldTeam) override;
 	void RenX_OnExecute(RenX::Server *server, const RenX::PlayerInfo *player, const Jupiter::ReadableString &command) override;
@@ -65,6 +66,12 @@ public: // RenX::Plugin
 	void RenX_OnCharacterCrate(RenX::Server *server, const RenX::PlayerInfo *player, const Jupiter::ReadableString &character) override;
 	void RenX_OnSpyCrate(RenX::Server *server, const RenX::PlayerInfo *player, const Jupiter::ReadableString &character) override;
 	void RenX_OnRefillCrate(RenX::Server *server, const RenX::PlayerInfo *player) override;
+	void RenX_OnTimeBombCrate(RenX::Server *server, const RenX::PlayerInfo *player) override;
+	void RenX_OnSpeedCrate(RenX::Server *server, const RenX::PlayerInfo *player) override;
+	void RenX_OnNukeCrate(RenX::Server *server, const RenX::PlayerInfo *player) override;
+	void RenX_OnAbductionCrate(RenX::Server *server, const RenX::PlayerInfo *player) override;
+	void RenX_OnUnspecifiedCrate(RenX::Server *server, const RenX::PlayerInfo *player) override;
+	void RenX_OnOtherCrate(RenX::Server *server, const RenX::PlayerInfo *player, const Jupiter::ReadableString &type) override;
 	void RenX_OnSteal(RenX::Server *server, const RenX::PlayerInfo *player, const Jupiter::ReadableString &vehicle) override;
 	void RenX_OnSteal(RenX::Server *server, const RenX::PlayerInfo *player, const Jupiter::ReadableString &vehicle, const RenX::PlayerInfo *victim) override;
 	void RenX_OnDonate(RenX::Server *server, const RenX::PlayerInfo *donor, const RenX::PlayerInfo *player, double amount) override;
@@ -112,8 +119,10 @@ private:
 	void init();
 
 	STRING_LITERAL_AS_NAMED_REFERENCE(name, "RenX.Logging");
+	unsigned int muteOwnExecute : 1;
 	unsigned int joinPublic : 1;
 	unsigned int partPublic : 1;
+	unsigned int kickPublic : 1;
 	unsigned int nameChangePublic : 1;
 	unsigned int teamChangePublic : 1;
 	unsigned int playerPublic : 1;
@@ -147,6 +156,12 @@ private:
 	unsigned int characterCratePublic : 1;
 	unsigned int spyCratePublic : 1;
 	unsigned int refillCratePublic : 1;
+	unsigned int timeBombCratePublic : 1;
+	unsigned int speedCratePublic : 1;
+	unsigned int nukeCratePublic : 1;
+	unsigned int abductionCratePublic : 1;
+	unsigned int unspecifiedCratePublic : 1;
+	unsigned int otherCratePublic : 1;
 	unsigned int stealPublic : 1;
 	unsigned int donatePublic : 1;
 	unsigned int gameOverPublic : 1;
@@ -178,6 +193,7 @@ private:
 	/** Event formats */
 	Jupiter::StringS joinPublicFmt, joinAdminFmt, joinNoSteamAdminFmt;
 	Jupiter::StringS partFmt;
+	Jupiter::StringS kickFmt;
 	Jupiter::StringS nameChangeFmt;
 	Jupiter::StringS teamChangeFmt;
 	Jupiter::StringS playerFmt;
@@ -221,6 +237,12 @@ private:
 	Jupiter::StringS characterCrateFmt;
 	Jupiter::StringS spyCrateFmt;
 	Jupiter::StringS refillCrateFmt;
+	Jupiter::StringS timeBombCrateFmt;
+	Jupiter::StringS speedCrateFmt;
+	Jupiter::StringS nukeCrateFmt;
+	Jupiter::StringS abductionCrateFmt;
+	Jupiter::StringS unspecifiedCrateFmt;
+	Jupiter::StringS otherCrateFmt;
 	Jupiter::StringS stealFmt;
 	Jupiter::StringS stealNoOwnerFmt;
 	Jupiter::StringS donateFmt;

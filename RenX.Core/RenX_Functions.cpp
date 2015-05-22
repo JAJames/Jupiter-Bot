@@ -123,6 +123,7 @@ Jupiter::ReferenceString translated_Weapon_DeployedProxyC4 = STRING_LITERAL_AS_R
 Jupiter::ReferenceString translated_Weapon_DeployedATMine = STRING_LITERAL_AS_REFERENCE("Anti-Tank Mine");
 Jupiter::ReferenceString translated_Weapon_DeployedIonCannonBeacon = STRING_LITERAL_AS_REFERENCE("Ion Cannon Beacon");
 Jupiter::ReferenceString translated_Weapon_DeployedNukeBeacon = STRING_LITERAL_AS_REFERENCE("Nuclear Missile Beacon");
+Jupiter::ReferenceString translated_Weapon_CrateNuke = STRING_LITERAL_AS_REFERENCE("Nuclear Crate Explosion");
 
 /** Projectiles */
 Jupiter::ReferenceString translated_Projectile_EMPGrenade = STRING_LITERAL_AS_REFERENCE("EMP Grenade");
@@ -438,7 +439,7 @@ const Jupiter::ReferenceString &translateCharacter(Jupiter::ReferenceString &obj
 	return object;
 }
 
-const Jupiter::ReadableString &RenX::translateName(const Jupiter::ReadableString &obj)
+const Jupiter::ReferenceString RenX::translateName(const Jupiter::ReadableString &obj)
 {
 	if (obj.isEmpty())
 		return Jupiter::ReferenceString::empty;
@@ -508,6 +509,7 @@ const Jupiter::ReadableString &RenX::translateName(const Jupiter::ReadableString
 		if (object.equals(STRING_LITERAL_AS_REFERENCE("DeployedATMine"))) return translated_Weapon_DeployedATMine;
 		if (object.equals(STRING_LITERAL_AS_REFERENCE("DeployedIonCannonBeacon"))) return translated_Weapon_DeployedIonCannonBeacon;
 		if (object.equals(STRING_LITERAL_AS_REFERENCE("DeployedNukeBeacon"))) return translated_Weapon_DeployedNukeBeacon;
+		if (object.equals(STRING_LITERAL_AS_REFERENCE("CrateNuke"))) return translated_Weapon_CrateNuke;
 	}
 	else if (object.find(STRING_LITERAL_AS_REFERENCE("Projectile_")) == 0)
 	{

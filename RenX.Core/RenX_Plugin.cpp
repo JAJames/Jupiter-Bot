@@ -80,6 +80,11 @@ void RenX::Plugin::RenX_OnPart(Server *, const RenX::PlayerInfo *)
 	return;
 }
 
+void RenX::Plugin::RenX_OnKick(Server *server, const PlayerInfo *player, const Jupiter::ReadableString &reason)
+{
+	return;
+}
+
 void RenX::Plugin::RenX_OnNameChange(Server *, const PlayerInfo *, const Jupiter::ReadableString &)
 {
 	return;
@@ -266,6 +271,36 @@ void RenX::Plugin::RenX_OnSpyCrate(Server *, const PlayerInfo *, const Jupiter::
 }
 
 void RenX::Plugin::RenX_OnRefillCrate(Server *, const PlayerInfo *)
+{
+	return;
+}
+
+void RenX::Plugin::RenX_OnTimeBombCrate(Server *server, const PlayerInfo *player)
+{
+	return;
+}
+
+void RenX::Plugin::RenX_OnSpeedCrate(Server *server, const PlayerInfo *player)
+{
+	return;
+}
+
+void RenX::Plugin::RenX_OnNukeCrate(Server *server, const PlayerInfo *player)
+{
+	return;
+}
+
+void RenX::Plugin::RenX_OnAbductionCrate(Server *server, const PlayerInfo *player)
+{
+	return;
+}
+
+void RenX::Plugin::RenX_OnUnspecifiedCrate(Server *server, const PlayerInfo *player)
+{
+	return;
+}
+
+void RenX::Plugin::RenX_OnOtherCrate(Server *server, const PlayerInfo *player, const Jupiter::ReadableString &)
 {
 	return;
 }

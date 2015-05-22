@@ -55,7 +55,7 @@ void ViewJoinGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *player
 
 const Jupiter::ReadableString &ViewJoinGameCommand::getHelp(const Jupiter::ReadableString &)
 {
-	STRING_LITERAL_AS_NAMED_REFERENCE(defaultHelp, "Displays your join message. Syntax: viewjoin");
+	static STRING_LITERAL_AS_NAMED_REFERENCE(defaultHelp, "Displays your join message. Syntax: viewjoin");
 	return defaultHelp;
 }
 
@@ -83,7 +83,7 @@ void ShowJoinGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *player
 
 const Jupiter::ReadableString &ShowJoinGameCommand::getHelp(const Jupiter::ReadableString &)
 {
-	STRING_LITERAL_AS_NAMED_REFERENCE(defaultHelp, "Displays your join message. Syntax: showjoin");
+	static STRING_LITERAL_AS_NAMED_REFERENCE(defaultHelp, "Displays your join message. Syntax: showjoin");
 	return defaultHelp;
 }
 
@@ -112,7 +112,7 @@ void DelJoinGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *player,
 
 const Jupiter::ReadableString &DelJoinGameCommand::getHelp(const Jupiter::ReadableString &)
 {
-	STRING_LITERAL_AS_NAMED_REFERENCE(defaultHelp, "Removes your automatic join message. Syntax: deljoin");
+	static STRING_LITERAL_AS_NAMED_REFERENCE(defaultHelp, "Removes your automatic join message. Syntax: deljoin");
 	return defaultHelp;
 }
 
@@ -143,7 +143,7 @@ void SetJoinGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *player,
 
 const Jupiter::ReadableString &SetJoinGameCommand::getHelp(const Jupiter::ReadableString &)
 {
-	STRING_LITERAL_AS_NAMED_REFERENCE(defaultHelp, "Sets an automatic join message. Syntax: setjoin [message]");
+	static STRING_LITERAL_AS_NAMED_REFERENCE(defaultHelp, "Sets an automatic join message. Syntax: setjoin [message]");
 	return defaultHelp;
 }
 

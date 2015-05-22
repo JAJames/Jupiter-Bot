@@ -52,6 +52,7 @@ namespace RenX
 		/** Player type logs */
 		virtual void RenX_OnJoin(Server *server, const PlayerInfo *player);
 		virtual void RenX_OnPart(Server *server, const PlayerInfo *player);
+		virtual void RenX_OnKick(Server *server, const PlayerInfo *player, const Jupiter::ReadableString &reason);
 		virtual void RenX_OnNameChange(Server *server, const PlayerInfo *player, const Jupiter::ReadableString &newPlayerName);
 		virtual void RenX_OnTeamChange(Server *server, const PlayerInfo *player, const TeamType &oldTeam);
 		virtual void RenX_OnIDChange(Server *server, const PlayerInfo *player, int oldID);
@@ -94,6 +95,12 @@ namespace RenX
 		virtual void RenX_OnCharacterCrate(Server *server, const PlayerInfo *player, const Jupiter::ReadableString &character);
 		virtual void RenX_OnSpyCrate(Server *server, const PlayerInfo *player, const Jupiter::ReadableString &character);
 		virtual void RenX_OnRefillCrate(Server *server, const PlayerInfo *player);
+		virtual void RenX_OnTimeBombCrate(Server *server, const PlayerInfo *player);
+		virtual void RenX_OnSpeedCrate(Server *server, const PlayerInfo *player);
+		virtual void RenX_OnNukeCrate(Server *server, const PlayerInfo *player);
+		virtual void RenX_OnAbductionCrate(Server *server, const PlayerInfo *player);
+		virtual void RenX_OnUnspecifiedCrate(Server *server, const PlayerInfo *player);
+		virtual void RenX_OnOtherCrate(Server *server, const PlayerInfo *player, const Jupiter::ReadableString &type);
 		virtual void RenX_OnSteal(Server *server, const PlayerInfo *player, const Jupiter::ReadableString &vehicle);
 		virtual void RenX_OnSteal(Server *server, const PlayerInfo *player, const Jupiter::ReadableString &vehicle, const PlayerInfo *victim);
 		virtual void RenX_OnDonate(Server *server, const PlayerInfo *donor, const PlayerInfo *player, double amount);
