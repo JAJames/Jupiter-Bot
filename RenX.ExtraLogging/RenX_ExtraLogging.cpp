@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2014 Justin James.
+ * Copyright (C) 2014-2015 Justin James.
  *
  * This license must be preserved.
  * Any applications, libraries, or code which make any use of any
@@ -22,10 +22,7 @@
 
 RenX_ExtraLoggingPlugin::RenX_ExtraLoggingPlugin()
 {
-	const Jupiter::CStringS logFile = Jupiter::IRC::Client::Config->get(STRING_LITERAL_AS_REFERENCE("RenX.ExtraLogging"), STRING_LITERAL_AS_REFERENCE("LogFile"));
-	if (logFile.isEmpty() == false)
-		RenX_ExtraLoggingPlugin::file = fopen(logFile.c_str(), "a+b");
-	else RenX_ExtraLoggingPlugin::file = nullptr;
+	RenX_ExtraLoggingPlugin::init();
 }
 
 RenX_ExtraLoggingPlugin::~RenX_ExtraLoggingPlugin()
@@ -34,9 +31,28 @@ RenX_ExtraLoggingPlugin::~RenX_ExtraLoggingPlugin()
 		fclose(RenX_ExtraLoggingPlugin::file);
 }
 
+int RenX_ExtraLoggingPlugin::OnRehash()
+{
+	if (RenX_ExtraLoggingPlugin::file != nullptr)
+		fclose(RenX_ExtraLoggingPlugin::file);
+	return !RenX_ExtraLoggingPlugin::init();
+}
+
+bool RenX_ExtraLoggingPlugin::init()
+{
+	RenX_ExtraLoggingPlugin::printToConsole = Jupiter::IRC::Client::Config->getBool(STRING_LITERAL_AS_REFERENCE("RenX.ExtraLogging"), STRING_LITERAL_AS_REFERENCE("PrintToConsole"), true);
+	const Jupiter::CStringS logFile = Jupiter::IRC::Client::Config->get(STRING_LITERAL_AS_REFERENCE("RenX.ExtraLogging"), STRING_LITERAL_AS_REFERENCE("LogFile"));
+	if (logFile.isEmpty() == false)
+		RenX_ExtraLoggingPlugin::file = fopen(logFile.c_str(), "a+b");
+	else
+		RenX_ExtraLoggingPlugin::file = nullptr;
+	return RenX_ExtraLoggingPlugin::file != nullptr || RenX_ExtraLoggingPlugin::printToConsole;
+}
+
 void RenX_ExtraLoggingPlugin::RenX_OnRaw(RenX::Server *server, const Jupiter::ReadableString &raw)
 {
-	raw.println(stdout);
+	if (RenX_ExtraLoggingPlugin::printToConsole)
+		raw.println(stdout);
 	if (RenX_ExtraLoggingPlugin::file != nullptr)
 	{
 		const Jupiter::ReadableString &prefix = server->getPrefix();
@@ -50,10 +66,13 @@ void RenX_ExtraLoggingPlugin::RenX_OnRaw(RenX::Server *server, const Jupiter::Re
 	}
 }
 
-
-
 // Plugin instantiation and entry point.
 RenX_ExtraLoggingPlugin pluginInstance;
+
+extern "C" __declspec(dllexport) bool load()
+{
+	return pluginInstance.init();
+}
 
 extern "C" __declspec(dllexport) Jupiter::Plugin *getPlugin()
 {

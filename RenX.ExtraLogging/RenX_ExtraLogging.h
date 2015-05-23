@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2014 Justin James.
+ * Copyright (C) 2014-2015 Justin James.
  *
  * This license must be preserved.
  * Any applications, libraries, or code which make any use of any
@@ -28,13 +28,19 @@ public: // RenX::Plugin
 
 public: // Jupiter::Plugin
 	const Jupiter::ReadableString &getName() override { return name; }
+	int OnRehash() override;
+
+public: // RenX_ExtraLoggingPlugin
+
+	bool init();
 
 	RenX_ExtraLoggingPlugin();
 	~RenX_ExtraLoggingPlugin();
 
 private:
 	STRING_LITERAL_AS_NAMED_REFERENCE(name, "RenX.ExtraLogging");
-	FILE *file; // Replace with a Jupiter::File after making Jupiter::File. (Also remove constructor/destructor)
+	bool printToConsole;
+	FILE *file;
 };
 
 #endif // _RENX_EXTRALOGGING_H_HEADER
