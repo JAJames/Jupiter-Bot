@@ -26,6 +26,7 @@
 #include "RenX_Functions.h"
 #include "RenX_Plugin.h"
 #include "RenX_BanDatabase.h"
+#include "RenX_Tags.h"
 
 int RenX::Server::think()
 {
@@ -476,12 +477,14 @@ bool RenX::Server::changeTeam(RenX::PlayerInfo *player, bool resetCredits)
 
 const Jupiter::ReadableString &RenX::Server::getPrefix() const
 {
-	return RenX::Server::IRCPrefix;
+	static Jupiter::StringS parsed;
+	RenX::processTags(parsed = RenX::Server::IRCPrefix, this);
+	return parsed;
 }
 
 void RenX::Server::setPrefix(const Jupiter::ReadableString &prefix)
 {
-	RenX::Server::IRCPrefix = prefix;
+	RenX::sanitizeTags(RenX::Server::IRCPrefix = prefix);
 }
 
 const Jupiter::ReadableString &RenX::Server::getCommandPrefix() const

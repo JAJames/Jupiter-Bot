@@ -60,6 +60,10 @@ namespace RenX
 		Jupiter::StringS INTERNAL_USER_TAG;
 		Jupiter::StringS INTERNAL_SERVER_NAME_TAG;
 		Jupiter::StringS INTERNAL_MAP_TAG;
+		Jupiter::StringS INTERNAL_SERVER_HOSTNAME_TAG;
+		Jupiter::StringS INTERNAL_SERVER_PORT_TAG;
+		Jupiter::StringS INTERNAL_SOCKET_HOSTNAME_TAG;
+		Jupiter::StringS INTERNAL_SOCKET_PORT_TAG;
 
 		/** Player tags */
 		Jupiter::StringS INTERNAL_NAME_TAG;
@@ -152,6 +156,10 @@ namespace RenX
 		Jupiter::StringS userTag;
 		Jupiter::StringS serverNameTag;
 		Jupiter::StringS mapTag;
+		Jupiter::StringS serverHostnameTag;
+		Jupiter::StringS serverPortTag;
+		Jupiter::StringS socketHostnameTag;
+		Jupiter::StringS socketPortTag;
 
 		/** Player tags */
 		Jupiter::StringS nameTag;
