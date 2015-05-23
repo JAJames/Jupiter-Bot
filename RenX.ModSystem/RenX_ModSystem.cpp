@@ -733,17 +733,34 @@ void DelIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &chan
 						if (pluginInstance.modsFile.remove(parameters))
 							source->sendNotice(nick, STRING_LITERAL_AS_REFERENCE("Player has been removed from the moderator list."));
 						else
-							source->sendNotice(nick, STRING_LITERAL_AS_REFERENCE("Error: Player not found."));
+						{
+							size_t index = pluginInstance.modsFile.getSections();
+							Jupiter::INIFile::Section *section;
+
+							DelIRCCommand_trigger_loop:
+							if (index != 0)
+							{
+								section = pluginInstance.modsFile.getSection(--index);
+								if (section->get(STRING_LITERAL_AS_REFERENCE("Name")).equalsi(parameters))
+								{
+									if (pluginInstance.modsFile.remove(index))
+										source->sendNotice(nick, STRING_LITERAL_AS_REFERENCE("Player has been removed from the moderator list."));
+									else
+										source->sendNotice(nick, STRING_LITERAL_AS_REFERENCE("Error: Unknown error occurred."));
+								}
+								else
+									goto DelIRCCommand_trigger_loop;
+							}
+							else
+								source->sendNotice(nick, STRING_LITERAL_AS_REFERENCE("Error: Player not found."));
+						}
 					}
 					else if (player->isBot)
 						source->sendNotice(nick, STRING_LITERAL_AS_REFERENCE("Error: A bot can not be a moderator."));
+					else if (pluginInstance.modsFile.remove(player->uuid))
+						source->sendNotice(nick, STRING_LITERAL_AS_REFERENCE("Player has been removed from the moderator list."));
 					else
-					{
-						if (pluginInstance.modsFile.remove(player->uuid))
-							source->sendNotice(nick, STRING_LITERAL_AS_REFERENCE("Player has been removed from the moderator list."));
-						else
-							source->sendNotice(nick, STRING_LITERAL_AS_REFERENCE("Player is not in the moderator list."));
-					}
+						source->sendNotice(nick, STRING_LITERAL_AS_REFERENCE("Player is not in the moderator list."));
 				}
 			}
 			if (serverMatch == false)
