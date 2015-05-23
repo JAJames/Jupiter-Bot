@@ -29,7 +29,7 @@ RenX_ListenPlugin::~RenX_ListenPlugin()
 
 bool RenX_ListenPlugin::init()
 {
-	uint16_t port = Jupiter::IRC::Client::Config->getInt(this->getName(), STRING_LITERAL_AS_REFERENCE("Port"), 13372);
+	uint16_t port = Jupiter::IRC::Client::Config->getInt(this->getName(), STRING_LITERAL_AS_REFERENCE("Port"), 21337);
 	const Jupiter::ReadableString &address = Jupiter::IRC::Client::Config->get(this->getName(), STRING_LITERAL_AS_REFERENCE("Address"), STRING_LITERAL_AS_REFERENCE("0.0.0.0"));
 	RenX_ListenPlugin::serverSection = Jupiter::IRC::Client::Config->get(this->getName(), STRING_LITERAL_AS_REFERENCE("ServerSection"), this->getName());
 	return RenX_ListenPlugin::socket.bind(Jupiter::CStringS(address).c_str(), port, true) && RenX_ListenPlugin::socket.setBlocking(false);
@@ -42,7 +42,7 @@ int RenX_ListenPlugin::think()
 	{
 		sock->setBlocking(false);
 		RenX::Server *server = new RenX::Server(std::move(*sock), RenX_ListenPlugin::serverSection);
-		printf("Incoming server connected from " IRCCOLOR "12%.*s:%u", server->getSocketHostname().size(), server->getSocketHostname().ptr(), server->getSocketPort());
+		printf("Incoming server connected from %.*s:%u" ENDL, server->getSocketHostname().size(), server->getSocketHostname().ptr(), server->getSocketPort());
 		server->sendLogChan("Incoming server connected from " IRCCOLOR "12%.*s:%u", server->getSocketHostname().size(), server->getSocketHostname().ptr(), server->getSocketPort());
 		RenX::getCore()->addServer(server);
 		delete sock;
@@ -52,7 +52,7 @@ int RenX_ListenPlugin::think()
 
 int RenX_ListenPlugin::OnRehash()
 {
-	uint16_t port = Jupiter::IRC::Client::Config->getInt(this->getName(), STRING_LITERAL_AS_REFERENCE("Port"), 13372);
+	uint16_t port = Jupiter::IRC::Client::Config->getInt(this->getName(), STRING_LITERAL_AS_REFERENCE("Port"), 21337);
 	const Jupiter::ReadableString &address = Jupiter::IRC::Client::Config->get(this->getName(), STRING_LITERAL_AS_REFERENCE("Address"), STRING_LITERAL_AS_REFERENCE("0.0.0.0"));
 	RenX_ListenPlugin::serverSection = Jupiter::IRC::Client::Config->get(this->getName(), STRING_LITERAL_AS_REFERENCE("ServerSection"), this->getName());
 	if (port != RenX_ListenPlugin::socket.getPort() || address.equals(RenX_ListenPlugin::socket.getHostname()) == false)
