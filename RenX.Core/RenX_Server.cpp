@@ -1276,6 +1276,15 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 			}
 			else if (this->lastCommand.equalsi("map"))
 				this->map = buff.substring(1);
+			else if (this->lastCommand.equalsi("serverinfo"))
+			{
+				// "Port" | Port | "Name" | Name | "Passworded" | "True"/"False" | "Level" | Level
+				buff.shiftRight(1);
+				this->port = static_cast<unsigned short>(buff.getToken(1, RenX::DelimC).asUnsignedInt(10));
+				this->serverName = buff.getToken(3, RenX::DelimC);
+				this->map = buff.getToken(7, RenX::DelimC);
+				buff.shiftLeft(1);
+			}
 			else if (this->lastCommand.equalsi("changename"))
 			{
 				buff.shiftRight(1);
@@ -1759,6 +1768,12 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 							xPlugins.get(i)->RenX_OnTeamChat(this, player, message);
 						onAction();
 					}
+					else if (subHeader.equals("HostSay;"))
+					{
+						Jupiter::ReferenceString message = buff.getToken(3, RenX::DelimC);
+						for (size_t i = 0; i < xPlugins.size(); i++)
+							xPlugins.get(i)->RenX_OnHostChat(this, message);
+					}
 					/*else if (subHeader.equals("AdminSay;"))
 					{
 						// Player | "said:" | Message
@@ -1862,13 +1877,7 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 						{
 							Jupiter::ReferenceString command = buff.gotoToken(4, RenX::DelimC);
 							Jupiter::ReferenceString cmd = command.getWord(0, " ");
-							if (cmd.equalsi("hostsay"))
-							{
-								Jupiter::ReferenceString message = command.gotoWord(1, " ");
-								for (size_t i = 0; i < xPlugins.size(); i++)
-									xPlugins.get(i)->RenX_OnHostChat(this, message);
-							}
-							else if (cmd.equalsi("hostprivatesay"))
+							if (cmd.equalsi("hostprivatesay"))
 							{
 								RenX::PlayerInfo *player = this->getPlayerByName(command.getWord(1, " "));
 								if (player != nullptr)
@@ -2227,7 +2236,7 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 			if (this->rconVersion >= 3)
 			{
 				RenX::Server::sock.send(STRING_LITERAL_AS_REFERENCE("s\n"));
-				RenX::Server::send(STRING_LITERAL_AS_REFERENCE("map"));
+				RenX::Server::send(STRING_LITERAL_AS_REFERENCE("serverinfo"));
 				RenX::Server::fetchClientList();
 
 				this->firstGame = true;
@@ -2323,6 +2332,7 @@ const Jupiter::ReadableString &RenX::Server::getRCONUsername() const
 RenX::Server::Server(Jupiter::Socket &&socket, const Jupiter::ReadableString &configurationSection) : Server(configurationSection)
 {
 	RenX::Server::sock = std::move(socket);
+	RenX::Server::hostname = RenX::Server::sock.getHostname();
 	RenX::Server::sock.send(Jupiter::StringS::Format("a%.*s\n", RenX::Server::pass.size(), RenX::Server::pass.ptr()));
 	RenX::Server::connected = true;
 	RenX::Server::silenceParts = false;
