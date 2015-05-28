@@ -39,7 +39,8 @@ inline bool togglePhasing(RenX::Server *server)
 
 inline void onDie(RenX::Server *server, const RenX::PlayerInfo *player)
 {
-	if (player->isBot && server->varData.getBool(STRING_LITERAL_AS_REFERENCE("RenX.Commands"), STRING_LITERAL_AS_REFERENCE("phasing"), false)) server->kickPlayer(player);
+	if (player->isBot && server->varData.getBool(STRING_LITERAL_AS_REFERENCE("RenX.Commands"), STRING_LITERAL_AS_REFERENCE("phasing"), false))
+		server->kickPlayer(player, Jupiter::StringS::empty);
 }
 
 bool RenX_CommandsPlugin::RenX_OnBan(RenX::Server *server, const RenX::PlayerInfo *player, Jupiter::StringType &data)
@@ -1517,16 +1518,18 @@ void KickIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &cha
 				RenX::PlayerInfo *player;
 				RenX::Server *server;
 				unsigned int kicks = 0;
+				Jupiter::StringS name = Jupiter::StringS::getWord(parameters, 0, WHITESPACE);
+				Jupiter::StringS reason = parameters.wordCount(WHITESPACE) > 1 ? Jupiter::StringS::gotoWord(parameters, 1, WHITESPACE) : STRING_LITERAL_AS_REFERENCE("No reason");
 				for (size_t i = 0; i != servers.size(); i++)
 				{
 					server = servers.get(i);
 					if (server != nullptr)
 					{
-						player = server->getPlayerByPartName(parameters);
+						player = server->getPlayerByPartName(name);
 						if (player != nullptr)
 						{
-							server->kickPlayer(player);
-							kicks++;
+							server->kickPlayer(player, reason);
+							++kicks;
 						}
 					}
 				}
@@ -1535,12 +1538,12 @@ void KickIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &cha
 			else source->sendMessage(channel, STRING_LITERAL_AS_REFERENCE("Error: Channel not attached to any connected Renegade X servers."));
 		}
 	}
-	else source->sendNotice(nick, STRING_LITERAL_AS_REFERENCE("Error: Too Few Parameters. Syntax: Kick <Player>"));
+	else source->sendNotice(nick, STRING_LITERAL_AS_REFERENCE("Error: Too Few Parameters. Syntax: Kick <Player> [Reason]"));
 }
 
 const Jupiter::ReadableString &KickIRCCommand::getHelp(const Jupiter::ReadableString &)
 {
-	static STRING_LITERAL_AS_NAMED_REFERENCE(defaultHelp, "Kicks a player from the game. Syntax: Kick <Player>");
+	static STRING_LITERAL_AS_NAMED_REFERENCE(defaultHelp, "Kicks a player from the game. Syntax: Kick <Player> [Reason]");
 	return defaultHelp;
 }
 
@@ -1569,6 +1572,8 @@ void TempBanIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &
 				RenX::PlayerInfo *player;
 				RenX::Server *server;
 				unsigned int kicks = 0;
+				Jupiter::StringS name = Jupiter::StringS::getWord(parameters, 0, WHITESPACE);
+				Jupiter::StringS reason = parameters.wordCount(WHITESPACE) > 1 ? Jupiter::StringS::gotoWord(parameters, 1, WHITESPACE) : STRING_LITERAL_AS_REFERENCE("No reason");
 				Jupiter::String banner(nick.size() + 4);
 				banner += nick;
 				banner += "@IRC";
@@ -1577,11 +1582,11 @@ void TempBanIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &
 					server = servers.get(i);
 					if (server != nullptr)
 					{
-						player = server->getPlayerByPartName(parameters);
+						player = server->getPlayerByPartName(name);
 						if (player != nullptr)
 						{
 							player->varData.set(pluginInstance.getName(), STRING_LITERAL_AS_REFERENCE("banner"), nick);
-							server->banPlayer(player, pluginInstance.getTBanTime());
+							server->banPlayer(player, reason, pluginInstance.getTBanTime());
 							kicks++;
 						}
 					}
@@ -1591,12 +1596,12 @@ void TempBanIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &
 			else source->sendMessage(channel, STRING_LITERAL_AS_REFERENCE("Error: Channel not attached to any connected Renegade X servers."));
 		}
 	}
-	else source->sendNotice(nick, STRING_LITERAL_AS_REFERENCE("Error: Too Few Parameters. Syntax: TempBan <Player>"));
+	else source->sendNotice(nick, STRING_LITERAL_AS_REFERENCE("Error: Too Few Parameters. Syntax: TempBan <Player> [Reason]"));
 }
 
 const Jupiter::ReadableString &TempBanIRCCommand::getHelp(const Jupiter::ReadableString &)
 {
-	static STRING_LITERAL_AS_NAMED_REFERENCE(defaultHelp, "Kicks and temporarily bans a player from the game. Syntax: TempBan <Player>");
+	static STRING_LITERAL_AS_NAMED_REFERENCE(defaultHelp, "Kicks and temporarily bans a player from the game. Syntax: TempBan <Player> [Reason]");
 	return defaultHelp;
 }
 
@@ -1625,6 +1630,8 @@ void KickBanIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &
 				RenX::PlayerInfo *player;
 				RenX::Server *server;
 				unsigned int kicks = 0;
+				Jupiter::StringS name = Jupiter::StringS::getWord(parameters, 0, WHITESPACE);
+				Jupiter::StringS reason = parameters.wordCount(WHITESPACE) > 1 ? Jupiter::StringS::gotoWord(parameters, 1, WHITESPACE) : STRING_LITERAL_AS_REFERENCE("No reason");
 				Jupiter::String banner(nick.size() + 4);
 				banner += nick;
 				banner += "@IRC";
@@ -1637,7 +1644,7 @@ void KickBanIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &
 						if (player != nullptr)
 						{
 							player->varData.set(pluginInstance.getName(), STRING_LITERAL_AS_REFERENCE("banner"), nick);
-							server->banPlayer(player);
+							server->banPlayer(player, reason);
 							kicks++;
 						}
 					}
@@ -1647,12 +1654,12 @@ void KickBanIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &
 			else source->sendMessage(channel, STRING_LITERAL_AS_REFERENCE("Error: Channel not attached to any connected Renegade X servers."));
 		}
 	}
-	else source->sendNotice(nick, STRING_LITERAL_AS_REFERENCE("Error: Too Few Parameters. Syntax: KickBan <Player>"));
+	else source->sendNotice(nick, STRING_LITERAL_AS_REFERENCE("Error: Too Few Parameters. Syntax: KickBan <Player> [Reason]"));
 }
 
 const Jupiter::ReadableString &KickBanIRCCommand::getHelp(const Jupiter::ReadableString &)
 {
-	static STRING_LITERAL_AS_NAMED_REFERENCE(defaultHelp, "Kicks and bans a player from the game. Syntax: KickBan <Player>");
+	static STRING_LITERAL_AS_NAMED_REFERENCE(defaultHelp, "Kicks and bans a player from the game. Syntax: KickBan <Player> [Reason]");
 	return defaultHelp;
 }
 
@@ -2412,7 +2419,9 @@ void KickGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *player, co
 {
 	if (parameters.isEmpty() == false)
 	{
-		RenX::PlayerInfo *target = source->getPlayerByPartName(parameters);
+		Jupiter::StringS name = Jupiter::StringS::getWord(parameters, 0, WHITESPACE);
+		Jupiter::StringS reason = parameters.wordCount(WHITESPACE) > 1 ? Jupiter::StringS::gotoWord(parameters, 1, WHITESPACE) : STRING_LITERAL_AS_REFERENCE("No reason");
+		RenX::PlayerInfo *target = source->getPlayerByPartName(name);
 		if (target == nullptr)
 			source->sendMessage(player, STRING_LITERAL_AS_REFERENCE("Error: Player not found."));
 		else if (player == target)
@@ -2421,17 +2430,17 @@ void KickGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *player, co
 			source->sendMessage(player, STRING_LITERAL_AS_REFERENCE("Error: You can not kick higher level moderators."));
 		else
 		{
-			source->kickPlayer(target);
+			source->kickPlayer(target, reason);
 			source->sendMessage(player, STRING_LITERAL_AS_REFERENCE("Player has been kicked from the game."));
 		}
 	}
 	else
-		source->sendMessage(player, STRING_LITERAL_AS_REFERENCE("Error: Too few parameters. Syntax: kick <player>"));
+		source->sendMessage(player, STRING_LITERAL_AS_REFERENCE("Error: Too few parameters. Syntax: kick <player> [Reason]"));
 }
 
 const Jupiter::ReadableString &KickGameCommand::getHelp(const Jupiter::ReadableString &)
 {
-	static STRING_LITERAL_AS_NAMED_REFERENCE(defaultHelp, "Kicks a player from the game. Syntax: kick <player>");
+	static STRING_LITERAL_AS_NAMED_REFERENCE(defaultHelp, "Kicks a player from the game. Syntax: kick <player> [Reason]");
 	return defaultHelp;
 }
 
@@ -2451,7 +2460,9 @@ void TempBanGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *player,
 {
 	if (parameters.isEmpty() == false)
 	{
-		RenX::PlayerInfo *target = source->getPlayerByPartName(parameters);
+		Jupiter::StringS name = Jupiter::StringS::getWord(parameters, 0, WHITESPACE);
+		Jupiter::StringS reason = parameters.wordCount(WHITESPACE) > 1 ? Jupiter::StringS::gotoWord(parameters, 1, WHITESPACE) : STRING_LITERAL_AS_REFERENCE("No reason");
+		RenX::PlayerInfo *target = source->getPlayerByPartName(name);
 		if (target == nullptr)
 			source->sendMessage(player, STRING_LITERAL_AS_REFERENCE("Error: Player not found."));
 		else if (player == target)
@@ -2461,17 +2472,17 @@ void TempBanGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *player,
 		else
 		{
 			target->varData.set(pluginInstance.getName(), STRING_LITERAL_AS_REFERENCE("banner"), player->name);
-			source->banPlayer(target, pluginInstance.getTBanTime());
+			source->banPlayer(target, reason, pluginInstance.getTBanTime());
 			source->sendMessage(player, STRING_LITERAL_AS_REFERENCE("Player has been temporarily banned and kicked from the game."));
 		}
 	}
 	else
-		source->sendMessage(player, STRING_LITERAL_AS_REFERENCE("Error: Too few parameters. Syntax: tban <player>"));
+		source->sendMessage(player, STRING_LITERAL_AS_REFERENCE("Error: Too few parameters. Syntax: tban <player> [Reason]"));
 }
 
 const Jupiter::ReadableString &TempBanGameCommand::getHelp(const Jupiter::ReadableString &)
 {
-	static STRING_LITERAL_AS_NAMED_REFERENCE(defaultHelp, "Kicks and temporarily bans a player from the game. Syntax: tban <player>");
+	static STRING_LITERAL_AS_NAMED_REFERENCE(defaultHelp, "Kicks and temporarily bans a player from the game. Syntax: tban <player> [Reason]");
 	return defaultHelp;
 }
 
@@ -2492,6 +2503,8 @@ void KickBanGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *player,
 {
 	if (parameters.isEmpty() == false)
 	{
+		Jupiter::StringS name = Jupiter::StringS::getWord(parameters, 0, WHITESPACE);
+		Jupiter::StringS reason = parameters.wordCount(WHITESPACE) > 1 ? Jupiter::StringS::gotoWord(parameters, 1, WHITESPACE) : STRING_LITERAL_AS_REFERENCE("No reason");
 		RenX::PlayerInfo *target = source->getPlayerByPartName(parameters);
 		if (target == nullptr)
 			source->sendMessage(player, STRING_LITERAL_AS_REFERENCE("Error: Player not found."));
@@ -2502,17 +2515,17 @@ void KickBanGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *player,
 		else
 		{
 			target->varData.set(pluginInstance.getName(), STRING_LITERAL_AS_REFERENCE("banner"), player->name);
-			source->banPlayer(target);
+			source->banPlayer(target, reason);
 			source->sendMessage(player, STRING_LITERAL_AS_REFERENCE("Player has been banned and kicked from the game."));
 		}
 	}
 	else
-		source->sendMessage(player, STRING_LITERAL_AS_REFERENCE("Error: Too few parameters. Syntax: ban <player>"));
+		source->sendMessage(player, STRING_LITERAL_AS_REFERENCE("Error: Too few parameters. Syntax: ban <player> [reason]"));
 }
 
 const Jupiter::ReadableString &KickBanGameCommand::getHelp(const Jupiter::ReadableString &)
 {
-	static STRING_LITERAL_AS_NAMED_REFERENCE(defaultHelp, "Kicks and bans a player from the game. Syntax: ban <player>");
+	static STRING_LITERAL_AS_NAMED_REFERENCE(defaultHelp, "Kicks and bans a player from the game. Syntax: ban <player> [reason]");
 	return defaultHelp;
 }
 

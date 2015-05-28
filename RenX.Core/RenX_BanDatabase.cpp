@@ -27,6 +27,9 @@ RenX::BanDatabase _banDatabase;
 RenX::BanDatabase *RenX::banDatabase = &_banDatabase;
 RenX::BanDatabase &RenX::defaultBanDatabase = _banDatabase;
 
+const Jupiter::ReferenceString DEFAULT_REASON = "(No reason information provided)";
+const uint8_t write_version = 1;
+
 bool RenX::BanDatabase::load(const Jupiter::ReadableString &fname)
 {
 	RenX::BanDatabase::filename = fname;
@@ -40,6 +43,9 @@ bool RenX::BanDatabase::load(const Jupiter::ReadableString &fname)
 		Jupiter::String playerName(16);
 		Jupiter::String key(32);
 		Jupiter::String value(32);
+		Jupiter::String reason(128);
+		if (RenX::BanDatabase::version < 1)
+			reason = DEFAULT_REASON;
 		Entry *entry;
 		int c;
 		while (!feof(file))
@@ -71,6 +77,24 @@ bool RenX::BanDatabase::load(const Jupiter::ReadableString &fname)
 				c = fgetc(file);
 			}
 			entry->name = playerName;
+
+			// load reason
+			if (RenX::BanDatabase::version >= 1)
+			{
+				reason.truncate(reason.size());
+				c = fgetc(file);
+				while (c != '\n' && c != '\0')
+				{
+					if (c == EOF)
+					{
+						fprintf(stderr, "ERROR: Unexpected EOF in %s at %lu", RenX::BanDatabase::filename.c_str(), ftell(file));
+						break;
+					}
+					reason += c;
+					c = fgetc(file);
+				}
+			}
+			entry->reason = reason;
 
 			// load variable data
 			while (c == '\0')
@@ -109,11 +133,23 @@ bool RenX::BanDatabase::load(const Jupiter::ReadableString &fname)
 			entries.add(entry);
 		}
 		fclose(file);
+		if (RenX::BanDatabase::version != write_version)
+		{
+			file = fopen(RenX::BanDatabase::filename.c_str(), "wb");
+			if (file != nullptr)
+			{
+				size_t index = 0;
+				while (index != RenX::BanDatabase::entries.size())
+					RenX::BanDatabase::write(RenX::BanDatabase::entries.get(++index), file);
+			}
+			fprintf(stdout, "Updated BanDatabase file \"%s\" from version %d to %d.", RenX::BanDatabase::filename.c_str(), RenX::BanDatabase::version, write_version);
+			RenX::BanDatabase::version = write_version;
+		}
 		return true;
 	}
 	else
 	{
-		RenX::BanDatabase::version = 0;
+		RenX::BanDatabase::version = write_version;
 		file = fopen(RenX::BanDatabase::filename.c_str(), "ab");
 		if (file != nullptr)
 		{
@@ -126,7 +162,39 @@ bool RenX::BanDatabase::load(const Jupiter::ReadableString &fname)
 	}
 }
 
-void RenX::BanDatabase::add(RenX::Server *server, const RenX::PlayerInfo *player, time_t length)
+void RenX::BanDatabase::write(RenX::BanDatabase::Entry *entry)
+{
+	FILE *file = fopen(RenX::BanDatabase::filename.c_str(), "ab");
+	if (file != nullptr)
+	{
+		RenX::BanDatabase::write(entry, file);
+		fclose(file);
+	}
+}
+
+void RenX::BanDatabase::write(RenX::BanDatabase::Entry *entry, FILE *file)
+{
+	fgetpos(file, &entry->pos);
+	fwrite(&entry->active, 1, 1, file);
+	fwrite(&entry->timestamp, sizeof(time_t), 1, file);
+	fwrite(&entry->length, sizeof(time_t), 1, file);
+	fwrite(&entry->steamid, sizeof(uint64_t), 1, file);
+	fwrite(&entry->ip, sizeof(uint32_t), 1, file);
+	fwrite(entry->name.ptr(), sizeof(char), entry->name.size(), file);
+
+	for (size_t index = 0; index != entry->varData.size(); ++index)
+	{
+		const Jupiter::INIFile::Section::KeyValuePair *pair = entry->varData.getPair(index);
+		fputc('\0', file);
+		fwrite(pair->getKey().ptr(), sizeof(char), pair->getKey().size(), file);
+		fputc('\0', file);
+		fwrite(pair->getValue().ptr(), sizeof(char), pair->getValue().size(), file);
+	}
+
+	fputc('\n', file);
+}
+
+void RenX::BanDatabase::add(RenX::Server *server, const RenX::PlayerInfo *player, const Jupiter::ReadableString &reason, time_t length)
 {
 	Entry *entry = new Entry();
 	entry->active = 1;
@@ -135,36 +203,16 @@ void RenX::BanDatabase::add(RenX::Server *server, const RenX::PlayerInfo *player
 	entry->steamid = player->steamid;
 	entry->ip = player->ip32;
 	entry->name = player->name;
+
+	// add plugin data
+	Jupiter::String pluginData;
+	Jupiter::ArrayList<RenX::Plugin> &xPlugins = *RenX::getCore()->getPlugins();
+	for (size_t i = 0; i < xPlugins.size(); i++)
+		if (xPlugins.get(i)->RenX_OnBan(server, player, pluginData))
+		entry->varData.set(xPlugins.get(i)->getName(), pluginData);
+
 	entries.add(entry);
-
-	FILE *file = fopen(RenX::BanDatabase::filename.c_str(), "ab");
-	if (file != nullptr)
-	{
-		fgetpos(file, &entry->pos);
-		fwrite(&entry->active, 1, 1, file);
-		fwrite(&entry->timestamp, sizeof(time_t), 1, file);
-		fwrite(&entry->length, sizeof(time_t), 1, file);
-		fwrite(&entry->steamid, sizeof(uint64_t), 1, file);
-		fwrite(&entry->ip, sizeof(uint32_t), 1, file);
-		fwrite(entry->name.ptr(), sizeof(char), entry->name.size(), file);
-		// add plugin data
-		Jupiter::String pluginData;
-		Jupiter::ArrayList<RenX::Plugin> &xPlugins = *RenX::getCore()->getPlugins();
-		for (size_t i = 0; i < xPlugins.size(); i++)
-			if (xPlugins.get(i)->RenX_OnBan(server, player, pluginData))
-			{
-				const Jupiter::ReadableString &pluginName = xPlugins.get(i)->getName();
-				fputc('\0', file);
-				fwrite(pluginName.ptr(), sizeof(char), pluginName.size(), file);
-				fputc('\0', file);
-				fwrite(pluginData.ptr(), sizeof(char), pluginData.size(), file);
-				entry->varData.set(pluginName, pluginData);
-			}
-
-
-		fputc('\n', file);
-		fclose(file);
-	}
+	RenX::BanDatabase::write(entry);
 }
 
 bool RenX::BanDatabase::deactivate(size_t index)

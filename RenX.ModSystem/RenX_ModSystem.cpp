@@ -197,7 +197,7 @@ int RenX_ModSystemPlugin::auth(RenX::Server *server, const RenX::PlayerInfo *pla
 			}
 			else if (kickLockMismatch_l)
 			{
-				server->kickPlayer(player);
+				server->kickPlayer(player, STRING_LITERAL_AS_REFERENCE("Moderator entry lock mismatch"));
 				return -1;
 			}
 		}

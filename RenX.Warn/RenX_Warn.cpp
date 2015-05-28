@@ -72,11 +72,11 @@ void WarnIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &cha
 								switch (pluginInstance.warnAction)
 								{
 								case -1:
-									server->kickPlayer(player);
+									server->kickPlayer(player, Jupiter::StringS::Format("Warning limit reached (%d warnings)", warns));
 									source->sendNotice(nick, Jupiter::StringS::Format("%.*s has been kicked from the server for exceeding the warning limit (%d warnings).", player->name.size(), player->name.ptr(), warns));
 									break;
 								default:
-									server->banPlayer(player, pluginInstance.warnAction);
+									server->banPlayer(player, Jupiter::StringS::Format("Warning limit reached (%d warnings)", warns), pluginInstance.warnAction);
 									source->sendNotice(nick, Jupiter::StringS::Format("%.*s has been banned from the server for exceeding the warning limit (%d warnings).", player->name.size(), player->name.ptr(), warns));
 									break;
 								}
@@ -182,11 +182,11 @@ void WarnGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *player, co
 				switch (pluginInstance.warnAction)
 				{
 				case -1:
-					source->kickPlayer(target);
+					source->kickPlayer(target, Jupiter::StringS::Format("Warning limit reached (%d warnings)", warns));
 					source->sendMessage(player, Jupiter::StringS::Format("%.*s has been kicked from the server for exceeding the warning limit (%d warnings).", target->name.size(), target->name.ptr(), warns));
 					break;
 				default:
-					source->banPlayer(target, pluginInstance.warnAction);
+					source->banPlayer(target, Jupiter::StringS::Format("Warning limit reached (%d warnings)", warns), pluginInstance.warnAction);
 					source->sendMessage(player, Jupiter::StringS::Format("%.*s has been banned from the server for exceeding the warning limit (%d warnings).", target->name.size(), target->name.ptr(), warns));
 					break;
 				}

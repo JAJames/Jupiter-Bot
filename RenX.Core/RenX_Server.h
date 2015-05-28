@@ -244,21 +244,35 @@ namespace RenX
 		*
 		* @param id Player ID of the player to kick.
 		*/
-		void kickPlayer(int id);
+		void kickPlayer(int id, const Jupiter::ReadableString &reason);
 
 		/**
 		* @brief Kicks a player from the server.
 		*
 		* @param player Data of the player to kick.
 		*/
-		void kickPlayer(const RenX::PlayerInfo *player);
+		void kickPlayer(const RenX::PlayerInfo *player, const Jupiter::ReadableString &reason);
+
+		/**
+		* @brief Kicks a player from the server.
+		*
+		* @param id Player ID of the player to kick.
+		*/
+		void forceKickPlayer(int id, const Jupiter::ReadableString &reason);
+
+		/**
+		* @brief Kicks a player from the server.
+		*
+		* @param player Data of the player to kick.
+		*/
+		void forceKickPlayer(const RenX::PlayerInfo *player, const Jupiter::ReadableString &reason);
 
 		/**
 		* @brief Bans a player from the server.
 		*
 		* @param id Player ID of the player to ban.
 		*/
-		void banPlayer(int id);
+		void banPlayer(int id, const Jupiter::ReadableString &reason);
 
 		/**
 		* @brief Bans a player from the server.
@@ -266,7 +280,7 @@ namespace RenX
 		* @param player Data of the player to ban.
 		* @param length Duration of the ban (0 for permanent).
 		*/
-		void banPlayer(const RenX::PlayerInfo *player, time_t length = 0);
+		void banPlayer(const RenX::PlayerInfo *player, const Jupiter::ReadableString &reason, time_t length = 0);
 
 		/**
 		* @brief Removes a player's data based on their ID number.

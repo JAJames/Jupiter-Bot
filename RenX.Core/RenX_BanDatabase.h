@@ -53,6 +53,7 @@ namespace RenX
 			uint64_t steamid /** SteamID of the banned player */;
 			uint32_t ip /** IPv4 address of the banned player */;
 			Jupiter::StringS name /** Name of the banned player */;
+			Jupiter::StringS reason /** Reason the player was banned */;
 			Jupiter::INIFile::Section varData; /** Variable entry data */
 		};
 
@@ -72,7 +73,22 @@ namespace RenX
 		* @param player Data of the player to be banned
 		* @param length Duration of the ban
 		*/
-		void add(RenX::Server *server, const RenX::PlayerInfo *player, time_t length);
+		void add(RenX::Server *server, const RenX::PlayerInfo *player, const Jupiter::ReadableString &reason, time_t length);
+
+		/**
+		* @brief Writes a ban file to the database.
+		*
+		* @param entry Entry to write to the database.
+		*/
+		void write(Entry *entry);
+
+		/**
+		* @brief Writes a ban file to the database.
+		*
+		* @param entry Entry to write to the database.
+		* @param file FILE stream to write to.
+		*/
+		static void write(Entry *entry, FILE *file);
 
 		/**
 		* @brief Deactivates a ban entry.

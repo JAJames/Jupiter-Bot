@@ -278,37 +278,58 @@ Jupiter::StringS RenX::Server::formatSteamID(uint64_t id) const
 	}
 }
 
-void RenX::Server::kickPlayer(int id)
+void RenX::Server::kickPlayer(int id, const Jupiter::ReadableString &reason)
 {
-	RenX::Server::sock.send(Jupiter::StringS::Format("ckick pid%d\n", id));
+	if (reason.isEmpty())
+		RenX::Server::sock.send(Jupiter::StringS::Format("ckick pid%d\n", id));
+	else
+		RenX::Server::sock.send(Jupiter::StringS::Format("ckick pid%d %.*s\n", id, reason.size(), reason.ptr()));
 }
 
-void RenX::Server::kickPlayer(const RenX::PlayerInfo *player)
+void RenX::Server::kickPlayer(const RenX::PlayerInfo *player, const Jupiter::ReadableString &reason)
 {
-	RenX::Server::kickPlayer(player->id);
+	RenX::Server::kickPlayer(player->id, reason);
 }
 
-void RenX::Server::banPlayer(int id)
+void RenX::Server::forceKickPlayer(int id, const Jupiter::ReadableString &reason)
+{
+	if (reason.isEmpty())
+		RenX::Server::sock.send(Jupiter::StringS::Format("cfkick pid%d You were kicked from the server.\n", id));
+	else
+		RenX::Server::sock.send(Jupiter::StringS::Format("cfkick pid%d %.*s\n", id, reason.size(), reason.ptr()));
+}
+
+void RenX::Server::forceKickPlayer(const RenX::PlayerInfo *player, const Jupiter::ReadableString &reason)
+{
+	RenX::Server::forceKickPlayer(player->id, reason);
+}
+
+void RenX::Server::banPlayer(int id, const Jupiter::ReadableString &reason)
 {
 	if (RenX::Server::rconBan)
-		RenX::Server::sock.send(Jupiter::StringS::Format("ckickban pid%d\n", id));
+		RenX::Server::sock.send(Jupiter::StringS::Format("ckickban pid%d %.*s\n", id, reason.size(), reason.ptr()));
 	else
 	{
 		RenX::PlayerInfo *player = RenX::Server::getPlayer(id);
 		if (player != nullptr)
-			RenX::Server::banPlayer(player);
+			RenX::Server::banPlayer(player, reason);
 	}
 }
 
-void RenX::Server::banPlayer(const RenX::PlayerInfo *player, time_t length)
+void RenX::Server::banPlayer(const RenX::PlayerInfo *player, const Jupiter::ReadableString &reason, time_t length)
 {
-	if (RenX::Server::rconBan && length == 0)
-		RenX::Server::sock.send(Jupiter::StringS::Format("cadminkickban pid%d\n", player->id));
-	else
-		RenX::Server::kickPlayer(player);
-
 	if (RenX::Server::localBan)
-		RenX::banDatabase->add(this, player, length);
+		RenX::banDatabase->add(this, player, reason, length);
+
+	if (length == 0)
+	{
+		if (RenX::Server::rconBan)
+			RenX::Server::sock.send(Jupiter::StringS::Format("ckickban pid%d %.*s\n", player->id, reason.size(), reason.ptr()));
+		else
+			RenX::Server::forceKickPlayer(player, Jupiter::StringS::Format("You are permanently banned from the server for: %.*s", reason.size(), reason.ptr()));
+	}
+	else
+		RenX::Server::forceKickPlayer(player, Jupiter::StringS::Format("You are banned from the server for the next %d days, %d:%d:%d for: %.*s", length/3600, length%3600, length/60, length%60, reason.size(), reason.ptr()));
 }
 
 bool RenX::Server::removePlayer(int id)
@@ -906,7 +927,7 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 	auto banCheck = [this](const RenX::PlayerInfo *player)
 	{
 		const Jupiter::ArrayList<RenX::BanDatabase::Entry> &entries = RenX::banDatabase->getEntries();
-		RenX::BanDatabase::Entry *entry;
+		RenX::BanDatabase::Entry *entry = nullptr;
 		for (size_t i = 0; i != entries.size(); i++)
 		{
 			entry = entries.get(i);
@@ -914,15 +935,25 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 			{
 				if (entry->length != 0 && entry->timestamp + entry->length < time(0))
 					banDatabase->deactivate(i);
-				else if (this->localSteamBan && entry->steamid != 0 && entry->steamid == player->steamid)
-					return true;
-				else if (this->localIPBan && entry->ip != 0 && entry->ip == player->ip32)
-					return true;
-				else if (this->localNameBan && entry->name.isEmpty() == false && entry->name.equalsi(player->name))
-					return true;
+				else if ((this->localSteamBan && entry->steamid != 0 && entry->steamid == player->steamid)
+					|| (this->localIPBan && entry->ip != 0 && entry->ip == player->ip32)
+					|| (this->localNameBan && entry->name.isEmpty() == false && entry->name.equalsi(player->name)))
+				{
+					char timeStr[256];
+					if (entry->length == 0)
+					{
+						strftime(timeStr, sizeof(timeStr), "%b %d %Y at %H:%M:%S", localtime(&(entry->timestamp)));
+						this->forceKickPlayer(player, Jupiter::StringS::Format("You are were permanently banned from the server on %s for: %.*s", timeStr, entry->reason.size(), entry->reason.ptr()));
+					}
+					else
+					{
+						strftime(timeStr, sizeof(timeStr), "%b %d %Y at %H:%M:%S", localtime(std::addressof<const time_t>(entry->timestamp + entry->length)));
+						this->forceKickPlayer(player, Jupiter::StringS::Format("You are banned from the server until %s for: %.*s", timeStr, entry->reason.size(), entry->reason.ptr()));
+					}
+					return;
+				}
 			}
 		}
-		return false;
 	};
 	auto getPlayerOrAdd = [&](const Jupiter::ReadableString &name, int id, RenX::TeamType team, bool isBot, uint64_t steamid, const Jupiter::ReadableString &ip)
 	{
@@ -971,8 +1002,7 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 			if (recalcUUID)
 			{
 				this->setUUIDIfDifferent(r, calc_uuid(r));
-				if (banCheck(r))
-					this->kickPlayer(r);
+				banCheck(r);
 			}
 		}
 		return r;
@@ -1868,8 +1898,7 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 						if (player != nullptr)
 						{
 							player->id = buff.getToken(3, RenX::DelimC).asInt();
-							if (banCheck(player))
-								this->kickPlayer(player);
+							banCheck(player);
 							for (size_t i = 0; i < xPlugins.size(); i++)
 								xPlugins.get(i)->RenX_OnIDChange(this, player, oldID);
 						}
