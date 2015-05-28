@@ -61,6 +61,8 @@ public: // RenX::Plugin
 	void RenX_OnSpawn(RenX::Server *server, const RenX::PlayerInfo *player, const Jupiter::ReadableString &character) override;
 	void RenX_OnBotJoin(RenX::Server *server, const RenX::PlayerInfo *player) override;
 	void RenX_OnVehicleCrate(RenX::Server *server, const RenX::PlayerInfo *player, const Jupiter::ReadableString &vehicle) override;
+	void RenX_OnTSVehicleCrate(RenX::Server *server, const RenX::PlayerInfo *player, const Jupiter::ReadableString &vehicle) override;
+	void RenX_OnRAVehicleCrate(RenX::Server *server, const RenX::PlayerInfo *player, const Jupiter::ReadableString &vehicle) override;
 	void RenX_OnDeathCrate(RenX::Server *server, const RenX::PlayerInfo *player) override;
 	void RenX_OnMoneyCrate(RenX::Server *server, const RenX::PlayerInfo *player, int amount) override;
 	void RenX_OnCharacterCrate(RenX::Server *server, const RenX::PlayerInfo *player, const Jupiter::ReadableString &character) override;
@@ -94,6 +96,7 @@ public: // RenX::Plugin
 
 	void RenX_OnMapChange(RenX::Server *server, const Jupiter::ReadableString &map, bool seamless) override;
 	void RenX_OnMapLoad(RenX::Server *server, const Jupiter::ReadableString &map) override;
+	void RenX_OnMapStart(RenX::Server *server, const Jupiter::ReadableString &map) override;
 	void RenX_OnMap(RenX::Server *server, const Jupiter::ReadableString &raw) override;
 
 	void RenX_OnDemoRecord(RenX::Server *server, const RenX::PlayerInfo *player) override;
@@ -151,6 +154,8 @@ private:
 	unsigned int spawnPublic : 1;
 	unsigned int botJoinPublic : 1;
 	unsigned int vehicleCratePublic : 1;
+	unsigned int TSVehicleCratePublic : 1;
+	unsigned int RAVehicleCratePublic : 1;
 	unsigned int deathCratePublic : 1;
 	unsigned int moneyCratePublic : 1;
 	unsigned int characterCratePublic : 1;
@@ -179,6 +184,7 @@ private:
 	unsigned int votePublic : 1;
 	unsigned int mapChangePublic : 1;
 	unsigned int mapLoadPublic : 1;
+	unsigned int mapStartPublic : 1;
 	unsigned int mapPublic : 1;
 	unsigned int demoRecordPublic : 1;
 	unsigned int demoRecordStopPublic : 1;
@@ -232,6 +238,8 @@ private:
 	Jupiter::StringS spawnFmt;
 	Jupiter::StringS botJoinFmt;
 	Jupiter::StringS vehicleCrateFmt;
+	Jupiter::StringS TSVehicleCrateFmt;
+	Jupiter::StringS RAVehicleCrateFmt;
 	Jupiter::StringS deathCrateFmt;
 	Jupiter::StringS moneyCrateFmt;
 	Jupiter::StringS characterCrateFmt;
@@ -265,6 +273,7 @@ private:
 	Jupiter::StringS voteFmt;
 	Jupiter::StringS mapChangeFmt;
 	Jupiter::StringS mapLoadFmt;
+	Jupiter::StringS mapStartFmt;
 	Jupiter::StringS mapFmt;
 	Jupiter::StringS demoRecordFmt, rconDemoRecordFmt;
 	Jupiter::StringS demoRecordStopFmt;

@@ -250,6 +250,16 @@ void RenX::Plugin::RenX_OnVehicleCrate(Server *, const PlayerInfo *, const Jupit
 	return;
 }
 
+void RenX::Plugin::RenX_OnTSVehicleCrate(Server *, const PlayerInfo *, const Jupiter::ReadableString &)
+{
+	return;
+}
+
+void RenX::Plugin::RenX_OnRAVehicleCrate(Server *, const PlayerInfo *, const Jupiter::ReadableString &)
+{
+	return;
+}
+
 void RenX::Plugin::RenX_OnDeathCrate(Server *, const PlayerInfo *)
 {
 	return;
@@ -446,6 +456,11 @@ void RenX::Plugin::RenX_OnMapChange(Server *, const Jupiter::ReadableString &, b
 }
 
 void RenX::Plugin::RenX_OnMapLoad(Server *, const Jupiter::ReadableString &)
+{
+	return;
+}
+
+void RenX::Plugin::RenX_OnMapStart(Server *, const Jupiter::ReadableString &)
 {
 	return;
 }

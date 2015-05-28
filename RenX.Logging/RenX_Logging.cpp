@@ -57,7 +57,9 @@ void RenX_LoggingPlugin::init()
 	RenX_LoggingPlugin::vehicleSpawnPublic = Jupiter::IRC::Client::Config->getBool(RenX_LoggingPlugin::getName(), STRING_LITERAL_AS_REFERENCE("VehicleSpawnPublic"), true);
 	RenX_LoggingPlugin::spawnPublic = Jupiter::IRC::Client::Config->getBool(RenX_LoggingPlugin::getName(), STRING_LITERAL_AS_REFERENCE("SpawnPublic"), true);
 	RenX_LoggingPlugin::botJoinPublic = Jupiter::IRC::Client::Config->getBool(RenX_LoggingPlugin::getName(), STRING_LITERAL_AS_REFERENCE("BotJoinPublic"), true);
-	RenX_LoggingPlugin::vehicleCratePublic = Jupiter::IRC::Client::Config->getBool(RenX_LoggingPlugin::getName(), STRING_LITERAL_AS_REFERENCE("VehicleCratePublic"), false);
+	RenX_LoggingPlugin::vehicleCratePublic = Jupiter::IRC::Client::Config->getBool(RenX_LoggingPlugin::getName(), STRING_LITERAL_AS_REFERENCE("VehicleCratePublic"), RenX_LoggingPlugin::vehicleCratePublic);
+	RenX_LoggingPlugin::TSVehicleCratePublic = Jupiter::IRC::Client::Config->getBool(RenX_LoggingPlugin::getName(), STRING_LITERAL_AS_REFERENCE("TSVehicleCratePublic"), RenX_LoggingPlugin::vehicleCratePublic);
+	RenX_LoggingPlugin::RAVehicleCratePublic = Jupiter::IRC::Client::Config->getBool(RenX_LoggingPlugin::getName(), STRING_LITERAL_AS_REFERENCE("RAVehicleCratePublic"), RenX_LoggingPlugin::vehicleCratePublic);
 	RenX_LoggingPlugin::deathCratePublic = Jupiter::IRC::Client::Config->getBool(RenX_LoggingPlugin::getName(), STRING_LITERAL_AS_REFERENCE("DeathCratePublic"), true);
 	RenX_LoggingPlugin::moneyCratePublic = Jupiter::IRC::Client::Config->getBool(RenX_LoggingPlugin::getName(), STRING_LITERAL_AS_REFERENCE("MoneyCratePublic"), false);
 	RenX_LoggingPlugin::characterCratePublic = Jupiter::IRC::Client::Config->getBool(RenX_LoggingPlugin::getName(), STRING_LITERAL_AS_REFERENCE("CharacterCratePublic"), false);
@@ -86,6 +88,7 @@ void RenX_LoggingPlugin::init()
 	RenX_LoggingPlugin::votePublic = Jupiter::IRC::Client::Config->getBool(RenX_LoggingPlugin::getName(), STRING_LITERAL_AS_REFERENCE("VotePublic"), false);
 	RenX_LoggingPlugin::mapChangePublic = Jupiter::IRC::Client::Config->getBool(RenX_LoggingPlugin::getName(), STRING_LITERAL_AS_REFERENCE("MapChangePublic"), true);
 	RenX_LoggingPlugin::mapLoadPublic = Jupiter::IRC::Client::Config->getBool(RenX_LoggingPlugin::getName(), STRING_LITERAL_AS_REFERENCE("MapLoadPublic"), true);
+	RenX_LoggingPlugin::mapStartPublic = Jupiter::IRC::Client::Config->getBool(RenX_LoggingPlugin::getName(), STRING_LITERAL_AS_REFERENCE("MapStartPublic"), true);
 	RenX_LoggingPlugin::mapPublic = Jupiter::IRC::Client::Config->getBool(RenX_LoggingPlugin::getName(), STRING_LITERAL_AS_REFERENCE("MapPublic"), false);
 	RenX_LoggingPlugin::demoRecordPublic = Jupiter::IRC::Client::Config->getBool(RenX_LoggingPlugin::getName(), STRING_LITERAL_AS_REFERENCE("DemoRecordPublic"), true);
 	RenX_LoggingPlugin::demoRecordStopPublic = Jupiter::IRC::Client::Config->getBool(RenX_LoggingPlugin::getName(), STRING_LITERAL_AS_REFERENCE("DemoRecordStopPublic"), true);
@@ -230,6 +233,12 @@ void RenX_LoggingPlugin::init()
 	RenX_LoggingPlugin::vehicleCrateFmt = Jupiter::IRC::Client::Config->get(this->getName(), STRING_LITERAL_AS_REFERENCE("VehicleCrateFormat"),
 		Jupiter::StringS::Format(IRCBOLD "%.*s" IRCCOLOR IRCBOLD " picked up a %.*s vehicle crate.", RenX::tags->nameTag.size(), RenX::tags->nameTag.ptr(), RenX::tags->objectTag.size(), RenX::tags->objectTag.ptr()));
 
+	RenX_LoggingPlugin::TSVehicleCrateFmt = Jupiter::IRC::Client::Config->get(this->getName(), STRING_LITERAL_AS_REFERENCE("TSVehicleCrateFormat"),
+		RenX_LoggingPlugin::vehicleCrateFmt);
+
+	RenX_LoggingPlugin::RAVehicleCrateFmt = Jupiter::IRC::Client::Config->get(this->getName(), STRING_LITERAL_AS_REFERENCE("RAVehicleCrateFormat"),
+		RenX_LoggingPlugin::vehicleCrateFmt);
+
 	RenX_LoggingPlugin::deathCrateFmt = Jupiter::IRC::Client::Config->get(this->getName(), STRING_LITERAL_AS_REFERENCE("DeathCrateFormat"),
 		Jupiter::StringS::Format(IRCBOLD "%.*s" IRCCOLOR IRCBOLD " picked up a " IRCCOLOR "12death" IRCCOLOR " crate.", RenX::tags->nameTag.size(), RenX::tags->nameTag.ptr()));
 
@@ -329,6 +338,9 @@ void RenX_LoggingPlugin::init()
 	RenX_LoggingPlugin::mapLoadFmt = Jupiter::IRC::Client::Config->get(this->getName(), STRING_LITERAL_AS_REFERENCE("MapLoadFormat"),
 		Jupiter::StringS::Format(IRCCOLOR "03%.*s loaded.", RenX::tags->messageTag.size(), RenX::tags->messageTag.ptr()));
 
+	RenX_LoggingPlugin::mapStartFmt = Jupiter::IRC::Client::Config->get(this->getName(), STRING_LITERAL_AS_REFERENCE("MapStartFormat"),
+		Jupiter::StringS::Format(IRCCOLOR "03%.*s started.", RenX::tags->messageTag.size(), RenX::tags->messageTag.ptr()));
+
 	RenX_LoggingPlugin::mapFmt = Jupiter::IRC::Client::Config->get(this->getName(), STRING_LITERAL_AS_REFERENCE("MapFormat"),
 		Jupiter::StringS::Format(IRCCOLOR "06[Map]" IRCCOLOR " %.*s", RenX::tags->messageTag.size(), RenX::tags->messageTag.ptr()));
 
@@ -404,6 +416,8 @@ void RenX_LoggingPlugin::init()
 	RenX::sanitizeTags(spawnFmt);
 	RenX::sanitizeTags(botJoinFmt);
 	RenX::sanitizeTags(vehicleCrateFmt);
+	RenX::sanitizeTags(TSVehicleCrateFmt);
+	RenX::sanitizeTags(RAVehicleCrateFmt);
 	RenX::sanitizeTags(deathCrateFmt);
 	RenX::sanitizeTags(moneyCrateFmt);
 	RenX::sanitizeTags(characterCrateFmt);
@@ -440,6 +454,7 @@ void RenX_LoggingPlugin::init()
 	RenX::sanitizeTags(voteFmt);
 	RenX::sanitizeTags(mapChangeFmt);
 	RenX::sanitizeTags(mapLoadFmt);
+	RenX::sanitizeTags(mapStartFmt);
 	RenX::sanitizeTags(mapFmt);
 	RenX::sanitizeTags(demoRecordFmt);
 	RenX::sanitizeTags(rconDemoRecordFmt);
@@ -1115,6 +1130,40 @@ void RenX_LoggingPlugin::RenX_OnVehicleCrate(RenX::Server *server, const RenX::P
 	}
 }
 
+void RenX_LoggingPlugin::RenX_OnTSVehicleCrate(RenX::Server *server, const RenX::PlayerInfo *player, const Jupiter::ReadableString &vehicle)
+{
+	logFuncType func;
+	if (RenX_LoggingPlugin::TSVehicleCratePublic)
+		func = &RenX::Server::sendLogChan;
+	else
+		func = &RenX::Server::sendAdmChan;
+
+	Jupiter::String msg = this->TSVehicleCrateFmt;
+	if (msg.isEmpty() == false)
+	{
+		RenX::processTags(msg, server, player);
+		msg.replace(RenX::tags->INTERNAL_OBJECT_TAG, RenX::translateName(vehicle));
+		(server->*func)(msg);
+	}
+}
+
+void RenX_LoggingPlugin::RenX_OnRAVehicleCrate(RenX::Server *server, const RenX::PlayerInfo *player, const Jupiter::ReadableString &vehicle)
+{
+	logFuncType func;
+	if (RenX_LoggingPlugin::RAVehicleCratePublic)
+		func = &RenX::Server::sendLogChan;
+	else
+		func = &RenX::Server::sendAdmChan;
+
+	Jupiter::String msg = this->RAVehicleCrateFmt;
+	if (msg.isEmpty() == false)
+	{
+		RenX::processTags(msg, server, player);
+		msg.replace(RenX::tags->INTERNAL_OBJECT_TAG, RenX::translateName(vehicle));
+		(server->*func)(msg);
+	}
+}
+
 void RenX_LoggingPlugin::RenX_OnDeathCrate(RenX::Server *server, const RenX::PlayerInfo *player)
 {
 	logFuncType func;
@@ -1715,6 +1764,23 @@ void RenX_LoggingPlugin::RenX_OnMapLoad(RenX::Server *server, const Jupiter::Rea
 		func = &RenX::Server::sendAdmChan;
 
 	Jupiter::String msg = this->mapLoadFmt;
+	if (msg.isEmpty() == false)
+	{
+		RenX::processTags(msg, server);
+		msg.replace(RenX::tags->INTERNAL_MESSAGE_TAG, map);
+		(server->*func)(msg);
+	}
+}
+
+void RenX_LoggingPlugin::RenX_OnMapStart(RenX::Server *server, const Jupiter::ReadableString &map)
+{
+	logFuncType func;
+	if (RenX_LoggingPlugin::mapStartPublic)
+		func = &RenX::Server::sendLogChan;
+	else
+		func = &RenX::Server::sendAdmChan;
+
+	Jupiter::String msg = this->mapStartFmt;
 	if (msg.isEmpty() == false)
 	{
 		RenX::processTags(msg, server);

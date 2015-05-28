@@ -90,6 +90,8 @@ namespace RenX
 		virtual void RenX_OnSpawn(Server *server, const PlayerInfo *player, const Jupiter::ReadableString &character);
 		virtual void RenX_OnBotJoin(Server *server, const PlayerInfo *player);
 		virtual void RenX_OnVehicleCrate(Server *server, const PlayerInfo *owner, const Jupiter::ReadableString &vehicle);
+		virtual void RenX_OnTSVehicleCrate(Server *server, const PlayerInfo *owner, const Jupiter::ReadableString &vehicle);
+		virtual void RenX_OnRAVehicleCrate(Server *server, const PlayerInfo *owner, const Jupiter::ReadableString &vehicle);
 		virtual void RenX_OnDeathCrate(Server *server, const PlayerInfo *player);
 		virtual void RenX_OnMoneyCrate(Server *server, const PlayerInfo *player, int amount);
 		virtual void RenX_OnCharacterCrate(Server *server, const PlayerInfo *player, const Jupiter::ReadableString &character);
@@ -138,6 +140,7 @@ namespace RenX
 		/** Map Type Logs */
 		virtual void RenX_OnMapChange(Server *server, const Jupiter::ReadableString &map, bool seamless);
 		virtual void RenX_OnMapLoad(Server *server, const Jupiter::ReadableString &map);
+		virtual void RenX_OnMapStart(Server *server, const Jupiter::ReadableString &map);
 		virtual void RenX_OnMap(Server *server, const Jupiter::ReadableString &raw);
 
 		/** Demo Type Logs */

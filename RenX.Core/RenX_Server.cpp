@@ -1466,6 +1466,20 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 							for (size_t i = 0; i < xPlugins.size(); i++)
 								xPlugins.get(i)->RenX_OnVehicleCrate(this, player, vehicle);
 						}
+						else if (type.equals("tsvehicle"))
+						{
+							Jupiter::ReferenceString vehicle = buff.getToken(3, RenX::DelimC);
+							RenX::PlayerInfo *player = parseGetPlayerOrAdd(buff.getToken(5, RenX::DelimC));
+							for (size_t i = 0; i < xPlugins.size(); i++)
+								xPlugins.get(i)->RenX_OnVehicleCrate(this, player, vehicle);
+						}
+						else if (type.equals("ravehicle"))
+						{
+							Jupiter::ReferenceString vehicle = buff.getToken(3, RenX::DelimC);
+							RenX::PlayerInfo *player = parseGetPlayerOrAdd(buff.getToken(5, RenX::DelimC));
+							for (size_t i = 0; i < xPlugins.size(); i++)
+								xPlugins.get(i)->RenX_OnVehicleCrate(this, player, vehicle);
+						}
 						else if (type.equals("death") || type.equals("suicide"))
 						{
 							RenX::PlayerInfo *player = parseGetPlayerOrAdd(buff.getToken(4, RenX::DelimC));
@@ -2155,6 +2169,14 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 						this->map = map;
 						for (size_t i = 0; i < xPlugins.size(); i++)
 							xPlugins.get(i)->RenX_OnMapLoad(this, map);
+					}
+					else if (subHeader.equals("Start;"))
+					{
+						// Map
+						Jupiter::ReferenceString map = buff.getToken(2, RenX::DelimC);
+						this->map = map;
+						for (size_t i = 0; i < xPlugins.size(); i++)
+							xPlugins.get(i)->RenX_OnMapStart(this, map);
 					}
 					else
 					{
