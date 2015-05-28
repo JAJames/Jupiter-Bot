@@ -57,7 +57,7 @@ void RenX_LoggingPlugin::init()
 	RenX_LoggingPlugin::vehicleSpawnPublic = Jupiter::IRC::Client::Config->getBool(RenX_LoggingPlugin::getName(), STRING_LITERAL_AS_REFERENCE("VehicleSpawnPublic"), true);
 	RenX_LoggingPlugin::spawnPublic = Jupiter::IRC::Client::Config->getBool(RenX_LoggingPlugin::getName(), STRING_LITERAL_AS_REFERENCE("SpawnPublic"), true);
 	RenX_LoggingPlugin::botJoinPublic = Jupiter::IRC::Client::Config->getBool(RenX_LoggingPlugin::getName(), STRING_LITERAL_AS_REFERENCE("BotJoinPublic"), true);
-	RenX_LoggingPlugin::vehicleCratePublic = Jupiter::IRC::Client::Config->getBool(RenX_LoggingPlugin::getName(), STRING_LITERAL_AS_REFERENCE("VehicleCratePublic"), RenX_LoggingPlugin::vehicleCratePublic);
+	RenX_LoggingPlugin::vehicleCratePublic = Jupiter::IRC::Client::Config->getBool(RenX_LoggingPlugin::getName(), STRING_LITERAL_AS_REFERENCE("VehicleCratePublic"), false);
 	RenX_LoggingPlugin::TSVehicleCratePublic = Jupiter::IRC::Client::Config->getBool(RenX_LoggingPlugin::getName(), STRING_LITERAL_AS_REFERENCE("TSVehicleCratePublic"), RenX_LoggingPlugin::vehicleCratePublic);
 	RenX_LoggingPlugin::RAVehicleCratePublic = Jupiter::IRC::Client::Config->getBool(RenX_LoggingPlugin::getName(), STRING_LITERAL_AS_REFERENCE("RAVehicleCratePublic"), RenX_LoggingPlugin::vehicleCratePublic);
 	RenX_LoggingPlugin::deathCratePublic = Jupiter::IRC::Client::Config->getBool(RenX_LoggingPlugin::getName(), STRING_LITERAL_AS_REFERENCE("DeathCratePublic"), true);
