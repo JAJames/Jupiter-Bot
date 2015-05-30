@@ -50,7 +50,7 @@ void RenX_ModSystemPlugin::init()
 	Jupiter::ReferenceString dotGamePrefix = ".GamePrefix";
 
 	Jupiter::String groupName = RenX_ModSystemPlugin::modsFile.get(Jupiter::ReferenceString::empty, STRING_LITERAL_AS_REFERENCE("Default"));
-	while (groupName.isEmpty() == false)
+	while (groupName.isNotEmpty())
 	{
 		group = new ModGroup();
 		group->name = groupName;
@@ -152,7 +152,7 @@ int RenX_ModSystemPlugin::auth(RenX::Server *server, const RenX::PlayerInfo *pla
 	if (player->isBot)
 		return 0;
 	ModGroup *group;
-	if (player->uuid.isEmpty() == false)
+	if (player->uuid.isNotEmpty())
 	{
 		Jupiter::INIFile::Section *section = RenX_ModSystemPlugin::modsFile.getSection(player->uuid);
 		if (section != nullptr)
@@ -369,7 +369,7 @@ void RenX_ModSystemPlugin::RenX_OnAdminGrant(RenX::Server *server, const RenX::P
 void RenX_ModSystemPlugin::RenX_OnAdminLogout(RenX::Server *server, const RenX::PlayerInfo *player)
 {
 	ModGroup *group = nullptr;
-	int access;
+	int access = RenX_ModSystemPlugin::groups.size() == 0 ? 0 : RenX_ModSystemPlugin::groups.get(0)->access;
 	if (player->adminType.equals("administrator"))
 	{
 		access = 2;
@@ -416,7 +416,7 @@ void AuthIRCCommand::create()
 
 void AuthIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &channel, const Jupiter::ReadableString &nick, const Jupiter::ReadableString &parameters)
 {
-	if (parameters.isEmpty() == false)
+	if (parameters.isNotEmpty())
 	{
 		Jupiter::IRC::Client::Channel *chan = source->getChannel(channel);
 		if (chan != nullptr)
@@ -486,7 +486,7 @@ void DeAuthIRCCommand::create()
 
 void DeAuthIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &channel, const Jupiter::ReadableString &nick, const Jupiter::ReadableString &parameters)
 {
-	if (parameters.isEmpty() == false)
+	if (parameters.isNotEmpty())
 	{
 		Jupiter::IRC::Client::Channel *chan = source->getChannel(channel);
 		if (chan != nullptr)
@@ -788,7 +788,7 @@ void ForceAuthIRCCommand::create()
 
 void ForceAuthIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &channel, const Jupiter::ReadableString &nick, const Jupiter::ReadableString &parameters)
 {
-	if (parameters.isEmpty() == false)
+	if (parameters.isNotEmpty())
 	{
 		Jupiter::IRC::Client::Channel *chan = source->getChannel(channel);
 		if (chan != nullptr)
@@ -908,7 +908,7 @@ void AuthGameCommand::create()
 
 void AuthGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *player, const Jupiter::ReadableString &parameters)
 {
-	if (parameters.isEmpty() == false)
+	if (parameters.isNotEmpty())
 	{
 		RenX::PlayerInfo *target = source->getPlayerByPartName(parameters);
 		if (target == nullptr)
@@ -958,7 +958,7 @@ void ATMGameCommand::create()
 
 void ATMGameCommand::trigger(RenX::Server *server, RenX::PlayerInfo *player, const Jupiter::ReadableString &parameters)
 {
-	if (parameters.isEmpty() == false)
+	if (parameters.isNotEmpty())
 	{
 		RenX::PlayerInfo *target;
 		RenX_ModSystemPlugin::ModGroup *group = pluginInstance.getDefaultATMGroup();
@@ -1024,7 +1024,7 @@ void ForceAuthGameCommand::create()
 
 void ForceAuthGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *player, const Jupiter::ReadableString &parameters)
 {
-	if (parameters.isEmpty() == false)
+	if (parameters.isNotEmpty())
 	{
 		RenX::PlayerInfo *target = source->getPlayerByPartName(parameters);
 		if (target == nullptr)

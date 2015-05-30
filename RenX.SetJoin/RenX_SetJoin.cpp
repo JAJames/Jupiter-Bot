@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2014 Justin James.
+ * Copyright (C) 2014-2015 Justin James.
  *
  * This license must be preserved.
  * Any applications, libraries, or code which make any use of any
@@ -25,10 +25,10 @@ const Jupiter::ReferenceString configSection(STRING_LITERAL_AS_REFERENCE("RenX.S
 
 void RenX_SetJoinPlugin::RenX_OnJoin(RenX::Server *server, const RenX::PlayerInfo *player)
 {
-	if (player->uuid.isEmpty() == false)
+	if (player->uuid.isNotEmpty())
 	{
 		const Jupiter::ReadableString &setjoin = Jupiter::IRC::Client::Config->get(configSection, player->uuid);
-		if (setjoin.isEmpty() == false)
+		if (setjoin.isNotEmpty())
 			server->sendMessage(Jupiter::StringS::Format("[%.*s] %.*s", player->name.size(), player->name.ptr(), setjoin.size(), setjoin.ptr()));
 	}
 }
@@ -43,10 +43,10 @@ void ViewJoinGameCommand::create()
 
 void ViewJoinGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *player, const Jupiter::ReadableString &parameters)
 {
-	if (player->uuid.isEmpty() == false)
+	if (player->uuid.isNotEmpty())
 	{
 		const Jupiter::ReadableString &setjoin = Jupiter::IRC::Client::Config->get(configSection, player->uuid);
-		if (setjoin.isEmpty() == false)
+		if (setjoin.isNotEmpty())
 			source->sendMessage(player, Jupiter::StringS::Format("[%.*s] %.*s", player->name.size(), player->name.ptr(), setjoin.size(), setjoin.ptr()));
 		else source->sendMessage(player, STRING_LITERAL_AS_REFERENCE("Error: No setjoin found."));
 	}
@@ -71,10 +71,10 @@ void ShowJoinGameCommand::create()
 
 void ShowJoinGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *player, const Jupiter::ReadableString &parameters)
 {
-	if (player->uuid.isEmpty() == false)
+	if (player->uuid.isNotEmpty())
 	{
 		const Jupiter::ReadableString &setjoin = Jupiter::IRC::Client::Config->get(configSection, player->uuid);
-		if (setjoin.isEmpty() == false)
+		if (setjoin.isNotEmpty())
 			source->sendMessage(Jupiter::StringS::Format("[%.*s] %.*s", player->name.size(), player->name.ptr(), setjoin.size(), setjoin.ptr()));
 		else source->sendMessage(player, STRING_LITERAL_AS_REFERENCE("Error: No setjoin found."));
 	}
@@ -101,7 +101,7 @@ void DelJoinGameCommand::create()
 
 void DelJoinGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *player, const Jupiter::ReadableString &)
 {
-	if (player->uuid.isEmpty() == false)
+	if (player->uuid.isNotEmpty())
 	{
 		if (Jupiter::IRC::Client::Config->remove(configSection, player->uuid))
 			source->sendMessage(player, Jupiter::StringS::Format("%.*s, your join message has been removed.", player->name.size(), player->name.ptr()));
@@ -128,9 +128,9 @@ void SetJoinGameCommand::create()
 
 void SetJoinGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *player, const Jupiter::ReadableString &parameters)
 {
-	if (player->uuid.isEmpty() == false)
+	if (player->uuid.isNotEmpty())
 	{
-		if (parameters.isEmpty() == false)
+		if (parameters.isNotEmpty())
 		{
 			Jupiter::IRC::Client::Config->set(configSection, player->uuid, parameters);
 			Jupiter::IRC::Client::Config->sync();

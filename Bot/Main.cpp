@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2013-2014 Justin James.
+ * Copyright (C) 2013-2015 Justin James.
  *
  * This license must be preserved.
  * Any applications, libraries, or code which make any use of any
@@ -90,7 +90,7 @@ int main(int argc, const char **args)
 
 	fputs("Config loaded. ", stdout);
 	const Jupiter::ReadableString &pDir = Jupiter::IRC::Client::Config->get(STRING_LITERAL_AS_REFERENCE("Config"), STRING_LITERAL_AS_REFERENCE("PluginsDirectory"));
-	if (pDir.isEmpty() == false)
+	if (pDir.isNotEmpty())
 	{
 		Jupiter::setPluginDirectory(pDir);
 		printf("Plugins will be loaded from \"%.*s\"." ENDL, pDir.size(), pDir.ptr());
@@ -130,11 +130,15 @@ int main(int argc, const char **args)
 	}
 
 	puts("Sockets established.");
+	size_t index;
 	while (1)
 	{
-		for (size_t i = 0; i < Jupiter::plugins->size(); i++)
-			if (Jupiter::plugins->get(i)->shouldRemove() || Jupiter::plugins->get(i)->think() != 0)
-				Jupiter::freePlugin(i);
+		index = 0;
+		while (index < Jupiter::plugins->size())
+			if (Jupiter::plugins->get(index)->shouldRemove() || Jupiter::plugins->get(index)->think() != 0)
+				Jupiter::freePlugin(index);
+			else
+				++index;
 		Jupiter_checkTimers();
 		serverManager->think();
 		Jupiter::ReferenceString input = (const char *)inputQueue.dequeue();

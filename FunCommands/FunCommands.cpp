@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2014 Justin James.
+ * Copyright (C) 2014-2015 Justin James.
  *
  * This license must be preserved.
  * Any applications, libraries, or code which make any use of any
@@ -128,14 +128,14 @@ void ResolveIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &
 		if (command.equalsi("hostname") || command.equalsi("host"))
 		{
 			Jupiter::ReferenceString resolved = Jupiter::Socket::resolveHostname(Jupiter::CStringS::gotoWord(parameters, 1, WHITESPACE).c_str(), 0);
-			if (resolved.isEmpty() == false)
+			if (resolved.isNotEmpty())
 				source->sendMessage(channel, resolved);
 			else source->sendMessage(channel, STRING_LITERAL_AS_REFERENCE("Error: Unable to resolve."));
 		}
 		else if (command.equalsi("ip"))
 		{
 			Jupiter::ReferenceString resolved = Jupiter::Socket::resolveAddress(Jupiter::CStringS::gotoWord(parameters, 1, WHITESPACE).c_str(), 0);
-			if (resolved.isEmpty() == false)
+			if (resolved.isNotEmpty())
 				source->sendMessage(channel, resolved);
 			else source->sendMessage(channel, STRING_LITERAL_AS_REFERENCE("Error: Unable to resolve."));
 		}

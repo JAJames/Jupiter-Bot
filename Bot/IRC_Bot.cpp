@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2013-2014 Justin James.
+ * Copyright (C) 2013-2015 Justin James.
  *
  * This license must be preserved.
  * Any applications, libraries, or code which make any use of any
@@ -169,7 +169,7 @@ void IRC_Bot::OnChat(const Jupiter::ReadableString &channel, const Jupiter::Read
 		if (chan->getType() >= 0)
 		{
 			Jupiter::ReferenceString msg = message;
-			while (msg.isEmpty() == false && isspace(msg[0]))
+			while (msg.isNotEmpty() && isspace(msg[0]))
 				msg.shiftRight(1);
 
 			if (IRC_Bot::commandPrefix.size() <= msg.size())

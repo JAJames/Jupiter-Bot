@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2014 Justin James.
+ * Copyright (C) 2014-2015 Justin James.
  *
  * This license must be preserved.
  * Any applications, libraries, or code which make any use of any
@@ -109,7 +109,7 @@ void JoinIRCCommand::create()
 
 void JoinIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &channel, const Jupiter::ReadableString &nick, const Jupiter::ReadableString &parameters)
 {
-	if (parameters.size() != 0)
+	if (parameters.isNotEmpty())
 	{
 		if (parameters.wordCount(WHITESPACE) == 1)
 			source->joinChannel(parameters);
@@ -136,7 +136,7 @@ void PartIRCCommand::create()
 
 void PartIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &channel, const Jupiter::ReadableString &nick, const Jupiter::ReadableString &parameters)
 {
-	if (parameters.size() != 0)
+	if (parameters.isNotEmpty())
 	{
 		if (parameters.wordCount(WHITESPACE) == 1)
 			source->partChannel(parameters);

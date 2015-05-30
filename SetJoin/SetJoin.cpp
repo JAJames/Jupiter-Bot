@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2014 Justin James.
+ * Copyright (C) 2014-2015 Justin James.
  *
  * This license must be preserved.
  * Any applications, libraries, or code which make any use of any
@@ -24,7 +24,7 @@
 void SetJoinPlugin::OnJoin(Jupiter::IRC::Client *server, const Jupiter::ReadableString &chan, const Jupiter::ReadableString &nick)
 {
 	const Jupiter::ReadableString &setjoin = server->Config->get(STRING_LITERAL_AS_REFERENCE("SetJoins"), nick);
-	if (setjoin.isEmpty() == false)
+	if (setjoin.isNotEmpty())
 	{
 		if (setjoin == nullptr)
 			server->sendNotice(nick, STRING_LITERAL_AS_REFERENCE("No setjoin has been set for you. To set one, use the !setjoin command"));
@@ -42,7 +42,7 @@ void SetJoinIRCCommand::create()
 
 void SetJoinIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &channel, const Jupiter::ReadableString &nick, const Jupiter::ReadableString &parameters)
 {
-	if (parameters.size() != 0)
+	if (parameters.isNotEmpty())
 	{
 		source->Config->set(STRING_LITERAL_AS_REFERENCE("SetJoins"), nick, parameters);
 		source->Config->sync();

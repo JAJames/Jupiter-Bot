@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2014 Justin James.
+ * Copyright (C) 2014-2015 Justin James.
  *
  * This license must be preserved.
  * Any applications, libraries, or code which make any use of any
@@ -175,7 +175,7 @@ void SyncIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &cha
 	else
 	{
 		bool r;
-		if (parameters.size() != 0)
+		if (parameters.isNotEmpty())
 			r = source->Config->sync(parameters);
 		else r = source->Config->sync();
 		if (r) source->sendMessage(channel, STRING_LITERAL_AS_REFERENCE("Config data synced to file successfully."));

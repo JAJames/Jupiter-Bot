@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2014 Justin James.
+ * Copyright (C) 2014-2015 Justin James.
  *
  * This license must be preserved.
  * Any applications, libraries, or code which make any use of any
@@ -48,7 +48,7 @@ void WarnIRCCommand::create()
 
 void WarnIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &channel, const Jupiter::ReadableString &nick, const Jupiter::ReadableString &parameters)
 {
-	if (parameters.isEmpty() == false)
+	if (parameters.isNotEmpty())
 	{
 		Jupiter::IRC::Client::Channel *chan = source->getChannel(channel);
 		if (chan != nullptr)
@@ -119,7 +119,7 @@ void PardonIRCCommand::create()
 
 void PardonIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &channel, const Jupiter::ReadableString &nick, const Jupiter::ReadableString &parameters)
 {
-	if (parameters.isEmpty() == false)
+	if (parameters.isNotEmpty())
 	{
 		Jupiter::IRC::Client::Channel *chan = source->getChannel(channel);
 		if (chan != nullptr)
@@ -171,7 +171,7 @@ void WarnGameCommand::create()
 
 void WarnGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *player, const Jupiter::ReadableString &parameters)
 {
-	if (parameters.isEmpty() == false)
+	if (parameters.isNotEmpty())
 	{
 		RenX::PlayerInfo *target = source->getPlayerByPartName(parameters);
 		if (target != nullptr)
@@ -223,7 +223,7 @@ void PardonGameCommand::create()
 
 void PardonGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *player, const Jupiter::ReadableString &parameters)
 {
-	if (parameters.isEmpty() == false)
+	if (parameters.isNotEmpty())
 	{
 		RenX::PlayerInfo *target = source->getPlayerByPartName(parameters);
 		if (target != nullptr)
