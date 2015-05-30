@@ -19,6 +19,7 @@
 #define _RENX_EXTRALOGGING_H_HEADER
 
 #include "Jupiter/Plugin.h"
+#include "Jupiter/String.h"
 #include "RenX_Plugin.h"
 
 class RenX_ExtraLoggingPlugin : public RenX::Plugin
@@ -29,6 +30,7 @@ public: // RenX::Plugin
 public: // Jupiter::Plugin
 	const Jupiter::ReadableString &getName() override { return name; }
 	int OnRehash() override;
+	int think() override;
 
 public: // RenX_ExtraLoggingPlugin
 
@@ -39,8 +41,13 @@ public: // RenX_ExtraLoggingPlugin
 
 private:
 	STRING_LITERAL_AS_NAMED_REFERENCE(name, "RenX.ExtraLogging");
+	Jupiter::StringS filePrefix;
+	Jupiter::StringS consolePrefix;
+	Jupiter::StringS newDayFmt;
 	bool printToConsole;
 	FILE *file;
+
+	int day;
 };
 
 #endif // _RENX_EXTRALOGGING_H_HEADER
