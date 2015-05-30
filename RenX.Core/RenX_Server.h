@@ -45,6 +45,7 @@ namespace RenX
 {
 	/** Forward declarations */
 	struct PlayerInfo;
+	struct BuildingInfo;
 	class GameCommand;
 	class Core;
 
@@ -82,6 +83,7 @@ namespace RenX
 
 	public: // RenX::Server
 		Jupiter::DLList<RenX::PlayerInfo> players; /** A list of players in the server */
+		Jupiter::ArrayList<RenX::BuildingInfo> buildings; /** A list of buildings in the server */
 		Jupiter::INIFile varData; /** This may be replaced later with a more dedicated type. */
 
 		/**
@@ -189,6 +191,14 @@ namespace RenX
 		* @return The number of bytes sent on success, less than or equal to zero otherwise.
 		*/
 		int sendData(const Jupiter::ReadableString &data);
+
+		/**
+		* @brief Fetches a player's data, based on their name.
+		*
+		* @param name Name of the player.
+		* @return A player's data on success, nullptr otherwise.
+		*/
+		RenX::BuildingInfo *getBuildingByName(const Jupiter::ReadableString &name) const;
 
 		/**
 		* @brief Fetches a player's data based on their ID number.
@@ -313,6 +323,13 @@ namespace RenX
 		* @return True on success, false otherwise.
 		*/
 		bool updateClientList();
+
+		/**
+		* @brief Sends a building list request.
+		*
+		* @return True on success, false otherwise.
+		*/
+		bool updateBuildingList();
 
 		/**
 		* @brief Forces the current game to end.
@@ -800,6 +817,7 @@ namespace RenX
 		time_t lastAttempt = 0;
 		int attempts = 0;
 		std::chrono::steady_clock::time_point lastClientListUpdate = std::chrono::steady_clock::now();
+		std::chrono::steady_clock::time_point lastBuildingListUpdate = std::chrono::steady_clock::now();
 		Jupiter::String lastLine;
 		Jupiter::StringS commandListFormat;
 		Jupiter::StringS gameVersion;
@@ -812,6 +830,7 @@ namespace RenX
 		time_t delay;
 		int maxAttempts;
 		std::chrono::milliseconds clientUpdateRate;
+		std::chrono::milliseconds buildingUpdateRate;
 		int steamFormat; /** 16 = hex, 10 = base 10, 8 = octal, -2 = SteamID 2, -3 = SteamID 3 */
 		bool rconBan;
 		bool localBan;
@@ -831,6 +850,7 @@ namespace RenX
 		Jupiter::StringS rconUser;
 		Jupiter::StringS serverName;
 		Jupiter::StringS lastCommand;
+		Jupiter::StringS lastCommandParams;
 		Jupiter::StringS map;
 		Jupiter::INIFile::Section *commandAccessLevels;
 		Jupiter::INIFile::Section *commandAliases;

@@ -253,101 +253,109 @@ TagsImp::TagsImp()
 	this->loseScoreTag = Jupiter::IRC::Client::Config->get(configSection, STRING_LITERAL_AS_REFERENCE("LoseScoreTag"), STRING_LITERAL_AS_REFERENCE("{LOSESCORE}"));
 }
 
+#define PROCESS_TAG(tag, value) \
+while(true) { \
+index = msg.find(tag); \
+if (index == Jupiter::INVALID_INDEX) break; \
+msg.replace(index, tag.size(), value); }
+
+
 void TagsImp::processTags(Jupiter::StringType &msg, const RenX::Server *server, const RenX::PlayerInfo *player, const RenX::PlayerInfo *victim)
 {
-	msg.replace(this->INTERNAL_DATE_TAG, Jupiter::ReferenceString(getTimeFormat(this->dateFmt.c_str())));
-	msg.replace(this->INTERNAL_TIME_TAG, Jupiter::ReferenceString(getTimeFormat(this->timeFmt.c_str())));
+	size_t index;
+	PROCESS_TAG(this->INTERNAL_DATE_TAG, Jupiter::ReferenceString(getTimeFormat(this->dateFmt.c_str())));
+	PROCESS_TAG(this->INTERNAL_TIME_TAG, Jupiter::ReferenceString(getTimeFormat(this->timeFmt.c_str())));
 	if (server != nullptr)
 	{
-		msg.replace(this->INTERNAL_RCON_VERSION_TAG, Jupiter::StringS::Format("%u", server->getVersion()));
-		msg.replace(this->INTERNAL_GAME_VERSION_TAG, server->getGameVersion());
-		msg.replace(this->INTERNAL_RULES_TAG, server->getRules());
-		msg.replace(this->INTERNAL_USER_TAG, server->getUser());
-		msg.replace(this->INTERNAL_SERVER_NAME_TAG, server->getName());
-		msg.replace(this->INTERNAL_MAP_TAG, server->getMap());
-		msg.replace(this->INTERNAL_SERVER_HOSTNAME_TAG, server->getHostname());
-		msg.replace(this->INTERNAL_SERVER_PORT_TAG, Jupiter::StringS::Format("%u", server->getPort()));
-		msg.replace(this->INTERNAL_SOCKET_HOSTNAME_TAG, server->getSocketHostname());
-		msg.replace(this->INTERNAL_SOCKET_PORT_TAG, Jupiter::StringS::Format("%u", server->getSocketPort()));
-		msg.replace(this->INTERNAL_SERVER_PREFIX_TAG, server->getPrefix());
+		PROCESS_TAG(this->INTERNAL_RCON_VERSION_TAG, Jupiter::StringS::Format("%u", server->getVersion()));
+		PROCESS_TAG(this->INTERNAL_GAME_VERSION_TAG, server->getGameVersion());
+		PROCESS_TAG(this->INTERNAL_RULES_TAG, server->getRules());
+		PROCESS_TAG(this->INTERNAL_USER_TAG, server->getUser());
+		PROCESS_TAG(this->INTERNAL_SERVER_NAME_TAG, server->getName());
+		PROCESS_TAG(this->INTERNAL_MAP_TAG, server->getMap());
+		PROCESS_TAG(this->INTERNAL_SERVER_HOSTNAME_TAG, server->getHostname());
+		PROCESS_TAG(this->INTERNAL_SERVER_PORT_TAG, Jupiter::StringS::Format("%u", server->getPort()));
+		PROCESS_TAG(this->INTERNAL_SOCKET_HOSTNAME_TAG, server->getSocketHostname());
+		PROCESS_TAG(this->INTERNAL_SOCKET_PORT_TAG, Jupiter::StringS::Format("%u", server->getSocketPort()));
+		PROCESS_TAG(this->INTERNAL_SERVER_PREFIX_TAG, server->getPrefix());
 		if (player != nullptr)
 		{
-			msg.replace(this->INTERNAL_STEAM_TAG, server->formatSteamID(player));
+			PROCESS_TAG(this->INTERNAL_STEAM_TAG, server->formatSteamID(player));
 		}
 		if (victim != nullptr)
 		{
-			msg.replace(this->INTERNAL_VICTIM_STEAM_TAG, server->formatSteamID(victim));
+			PROCESS_TAG(this->INTERNAL_VICTIM_STEAM_TAG, server->formatSteamID(victim));
 		}
 	}
 	if (player != nullptr)
 	{
-		msg.replace(this->INTERNAL_NAME_TAG, RenX::getFormattedPlayerName(player));
-		msg.replace(this->INTERNAL_RAW_NAME_TAG, player->name);
-		msg.replace(this->INTERNAL_IP_TAG, player->ip);
-		msg.replace(this->INTERNAL_UUID_TAG, player->uuid);
-		msg.replace(this->INTERNAL_ID_TAG, Jupiter::StringS::Format("%d", player->id));
-		msg.replace(this->INTERNAL_CHARACTER_TAG, RenX::translateName(player->character));
-		msg.replace(this->INTERNAL_VEHICLE_TAG, RenX::translateName(player->vehicle));
-		msg.replace(this->INTERNAL_ADMIN_TAG, player->adminType);
-		msg.replace(this->INTERNAL_PREFIX_TAG, player->formatNamePrefix);
-		msg.replace(this->INTERNAL_GAME_PREFIX_TAG, player->gamePrefix);
-		msg.replace(this->INTERNAL_TEAM_COLOR_TAG, RenX::getTeamColor(player->team));
-		msg.replace(this->INTERNAL_TEAM_SHORT_TAG, RenX::getTeamName(player->team));
-		msg.replace(this->INTERNAL_TEAM_LONG_TAG, RenX::getFullTeamName(player->team));
-		msg.replace(this->INTERNAL_PING_TAG, Jupiter::StringS::Format("%hu", player->ping));
-		msg.replace(this->INTERNAL_SCORE_TAG, Jupiter::StringS::Format("%.0f", player->score));
-		msg.replace(this->INTERNAL_CREDITS_TAG, Jupiter::StringS::Format("%.0f", player->credits));
-		msg.replace(this->INTERNAL_KILLS_TAG, Jupiter::StringS::Format("%u", player->kills));
-		msg.replace(this->INTERNAL_DEATHS_TAG, Jupiter::StringS::Format("%u", player->deaths));
-		msg.replace(this->INTERNAL_KDR_TAG, Jupiter::StringS::Format("%.2f", static_cast<float>(player->kills) / (player->deaths == 0 ? 1.0f : static_cast<float>(player->deaths))));
-		msg.replace(this->INTERNAL_SUICIDES_TAG, Jupiter::StringS::Format("%u", player->suicides));
-		msg.replace(this->INTERNAL_HEADSHOTS_TAG, Jupiter::StringS::Format("%u", player->headshots));
-		msg.replace(this->INTERNAL_VEHICLE_KILLS_TAG, Jupiter::StringS::Format("%u", player->vehicleKills));
-		msg.replace(this->INTERNAL_BUILDING_KILLS_TAG, Jupiter::StringS::Format("%u", player->buildingKills));
-		msg.replace(this->INTERNAL_DEFENCE_KILLS_TAG, Jupiter::StringS::Format("%u", player->defenceKills));
-		msg.replace(this->INTERNAL_WINS_TAG, Jupiter::StringS::Format("%u", player->wins));
-		msg.replace(this->INTERNAL_LOSES_TAG, Jupiter::StringS::Format("%u", player->loses));
-		msg.replace(this->INTERNAL_BEACON_PLACEMENTS_TAG, Jupiter::StringS::Format("%u", player->beaconPlacements));
-		msg.replace(this->INTERNAL_BEACON_DISARMS_TAG, Jupiter::StringS::Format("%u", player->beaconDisarms));
-		msg.replace(this->INTERNAL_CAPTURES_TAG, Jupiter::StringS::Format("%u", player->captures));
-		msg.replace(this->INTERNAL_STEALS_TAG, Jupiter::StringS::Format("%u", player->steals));
-		msg.replace(this->INTERNAL_STOLEN_TAG, Jupiter::StringS::Format("%u", player->stolen));
-		msg.replace(this->INTERNAL_ACCESS_TAG, Jupiter::StringS::Format("%d", player->access));
+		PROCESS_TAG(this->INTERNAL_NAME_TAG, RenX::getFormattedPlayerName(player));
+		PROCESS_TAG(this->INTERNAL_RAW_NAME_TAG, player->name);
+		PROCESS_TAG(this->INTERNAL_IP_TAG, player->ip);
+		PROCESS_TAG(this->INTERNAL_UUID_TAG, player->uuid);
+		PROCESS_TAG(this->INTERNAL_ID_TAG, Jupiter::StringS::Format("%d", player->id));
+		PROCESS_TAG(this->INTERNAL_CHARACTER_TAG, RenX::translateName(player->character));
+		PROCESS_TAG(this->INTERNAL_VEHICLE_TAG, RenX::translateName(player->vehicle));
+		PROCESS_TAG(this->INTERNAL_ADMIN_TAG, player->adminType);
+		PROCESS_TAG(this->INTERNAL_PREFIX_TAG, player->formatNamePrefix);
+		PROCESS_TAG(this->INTERNAL_GAME_PREFIX_TAG, player->gamePrefix);
+		PROCESS_TAG(this->INTERNAL_TEAM_COLOR_TAG, RenX::getTeamColor(player->team));
+		PROCESS_TAG(this->INTERNAL_TEAM_SHORT_TAG, RenX::getTeamName(player->team));
+		PROCESS_TAG(this->INTERNAL_TEAM_LONG_TAG, RenX::getFullTeamName(player->team));
+		PROCESS_TAG(this->INTERNAL_PING_TAG, Jupiter::StringS::Format("%hu", player->ping));
+		PROCESS_TAG(this->INTERNAL_SCORE_TAG, Jupiter::StringS::Format("%.0f", player->score));
+		PROCESS_TAG(this->INTERNAL_CREDITS_TAG, Jupiter::StringS::Format("%.0f", player->credits));
+		PROCESS_TAG(this->INTERNAL_KILLS_TAG, Jupiter::StringS::Format("%u", player->kills));
+		PROCESS_TAG(this->INTERNAL_DEATHS_TAG, Jupiter::StringS::Format("%u", player->deaths));
+		PROCESS_TAG(this->INTERNAL_KDR_TAG, Jupiter::StringS::Format("%.2f", static_cast<float>(player->kills) / (player->deaths == 0 ? 1.0f : static_cast<float>(player->deaths))));
+		PROCESS_TAG(this->INTERNAL_SUICIDES_TAG, Jupiter::StringS::Format("%u", player->suicides));
+		PROCESS_TAG(this->INTERNAL_HEADSHOTS_TAG, Jupiter::StringS::Format("%u", player->headshots));
+		PROCESS_TAG(this->INTERNAL_VEHICLE_KILLS_TAG, Jupiter::StringS::Format("%u", player->vehicleKills));
+		PROCESS_TAG(this->INTERNAL_BUILDING_KILLS_TAG, Jupiter::StringS::Format("%u", player->buildingKills));
+		PROCESS_TAG(this->INTERNAL_DEFENCE_KILLS_TAG, Jupiter::StringS::Format("%u", player->defenceKills));
+		PROCESS_TAG(this->INTERNAL_WINS_TAG, Jupiter::StringS::Format("%u", player->wins));
+		PROCESS_TAG(this->INTERNAL_LOSES_TAG, Jupiter::StringS::Format("%u", player->loses));
+		PROCESS_TAG(this->INTERNAL_BEACON_PLACEMENTS_TAG, Jupiter::StringS::Format("%u", player->beaconPlacements));
+		PROCESS_TAG(this->INTERNAL_BEACON_DISARMS_TAG, Jupiter::StringS::Format("%u", player->beaconDisarms));
+		PROCESS_TAG(this->INTERNAL_CAPTURES_TAG, Jupiter::StringS::Format("%u", player->captures));
+		PROCESS_TAG(this->INTERNAL_STEALS_TAG, Jupiter::StringS::Format("%u", player->steals));
+		PROCESS_TAG(this->INTERNAL_STOLEN_TAG, Jupiter::StringS::Format("%u", player->stolen));
+		PROCESS_TAG(this->INTERNAL_ACCESS_TAG, Jupiter::StringS::Format("%d", player->access));
 	}
 	if (victim != nullptr)
 	{
-		msg.replace(this->INTERNAL_VICTIM_NAME_TAG, RenX::getFormattedPlayerName(victim));
-		msg.replace(this->INTERNAL_VICTIM_RAW_NAME_TAG, victim->name);
-		msg.replace(this->INTERNAL_VICTIM_IP_TAG, victim->ip);
-		msg.replace(this->INTERNAL_VICTIM_UUID_TAG, victim->uuid);
-		msg.replace(this->INTERNAL_VICTIM_ID_TAG, Jupiter::StringS::Format("%d", victim->id));
-		msg.replace(this->INTERNAL_VICTIM_CHARACTER_TAG, RenX::translateName(victim->character));
-		msg.replace(this->INTERNAL_VICTIM_VEHICLE_TAG, RenX::translateName(victim->vehicle));
-		msg.replace(this->INTERNAL_VICTIM_ADMIN_TAG, victim->adminType);
-		msg.replace(this->INTERNAL_VICTIM_PREFIX_TAG, victim->formatNamePrefix);
-		msg.replace(this->INTERNAL_VICTIM_GAME_PREFIX_TAG, victim->gamePrefix);
-		msg.replace(this->INTERNAL_VICTIM_TEAM_COLOR_TAG, RenX::getTeamColor(victim->team));
-		msg.replace(this->INTERNAL_VICTIM_TEAM_SHORT_TAG, RenX::getTeamName(victim->team));
-		msg.replace(this->INTERNAL_VICTIM_TEAM_LONG_TAG, RenX::getFullTeamName(victim->team));
-		msg.replace(this->INTERNAL_VICTIM_PING_TAG, Jupiter::StringS::Format("%hu", victim->ping));
-		msg.replace(this->INTERNAL_VICTIM_SCORE_TAG, Jupiter::StringS::Format("%.0f", victim->score));
-		msg.replace(this->INTERNAL_VICTIM_CREDITS_TAG, Jupiter::StringS::Format("%.0f", victim->credits));
-		msg.replace(this->INTERNAL_VICTIM_KILLS_TAG, Jupiter::StringS::Format("%u", victim->kills));
-		msg.replace(this->INTERNAL_VICTIM_DEATHS_TAG, Jupiter::StringS::Format("%u", victim->deaths));
-		msg.replace(this->INTERNAL_VICTIM_KDR_TAG, Jupiter::StringS::Format("%.2f", static_cast<float>(victim->kills) / (victim->deaths == 0 ? 1.0f : static_cast<float>(victim->deaths))));
-		msg.replace(this->INTERNAL_VICTIM_SUICIDES_TAG, Jupiter::StringS::Format("%u", victim->suicides));
-		msg.replace(this->INTERNAL_VICTIM_HEADSHOTS_TAG, Jupiter::StringS::Format("%u", victim->headshots));
-		msg.replace(this->INTERNAL_VICTIM_VEHICLE_KILLS_TAG, Jupiter::StringS::Format("%u", victim->vehicleKills));
-		msg.replace(this->INTERNAL_VICTIM_BUILDING_KILLS_TAG, Jupiter::StringS::Format("%u", victim->buildingKills));
-		msg.replace(this->INTERNAL_VICTIM_DEFENCE_KILLS_TAG, Jupiter::StringS::Format("%u", victim->defenceKills));
-		msg.replace(this->INTERNAL_VICTIM_WINS_TAG, Jupiter::StringS::Format("%u", victim->wins));
-		msg.replace(this->INTERNAL_VICTIM_LOSES_TAG, Jupiter::StringS::Format("%u", victim->loses));
-		msg.replace(this->INTERNAL_VICTIM_BEACON_PLACEMENTS_TAG, Jupiter::StringS::Format("%u", victim->beaconPlacements));
-		msg.replace(this->INTERNAL_VICTIM_BEACON_DISARMS_TAG, Jupiter::StringS::Format("%u", victim->beaconDisarms));
-		msg.replace(this->INTERNAL_VICTIM_CAPTURES_TAG, Jupiter::StringS::Format("%u", victim->captures));
-		msg.replace(this->INTERNAL_VICTIM_STEALS_TAG, Jupiter::StringS::Format("%u", victim->steals));
-		msg.replace(this->INTERNAL_VICTIM_STOLEN_TAG, Jupiter::StringS::Format("%u", victim->stolen));
-		msg.replace(this->INTERNAL_VICTIM_ACCESS_TAG, Jupiter::StringS::Format("%d", victim->access));
+		PROCESS_TAG(this->INTERNAL_VICTIM_NAME_TAG, RenX::getFormattedPlayerName(victim));
+		PROCESS_TAG(this->INTERNAL_VICTIM_RAW_NAME_TAG, victim->name);
+		PROCESS_TAG(this->INTERNAL_VICTIM_IP_TAG, victim->ip);
+		PROCESS_TAG(this->INTERNAL_VICTIM_UUID_TAG, victim->uuid);
+		PROCESS_TAG(this->INTERNAL_VICTIM_ID_TAG, Jupiter::StringS::Format("%d", victim->id));
+		PROCESS_TAG(this->INTERNAL_VICTIM_CHARACTER_TAG, RenX::translateName(victim->character));
+		PROCESS_TAG(this->INTERNAL_VICTIM_VEHICLE_TAG, RenX::translateName(victim->vehicle));
+		PROCESS_TAG(this->INTERNAL_VICTIM_ADMIN_TAG, victim->adminType);
+		PROCESS_TAG(this->INTERNAL_VICTIM_PREFIX_TAG, victim->formatNamePrefix);
+		PROCESS_TAG(this->INTERNAL_VICTIM_GAME_PREFIX_TAG, victim->gamePrefix);
+		PROCESS_TAG(this->INTERNAL_VICTIM_TEAM_COLOR_TAG, RenX::getTeamColor(victim->team));
+		PROCESS_TAG(this->INTERNAL_VICTIM_TEAM_SHORT_TAG, RenX::getTeamName(victim->team));
+		PROCESS_TAG(this->INTERNAL_VICTIM_TEAM_LONG_TAG, RenX::getFullTeamName(victim->team));
+		PROCESS_TAG(this->INTERNAL_VICTIM_PING_TAG, Jupiter::StringS::Format("%hu", victim->ping));
+		PROCESS_TAG(this->INTERNAL_VICTIM_SCORE_TAG, Jupiter::StringS::Format("%.0f", victim->score));
+		PROCESS_TAG(this->INTERNAL_VICTIM_CREDITS_TAG, Jupiter::StringS::Format("%.0f", victim->credits));
+		PROCESS_TAG(this->INTERNAL_VICTIM_KILLS_TAG, Jupiter::StringS::Format("%u", victim->kills));
+		PROCESS_TAG(this->INTERNAL_VICTIM_DEATHS_TAG, Jupiter::StringS::Format("%u", victim->deaths));
+		PROCESS_TAG(this->INTERNAL_VICTIM_KDR_TAG, Jupiter::StringS::Format("%.2f", static_cast<float>(victim->kills) / (victim->deaths == 0 ? 1.0f : static_cast<float>(victim->deaths))));
+		PROCESS_TAG(this->INTERNAL_VICTIM_SUICIDES_TAG, Jupiter::StringS::Format("%u", victim->suicides));
+		PROCESS_TAG(this->INTERNAL_VICTIM_HEADSHOTS_TAG, Jupiter::StringS::Format("%u", victim->headshots));
+		PROCESS_TAG(this->INTERNAL_VICTIM_VEHICLE_KILLS_TAG, Jupiter::StringS::Format("%u", victim->vehicleKills));
+		PROCESS_TAG(this->INTERNAL_VICTIM_BUILDING_KILLS_TAG, Jupiter::StringS::Format("%u", victim->buildingKills));
+		PROCESS_TAG(this->INTERNAL_VICTIM_DEFENCE_KILLS_TAG, Jupiter::StringS::Format("%u", victim->defenceKills));
+		PROCESS_TAG(this->INTERNAL_VICTIM_WINS_TAG, Jupiter::StringS::Format("%u", victim->wins));
+		PROCESS_TAG(this->INTERNAL_VICTIM_LOSES_TAG, Jupiter::StringS::Format("%u", victim->loses));
+		PROCESS_TAG(this->INTERNAL_VICTIM_BEACON_PLACEMENTS_TAG, Jupiter::StringS::Format("%u", victim->beaconPlacements));
+		PROCESS_TAG(this->INTERNAL_VICTIM_BEACON_DISARMS_TAG, Jupiter::StringS::Format("%u", victim->beaconDisarms));
+		PROCESS_TAG(this->INTERNAL_VICTIM_CAPTURES_TAG, Jupiter::StringS::Format("%u", victim->captures));
+		PROCESS_TAG(this->INTERNAL_VICTIM_STEALS_TAG, Jupiter::StringS::Format("%u", victim->steals));
+		PROCESS_TAG(this->INTERNAL_VICTIM_STOLEN_TAG, Jupiter::StringS::Format("%u", victim->stolen));
+		PROCESS_TAG(this->INTERNAL_VICTIM_ACCESS_TAG, Jupiter::StringS::Format("%d", victim->access));
 	}
 
 	Jupiter::ArrayList<RenX::Plugin> &xPlugins = *RenX::getCore()->getPlugins();

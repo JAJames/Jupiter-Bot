@@ -445,7 +445,7 @@ const Jupiter::ReferenceString RenX::translateName(const Jupiter::ReadableString
 		return Jupiter::ReferenceString::empty;
 
 	Jupiter::ReferenceString iniTranslation = RenX::getCore()->getTranslationsFile().get(STRING_LITERAL_AS_REFERENCE("Name"), obj);
-	if (iniTranslation.isEmpty() == false)
+	if (iniTranslation.isNotEmpty())
 		return iniTranslation;
 
 	static Jupiter::ReferenceString object;
@@ -778,7 +778,7 @@ Jupiter::String RenX::getFormattedPlayerName(const RenX::PlayerInfo *player)
 
 void RenX::sanitizeString(Jupiter::StringType &str)
 {
-	if (str.isEmpty() == false)
+	if (str.isNotEmpty())
 	{
 		str.replace('|', '/');
 		if (str.get(str.size() - 1) == '\\')

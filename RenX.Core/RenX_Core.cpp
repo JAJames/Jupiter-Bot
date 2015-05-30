@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2014 Justin James.
+ * Copyright (C) 2014-2015 Justin James.
  *
  * This license must be preserved.
  * Any applications, libraries, or code which make any use of any
@@ -34,7 +34,7 @@ RenX::Core *RenX::getCore()
 	return &pluginInstance;
 }
 
-RenX::Core::Core()
+void RenX::Core::init()
 {
 	const Jupiter::ReadableString &serverList = Jupiter::IRC::Client::Config->get(STRING_LITERAL_AS_REFERENCE("RenX"), STRING_LITERAL_AS_REFERENCE("Servers"));
 	RenX::Core::translationsFile.readFile(Jupiter::IRC::Client::Config->get(STRING_LITERAL_AS_REFERENCE("RenX"), STRING_LITERAL_AS_REFERENCE("TranslationsFile"), STRING_LITERAL_AS_REFERENCE("Translations.ini")));
@@ -149,11 +149,11 @@ int RenX::Core::addCommand(RenX::GameCommand *command)
 
 int RenX::Core::think()
 {
-	size_t a = 0;
-	while (a < RenX::Core::servers.size())
-		if (RenX::Core::servers.get(a)->think() != 0)
-			delete RenX::Core::servers.remove(a);
-		else a++;
+	size_t index = 0;
+	while (index < RenX::Core::servers.size())
+		if (RenX::Core::servers.get(index)->think() != 0)
+			delete RenX::Core::servers.remove(index);
+		else ++index;
 
 	return Jupiter::Plugin::think();
 }
@@ -163,6 +163,14 @@ int RenX::Core::think()
 extern "C" __declspec(dllexport) Jupiter::Plugin *getPlugin()
 {
 	return &pluginInstance;
+}
+
+// Load
+
+extern "C" __declspec(dllexport) bool load(void)
+{
+	pluginInstance.init();
+	return true;
 }
 
 // Unload

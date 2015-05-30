@@ -71,6 +71,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="RenX_BanDatabase.h" />
+    <ClInclude Include="RenX_BuildingInfo.h" />
     <ClInclude Include="RenX_Core.h" />
     <ClInclude Include="RenX.h" />
     <ClInclude Include="RenX_Functions.h" />

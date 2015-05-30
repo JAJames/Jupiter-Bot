@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2014 Justin James.
+ * Copyright (C) 2014-2015 Justin James.
  *
  * This license must be preserved.
  * Any applications, libraries, or code which make any use of any
@@ -157,9 +157,9 @@ namespace RenX
 		int addCommand(GameCommand *command);
 
 		/**
-		* @brief Default constructor for the Core class.
+		* @brief Initializes the Core.
 		*/
-		Core();
+		void init();
 
 		/**
 		* Destructor for the Core class.
