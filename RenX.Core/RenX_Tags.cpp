@@ -75,6 +75,7 @@ TagsImp::TagsImp()
 	this->INTERNAL_SERVER_PORT_TAG = this->getUniqueInternalTag();
 	this->INTERNAL_SOCKET_HOSTNAME_TAG = this->getUniqueInternalTag();
 	this->INTERNAL_SOCKET_PORT_TAG = this->getUniqueInternalTag();
+	this->INTERNAL_SERVER_PREFIX_TAG = this->getUniqueInternalTag();
 
 	/** Player tags*/
 	this->INTERNAL_NAME_TAG = this->getUniqueInternalTag();
@@ -171,6 +172,7 @@ TagsImp::TagsImp()
 	this->serverPortTag = Jupiter::IRC::Client::Config->get(configSection, STRING_LITERAL_AS_REFERENCE("ServerPortTag"), STRING_LITERAL_AS_REFERENCE("{SERVERPORT}"));
 	this->socketHostnameTag = Jupiter::IRC::Client::Config->get(configSection, STRING_LITERAL_AS_REFERENCE("SocketHostnameTag"), STRING_LITERAL_AS_REFERENCE("{SOCKHOST}"));
 	this->socketPortTag = Jupiter::IRC::Client::Config->get(configSection, STRING_LITERAL_AS_REFERENCE("SocketPortTag"), STRING_LITERAL_AS_REFERENCE("{SOCKPORT}"));
+	this->serverPrefixTag = Jupiter::IRC::Client::Config->get(configSection, STRING_LITERAL_AS_REFERENCE("ServerPrefixTag"), STRING_LITERAL_AS_REFERENCE("{SERVERPREFIX}"));
 
 	/** Player tags */
 	this->nameTag = Jupiter::IRC::Client::Config->get(configSection, STRING_LITERAL_AS_REFERENCE("NameTag"), STRING_LITERAL_AS_REFERENCE("{NAME}"));
@@ -267,6 +269,7 @@ void TagsImp::processTags(Jupiter::StringType &msg, const RenX::Server *server, 
 		msg.replace(this->INTERNAL_SERVER_PORT_TAG, Jupiter::StringS::Format("%u", server->getPort()));
 		msg.replace(this->INTERNAL_SOCKET_HOSTNAME_TAG, server->getSocketHostname());
 		msg.replace(this->INTERNAL_SOCKET_PORT_TAG, Jupiter::StringS::Format("%u", server->getSocketPort()));
+		msg.replace(this->INTERNAL_SERVER_PREFIX_TAG, server->getPrefix());
 		if (player != nullptr)
 		{
 			msg.replace(this->INTERNAL_STEAM_TAG, server->formatSteamID(player));
@@ -369,6 +372,7 @@ void TagsImp::sanitizeTags(Jupiter::StringType &fmt)
 	fmt.replace(this->serverPortTag, this->INTERNAL_SERVER_PORT_TAG);
 	fmt.replace(this->socketHostnameTag, this->INTERNAL_SOCKET_HOSTNAME_TAG);
 	fmt.replace(this->socketPortTag, this->INTERNAL_SOCKET_PORT_TAG);
+	fmt.replace(this->serverPrefixTag, this->INTERNAL_SERVER_PREFIX_TAG);
 
 	/** Player tags */
 	fmt.replace(this->nameTag, this->INTERNAL_NAME_TAG);
