@@ -67,6 +67,7 @@ int RenX_ExtraLoggingPlugin::think()
 		int currentDay = localtime(std::addressof<const time_t>(time(nullptr)))->tm_yday;
 		if (currentDay != RenX_ExtraLoggingPlugin::day)
 		{
+			RenX_ExtraLoggingPlugin::day = currentDay;
 			Jupiter::String line = RenX_ExtraLoggingPlugin::newDayFmt;
 			RenX::processTags(line);
 			line.println(RenX_ExtraLoggingPlugin::file);
