@@ -83,7 +83,7 @@ int RenX::Server::think()
 			}
 			return 0;
 		}
-		if (RenX::Server::rconVersion >= 3)
+		if (RenX::Server::rconVersion >= 3 && RenX::Server::players.size() != 0)
 		{
 			if (RenX::Server::clientUpdateRate != std::chrono::milliseconds::zero() && std::chrono::steady_clock::now() > RenX::Server::lastClientListUpdate + RenX::Server::clientUpdateRate)
 				RenX::Server::updateClientList();
@@ -380,8 +380,6 @@ bool RenX::Server::fetchClientList()
 bool RenX::Server::updateClientList()
 {
 	RenX::Server::lastClientListUpdate = std::chrono::steady_clock::now();
-	if (RenX::Server::players.size() == 0)
-		return true;
 
 	size_t botCount = 0;
 	for (size_t i = 0; i != RenX::Server::players.size(); i++)

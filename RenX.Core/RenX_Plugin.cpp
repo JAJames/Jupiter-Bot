@@ -40,7 +40,7 @@ void RenX::Plugin::RenX_SanitizeTags(Jupiter::StringType &)
 	return;
 }
 
-void RenX::Plugin::RenX_ProcessTags(Jupiter::StringType &, const RenX::Server *, const RenX::PlayerInfo *, const RenX::PlayerInfo *)
+void RenX::Plugin::RenX_ProcessTags(Jupiter::StringType &, const RenX::Server *, const RenX::PlayerInfo *, const RenX::PlayerInfo *, const RenX::BuildingInfo *)
 {
 	return;
 }

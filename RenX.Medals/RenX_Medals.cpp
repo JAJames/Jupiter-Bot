@@ -94,7 +94,7 @@ void RenX_MedalsPlugin::RenX_SanitizeTags(Jupiter::StringType &fmt)
 	fmt.replace(RenX_MedalsPlugin::worthTag, this->INTERNAL_WORTH_TAG);
 }
 
-void RenX_MedalsPlugin::RenX_ProcessTags(Jupiter::StringType &msg, const RenX::Server *server, const RenX::PlayerInfo *player, const RenX::PlayerInfo *victim)
+void RenX_MedalsPlugin::RenX_ProcessTags(Jupiter::StringType &msg, const RenX::Server *server, const RenX::PlayerInfo *player, const RenX::PlayerInfo *, const RenX::BuildingInfo *)
 {
 	if (player != nullptr)
 	{

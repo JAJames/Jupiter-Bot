@@ -22,15 +22,17 @@
 #include "RenX_Functions.h"
 #include "RenX_Server.h"
 #include "RenX_PlayerInfo.h"
+#include "RenX_BuildingInfo.h"
 #include "RenX_Plugin.h"
 #include "RenX_Tags.h"
 
 struct TagsImp : RenX::Tags
 {
 	TagsImp();
-	void processTags(Jupiter::StringType &msg, const RenX::Server *server, const RenX::PlayerInfo *player, const RenX::PlayerInfo *victim);
+	void processTags(Jupiter::StringType &msg, const RenX::Server *server, const RenX::PlayerInfo *player, const RenX::PlayerInfo *victim, const RenX::BuildingInfo *building);
 	void sanitizeTags(Jupiter::StringType &fmt);
 	const Jupiter::ReadableString &getUniqueInternalTag();
+	Jupiter::StringS get_building_health_bar(const RenX::BuildingInfo *building);
 private:
 	Jupiter::StringS uniqueTag;
 	union
@@ -44,6 +46,7 @@ private:
 			uint8_t tagItrP4;
 		};
 	};
+	size_t bar_width;
 } _tags;
 RenX::Tags *RenX::tags = &_tags;
 
@@ -53,6 +56,7 @@ TagsImp::TagsImp()
 	this->uniqueTag = STRING_LITERAL_AS_REFERENCE("\0\0\0\0\0\0");
 
 	const Jupiter::ReadableString &configSection = Jupiter::IRC::Client::Config->get(STRING_LITERAL_AS_REFERENCE("RenX"), STRING_LITERAL_AS_REFERENCE("TagDefinitions"), STRING_LITERAL_AS_REFERENCE("RenX.Tags"));
+	TagsImp::bar_width = Jupiter::IRC::Client::Config->getInt(configSection, STRING_LITERAL_AS_REFERENCE("BarWidth"), 20);
 
 	/** Global formats */
 	this->dateFmt = Jupiter::IRC::Client::Config->get(configSection, STRING_LITERAL_AS_REFERENCE("DateFormat"), STRING_LITERAL_AS_REFERENCE("%A, %B %d, %Y"));
@@ -146,6 +150,17 @@ TagsImp::TagsImp()
 	this->INTERNAL_VICTIM_STEALS_TAG = this->getUniqueInternalTag();
 	this->INTERNAL_VICTIM_STOLEN_TAG = this->getUniqueInternalTag();
 	this->INTERNAL_VICTIM_ACCESS_TAG = this->getUniqueInternalTag();
+
+	/** Building tags */
+	this->INTERNAL_BUILDING_NAME_TAG = this->getUniqueInternalTag();
+	this->INTERNAL_BUILDING_RAW_NAME_TAG = this->getUniqueInternalTag();
+	this->INTERNAL_BUILDING_HEALTH_TAG = this->getUniqueInternalTag();
+	this->INTERNAL_BUILDING_MAX_HEALTH_TAG = this->getUniqueInternalTag();
+	this->INTERNAL_BUILDING_HEALTH_PERCENTAGE_TAG = this->getUniqueInternalTag();
+	this->INTERNAL_BUILDING_HEALTH_BAR_TAG = this->getUniqueInternalTag();
+	this->INTERNAL_BUILDING_TEAM_COLOR_TAG = this->getUniqueInternalTag();
+	this->INTERNAL_BUILDING_TEAM_SHORT_TAG = this->getUniqueInternalTag();
+	this->INTERNAL_BUILDING_TEAM_LONG_TAG = this->getUniqueInternalTag();
 
 	/** Other tags */
 	this->INTERNAL_WEAPON_TAG = this->getUniqueInternalTag();
@@ -244,6 +259,17 @@ TagsImp::TagsImp()
 	this->victimStolenTag = Jupiter::IRC::Client::Config->get(configSection, STRING_LITERAL_AS_REFERENCE("VictimStolenTag"), STRING_LITERAL_AS_REFERENCE("{VSTOLEN}"));
 	this->victimAccessTag = Jupiter::IRC::Client::Config->get(configSection, STRING_LITERAL_AS_REFERENCE("VictimAccessTag"), STRING_LITERAL_AS_REFERENCE("{VACCESS}"));
 
+	/** Building tags */
+	this->buildingNameTag = Jupiter::IRC::Client::Config->get(configSection, STRING_LITERAL_AS_REFERENCE("BuildingNameTag"), STRING_LITERAL_AS_REFERENCE("{BNAME}"));
+	this->buildingRawNameTag = Jupiter::IRC::Client::Config->get(configSection, STRING_LITERAL_AS_REFERENCE("BuildingRawNameTag"), STRING_LITERAL_AS_REFERENCE("{BRNAME}"));
+	this->buildingHealthTag = Jupiter::IRC::Client::Config->get(configSection, STRING_LITERAL_AS_REFERENCE("BuildingHealthTag"), STRING_LITERAL_AS_REFERENCE("{BHEALTH}"));
+	this->buildingMaxHealthTag = Jupiter::IRC::Client::Config->get(configSection, STRING_LITERAL_AS_REFERENCE("BuildingMaxHealthTag"), STRING_LITERAL_AS_REFERENCE("{BMHEALTH}"));
+	this->buildingHealthPercentageTag = Jupiter::IRC::Client::Config->get(configSection, STRING_LITERAL_AS_REFERENCE("BuildingHealthPercentageTag"), STRING_LITERAL_AS_REFERENCE("{BHP}"));
+	this->buildingHealthBarTag = Jupiter::IRC::Client::Config->get(configSection, STRING_LITERAL_AS_REFERENCE("BuildingHealthBarTag"), STRING_LITERAL_AS_REFERENCE("{BHBAR}"));
+	this->buildingTeamColorTag = Jupiter::IRC::Client::Config->get(configSection, STRING_LITERAL_AS_REFERENCE("BuildingTeamColorTag"), STRING_LITERAL_AS_REFERENCE("{BCOLOR}"));
+	this->buildingTeamShortTag = Jupiter::IRC::Client::Config->get(configSection, STRING_LITERAL_AS_REFERENCE("BuildingShortTeamTag"), STRING_LITERAL_AS_REFERENCE("{BTEAMS}"));
+	this->buildingTeamLongTag = Jupiter::IRC::Client::Config->get(configSection, STRING_LITERAL_AS_REFERENCE("BuildingLongTeamTag"), STRING_LITERAL_AS_REFERENCE("{BTEAML}"));
+
 	/** Other tags */
 	this->weaponTag = Jupiter::IRC::Client::Config->get(configSection, STRING_LITERAL_AS_REFERENCE("WeaponTag"), STRING_LITERAL_AS_REFERENCE("{WEAPON}"));
 	this->objectTag = Jupiter::IRC::Client::Config->get(configSection, STRING_LITERAL_AS_REFERENCE("ObjectTag"), STRING_LITERAL_AS_REFERENCE("{OBJECT}"));
@@ -253,14 +279,37 @@ TagsImp::TagsImp()
 	this->loseScoreTag = Jupiter::IRC::Client::Config->get(configSection, STRING_LITERAL_AS_REFERENCE("LoseScoreTag"), STRING_LITERAL_AS_REFERENCE("{LOSESCORE}"));
 }
 
+Jupiter::StringS TagsImp::get_building_health_bar(const RenX::BuildingInfo *building)
+{
+	if (TagsImp::bar_width == 0)
+		return Jupiter::StringS::empty;
+
+	size_t index = 0;
+	size_t greenBars = (building->health / building->max_health) * TagsImp::bar_width;
+	Jupiter::String r(TagsImp::bar_width);
+	if (greenBars != 0)
+	{
+		r = IRCCOLOR "09,09";
+		do
+			r += " ";
+		while (++index != greenBars);
+		if (greenBars == TagsImp::bar_width)
+			return r += IRCNORMAL;
+	}
+	r += IRCCOLOR "04,04";
+	do
+		r += " ";
+	while (++greenBars != TagsImp::bar_width);
+	return r += IRCNORMAL;
+}
+
 #define PROCESS_TAG(tag, value) \
 while(true) { \
 index = msg.find(tag); \
 if (index == Jupiter::INVALID_INDEX) break; \
 msg.replace(index, tag.size(), value); }
 
-
-void TagsImp::processTags(Jupiter::StringType &msg, const RenX::Server *server, const RenX::PlayerInfo *player, const RenX::PlayerInfo *victim)
+void TagsImp::processTags(Jupiter::StringType &msg, const RenX::Server *server, const RenX::PlayerInfo *player, const RenX::PlayerInfo *victim, const RenX::BuildingInfo *building)
 {
 	size_t index;
 	PROCESS_TAG(this->INTERNAL_DATE_TAG, Jupiter::ReferenceString(getTimeFormat(this->dateFmt.c_str())));
@@ -357,10 +406,22 @@ void TagsImp::processTags(Jupiter::StringType &msg, const RenX::Server *server, 
 		PROCESS_TAG(this->INTERNAL_VICTIM_STOLEN_TAG, Jupiter::StringS::Format("%u", victim->stolen));
 		PROCESS_TAG(this->INTERNAL_VICTIM_ACCESS_TAG, Jupiter::StringS::Format("%d", victim->access));
 	}
+	if (building != nullptr)
+	{
+		PROCESS_TAG(this->INTERNAL_BUILDING_NAME_TAG, RenX::translateName(building->name));
+		PROCESS_TAG(this->INTERNAL_BUILDING_RAW_NAME_TAG, building->name);
+		PROCESS_TAG(this->INTERNAL_BUILDING_HEALTH_TAG, Jupiter::StringS::Format("%.0f", building->health));
+		PROCESS_TAG(this->INTERNAL_BUILDING_MAX_HEALTH_TAG, Jupiter::StringS::Format("%.0f", building->health));
+		PROCESS_TAG(this->INTERNAL_BUILDING_HEALTH_PERCENTAGE_TAG, Jupiter::StringS::Format("%.0f", (building->health / building->max_health) * 100.0));
+		PROCESS_TAG(this->INTERNAL_BUILDING_HEALTH_BAR_TAG, get_building_health_bar(building));
+		PROCESS_TAG(this->INTERNAL_BUILDING_TEAM_COLOR_TAG, RenX::getTeamColor(building->team));
+		PROCESS_TAG(this->INTERNAL_BUILDING_TEAM_SHORT_TAG, RenX::getTeamName(building->team));
+		PROCESS_TAG(this->INTERNAL_BUILDING_TEAM_LONG_TAG, RenX::getFullTeamName(building->team));
+	}
 
 	Jupiter::ArrayList<RenX::Plugin> &xPlugins = *RenX::getCore()->getPlugins();
 	for (size_t i = 0; i < xPlugins.size(); i++)
-		xPlugins.get(i)->RenX_ProcessTags(msg, server, player, victim);
+		xPlugins.get(i)->RenX_ProcessTags(msg, server, player, victim, building);
 }
 
 void TagsImp::sanitizeTags(Jupiter::StringType &fmt)
@@ -452,6 +513,17 @@ void TagsImp::sanitizeTags(Jupiter::StringType &fmt)
 	fmt.replace(this->victimStolenTag, this->INTERNAL_VICTIM_STOLEN_TAG);
 	fmt.replace(this->victimAccessTag, this->INTERNAL_VICTIM_ACCESS_TAG);
 
+	/** Building tags */
+	fmt.replace(this->buildingNameTag, this->INTERNAL_BUILDING_NAME_TAG);
+	fmt.replace(this->buildingRawNameTag, this->INTERNAL_BUILDING_RAW_NAME_TAG);
+	fmt.replace(this->buildingHealthTag, this->INTERNAL_BUILDING_HEALTH_TAG);
+	fmt.replace(this->buildingMaxHealthTag, this->INTERNAL_BUILDING_MAX_HEALTH_TAG);
+	fmt.replace(this->buildingHealthPercentageTag, this->INTERNAL_BUILDING_HEALTH_PERCENTAGE_TAG);
+	fmt.replace(this->buildingHealthBarTag, this->INTERNAL_BUILDING_HEALTH_BAR_TAG);
+	fmt.replace(this->buildingTeamColorTag, this->INTERNAL_BUILDING_TEAM_COLOR_TAG);
+	fmt.replace(this->buildingTeamShortTag, this->INTERNAL_BUILDING_TEAM_SHORT_TAG);
+	fmt.replace(this->buildingTeamLongTag, this->INTERNAL_BUILDING_TEAM_LONG_TAG);
+
 	/** Other tags */
 	fmt.replace(this->weaponTag, this->INTERNAL_WEAPON_TAG);
 	fmt.replace(this->objectTag, this->INTERNAL_OBJECT_TAG);
@@ -482,9 +554,9 @@ const Jupiter::ReadableString &RenX::getUniqueInternalTag()
 	return _tags.getUniqueInternalTag();
 }
 
-void RenX::processTags(Jupiter::StringType &msg, const RenX::Server *server, const RenX::PlayerInfo *player, const RenX::PlayerInfo *victim)
+void RenX::processTags(Jupiter::StringType &msg, const RenX::Server *server, const RenX::PlayerInfo *player, const RenX::PlayerInfo *victim, const RenX::BuildingInfo *building)
 {
-	_tags.processTags(msg, server, player, victim);
+	_tags.processTags(msg, server, player, victim, building);
 }
 
 void RenX::sanitizeTags(Jupiter::StringType &fmt)

@@ -262,22 +262,35 @@ Jupiter::ReferenceString translated_DmgType_Orca = STRING_LITERAL_AS_REFERENCE("
 Jupiter::ReferenceString translated_DmgType_A10_Missile = STRING_LITERAL_AS_REFERENCE("A10 Missile");
 
 /** Nod structures */
+Jupiter::ReferenceString translated_Building_HandOfNod = STRING_LITERAL_AS_REFERENCE("Hand of Nod");
+Jupiter::ReferenceString translated_Building_AirTower = STRING_LITERAL_AS_REFERENCE("Airstrip");
+Jupiter::ReferenceString translated_Building_Airstrip = STRING_LITERAL_AS_REFERENCE("Airstrip");
+Jupiter::ReferenceString translated_Building_Refinery_Nod = STRING_LITERAL_AS_REFERENCE("Nod Refinery");
+Jupiter::ReferenceString translated_Building_PowerPlant_Nod = STRING_LITERAL_AS_REFERENCE("Nod Power Plant");
 Jupiter::ReferenceString translated_Building_HandOfNod_Internals = STRING_LITERAL_AS_REFERENCE("Hand of Nod");
 Jupiter::ReferenceString translated_Building_AirTower_Internals = STRING_LITERAL_AS_REFERENCE("Airstrip");
+Jupiter::ReferenceString translated_Building_Airstrip_Internals = STRING_LITERAL_AS_REFERENCE("Airstrip");
 Jupiter::ReferenceString translated_Building_Refinery_Nod_Internals = STRING_LITERAL_AS_REFERENCE("Nod Refinery");
 Jupiter::ReferenceString translated_Building_PowerPlant_Nod_Internals = STRING_LITERAL_AS_REFERENCE("Nod Power Plant");
 
 /** GDI structures */
+Jupiter::ReferenceString translated_Building_Barracks = STRING_LITERAL_AS_REFERENCE("Barracks");
+Jupiter::ReferenceString translated_Building_WeaponsFactory = STRING_LITERAL_AS_REFERENCE("Weapons Factory");
+Jupiter::ReferenceString translated_Building_Refinery_GDI = STRING_LITERAL_AS_REFERENCE("GDI Refinery");
+Jupiter::ReferenceString translated_Building_PowerPlant_GDI = STRING_LITERAL_AS_REFERENCE("GDI Power Plant");
 Jupiter::ReferenceString translated_Building_Barracks_Internals = STRING_LITERAL_AS_REFERENCE("Barracks");
 Jupiter::ReferenceString translated_Building_WeaponsFactory_Internals = STRING_LITERAL_AS_REFERENCE("Weapons Factory");
 Jupiter::ReferenceString translated_Building_Refinery_GDI_Internals = STRING_LITERAL_AS_REFERENCE("GDI Refinery");
 Jupiter::ReferenceString translated_Building_PowerPlant_GDI_Internals = STRING_LITERAL_AS_REFERENCE("GDI Power Plant");
 
 /** Defense structures */
+Jupiter::ReferenceString translated_Building_AdvancedGuardTower = STRING_LITERAL_AS_REFERENCE("Advanced Guard Tower");
+Jupiter::ReferenceString translated_Building_Obelisk = STRING_LITERAL_AS_REFERENCE("Obelisk of Light");
 Jupiter::ReferenceString translated_Building_AdvancedGuardTower_Internals = STRING_LITERAL_AS_REFERENCE("Advanced Guard Tower");
 Jupiter::ReferenceString translated_Building_Obelisk_Internals = STRING_LITERAL_AS_REFERENCE("Obelisk of Light");
 
 /** Other structures */
+Jupiter::ReferenceString translated_Building_Silo = STRING_LITERAL_AS_REFERENCE("Tiberium Silo");
 Jupiter::ReferenceString translated_Building_Silo_Internals = STRING_LITERAL_AS_REFERENCE("Tiberium Silo");
 
 /** Defences */
@@ -640,22 +653,35 @@ const Jupiter::ReferenceString RenX::translateName(const Jupiter::ReadableString
 	{
 		object.shiftRight(9);
 		/** Nod structures */
+		if (object.equals(STRING_LITERAL_AS_REFERENCE("HandOfNod"))) return translated_Building_HandOfNod;
+		if (object.equals(STRING_LITERAL_AS_REFERENCE("AirTower"))) return translated_Building_AirTower;
+		if (object.equals(STRING_LITERAL_AS_REFERENCE("Airstrip"))) return translated_Building_Airstrip;
+		if (object.equals(STRING_LITERAL_AS_REFERENCE("Refinery_Nod"))) return translated_Building_Refinery_Nod;
+		if (object.equals(STRING_LITERAL_AS_REFERENCE("PowerPlant_Nod"))) return translated_Building_PowerPlant_Nod;
 		if (object.equals(STRING_LITERAL_AS_REFERENCE("HandOfNod_Internals"))) return translated_Building_HandOfNod_Internals;
 		if (object.equals(STRING_LITERAL_AS_REFERENCE("AirTower_Internals"))) return translated_Building_AirTower_Internals;
+		if (object.equals(STRING_LITERAL_AS_REFERENCE("Airstrip_Internals"))) return translated_Building_Airstrip_Internals;
 		if (object.equals(STRING_LITERAL_AS_REFERENCE("Refinery_Nod_Internals"))) return translated_Building_Refinery_Nod_Internals;
 		if (object.equals(STRING_LITERAL_AS_REFERENCE("PowerPlant_Nod_Internals"))) return translated_Building_PowerPlant_Nod_Internals;
 		
 		/** GDI structures */
+		if (object.equals(STRING_LITERAL_AS_REFERENCE("Barracks"))) return translated_Building_Barracks;
+		if (object.equals(STRING_LITERAL_AS_REFERENCE("WeaponsFactory"))) return translated_Building_WeaponsFactory;
+		if (object.equals(STRING_LITERAL_AS_REFERENCE("Refinery_GDI"))) return translated_Building_Refinery_GDI;
+		if (object.equals(STRING_LITERAL_AS_REFERENCE("PowerPlant_GDI"))) return translated_Building_PowerPlant_GDI;
 		if (object.equals(STRING_LITERAL_AS_REFERENCE("Barracks_Internals"))) return translated_Building_Barracks_Internals;
 		if (object.equals(STRING_LITERAL_AS_REFERENCE("WeaponsFactory_Internals"))) return translated_Building_WeaponsFactory_Internals;
 		if (object.equals(STRING_LITERAL_AS_REFERENCE("Refinery_GDI_Internals"))) return translated_Building_Refinery_GDI_Internals;
 		if (object.equals(STRING_LITERAL_AS_REFERENCE("PowerPlant_GDI_Internals"))) return translated_Building_PowerPlant_GDI_Internals;
 
 		/** Defense structures */
+		if (object.equals(STRING_LITERAL_AS_REFERENCE("AdvancedGuardTower"))) return translated_Building_AdvancedGuardTower;
+		if (object.equals(STRING_LITERAL_AS_REFERENCE("Obelisk"))) return translated_Building_Obelisk;
 		if (object.equals(STRING_LITERAL_AS_REFERENCE("AdvancedGuardTower_Internals"))) return translated_Building_AdvancedGuardTower_Internals;
 		if (object.equals(STRING_LITERAL_AS_REFERENCE("Obelisk_Internals"))) return translated_Building_Obelisk_Internals;
 
 		/** Other structures */
+		if (object.equals(STRING_LITERAL_AS_REFERENCE("Silo"))) return translated_Building_Silo;
 		if (object.equals(STRING_LITERAL_AS_REFERENCE("Silo_Internals"))) return translated_Building_Silo_Internals;
 	}
 	else if (object.find(STRING_LITERAL_AS_REFERENCE("Defence_")) == 0)

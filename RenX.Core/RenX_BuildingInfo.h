@@ -43,8 +43,8 @@ namespace RenX
 	{
 		Jupiter::StringS name;
 		TeamType team = TeamType::Other;
-		int health = 0;
-		int max_health = 0;
+		double health = 0;
+		double max_health = 0;
 		bool capturable = false;
 		mutable Jupiter::INIFile varData;
 	};

@@ -32,6 +32,7 @@ namespace RenX
 
 	/** Forward declarations */
 	struct PlayerInfo;
+	struct BuildingInfo;
 	class Plugin;
 	class Server;
 
@@ -40,7 +41,7 @@ namespace RenX
 	public:
 		/** Tag-related events */
 		virtual void RenX_SanitizeTags(Jupiter::StringType &fmt);
-		virtual void RenX_ProcessTags(Jupiter::StringType &msg, const Server *server, const PlayerInfo *player, const PlayerInfo *victim);
+		virtual void RenX_ProcessTags(Jupiter::StringType &msg, const Server *server, const PlayerInfo *player, const PlayerInfo *victim, const BuildingInfo *building);
 
 		/** Non-RCON RenX logs */
 		virtual void RenX_OnPlayerCreate(Server *server, const PlayerInfo *player);

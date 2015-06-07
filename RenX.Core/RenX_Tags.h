@@ -39,7 +39,7 @@ namespace RenX
 	struct PlayerInfo;
 	class Server;
 
-	RENX_API void processTags(Jupiter::StringType &msg, const RenX::Server *server = nullptr, const RenX::PlayerInfo *player = nullptr, const RenX::PlayerInfo *victim = nullptr);
+	RENX_API void processTags(Jupiter::StringType &msg, const RenX::Server *server = nullptr, const RenX::PlayerInfo *player = nullptr, const RenX::PlayerInfo *victim = nullptr, const RenX::BuildingInfo *building = nullptr);
 	RENX_API void sanitizeTags(Jupiter::StringType &fmt);
 	RENX_API const Jupiter::ReadableString &getUniqueInternalTag();
 
@@ -135,6 +135,17 @@ namespace RenX
 		Jupiter::StringS INTERNAL_VICTIM_STEALS_TAG;
 		Jupiter::StringS INTERNAL_VICTIM_STOLEN_TAG;
 		Jupiter::StringS INTERNAL_VICTIM_ACCESS_TAG;
+
+		/** Building tags */
+		Jupiter::StringS INTERNAL_BUILDING_NAME_TAG;
+		Jupiter::StringS INTERNAL_BUILDING_RAW_NAME_TAG;
+		Jupiter::StringS INTERNAL_BUILDING_HEALTH_TAG;
+		Jupiter::StringS INTERNAL_BUILDING_MAX_HEALTH_TAG;
+		Jupiter::StringS INTERNAL_BUILDING_HEALTH_PERCENTAGE_TAG;
+		Jupiter::StringS INTERNAL_BUILDING_HEALTH_BAR_TAG;
+		Jupiter::StringS INTERNAL_BUILDING_TEAM_COLOR_TAG;
+		Jupiter::StringS INTERNAL_BUILDING_TEAM_SHORT_TAG;
+		Jupiter::StringS INTERNAL_BUILDING_TEAM_LONG_TAG;
 
 		/** Other tags */
 		Jupiter::StringS INTERNAL_WEAPON_TAG;
@@ -232,6 +243,17 @@ namespace RenX
 		Jupiter::StringS victimStealsTag;
 		Jupiter::StringS victimStolenTag;
 		Jupiter::StringS victimAccessTag;
+
+		/** Building tags */
+		Jupiter::StringS buildingNameTag;
+		Jupiter::StringS buildingRawNameTag;
+		Jupiter::StringS buildingHealthTag;
+		Jupiter::StringS buildingMaxHealthTag;
+		Jupiter::StringS buildingHealthPercentageTag;
+		Jupiter::StringS buildingHealthBarTag;
+		Jupiter::StringS buildingTeamColorTag;
+		Jupiter::StringS buildingTeamShortTag;
+		Jupiter::StringS buildingTeamLongTag;
 
 		/** Other tags */
 		Jupiter::StringS weaponTag;
