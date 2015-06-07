@@ -17,14 +17,18 @@
 
 #include <functional>
 #include "Jupiter/Functions.h"
+#include "Jupiter/SLList.h"
 #include "IRC_Bot.h"
 #include "RenX_Commands.h"
 #include "RenX_Core.h"
 #include "RenX_Server.h"
 #include "RenX_PlayerInfo.h"
+#include "RenX_BuildingInfo.h"
 #include "RenX_Functions.h"
 #include "RenX_BanDatabase.h"
 #include "RenX_Tags.h"
+
+using namespace Jupiter::literals;
 
 inline bool togglePhasing(RenX::Server *server, bool newState)
 {
@@ -69,13 +73,15 @@ int RenX_CommandsPlugin::OnRehash()
 	RenX_CommandsPlugin::_defaultTempBanTime = Jupiter::IRC::Client::Config->getLongLong(RenX_CommandsPlugin::getName(), STRING_LITERAL_AS_REFERENCE("TBanTime"), 86400);
 	RenX_CommandsPlugin::playerInfoFormat = Jupiter::IRC::Client::Config->get(RenX_CommandsPlugin::getName(), STRING_LITERAL_AS_REFERENCE("PlayerInfoFormat"), STRING_LITERAL_AS_REFERENCE(IRCCOLOR "03[Player Info]" IRCCOLOR "{TCOLOR} Name: " IRCBOLD "{RNAME}" IRCBOLD " - ID: {ID} - Team: " IRCBOLD "{TEAML}" IRCBOLD " - Vehicle Kills: {VEHICLEKILLS} - Building Kills {BUILDINGKILLS} - Kills {KILLS} - Deaths: {DEATHS} - KDR: {KDR} - Access: {ACCESS}"));
 	RenX_CommandsPlugin::adminPlayerInfoFormat = Jupiter::IRC::Client::Config->get(RenX_CommandsPlugin::getName(), STRING_LITERAL_AS_REFERENCE("AdminPlayerInfoFormat"), Jupiter::StringS::Format("%.*s - IP: " IRCBOLD "{IP}" IRCBOLD " - Steam ID: " IRCBOLD "{STEAM}", RenX_CommandsPlugin::playerInfoFormat.size(), RenX_CommandsPlugin::playerInfoFormat.ptr()));
+	RenX_CommandsPlugin::buildingInfoFormat = Jupiter::IRC::Client::Config->get(RenX_CommandsPlugin::getName(), STRING_LITERAL_AS_REFERENCE("BuildingInfoFormat"), STRING_LITERAL_AS_REFERENCE(IRCCOLOR) + RenX::tags->buildingTeamColorTag + RenX::tags->buildingNameTag + STRING_LITERAL_AS_REFERENCE(IRCCOLOR " - " IRCCOLOR "07") + RenX::tags->buildingHealthPercentageTag + STRING_LITERAL_AS_REFERENCE("%"));
 
 	RenX::sanitizeTags(RenX_CommandsPlugin::playerInfoFormat);
 	RenX::sanitizeTags(RenX_CommandsPlugin::adminPlayerInfoFormat);
+	RenX::sanitizeTags(RenX_CommandsPlugin::buildingInfoFormat);
 	return 0;
 }
 
-time_t RenX_CommandsPlugin::getTBanTime()
+time_t RenX_CommandsPlugin::getTBanTime() const
 {
 	return RenX_CommandsPlugin::_defaultTempBanTime;
 }
@@ -88,6 +94,11 @@ const Jupiter::ReadableString &RenX_CommandsPlugin::getPlayerInfoFormat() const
 const Jupiter::ReadableString &RenX_CommandsPlugin::getAdminPlayerInfoFormat() const
 {
 	return RenX_CommandsPlugin::adminPlayerInfoFormat;
+}
+
+const Jupiter::ReadableString &RenX_CommandsPlugin::getBuildingInfoFormat() const
+{
+	return RenX_CommandsPlugin::buildingInfoFormat;
 }
 
 RenX_CommandsPlugin::RenX_CommandsPlugin()
@@ -454,7 +465,6 @@ const Jupiter::ReadableString &PlayersIRCCommand::getHelp(const Jupiter::Readabl
 IRC_COMMAND_INIT(PlayersIRCCommand)
 
 // PlayerTable IRC Command
-#include "Jupiter/SLList.h"
 void PlayerTableIRCCommand::create()
 {
 	this->addTrigger(STRING_LITERAL_AS_REFERENCE("pt"));
@@ -577,7 +587,6 @@ void PlayerInfoIRCCommand::create()
 	this->addTrigger(STRING_LITERAL_AS_REFERENCE("pi"));
 	this->addTrigger(STRING_LITERAL_AS_REFERENCE("player"));
 	this->addTrigger(STRING_LITERAL_AS_REFERENCE("pinfo"));
-	this->setAccessLevel(2);
 }
 
 void PlayerInfoIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &channel, const Jupiter::ReadableString &nick, const Jupiter::ReadableString &parameters)
@@ -623,6 +632,95 @@ const Jupiter::ReadableString &PlayerInfoIRCCommand::getHelp(const Jupiter::Read
 }
 
 IRC_COMMAND_INIT(PlayerInfoIRCCommand)
+
+// BuildingInfo IRC Command
+
+void BuildingInfoIRCCommand::create()
+{
+	this->addTrigger(STRING_LITERAL_AS_REFERENCE("binfo"));
+	this->addTrigger(STRING_LITERAL_AS_REFERENCE("bi"));
+	this->addTrigger(STRING_LITERAL_AS_REFERENCE("buildinginfo"));
+	this->addTrigger(STRING_LITERAL_AS_REFERENCE("building"));
+}
+
+void BuildingInfoIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &channel, const Jupiter::ReadableString &nick, const Jupiter::ReadableString &parameters)
+{
+	Jupiter::IRC::Client::Channel *chan = source->getChannel(channel);
+	if (chan != nullptr)
+	{
+		int type = chan->getType();
+		bool seenStrip;
+		Jupiter::SLList<Jupiter::String> gStrings;
+		Jupiter::SLList<Jupiter::String> nStrings;
+		Jupiter::SLList<Jupiter::String> oStrings;
+		Jupiter::SLList<Jupiter::String> cStrings;
+		Jupiter::String *str = nullptr;
+		RenX::BuildingInfo *building;
+		for (unsigned int i = 0; i != RenX::getCore()->getServerCount(); i++)
+		{
+			RenX::Server *server = RenX::getCore()->getServer(i);
+			if (server->isLogChanType(type))
+			{
+				seenStrip = false;
+				for (size_t index = 0; index != server->buildings.size(); ++index)
+				{
+					building = server->buildings.get(index);
+					if (building->name.find("Rx_Building_Air"_jrs) == 0)
+					{
+						if (seenStrip)
+							continue;
+
+						seenStrip = true;
+					}
+					str = new Jupiter::String(pluginInstance.getBuildingInfoFormat());
+					RenX::processTags(*str, server, nullptr, nullptr, building);
+					if (building->capturable)
+						cStrings.add(str);
+					else if (building->team == RenX::TeamType::GDI)
+						gStrings.add(str);
+					else if (building->team == RenX::TeamType::Nod)
+						nStrings.add(str);
+					else
+						oStrings.add(str);
+				}
+				while (gStrings.size() != 0)
+				{
+					str = gStrings.remove(0);
+					source->sendMessage(channel, *str);
+					delete str;
+				}
+				while (nStrings.size() != 0)
+				{
+					str = nStrings.remove(0);
+					source->sendMessage(channel, *str);
+					delete str;
+				}
+				while (oStrings.size() != 0)
+				{
+					str = oStrings.remove(0);
+					source->sendMessage(channel, *str);
+					delete str;
+				}
+				while (cStrings.size() != 0)
+				{
+					str = cStrings.remove(0);
+					source->sendMessage(channel, *str);
+					delete str;
+				}
+			}
+		}
+		if (str == nullptr)
+			source->sendMessage(channel, "Error: Channel not attached to any connected Renegade X servers."_jrs);
+	}
+}
+
+const Jupiter::ReadableString &BuildingInfoIRCCommand::getHelp(const Jupiter::ReadableString &)
+{
+	static STRING_LITERAL_AS_NAMED_REFERENCE(defaultHelp, "Gets information about a player. Syntax: PlayerInfo <Player>");
+	return defaultHelp;
+}
+
+IRC_COMMAND_INIT(BuildingInfoIRCCommand)
 
 // Steam IRC Command
 

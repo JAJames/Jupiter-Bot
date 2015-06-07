@@ -37,9 +37,10 @@ public: // Jupiter::Plugin
 	int OnRehash() override;
 
 public:
-	time_t getTBanTime();
+	time_t getTBanTime() const;
 	const Jupiter::ReadableString &getPlayerInfoFormat() const;
 	const Jupiter::ReadableString &getAdminPlayerInfoFormat() const;
+	const Jupiter::ReadableString &getBuildingInfoFormat() const;
 	RenX_CommandsPlugin();
 
 private:
@@ -47,6 +48,7 @@ private:
 	time_t _defaultTempBanTime;
 	Jupiter::StringS playerInfoFormat;
 	Jupiter::StringS adminPlayerInfoFormat;
+	Jupiter::StringS buildingInfoFormat;
 };
 
 GENERIC_CONSOLE_COMMAND(RawRCONConsoleCommand)
@@ -59,6 +61,7 @@ GENERIC_IRC_COMMAND(HostMsgIRCCommand)
 GENERIC_IRC_COMMAND(PlayersIRCCommand)
 GENERIC_IRC_COMMAND(PlayerTableIRCCommand)
 GENERIC_IRC_COMMAND(PlayerInfoIRCCommand)
+GENERIC_IRC_COMMAND(BuildingInfoIRCCommand)
 GENERIC_IRC_COMMAND(SteamIRCCommand)
 GENERIC_IRC_COMMAND(KillDeathRatioIRCCommand)
 GENERIC_IRC_COMMAND(ShowModsIRCCommand)
