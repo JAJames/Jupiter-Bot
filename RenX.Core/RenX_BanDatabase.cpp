@@ -23,6 +23,8 @@
 #include "RenX_Core.h"
 #include "RenX_Plugin.h"
 
+using namespace Jupiter::literals;
+
 RenX::BanDatabase _banDatabase;
 RenX::BanDatabase *RenX::banDatabase = &_banDatabase;
 RenX::BanDatabase &RenX::defaultBanDatabase = _banDatabase;
@@ -138,11 +140,16 @@ bool RenX::BanDatabase::load(const Jupiter::ReadableString &fname)
 			file = fopen(RenX::BanDatabase::filename.c_str(), "wb");
 			if (file != nullptr)
 			{
+				fputc(write_version, file);
+				fputc('\n', file);
 				size_t index = 0;
 				while (index != RenX::BanDatabase::entries.size())
 					RenX::BanDatabase::write(RenX::BanDatabase::entries.get(++index), file);
+				fclose(file);
+				fprintf(stdout, "Updated BanDatabase file \"%s\" from version %d to %d.", RenX::BanDatabase::filename.c_str(), RenX::BanDatabase::version, write_version);
 			}
-			fprintf(stdout, "Updated BanDatabase file \"%s\" from version %d to %d.", RenX::BanDatabase::filename.c_str(), RenX::BanDatabase::version, write_version);
+			else
+				fprintf(stdout, "CRITICAL ERROR: BanDatabase file \"%s\" failed to update from version %d to %d.", RenX::BanDatabase::filename.c_str(), RenX::BanDatabase::version, write_version);
 			RenX::BanDatabase::version = write_version;
 		}
 		return true;
@@ -164,6 +171,8 @@ bool RenX::BanDatabase::load(const Jupiter::ReadableString &fname)
 
 void RenX::BanDatabase::write(RenX::BanDatabase::Entry *entry)
 {
+	if (RenX::BanDatabase::version != write_version)
+		"CRITICAL ERROR: COULD NOT WRITE BAN ENTRY TO BAN DATABASE (VERSION MISMATCH)"_jrs.print(stdout);
 	FILE *file = fopen(RenX::BanDatabase::filename.c_str(), "ab");
 	if (file != nullptr)
 	{
