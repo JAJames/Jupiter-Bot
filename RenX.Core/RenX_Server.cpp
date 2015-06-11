@@ -29,6 +29,8 @@
 #include "RenX_BanDatabase.h"
 #include "RenX_Tags.h"
 
+using namespace Jupiter::literals;
+
 int RenX::Server::think()
 {
 	if (RenX::Server::connected == false)
@@ -45,6 +47,11 @@ int RenX::Server::think()
 		else
 			return 1;
 	}
+	else if (RenX::Server::awaitingPong && std::chrono::steady_clock::now() - RenX::Server::lastActivity >= RenX::Server::pingTimeoutThreshold) // ping timeout
+	{
+		RenX::Server::sendLogChan(STRING_LITERAL_AS_REFERENCE(IRCCOLOR "04[Error]" IRCCOLOR " Disconnected from Renegade-X server (ping timeout)."));
+		RenX::Server::disconnect();
+	}
 	else
 	{
 		if (RenX::Server::sock.recv() > 0)
@@ -54,6 +61,7 @@ int RenX::Server::think()
 
 			if (totalLines != 0)
 			{
+				RenX::Server::lastActivity = std::chrono::steady_clock::now();
 				RenX::Server::lastLine.concat(buffer.getToken(0, '\n'));
 				if (totalLines != 1) // if there's only one token, there is no newline.
 				{
@@ -65,7 +73,16 @@ int RenX::Server::think()
 				}
 			}
 		}
-		else if (Jupiter::Socket::getLastError() != 10035) // This is a serious error
+		else if (Jupiter::Socket::getLastError() == 10035)
+		{
+			if (RenX::Server::awaitingPong == false && std::chrono::steady_clock::now() - RenX::Server::lastActivity >= RenX::Server::pingRate)
+			{
+				RenX::Server::lastActivity = std::chrono::steady_clock::now();
+				RenX::Server::sock.send("cping\n"_jrs);
+				RenX::Server::awaitingPong = true;
+			}
+		}
+		else // This is a serious error
 		{
 			RenX::Server::wipeData();
 			if (RenX::Server::maxAttempts != 0)
@@ -83,6 +100,7 @@ int RenX::Server::think()
 			}
 			return 0;
 		}
+
 		if (RenX::Server::rconVersion >= 3 && RenX::Server::players.size() != 0)
 		{
 			if (RenX::Server::clientUpdateRate != std::chrono::milliseconds::zero() && std::chrono::steady_clock::now() > RenX::Server::lastClientListUpdate + RenX::Server::clientUpdateRate)
@@ -1373,6 +1391,8 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 				}
 				buff.shiftLeft(1);
 			}
+			else if (this->lastCommand.equalsi("ping"))
+				RenX::Server::awaitingPong = false;
 			else if (this->lastCommand.equalsi("map"))
 				this->map = buff.substring(1);
 			else if (this->lastCommand.equalsi("serverinfo"))
@@ -2381,7 +2401,10 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 				buff.shiftLeft(1);
 			}
 			else
+			{
+				RenX::Server::sendLogChan(STRING_LITERAL_AS_REFERENCE(IRCCOLOR "04[Error]" IRCCOLOR " Disconnected from Renegade-X server (incompatible RCON version)."));
 				this->disconnect();
+			}
 			break;
 
 		case 'a':
@@ -2436,6 +2459,7 @@ bool RenX::Server::reconnect()
 
 void RenX::Server::wipeData()
 {
+	RenX::Server::awaitingPong = false;
 	RenX::Server::rconVersion = 0;
 	RenX::Server::rconUser.truncate(RenX::Server::rconUser.size());
 	while (RenX::Server::players.size() != 0)
@@ -2501,6 +2525,8 @@ void RenX::Server::init()
 	RenX::Server::neverSay = Jupiter::IRC::Client::Config->getBool(RenX::Server::configSection, STRING_LITERAL_AS_REFERENCE("NeverSay"), false);
 	RenX::Server::clientUpdateRate = std::chrono::milliseconds(Jupiter::IRC::Client::Config->getInt(RenX::Server::configSection, STRING_LITERAL_AS_REFERENCE("ClientUpdateRate"), 2500));
 	RenX::Server::buildingUpdateRate = std::chrono::milliseconds(Jupiter::IRC::Client::Config->getInt(RenX::Server::configSection, STRING_LITERAL_AS_REFERENCE("BuildingUpdateRate"), 7500));
+	RenX::Server::pingRate = std::chrono::milliseconds(Jupiter::IRC::Client::Config->getInt(RenX::Server::configSection, STRING_LITERAL_AS_REFERENCE("PingUpdateRate"), 60000));
+	RenX::Server::pingTimeoutThreshold = std::chrono::milliseconds(Jupiter::IRC::Client::Config->getInt(RenX::Server::configSection, STRING_LITERAL_AS_REFERENCE("PingTimeoutThreshold"), 10000));
 
 	Jupiter::INIFile &commandsFile = RenX::getCore()->getCommandsFile();
 	RenX::Server::commandAccessLevels = commandsFile.getSection(RenX::Server::configSection);

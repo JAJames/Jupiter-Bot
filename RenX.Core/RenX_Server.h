@@ -813,11 +813,13 @@ namespace RenX
 		bool firstKill = false;
 		bool firstDeath = false;
 		bool firstAction = false;
+		bool awaitingPong = false;
 		unsigned int rconVersion = 0;
 		time_t lastAttempt = 0;
 		int attempts = 0;
 		std::chrono::steady_clock::time_point lastClientListUpdate = std::chrono::steady_clock::now();
 		std::chrono::steady_clock::time_point lastBuildingListUpdate = std::chrono::steady_clock::now();
+		std::chrono::steady_clock::time_point lastActivity = std::chrono::steady_clock::now();
 		Jupiter::String lastLine;
 		Jupiter::StringS commandListFormat;
 		Jupiter::StringS gameVersion;
@@ -831,6 +833,8 @@ namespace RenX
 		int maxAttempts;
 		std::chrono::milliseconds clientUpdateRate;
 		std::chrono::milliseconds buildingUpdateRate;
+		std::chrono::milliseconds pingRate;
+		std::chrono::milliseconds pingTimeoutThreshold;
 		int steamFormat; /** 16 = hex, 10 = base 10, 8 = octal, -2 = SteamID 2, -3 = SteamID 3 */
 		bool rconBan;
 		bool localBan;
