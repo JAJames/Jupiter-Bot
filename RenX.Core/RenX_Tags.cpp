@@ -56,7 +56,7 @@ TagsImp::TagsImp()
 	this->uniqueTag = STRING_LITERAL_AS_REFERENCE("\0\0\0\0\0\0");
 
 	const Jupiter::ReadableString &configSection = Jupiter::IRC::Client::Config->get(STRING_LITERAL_AS_REFERENCE("RenX"), STRING_LITERAL_AS_REFERENCE("TagDefinitions"), STRING_LITERAL_AS_REFERENCE("RenX.Tags"));
-	TagsImp::bar_width = Jupiter::IRC::Client::Config->getInt(configSection, STRING_LITERAL_AS_REFERENCE("BarWidth"), 20);
+	TagsImp::bar_width = Jupiter::IRC::Client::Config->getInt(configSection, STRING_LITERAL_AS_REFERENCE("BarWidth"), 19);
 
 	/** Global formats */
 	this->dateFmt = Jupiter::IRC::Client::Config->get(configSection, STRING_LITERAL_AS_REFERENCE("DateFormat"), STRING_LITERAL_AS_REFERENCE("%A, %B %d, %Y"));
@@ -289,17 +289,27 @@ Jupiter::StringS TagsImp::get_building_health_bar(const RenX::BuildingInfo *buil
 	Jupiter::String r(TagsImp::bar_width);
 	if (greenBars != 0)
 	{
-		r = IRCCOLOR "09,09";
+		r = IRCCOLOR "02,09";
 		do
-			r += " ";
+		{
+			if (index % 2 == 0)
+				r += '/';
+			else
+				r += ' ';
+		}
 		while (++index != greenBars);
-		if (greenBars == TagsImp::bar_width)
+		if (index == TagsImp::bar_width)
 			return r += IRCNORMAL;
 	}
-	r += IRCCOLOR "04,04";
+	r += IRCCOLOR "02,04";
 	do
-		r += " ";
-	while (++greenBars != TagsImp::bar_width);
+	{
+		if (index % 2 == 0)
+			r += '\\';
+		else
+			r += ' ';
+	}
+	while (++index != TagsImp::bar_width);
 	return r += IRCNORMAL;
 }
 

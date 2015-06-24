@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2014 Justin James.
+ * Copyright (C) 2014-2015 Justin James.
  *
  * This license must be preserved.
  * Any applications, libraries, or code which make any use of any
@@ -33,11 +33,11 @@ public: // Jupiter::Plugin
 
 private:
 	void init();
+
+	// Config Variables
 	bool publicOnly;
 	bool joinMsgAlways;
 	bool partMsgAlways;
-	int minAccessJoinMessage;
-	int maxAccessJoinMessage;
 	int minAccessPartMessage;
 	int maxAccessPartMessage;
 	Jupiter::StringS nameTag;
@@ -46,6 +46,8 @@ private:
 	Jupiter::StringS joinFmt;
 	Jupiter::StringS partFmt;
 	Jupiter::StringS partFmtNoReason;
+
+	// Internal Variables
 	STRING_LITERAL_AS_NAMED_REFERENCE(name, "RenX.IRCJoin");
 };
 

@@ -597,6 +597,11 @@ time_t RenX::Server::getDelay() const
 	return RenX::Server::delay;
 }
 
+bool RenX::Server::isPassworded() const
+{
+	return RenX::Server::passworded;
+}
+
 const Jupiter::ReadableString &RenX::Server::getPassword() const
 {
 	return RenX::Server::pass;
@@ -1403,6 +1408,7 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 					buff.shiftRight(1);
 					this->port = static_cast<unsigned short>(buff.getToken(1, RenX::DelimC).asUnsignedInt(10));
 					this->serverName = buff.getToken(3, RenX::DelimC);
+					this->passworded = buff.getToken(5, RenX::DelimC).asBool();
 					this->map = buff.getToken(7, RenX::DelimC);
 					buff.shiftLeft(1);
 				}
@@ -1816,6 +1822,16 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 										break;
 									case RenX::ObjectType::Building:
 										player->buildingKills++;
+										{
+											auto internalsStr = "_Internals"_jrs;
+											RenX::BuildingInfo *building;
+											if (objectName.findi(internalsStr) != Jupiter::INVALID_INDEX)
+												objectName.truncate(internalsStr.size());
+											building = RenX::Server::getBuildingByName(objectName);
+											if (building != nullptr)
+												building->health = 0.0;
+										}
+
 										break;
 									case RenX::ObjectType::Defence:
 										player->defenceKills++;

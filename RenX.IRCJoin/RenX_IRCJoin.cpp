@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2014 Justin James.
+ * Copyright (C) 2014-2015 Justin James.
  *
  * This license must be preserved.
  * Any applications, libraries, or code which make any use of any
@@ -27,8 +27,6 @@ void RenX_IRCJoinPlugin::init()
 	RenX_IRCJoinPlugin::publicOnly = Jupiter::IRC::Client::Config->getBool(this->getName(), STRING_LITERAL_AS_REFERENCE("PublicOnly"), true);
 	RenX_IRCJoinPlugin::joinMsgAlways = Jupiter::IRC::Client::Config->getBool(this->getName(), STRING_LITERAL_AS_REFERENCE("Join.MsgAlways"), false);
 	RenX_IRCJoinPlugin::partMsgAlways = Jupiter::IRC::Client::Config->getBool(this->getName(), STRING_LITERAL_AS_REFERENCE("Part.MsgAlways"), false);
-	RenX_IRCJoinPlugin::minAccessJoinMessage = Jupiter::IRC::Client::Config->getInt(this->getName(), STRING_LITERAL_AS_REFERENCE("Join.MinAccess"), 0);
-	RenX_IRCJoinPlugin::maxAccessJoinMessage = Jupiter::IRC::Client::Config->getInt(this->getName(), STRING_LITERAL_AS_REFERENCE("Join.MaxAccess"), -1);
 	RenX_IRCJoinPlugin::minAccessPartMessage = Jupiter::IRC::Client::Config->getInt(this->getName(), STRING_LITERAL_AS_REFERENCE("Part.MinAccess"), 0);
 	RenX_IRCJoinPlugin::maxAccessPartMessage = Jupiter::IRC::Client::Config->getInt(this->getName(), STRING_LITERAL_AS_REFERENCE("Part.MaxAccess"), -1);
 	RenX_IRCJoinPlugin::nameTag = Jupiter::IRC::Client::Config->get(this->getName(), STRING_LITERAL_AS_REFERENCE("NameTag"), STRING_LITERAL_AS_REFERENCE("{NAME}"));
@@ -41,13 +39,10 @@ void RenX_IRCJoinPlugin::init()
 
 void RenX_IRCJoinPlugin::OnJoin(Jupiter::IRC::Client *source, const Jupiter::ReadableString &channel, const Jupiter::ReadableString &nick)
 {
-	int access = source->getAccessLevel(channel, nick);
-
-	if (access >= RenX_IRCJoinPlugin::minAccessJoinMessage && (RenX_IRCJoinPlugin::maxAccessJoinMessage == -1 || access <= RenX_IRCJoinPlugin::maxAccessJoinMessage))
+	if (RenX_IRCJoinPlugin::joinFmt.isNotEmpty())
 	{
 		RenX::Server *server;
 		int type = source->getChannel(channel)->getType();
-
 		Jupiter::String msg = RenX_IRCJoinPlugin::joinFmt;
 		msg.replace(RenX_IRCJoinPlugin::nameTag, nick);
 		msg.replace(RenX_IRCJoinPlugin::chanTag, channel);
@@ -70,34 +65,37 @@ void RenX_IRCJoinPlugin::OnJoin(Jupiter::IRC::Client *source, const Jupiter::Rea
 
 void RenX_IRCJoinPlugin::OnPart(Jupiter::IRC::Client *source, const Jupiter::ReadableString &channel, const Jupiter::ReadableString &nick, const Jupiter::ReadableString &reason)
 {
-	int access = source->getAccessLevel(channel, nick);
-
-	if (access >= RenX_IRCJoinPlugin::minAccessPartMessage && (RenX_IRCJoinPlugin::maxAccessPartMessage == -1 || access <= RenX_IRCJoinPlugin::maxAccessPartMessage))
+	if (RenX_IRCJoinPlugin::partFmt.isNotEmpty())
 	{
-		RenX::Server *server;
-		int type = source->getChannel(channel)->getType();
+		int access = source->getAccessLevel(channel, nick);
 
-		Jupiter::String msg;
-		if (reason.isEmpty())
-			msg = RenX_IRCJoinPlugin::partFmtNoReason;
-		else
-			msg = RenX_IRCJoinPlugin::partFmt;
-		msg.replace(RenX_IRCJoinPlugin::nameTag, nick);
-		msg.replace(RenX_IRCJoinPlugin::chanTag, channel);
-		msg.replace(RenX_IRCJoinPlugin::partReasonTag, reason);
-
-		auto checkType = [&]()
+		if (access >= RenX_IRCJoinPlugin::minAccessPartMessage && (RenX_IRCJoinPlugin::maxAccessPartMessage == -1 || access <= RenX_IRCJoinPlugin::maxAccessPartMessage))
 		{
-			if (this->publicOnly)
-				return server->isPublicLogChanType(type);
+			RenX::Server *server;
+			int type = source->getChannel(channel)->getType();
+
+			Jupiter::String msg;
+			if (reason.isEmpty())
+				msg = RenX_IRCJoinPlugin::partFmtNoReason;
 			else
-				return server->isLogChanType(type);
-		};
-		for (unsigned int i = 0; i != RenX::getCore()->getServerCount(); i++)
-		{
-			server = RenX::getCore()->getServer(i);
-			if (checkType() && (RenX_IRCJoinPlugin::partMsgAlways || server->players.size() != 0))
-				server->sendMessage(msg);
+				msg = RenX_IRCJoinPlugin::partFmt;
+			msg.replace(RenX_IRCJoinPlugin::nameTag, nick);
+			msg.replace(RenX_IRCJoinPlugin::chanTag, channel);
+			msg.replace(RenX_IRCJoinPlugin::partReasonTag, reason);
+
+			auto checkType = [&]()
+			{
+				if (this->publicOnly)
+					return server->isPublicLogChanType(type);
+				else
+					return server->isLogChanType(type);
+			};
+			for (unsigned int i = 0; i != RenX::getCore()->getServerCount(); i++)
+			{
+				server = RenX::getCore()->getServer(i);
+				if (checkType() && (RenX_IRCJoinPlugin::partMsgAlways || server->players.size() != 0))
+					server->sendMessage(msg);
+			}
 		}
 	}
 }

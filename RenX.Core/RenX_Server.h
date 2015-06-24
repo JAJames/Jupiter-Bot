@@ -580,7 +580,14 @@ namespace RenX
 		time_t getDelay() const;
 
 		/**
-		* @brief Fetches the password of a server.
+		* @brief Checks if the server has a game password.
+		*
+		* @return True if the game is passworded, false otherwise.
+		*/
+		bool isPassworded() const;
+
+		/**
+		* @brief Fetches the RCON password of a server.
 		*
 		* @return String containing the password of the server.
 		*/
@@ -806,6 +813,7 @@ namespace RenX
 		/** Tracking variables */
 		bool connected = false;
 		bool seamless = false;
+		bool passworded = false;
 		bool needsCList = false;
 		bool silenceParts = false;
 		bool silenceJoins = false;
