@@ -157,6 +157,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "RenX.Listen", "RenX.Listen\
 		{9103DF3D-8B4A-48E5-A6B3-CBE2554630E2} = {9103DF3D-8B4A-48E5-A6B3-CBE2554630E2}
 	EndProjectSection
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ChannelRelay", "ChannelRelay\ChannelRelay.vcxproj", "{ADAD973E-EAA8-446D-BCD3-83B53DBC3A3F}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -271,6 +273,10 @@ Global
 		{DA05D8B5-5E24-410E-A201-CC5905E327D3}.Debug|Win32.Build.0 = Debug|Win32
 		{DA05D8B5-5E24-410E-A201-CC5905E327D3}.Release|Win32.ActiveCfg = Release|Win32
 		{DA05D8B5-5E24-410E-A201-CC5905E327D3}.Release|Win32.Build.0 = Release|Win32
+		{ADAD973E-EAA8-446D-BCD3-83B53DBC3A3F}.Debug|Win32.ActiveCfg = Debug|Win32
+		{ADAD973E-EAA8-446D-BCD3-83B53DBC3A3F}.Debug|Win32.Build.0 = Debug|Win32
+		{ADAD973E-EAA8-446D-BCD3-83B53DBC3A3F}.Release|Win32.ActiveCfg = Release|Win32
+		{ADAD973E-EAA8-446D-BCD3-83B53DBC3A3F}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
