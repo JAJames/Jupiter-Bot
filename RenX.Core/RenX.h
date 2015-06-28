@@ -65,6 +65,22 @@ namespace RenX
 		Defence,
 		None
 	};
+
+	enum class DisconnectReason : unsigned int
+	{
+		SocketError,
+		SocketErrorReconnect,
+		PingTimeout,
+		PingTimeoutReconnect,
+		IncompatibleVersion,
+		IncompatibleVersionReconnect,
+		Triggered,
+		TriggeredReconnect,
+		Rehash,
+		RehashReconnect,
+		Other,
+		OtherReconnect
+	};
 }
 
 #endif // __cplusplus

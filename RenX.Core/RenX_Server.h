@@ -742,8 +742,10 @@ namespace RenX
 
 		/**
 		* @brief Disconnects from a server's RCON interface.
+		*
+		* @param reason Reason for reconnecting.
 		*/
-		void disconnect();
+		void disconnect(RenX::DisconnectReason reason);
 
 		/**
 		* @brief Connects to the server's RCON interface.
@@ -755,9 +757,10 @@ namespace RenX
 		/**
 		* @brief Reconnects to the server's RCON interface.
 		*
+		* @param reason Reason for reconnecting.
 		* @return True if the socket successfully connected, false otherwise.
 		*/
-		bool reconnect();
+		bool reconnect(RenX::DisconnectReason reason);
 
 		/**
 		* @brief Deletes all of the data about a server (such as players).

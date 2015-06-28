@@ -1193,7 +1193,7 @@ void ReconnectIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString
 			RenX::Server *server = RenX::getCore()->getServer(i);
 			if (server->isLogChanType(type))
 			{
-				if (server->reconnect()) msg.set("Connection established");
+				if (server->reconnect(RenX::DisconnectReason::Triggered)) msg.set("Connection established");
 				else msg.format("[RenX] ERROR: Failed to connect to %.*s on port %u." ENDL, server->getHostname().size(), server->getHostname().ptr(), server->getPort());
 				source->sendMessage(channel, msg);
 			}

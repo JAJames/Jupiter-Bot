@@ -50,7 +50,7 @@ int RenX::Server::think()
 	else if (RenX::Server::awaitingPong && std::chrono::steady_clock::now() - RenX::Server::lastActivity >= RenX::Server::pingTimeoutThreshold) // ping timeout
 	{
 		RenX::Server::sendLogChan(STRING_LITERAL_AS_REFERENCE(IRCCOLOR "04[Error]" IRCCOLOR " Disconnected from Renegade-X server (ping timeout)."));
-		RenX::Server::disconnect();
+		RenX::Server::disconnect(RenX::DisconnectReason::PingTimeout);
 	}
 	else
 	{
@@ -88,7 +88,7 @@ int RenX::Server::think()
 			if (RenX::Server::maxAttempts != 0)
 			{
 				RenX::Server::sendLogChan(IRCCOLOR "07[Warning]" IRCCOLOR " Connection to Renegade-X server lost. Reconnection attempt in progress.");
-				if (RenX::Server::reconnect())
+				if (RenX::Server::reconnect(RenX::DisconnectReason::SocketError))
 					RenX::Server::sendLogChan(IRCCOLOR "06[Progress]" IRCCOLOR " Connection to Renegade-X server reestablished. Initializing Renegade-X RCON protocol...");
 				else
 					RenX::Server::sendLogChan(IRCCOLOR "04[Error]" IRCCOLOR " Connection to Renegade-X server lost. Reconnection attempt failed.");
@@ -123,7 +123,7 @@ int RenX::Server::OnRehash()
 	RenX::Server::commands.emptyAndDelete();
 	RenX::Server::init();
 	if (oldHostname.equalsi(RenX::Server::hostname) == false || oldPort != RenX::Server::port || oldClientHostname.equalsi(RenX::Server::clientHostname) == false || oldPass.equalsi(RenX::Server::pass) == false)
-		RenX::Server::reconnect();
+		RenX::Server::reconnect(RenX::DisconnectReason::Rehash);
 	return 0;
 }
 
@@ -2419,7 +2419,7 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 			else
 			{
 				RenX::Server::sendLogChan(STRING_LITERAL_AS_REFERENCE(IRCCOLOR "04[Error]" IRCCOLOR " Disconnected from Renegade-X server (incompatible RCON version)."));
-				this->disconnect();
+				this->disconnect(RenX::DisconnectReason::IncompatibleVersion);
 			}
 			break;
 
@@ -2443,8 +2443,12 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 	}
 }
 
-void RenX::Server::disconnect()
+void RenX::Server::disconnect(RenX::DisconnectReason reason)
 {
+	Jupiter::ArrayList<RenX::Plugin> xPlugins;
+	for (size_t i = 0; i < xPlugins.size(); i++)
+		xPlugins.get(i)->RenX_OnServerDisconnect(this, reason);
+
 	RenX::Server::sock.closeSocket();
 	RenX::Server::wipeData();
 	RenX::Server::connected = false;
@@ -2467,9 +2471,9 @@ bool RenX::Server::connect()
 	return false;
 }
 
-bool RenX::Server::reconnect()
+bool RenX::Server::reconnect(RenX::DisconnectReason reason)
 {
-	RenX::Server::disconnect();
+	RenX::Server::disconnect(static_cast<RenX::DisconnectReason>(static_cast<unsigned int>(reason) | 0x01));
 	return RenX::Server::connect();
 }
 
