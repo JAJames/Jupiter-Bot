@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2014 Justin James.
+ * Copyright (C) 2014-2015 Justin James.
  *
  * This license must be preserved.
  * Any applications, libraries, or code which make any use of any
@@ -32,10 +32,9 @@ private:
 };
 
 GENERIC_CONSOLE_COMMAND(HelpConsoleCommand)
-GENERIC_CONSOLE_COMMAND(VersionConsoleCommand)
 GENERIC_IRC_COMMAND(HelpIRCCommand)
-GENERIC_IRC_COMMAND(VersionIRCCommand)
-GENERIC_IRC_COMMAND(SyncIRCCommand)
-GENERIC_IRC_COMMAND(RehashIRCCommand)
+GENERIC_GENERIC_COMMAND(VersionGenericCommand)
+GENERIC_GENERIC_COMMAND(SyncGenericCommand)
+GENERIC_GENERIC_COMMAND(RehashGenericCommand)
 
 #endif // _CORECOMMANDS_H_HEADER

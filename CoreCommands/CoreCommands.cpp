@@ -22,6 +22,8 @@
 #include "CoreCommands.h"
 #include "IRC_Bot.h"
 
+using namespace Jupiter::literals;
+
 // Help Console Command
 
 HelpConsoleCommand::HelpConsoleCommand()
@@ -61,33 +63,7 @@ const Jupiter::ReadableString &HelpConsoleCommand::getHelp(const Jupiter::Readab
 
 CONSOLE_COMMAND_INIT(HelpConsoleCommand)
 
-// Version Console Command
-
-VersionConsoleCommand::VersionConsoleCommand()
-{
-	this->addTrigger(STRING_LITERAL_AS_REFERENCE("version"));
-	this->addTrigger(STRING_LITERAL_AS_REFERENCE("versioninfo"));
-	this->addTrigger(STRING_LITERAL_AS_REFERENCE("copyright"));
-	this->addTrigger(STRING_LITERAL_AS_REFERENCE("copyrightinfo"));
-	this->addTrigger(STRING_LITERAL_AS_REFERENCE("client"));
-	this->addTrigger(STRING_LITERAL_AS_REFERENCE("clientinfo"));
-	this->addTrigger(STRING_LITERAL_AS_REFERENCE("info"));
-}
-
-void VersionConsoleCommand::trigger(const Jupiter::ReadableString &parameters)
-{
-	printf("Version: %s" ENDL "%s" ENDL, Jupiter::version, Jupiter::copyright);
-}
-
-const Jupiter::ReadableString &VersionConsoleCommand::getHelp(const Jupiter::ReadableString &)
-{
-	static STRING_LITERAL_AS_NAMED_REFERENCE(defaultHelp, "Displays version and copyright information");
-	return defaultHelp;
-}
-
-CONSOLE_COMMAND_INIT(VersionConsoleCommand)
-
-// Help Command.
+// Help IRC Command.
 
 void HelpIRCCommand::create()
 {
@@ -137,87 +113,97 @@ const Jupiter::ReadableString &HelpIRCCommand::getHelp(const Jupiter::ReadableSt
 
 IRC_COMMAND_INIT(HelpIRCCommand)
 
-// Version IRC Command
+// Version Command
 
-void VersionIRCCommand::create()
+VersionGenericCommand::VersionGenericCommand()
 {
 	this->addTrigger(STRING_LITERAL_AS_REFERENCE("version"));
 	this->addTrigger(STRING_LITERAL_AS_REFERENCE("versioninfo"));
 	this->addTrigger(STRING_LITERAL_AS_REFERENCE("copyright"));
 	this->addTrigger(STRING_LITERAL_AS_REFERENCE("copyrightinfo"));
+	this->addTrigger(STRING_LITERAL_AS_REFERENCE("client"));
+	this->addTrigger(STRING_LITERAL_AS_REFERENCE("clientinfo"));
 }
 
-void VersionIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &channel, const Jupiter::ReadableString &nick, const Jupiter::ReadableString &parameters)
+GenericCommand::ResponseLine *VersionGenericCommand::trigger(const Jupiter::ReadableString &parameters)
 {
-	source->sendMessage(channel, Jupiter::StringS::Format("Version: %s", Jupiter::version));
-	source->sendMessage(channel, Jupiter::ReferenceString(Jupiter::copyright));
+	GenericCommand::ResponseLine *ret = new GenericCommand::ResponseLine("Version: "_jrs + Jupiter::ReferenceString(Jupiter::version), GenericCommand::DisplayType::PublicSuccess);
+	ret->next = new GenericCommand::ResponseLine(Jupiter::ReferenceString(Jupiter::copyright), GenericCommand::DisplayType::PublicSuccess);
+	return ret;
 }
 
-const Jupiter::ReadableString &VersionIRCCommand::getHelp(const Jupiter::ReadableString &)
+const Jupiter::ReadableString &VersionGenericCommand::getHelp(const Jupiter::ReadableString &)
 {
-	static STRING_LITERAL_AS_NAMED_REFERENCE(defaultHelp, "Displays version and copyright information. Syntax: version");
+	static STRING_LITERAL_AS_NAMED_REFERENCE(defaultHelp, "Displays version and copyright information");
 	return defaultHelp;
 }
 
-IRC_COMMAND_INIT(VersionIRCCommand)
+GENERIC_COMMAND_INIT(VersionGenericCommand)
+GENERIC_COMMAND_AS_CONSOLE_COMMAND(VersionGenericCommand)
+GENERIC_COMMAND_AS_IRC_COMMAND(VersionGenericCommand)
 
 // Sync Command
 
-void SyncIRCCommand::create()
+SyncGenericCommand::SyncGenericCommand()
 {
 	this->addTrigger(STRING_LITERAL_AS_REFERENCE("sync"));
-	this->setAccessLevel(4);
 }
 
-void SyncIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &channel, const Jupiter::ReadableString &nick, const Jupiter::ReadableString &parameters)
+GenericCommand::ResponseLine *SyncGenericCommand::trigger(const Jupiter::ReadableString &parameters)
 {
-	if (source->Config == nullptr) source->sendMessage(channel, STRING_LITERAL_AS_REFERENCE("Unable to find Config data."));
+	if (Jupiter::IRC::Client::Config == nullptr)
+		return new GenericCommand::ResponseLine(STRING_LITERAL_AS_REFERENCE("Unable to find Config data."), GenericCommand::DisplayType::PublicError);
 	else
 	{
 		bool r;
 		if (parameters.isNotEmpty())
-			r = source->Config->sync(parameters);
-		else r = source->Config->sync();
-		if (r) source->sendMessage(channel, STRING_LITERAL_AS_REFERENCE("Config data synced to file successfully."));
-		else source->sendMessage(channel, STRING_LITERAL_AS_REFERENCE("Unable to sync Config data."));
+			r = Jupiter::IRC::Client::Config->sync(parameters);
+		else r = Jupiter::IRC::Client::Config->sync();
+		if (r)
+			return new GenericCommand::ResponseLine(STRING_LITERAL_AS_REFERENCE("Config data synced to file successfully."), GenericCommand::DisplayType::PublicSuccess);
+		return new GenericCommand::ResponseLine(STRING_LITERAL_AS_REFERENCE("Unable to sync Config data."), GenericCommand::DisplayType::PublicError);
 	}
 }
 
-const Jupiter::ReadableString &SyncIRCCommand::getHelp(const Jupiter::ReadableString &)
+const Jupiter::ReadableString &SyncGenericCommand::getHelp(const Jupiter::ReadableString &)
 {
 	static STRING_LITERAL_AS_NAMED_REFERENCE(defaultHelp, "Syncs the configuration data to a file. Syntax: sync [file]");
 	return defaultHelp;
 }
 
-IRC_COMMAND_INIT(SyncIRCCommand)
+GENERIC_COMMAND_INIT(SyncGenericCommand)
+GENERIC_COMMAND_AS_CONSOLE_COMMAND(SyncGenericCommand)
+GENERIC_COMMAND_AS_IRC_COMMAND_2(SyncGenericCommand, 4)
 
 // Rehash Command
 
-void RehashIRCCommand::create()
+RehashGenericCommand::RehashGenericCommand()
 {
 	this->addTrigger(STRING_LITERAL_AS_REFERENCE("rehash"));
-	this->setAccessLevel(4);
 }
 
-void RehashIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &channel, const Jupiter::ReadableString &nick, const Jupiter::ReadableString &parameters)
+GenericCommand::ResponseLine *RehashGenericCommand::trigger(const Jupiter::ReadableString &parameters)
 {
-	if (source->Config == nullptr) source->sendMessage(channel, STRING_LITERAL_AS_REFERENCE("Unable to find Config data."));
+	if (Jupiter::IRC::Client::Config == nullptr)
+		return new GenericCommand::ResponseLine(STRING_LITERAL_AS_REFERENCE("Unable to find Config data."), GenericCommand::DisplayType::PublicError);
 	else
 	{
 		unsigned int r = Jupiter::rehash();
 		if (r == 0)
-			source->sendMessage(channel, Jupiter::StringS::Format("All %u objects were successfully rehashed.", Jupiter::getRehashableCount()));
-		else source->sendMessage(channel, Jupiter::StringS::Format("%u of %u objects failed to successfully rehash.", r, Jupiter::getRehashableCount()));
+			return new GenericCommand::ResponseLine(Jupiter::StringS::Format("All %u objects were successfully rehashed.", Jupiter::getRehashableCount()), GenericCommand::DisplayType::PublicSuccess);
+		return new GenericCommand::ResponseLine(Jupiter::StringS::Format("%u of %u objects failed to successfully rehash.", r, Jupiter::getRehashableCount()), GenericCommand::DisplayType::PublicError);
 	}
 }
 
-const Jupiter::ReadableString &RehashIRCCommand::getHelp(const Jupiter::ReadableString &)
+const Jupiter::ReadableString &RehashGenericCommand::getHelp(const Jupiter::ReadableString &)
 {
 	static STRING_LITERAL_AS_NAMED_REFERENCE(defaultHelp, "Rehashes configuration data from a file. Syntax: rehash [file]");
 	return defaultHelp;
 }
 
-IRC_COMMAND_INIT(RehashIRCCommand)
+GENERIC_COMMAND_INIT(RehashGenericCommand)
+GENERIC_COMMAND_AS_CONSOLE_COMMAND(RehashGenericCommand)
+GENERIC_COMMAND_AS_IRC_COMMAND_2(RehashGenericCommand, 4)
 
 // Plugin instantiation and entry point.
 CoreCommandsPlugin pluginInstance;
