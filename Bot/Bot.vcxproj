@@ -88,6 +88,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Console_Command.cpp" />
+    <ClCompile Include="Generic_Command.cpp" />
     <ClCompile Include="IRC_Command.cpp" />
     <ClCompile Include="Main.cpp" />
     <ClCompile Include="IRC_Bot.cpp" />
@@ -95,6 +96,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Console_Command.h" />
+    <ClInclude Include="Generic_Command.h" />
     <ClInclude Include="IRC_Bot.h" />
     <ClInclude Include="IRC_Command.h" />
     <ClInclude Include="Jupiter_Bot.h" />

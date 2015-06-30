@@ -158,6 +158,9 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "RenX.Listen", "RenX.Listen\
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ChannelRelay", "ChannelRelay\ChannelRelay.vcxproj", "{ADAD973E-EAA8-446D-BCD3-83B53DBC3A3F}"
+	ProjectSection(ProjectDependencies) = postProject
+		{C188871B-5F32-4946-B301-24CA2EBB275D} = {C188871B-5F32-4946-B301-24CA2EBB275D}
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

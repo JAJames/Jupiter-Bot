@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2013-2014 Justin James.
+ * Copyright (C) 2013-2015 Justin James.
  *
  * This license must be preserved.
  * Any applications, libraries, or code which make any use of any
@@ -23,20 +23,12 @@
 * @brief Provides an extendable command system specialized for console-based commands.
 */
 
-#include "Jupiter_Bot.h"
 #include "Jupiter/Command.h"
 #include "Jupiter/ArrayList.h"
+#include "Jupiter_Bot.h"
+#include "Generic_Command.h"
 
-class Command;
 class ConsoleCommand;
-
-/*
-* Initial access level is always 0. Change this using setAccessLevel()
-* There are no default triggers. Add triggers using addTrigger(trigger)
-* When your command is triggered, trigger(parameters) will be called.
-* You must provide command-specific help for your command, through getHelp().
-* The first trigger added is the trigger which is displayed to the user in the help command.
-*/
 
 /** DLL Linkage Nagging */
 #if defined _MSC_VER
@@ -49,7 +41,10 @@ JUPITER_BOT_API extern Jupiter::ArrayList<ConsoleCommand> *consoleCommands;
 
 /**
 * @brief Provides the basis for console commands.
-* Note: This will likely be moved to a separate file in the future.
+* There are no default triggers. Add triggers using addTrigger(trigger)
+* When your command is triggered, trigger(parameters) will be called.
+* You must provide command-specific help for your command, through getHelp().
+* The first trigger added is the trigger which is displayed to the user in "help" commands.
 */
 class JUPITER_BOT_API ConsoleCommand : public Jupiter::Command
 {
@@ -98,6 +93,28 @@ class CLASS : public ConsoleCommand { \
 /** Instantiates a console command. */
 #define CONSOLE_COMMAND_INIT(CLASS) \
 	CLASS CLASS ## _instance;
+
+/** Generates a console command implementation from a generic command. */
+#define GENERIC_COMMAND_AS_CONSOLE_COMMAND_IMPL(CLASS) \
+	CLASS ## _AS_CONSOLE_COMMAND :: CLASS ## _AS_CONSOLE_COMMAND() { \
+		size_t index = 0; \
+		while (index != CLASS ## _instance.getTriggerCount()) this->addTrigger(CLASS ## _instance.getTrigger(index++)); } \
+	void CLASS ## _AS_CONSOLE_COMMAND :: trigger(const Jupiter::ReadableString &parameters) { \
+		GenericCommand::ResponseLine *del; \
+		GenericCommand::ResponseLine *ret = CLASS ## _instance.trigger(parameters); \
+		while (ret != nullptr) { \
+			ret->response.println(ret->type == GenericCommand::DisplayType::PublicError || ret->type == GenericCommand::DisplayType::PrivateError ? stderr : stdout); \
+			del = ret; ret = ret->next; delete del; } } \
+	const Jupiter::ReadableString & CLASS ## _AS_CONSOLE_COMMAND :: getHelp(const Jupiter::ReadableString &parameters) { \
+		return CLASS ## _instance.getHelp(parameters); } \
+	CONSOLE_COMMAND_INIT(CLASS ## _AS_CONSOLE_COMMAND)
+
+/** Generates a console command from a generic command. */
+#define GENERIC_COMMAND_AS_CONSOLE_COMMAND(CLASS) \
+	GENERIC_CONSOLE_COMMAND(CLASS ## _AS_CONSOLE_COMMAND) \
+	GENERIC_COMMAND_AS_CONSOLE_COMMAND_IMPL(CLASS);
+
+
 
 /** Re-enable warnings */
 #if defined _MSC_VER

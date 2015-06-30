@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2013-2014 Justin James.
+ * Copyright (C) 2013-2015 Justin James.
  *
  * This license must be preserved.
  * Any applications, libraries, or code which make any use of any
@@ -27,19 +27,11 @@
 #include "Jupiter/IRC_Client.h"
 #include "Jupiter/ArrayList.h"
 #include "Jupiter/String.h"
-#include "ServerManager.h"
 #include "Jupiter_Bot.h"
+#include "ServerManager.h"
+#include "IRC_Bot.h"
 
-class IRC_Bot;
 class IRCCommand;
-
-/*
-* Initial access level is always 0. Change this using setAccessLevel()
-* There are no default triggers. Add triggers using addTrigger(trigger)
-* When your command is triggered, trigger(channel, nick, parameters) will be called.
-* You must provide command-specific help for your command, through getHelp().
-* The first trigger added is the trigger which is displayed to the user in the help command.
-*/
 
 /** DLL Linkage Nagging */
 #if defined _MSC_VER
@@ -52,7 +44,11 @@ JUPITER_BOT_API extern Jupiter::ArrayList<IRCCommand> *IRCMasterCommandList;
 
 /**
 * @brief Provides the basis for IRC commands.
-* Note: This will likely be moved to a separate file in the future.
+* Initial access level is always 0. Change this using setAccessLevel()
+* There are no default triggers. Add triggers using addTrigger(trigger)
+* When your command is triggered, trigger(channel, nick, parameters) will be called.
+* You must provide command-specific help for your command, through getHelp().
+* The first trigger added is the trigger which is displayed to the user in the help command.
 */
 class JUPITER_BOT_API IRCCommand : public Jupiter::Command
 {
@@ -188,6 +184,55 @@ class CLASS : public IRCCommand { \
 #define IRC_COMMAND_INIT(CLASS) \
 	CLASS CLASS ## _instance; \
 	CLASS *CLASS::copy() { return new CLASS(*this); }
+
+/** Generates a base IRC command implementation from a generic command. */
+#define GENERIC_COMMAND_AS_IRC_COMMAND_IMPL_BASE(CLASS) \
+	void CLASS ## _AS_IRC_COMMAND :: trigger(IRC_Bot *source, const Jupiter::ReadableString &channel, const Jupiter::ReadableString &nick, const Jupiter::ReadableString &parameters) { \
+		GenericCommand::ResponseLine *del; \
+		GenericCommand::ResponseLine *ret = CLASS ## _instance.trigger(parameters); \
+		while (ret != nullptr) { \
+			switch(ret->type) { \
+				case GenericCommand::DisplayType::PublicSuccess: \
+				case GenericCommand::DisplayType::PublicError: \
+					source->sendMessage(channel, ret->response); \
+					break; \
+				case GenericCommand::DisplayType::PrivateSuccess: \
+				case GenericCommand::DisplayType::PrivateError: \
+					source->sendNotice(nick, ret->response); \
+					break; \
+				default: \
+					source->sendMessage(nick, ret->response); \
+					break; \
+			} \
+			del = ret; ret = ret->next; delete del; } } \
+	const Jupiter::ReadableString & CLASS ## _AS_IRC_COMMAND :: getHelp(const Jupiter::ReadableString &parameters) { \
+		return CLASS ##_instance.getHelp(parameters); } \
+	IRC_COMMAND_INIT(CLASS ## _AS_IRC_COMMAND)
+
+/** Generates an IRC command implementation from a generic command. */
+#define GENERIC_COMMAND_AS_IRC_COMMAND_IMPL(CLASS) \
+	void CLASS ## _AS_IRC_COMMAND :: create() { \
+		size_t index = 0; \
+		while (index != CLASS ## _instance.getTriggerCount()) this->addTrigger(CLASS ## _instance.getTrigger(index++)); } \
+	GENERIC_COMMAND_AS_IRC_COMMAND_IMPL_BASE(CLASS)
+
+/** Generates an IRC command implementation from a generic command. */
+#define GENERIC_COMMAND_AS_IRC_COMMAND_IMPL_2(CLASS, ACCESS_LEVEL) \
+	void CLASS ## _AS_IRC_COMMAND :: create() { \
+		size_t index = 0; \
+		while (index != CLASS ## _instance.getTriggerCount()) this->addTrigger(CLASS ## _instance.getTrigger(index++)); \
+		this->setAccessLevel(ACCESS_LEVEL); } \
+	GENERIC_COMMAND_AS_IRC_COMMAND_IMPL_BASE(CLASS)
+
+/** Generates an IRC command from a generic command. */
+#define GENERIC_COMMAND_AS_IRC_COMMAND(CLASS) \
+	GENERIC_IRC_COMMAND(CLASS ## _AS_IRC_COMMAND) \
+	GENERIC_COMMAND_AS_IRC_COMMAND_IMPL(CLASS);
+
+/** Generates an IRC command from a generic command. */
+#define GENERIC_COMMAND_AS_IRC_COMMAND_2(CLASS, ACCESS_LEVEL) \
+	GENERIC_IRC_COMMAND(CLASS ## _AS_IRC_COMMAND) \
+	GENERIC_COMMAND_AS_IRC_COMMAND_IMPL_2(CLASS, ACCESS_LEVEL);
 
 /** Re-enable warnings */
 #if defined _MSC_VER
