@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2014 Justin James.
+ * Copyright (C) 2014-2015 Justin James.
  *
  * This license must be preserved.
  * Any applications, libraries, or code which make any use of any
@@ -19,6 +19,7 @@
 #define _PLUGINMANAGER_H_HEADER
 
 #include "Jupiter/Plugin.h"
+#include "Generic_Command.h"
 #include "Console_Command.h"
 #include "IRC_Command.h"
 
@@ -31,9 +32,6 @@ private:
 	STRING_LITERAL_AS_NAMED_REFERENCE(name, "PluginManager");
 };
 
-GENERIC_CONSOLE_COMMAND(PluginConsoleCommand)
-GENERIC_IRC_COMMAND(LoadPluginIRCCommand)
-GENERIC_IRC_COMMAND(FreePluginIRCCommand)
-GENERIC_IRC_COMMAND(ListPluginIRCCommand)
+GENERIC_GENERIC_COMMAND(PluginGenericCommand)
 
 #endif // _PLUGINMANAGER_H_HEADER

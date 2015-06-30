@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2014 Justin James.
+ * Copyright (C) 2014-2015 Justin James.
  *
  * This license must be preserved.
  * Any applications, libraries, or code which make any use of any
@@ -18,10 +18,11 @@
 #include <cstring>
 #include "Jupiter/Functions.h"
 #include "PluginManager.h"
-#include "IRC_Bot.h"
 
-// Plugin Console Command
-PluginConsoleCommand::PluginConsoleCommand()
+using namespace Jupiter::literals;
+
+// Plugin Generic Command
+PluginGenericCommand::PluginGenericCommand()
 {
 	this->addTrigger(STRING_LITERAL_AS_REFERENCE("plugin"));
 	this->addTrigger(STRING_LITERAL_AS_REFERENCE("plugins"));
@@ -29,38 +30,40 @@ PluginConsoleCommand::PluginConsoleCommand()
 	this->addTrigger(STRING_LITERAL_AS_REFERENCE("modules"));
 }
 
-void PluginConsoleCommand::trigger(const Jupiter::ReadableString &parameters)
+GenericCommand::ResponseLine *PluginGenericCommand::trigger(const Jupiter::ReadableString &parameters)
 {
+	GenericCommand::ResponseLine *ret = new GenericCommand::ResponseLine();
 	if (parameters.isEmpty() || parameters.matchi("list*"))
 	{
-		printf("There are %u plugins loaded." ENDL, Jupiter::plugins->size());
-		for (size_t i = 0; i != Jupiter::plugins->size(); i++) Jupiter::plugins->get(i)->getName().println(stdout);
+		GenericCommand::ResponseLine *line = ret->set(Jupiter::String::Format("There are %u plugins loaded:", Jupiter::plugins->size()), GenericCommand::DisplayType::PublicSuccess);
+		for (size_t i = 0; i != Jupiter::plugins->size(); i++)
+		{
+			line->next = new GenericCommand::ResponseLine(Jupiter::plugins->get(i)->getName(), GenericCommand::DisplayType::PublicSuccess);
+			line = line->next;
+		}
+		return ret;
 	}
-	else
+
+	if (parameters.matchi("load *"))
 	{
-		if (parameters.matchi("load *"))
-		{
-			if (Jupiter::loadPlugin(Jupiter::ReferenceString::gotoWord(parameters, 1, WHITESPACE)) == nullptr)
-				puts("Error: Failed to load plugin.");
-			else
-				puts("Plugin successfully loaded.");
-		}
-		else if (parameters.matchi("unload *"))
-		{
-			Jupiter::ReferenceString pluginName = Jupiter::ReferenceString::gotoWord(parameters, 1, WHITESPACE);
-			if (Jupiter::getPlugin(pluginName) == nullptr)
-				puts("Error: Plugin does not exist.");
-			else if (Jupiter::freePlugin(pluginName) == false)
-				puts("Error: Failed to unload plugin.");
-			else
-				puts("Plugin successfully unloaded.");
-		}
+		if (Jupiter::loadPlugin(Jupiter::ReferenceString::gotoWord(parameters, 1, WHITESPACE)) == nullptr)
+			return ret->set("Error: Failed to load plugin."_jrs, GenericCommand::DisplayType::PublicError);
 		else
-			puts("Error: Invalid Syntax. Syntax: plugin {[list], <load> <plugin>, <unload> <plugin>}");
+			return ret->set("Plugin successfully loaded."_jrs, GenericCommand::DisplayType::PublicSuccess);
 	}
+	if (parameters.matchi("unload *"))
+	{
+		Jupiter::ReferenceString pluginName = Jupiter::ReferenceString::gotoWord(parameters, 1, WHITESPACE);
+		if (Jupiter::getPlugin(pluginName) == nullptr)
+			return ret->set("Error: Plugin does not exist."_jrs, GenericCommand::DisplayType::PublicError);
+		if (Jupiter::freePlugin(pluginName) == false)
+			return ret->set("Error: Failed to unload plugin."_jrs, GenericCommand::DisplayType::PublicError);
+		return ret->set("Plugin successfully unloaded."_jrs, GenericCommand::DisplayType::PublicSuccess);
+	}
+	return ret->set("Error: Invalid Syntax. Syntax: plugin {[list], <load> <plugin>, <unload> <plugin>}"_jrs, GenericCommand::DisplayType::PrivateError);
 }
 
-const Jupiter::ReadableString &PluginConsoleCommand::getHelp(const Jupiter::ReadableString &parameters)
+const Jupiter::ReadableString &PluginGenericCommand::getHelp(const Jupiter::ReadableString &parameters)
 {
 	static STRING_LITERAL_AS_NAMED_REFERENCE(loadHelp, "Loads a plugin by file name. Do not include a file extension. Syntax: plugin load <plugin>");
 	static STRING_LITERAL_AS_NAMED_REFERENCE(unloadHelp, "Unloads a plugin by name. Syntax: plugin unload <plugin>");
@@ -77,93 +80,10 @@ const Jupiter::ReadableString &PluginConsoleCommand::getHelp(const Jupiter::Read
 	return defaultHelp;
 }
 
-CONSOLE_COMMAND_INIT(PluginConsoleCommand)
+GENERIC_COMMAND_INIT(PluginGenericCommand)
 
-// Load Plugin
-
-void LoadPluginIRCCommand::create()
-{
-	this->addTrigger(STRING_LITERAL_AS_REFERENCE("loadplugin"));
-	this->setAccessLevel(5);
-}
-
-void LoadPluginIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &channel, const Jupiter::ReadableString &nick, const Jupiter::ReadableString &parameters)
-{
-	if (parameters != nullptr)
-	{
-		if (Jupiter::getPlugin(parameters) != nullptr) source->sendMessage(channel, STRING_LITERAL_AS_REFERENCE("Error: Plugin already exists. You must first unload the plugin."));
-		else
-		{
-			if (Jupiter::loadPlugin(parameters) == nullptr) source->sendMessage(channel, STRING_LITERAL_AS_REFERENCE("Error: Failed to load plugin."));
-			else source->sendMessage(channel, STRING_LITERAL_AS_REFERENCE("Plugin successfully loaded."));
-		}
-	}
-	else source->sendNotice(nick, STRING_LITERAL_AS_REFERENCE("Error: Too Few Parameters. Syntax: loadPlugin <plugin>"));
-}
-
-const Jupiter::ReadableString &LoadPluginIRCCommand::getHelp(const Jupiter::ReadableString &)
-{
-	static STRING_LITERAL_AS_NAMED_REFERENCE(defaultHelp, "Dynamically loads a plugin. Syntax: loadPlugin <plugin>");
-	return defaultHelp;
-}
-
-IRC_COMMAND_INIT(LoadPluginIRCCommand)
-
-// Free Plugin
-
-void FreePluginIRCCommand::create()
-{
-	this->addTrigger(STRING_LITERAL_AS_REFERENCE("freeplugin"));
-	this->addTrigger(STRING_LITERAL_AS_REFERENCE("unloadplugin"));
-	this->setAccessLevel(5);
-}
-
-void FreePluginIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &channel, const Jupiter::ReadableString &nick, const Jupiter::ReadableString &parameters)
-{
-	if (parameters != nullptr)
-	{
-		if (Jupiter::getPlugin(parameters) == nullptr) source->sendMessage(channel, STRING_LITERAL_AS_REFERENCE("Error: Plugin does not exist."));
-		else if (Jupiter::freePlugin(parameters) == false) source->sendMessage(channel, STRING_LITERAL_AS_REFERENCE("Error: Failed to unload plugin."));
-		else source->sendMessage(channel, STRING_LITERAL_AS_REFERENCE("Plugin successfully unloaded."));
-	}
-	else source->sendNotice(nick, STRING_LITERAL_AS_REFERENCE("Error: Too Few Parameters. Syntax: freePlugin <plugin>"));
-}
-
-const Jupiter::ReadableString &FreePluginIRCCommand::getHelp(const Jupiter::ReadableString &)
-{
-	static STRING_LITERAL_AS_NAMED_REFERENCE(defaultHelp, "Dynamically unloads a plugin. Syntax: freePlugin <plugin>");
-	return defaultHelp;
-}
-
-IRC_COMMAND_INIT(FreePluginIRCCommand)
-
-// List Plugins
-
-void ListPluginIRCCommand::create()
-{
-	this->addTrigger(STRING_LITERAL_AS_REFERENCE("plugins"));
-	this->addTrigger(STRING_LITERAL_AS_REFERENCE("plugin"));
-	this->addTrigger(STRING_LITERAL_AS_REFERENCE("listplugin"));
-	this->addTrigger(STRING_LITERAL_AS_REFERENCE("listplugins"));
-	this->addTrigger(STRING_LITERAL_AS_REFERENCE("pluginlist"));
-	this->addTrigger(STRING_LITERAL_AS_REFERENCE("pluginslist"));
-	this->setAccessLevel(4);
-}
-
-void ListPluginIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &channel, const Jupiter::ReadableString &nick, const Jupiter::ReadableString &parameters)
-{
-	source->sendMessage(channel, Jupiter::StringS::Format("%u plugins loaded:", Jupiter::plugins->size()));
-	for (size_t i = 0; i != Jupiter::plugins->size(); i++)
-		source->sendMessage(channel, Jupiter::plugins->get(i)->getName());
-}
-
-const Jupiter::ReadableString &ListPluginIRCCommand::getHelp(const Jupiter::ReadableString &)
-{
-	static STRING_LITERAL_AS_NAMED_REFERENCE(defaultHelp, "Lists the currently loaded plugins. Syntax: pluginlist");
-	return defaultHelp;
-}
-
-IRC_COMMAND_INIT(ListPluginIRCCommand)
+GENERIC_COMMAND_AS_CONSOLE_COMMAND(PluginGenericCommand)
+GENERIC_COMMAND_AS_IRC_COMMAND_2(PluginGenericCommand, 5)
 
 // Plugin instantiation and entry point.
 PluginManager pluginInstance;
