@@ -145,6 +145,11 @@ public:
 	*/
 	virtual ~IRCCommand();
 
+	/** Public members */
+
+	static IRC_Bot *active_server; /** Currently active IRC server */
+	static IRC_Bot *selected_server; /** Currently selected IRC server */
+
 	/** Private members */
 private:
 	int access; /** Default access level */

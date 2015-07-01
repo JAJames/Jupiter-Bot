@@ -53,6 +53,9 @@ IRCCommand::~IRCCommand()
 	IRCCommand::types.emptyAndDelete();
 }
 
+IRC_Bot *IRCCommand::active_server = nullptr;
+IRC_Bot *IRCCommand::selected_server = nullptr;
+
 // IRC Command Functions
 
 int IRCCommand::getAccessLevel()

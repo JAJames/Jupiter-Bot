@@ -47,7 +47,12 @@ IRC_Bot::IRC_Bot(const Jupiter::ReadableString &configSection) : Client(configSe
 
 IRC_Bot::~IRC_Bot()
 {
-	while (IRC_Bot::commands.size()) delete IRC_Bot::commands.remove(0);
+	if (IRCCommand::selected_server == this)
+		IRCCommand::selected_server = nullptr;
+	if (IRCCommand::active_server == this)
+		IRCCommand::active_server = IRCCommand::selected_server;
+
+	IRC_Bot::commands.emptyAndDelete();
 }
 
 void IRC_Bot::addCommand(IRCCommand *cmd)
@@ -193,9 +198,13 @@ void IRC_Bot::OnChat(const Jupiter::ReadableString &channel, const Jupiter::Read
 					IRCCommand *cmd = IRC_Bot::getCommand(command);
 					if (cmd != nullptr)
 					{
+						IRCCommand::active_server = this;
 						int cAccess = cmd->getAccessLevel(chan);
-						if (cAccess >= 0 && Jupiter::IRC::Client::getAccessLevel(channel, nick) >= cAccess) cmd->trigger(this, channel, nick, parameters);
-						else this->sendNotice(nick, STRING_LITERAL_AS_REFERENCE("Access Denied."));
+						if (cAccess >= 0 && Jupiter::IRC::Client::getAccessLevel(channel, nick) >= cAccess)
+							cmd->trigger(this, channel, nick, parameters);
+						else
+							this->sendNotice(nick, STRING_LITERAL_AS_REFERENCE("Access Denied."));
+						IRCCommand::active_server = IRCCommand::selected_server;
 					}
 				}
 			}

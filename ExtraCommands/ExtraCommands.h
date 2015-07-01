@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2014 Justin James.
+ * Copyright (C) 2014-2015 Justin James.
  *
  * This license must be preserved.
  * Any applications, libraries, or code which make any use of any
@@ -31,13 +31,15 @@ private:
 	STRING_LITERAL_AS_NAMED_REFERENCE(name, "ExtraCommands");
 };
 
-GENERIC_CONSOLE_COMMAND(RawConsoleCommand)
-GENERIC_CONSOLE_COMMAND(MessageConsoleCommand)
-GENERIC_IRC_COMMAND(JoinIRCCommand)
-GENERIC_IRC_COMMAND(PartIRCCommand)
-GENERIC_IRC_COMMAND(InfoIRCCommand)
-GENERIC_IRC_COMMAND(ExitIRCCommand)
-GENERIC_IRC_COMMAND(IRCConnectIRCCommand)
-GENERIC_IRC_COMMAND(IRCDisconnectIRCCommand)
+GENERIC_GENERIC_COMMAND(SelectGenericCommand)
+GENERIC_GENERIC_COMMAND(DeselectGenericCommand)
+GENERIC_GENERIC_COMMAND(RawGenericCommand)
+GENERIC_GENERIC_COMMAND(IRCMessageGenericCommand)
+GENERIC_GENERIC_COMMAND(JoinGenericCommand)
+GENERIC_GENERIC_COMMAND(PartGenericCommand)
+GENERIC_GENERIC_COMMAND(DebugInfoGenericCommand)
+GENERIC_GENERIC_COMMAND(ExitGenericCommand)
+GENERIC_GENERIC_COMMAND(IRCConnectGenericCommand)
+GENERIC_GENERIC_COMMAND(IRCDisconnectGenericCommand)
 
 #endif // _EXTRACOMMANDS_H_HEADER
