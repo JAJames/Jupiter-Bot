@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2014 Justin James.
+ * Copyright (C) 2014-2015 Justin James.
  *
  * This license must be preserved.
  * Any applications, libraries, or code which make any use of any
@@ -31,6 +31,6 @@ private:
 };
 
 GENERIC_IRC_COMMAND(EightBallIRCCommand)
-GENERIC_IRC_COMMAND(ResolveIRCCommand)
+GENERIC_GENERIC_COMMAND(ResolveGenericCommand)
 
 #endif // _FUNCOMMANDS_H_HEADER

@@ -22,13 +22,15 @@
 #include "FunCommands.h"
 #include "IRC_Bot.h"
 
+using namespace Jupiter::literals;
+
 // 8ball
 
 void EightBallIRCCommand::create()
 {
-	this->addTrigger(STRING_LITERAL_AS_REFERENCE("8ball"));
-	this->addTrigger(STRING_LITERAL_AS_REFERENCE("8balls"));
-	this->addTrigger(STRING_LITERAL_AS_REFERENCE("eightBall"));
+	this->addTrigger("8ball"_jrs);
+	this->addTrigger("8balls"_jrs);
+	this->addTrigger("eightBall"_jrs);
 }
 
 void EightBallIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &channel, const Jupiter::ReadableString &nick, const Jupiter::ReadableString &parameters)
@@ -38,34 +40,34 @@ void EightBallIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString
 	switch (r)
 	{
 	case 0:
-		msg.set("No.");
+		msg.set("No."_jrs);
 		break;
 	case 1:
-		msg.set("Yes.");
+		msg.set("Yes."_jrs);
 		break;
 	case 2:
-		msg.set("Maybe.");
+		msg.set("Maybe."_jrs);
 		break;
 	case 3:
-		msg.set("Seven.");
+		msg.set("Seven."_jrs);
 		break;
 	case 4:
-		msg.set("Consider counseling.");
+		msg.set("Consider counseling."_jrs);
 		break;
 	case 5:
-		msg.set("Look into a realationship. A real one.");
+		msg.set("Look into a realationship. A real one."_jrs);
 		break;
 	case 6:
-		msg.set("Quit asking me these deep questions, before I get deeply into you.");
+		msg.set("Quit asking me these deep questions, before I get deeply into you."_jrs);
 		break;
 	case 7:
-		msg.set("Fuck you.");
+		msg.set("Fuck you."_jrs);
 		break;
 	case 8:
-		msg.set("Fuck me.");
+		msg.set("Fuck me."_jrs);
 		break;
 	case 9:
-		msg.set("I'm sorry, I don't bend that way.");
+		msg.set("Good thing I bend that way. ;)"_jrs);
 		break;
 	case 10:
 		msg.format("Hai %.*s ;)", nick.size(), nick.ptr());
@@ -77,28 +79,28 @@ void EightBallIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString
 		msg.format("Sorry %.*s, but your IQ must be at least %d for me to care.", nick.size(), nick.ptr(), rand() % 50);
 		break;
 	case 13:
-		msg.set("Ask me those kind of questions in #Faggots");
+		msg.set("Ask me those kind of questions in #Jail"_jrs);
 		break;
 	case 14:
-		msg.set("I don't talk to slut-mongers.");
+		msg.set("I don't talk to slut-mongers."_jrs);
 		break;
 	case 15:
-		msg.set("I only talk to slut-mongers.");
+		msg.set("I only talk to slut-mongers."_jrs);
 		break;
 	case 16:
-		msg.set("Nuclear launch detected.");
+		msg.set("Nuclear launch detected."_jrs);
 		break;
 	case 17:
-		msg.set("404 - Not found.");
+		msg.set("404 - Not found."_jrs);
 		break;
 	case 18:
-		msg.set("I hurr u liek mudkipz?");
+		msg.set("I hurr u liek mudkipz?"_jrs);
 		break;
 	case 19:
-		msg.set("Walk this way, babycakes ;)");
+		msg.set("Walk this way, babycakes ;)"_jrs);
 		break;
 	default:
-		msg.set("Nothingness. You suck. Go rot.");
+		msg.set("Nothingness. You suck. Go rot."_jrs);
 		break;
 	}
 	source->sendMessage(channel, msg);
@@ -114,51 +116,51 @@ IRC_COMMAND_INIT(EightBallIRCCommand)
 
 // Resolve Command
 
-void ResolveIRCCommand::create()
+ResolveGenericCommand::ResolveGenericCommand()
 {
-	this->addTrigger(STRING_LITERAL_AS_REFERENCE("resolve"));
+	this->addTrigger("resolve"_jrs);
 }
 
-void ResolveIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &channel, const Jupiter::ReadableString &nick, const Jupiter::ReadableString &parameters)
+GenericCommand::ResponseLine *ResolveGenericCommand::trigger(const Jupiter::ReadableString &parameters)
 {
 	unsigned int count = parameters.wordCount(WHITESPACE);
-	if (count > 1)
+
+	if (count <= 1)
+		return new GenericCommand::ResponseLine("Error: Too few parameters. Syntax: resolve <hostname|ip> <address>"_jrs, GenericCommand::DisplayType::PrivateError);
+
+	Jupiter::ReferenceString command = Jupiter::ReferenceString::getWord(parameters, 0, WHITESPACE);
+	if (command.equalsi("hostname"_jrs) || command.equalsi("host"_jrs))
 	{
-		Jupiter::ReferenceString command = Jupiter::ReferenceString::getWord(parameters, 0, WHITESPACE);
-		if (command.equalsi("hostname") || command.equalsi("host"))
-		{
-			Jupiter::ReferenceString resolved = Jupiter::Socket::resolveHostname(Jupiter::CStringS::gotoWord(parameters, 1, WHITESPACE).c_str(), 0);
-			if (resolved.isNotEmpty())
-				source->sendMessage(channel, resolved);
-			else source->sendMessage(channel, STRING_LITERAL_AS_REFERENCE("Error: Unable to resolve."));
-		}
-		else if (command.equalsi("ip"))
-		{
-			Jupiter::ReferenceString resolved = Jupiter::Socket::resolveAddress(Jupiter::CStringS::gotoWord(parameters, 1, WHITESPACE).c_str(), 0);
-			if (resolved.isNotEmpty())
-				source->sendMessage(channel, resolved);
-			else source->sendMessage(channel, STRING_LITERAL_AS_REFERENCE("Error: Unable to resolve."));
-		}
-		else source->sendNotice(nick, STRING_LITERAL_AS_REFERENCE("Error: Invalid type. You can only resolve hostnames and IP addresses."));
+		Jupiter::ReferenceString resolved = Jupiter::Socket::resolveHostname(Jupiter::CStringS::gotoWord(parameters, 1, WHITESPACE).c_str(), 0);
+		if (resolved.isEmpty())
+			return new GenericCommand::ResponseLine("Error: Unable to resolve."_jrs, GenericCommand::DisplayType::PublicError);
+		return new GenericCommand::ResponseLine(resolved, GenericCommand::DisplayType::PublicSuccess);
 	}
-	else source->sendNotice(nick, STRING_LITERAL_AS_REFERENCE("Too few parameters. Syntax: resolve <hostname|ip> <address>"));
+	else if (command.equalsi("ip"_jrs))
+	{
+		Jupiter::ReferenceString resolved = Jupiter::Socket::resolveAddress(Jupiter::CStringS::gotoWord(parameters, 1, WHITESPACE).c_str(), 0);
+		if (resolved.isEmpty())
+			return new GenericCommand::ResponseLine("Error: Unable to resolve."_jrs, GenericCommand::DisplayType::PublicError);
+		return new GenericCommand::ResponseLine(resolved, GenericCommand::DisplayType::PublicSuccess);
+	}
+	return new GenericCommand::ResponseLine("Error: Invalid type. You can only resolve hostnames and IP addresses."_jrs, GenericCommand::DisplayType::PrivateError);
 }
 
-const Jupiter::ReadableString &ResolveIRCCommand::getHelp(const Jupiter::ReadableString &parameters)
+const Jupiter::ReadableString &ResolveGenericCommand::getHelp(const Jupiter::ReadableString &parameters)
 {
 	static STRING_LITERAL_AS_NAMED_REFERENCE(defaultHelp, "Resolves an IP address or hostname. Syntax: resolve <hostname|ip> <address>");
 	static STRING_LITERAL_AS_NAMED_REFERENCE(hostHelp, "Resolves a hostname to an IP address. Syntax: resolve hostname <address>");
 	static STRING_LITERAL_AS_NAMED_REFERENCE(ipHelp, "Reverse-resolves an IP address to a hostname. Syntax: resolve ip <address>");
 
-	if (parameters.equalsi(STRING_LITERAL_AS_REFERENCE("hostname")) || parameters.equalsi(STRING_LITERAL_AS_REFERENCE("host")))
+	if (parameters.equalsi("hostname"_jrs) || parameters.equalsi("host"_jrs))
 		return hostHelp;
-	if (parameters.equalsi(STRING_LITERAL_AS_REFERENCE("ip")))
+	if (parameters.equalsi("ip"_jrs))
 		return ipHelp;
 
 	return defaultHelp;
 }
 
-IRC_COMMAND_INIT(ResolveIRCCommand)
+GENERIC_COMMAND_INIT(ResolveGenericCommand)
 
 // Plugin instantiation and entry point.
 ExtraCommandsPlugin pluginInstance;
