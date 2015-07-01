@@ -94,27 +94,44 @@ class CLASS : public ConsoleCommand { \
 #define CONSOLE_COMMAND_INIT(CLASS) \
 	CLASS CLASS ## _instance;
 
-/** Generates a console command implementation from a generic command. */
-#define GENERIC_COMMAND_AS_CONSOLE_COMMAND_IMPL(CLASS) \
-	CLASS ## _AS_CONSOLE_COMMAND :: CLASS ## _AS_CONSOLE_COMMAND() { \
-		size_t index = 0; \
-		while (index != CLASS ## _instance.getTriggerCount()) this->addTrigger(CLASS ## _instance.getTrigger(index++)); } \
-	void CLASS ## _AS_CONSOLE_COMMAND :: trigger(const Jupiter::ReadableString &parameters) { \
-		GenericCommand::ResponseLine *del; \
-		GenericCommand::ResponseLine *ret = CLASS ## _instance.trigger(parameters); \
-		while (ret != nullptr) { \
-			ret->response.println(ret->type == GenericCommand::DisplayType::PublicError || ret->type == GenericCommand::DisplayType::PrivateError ? stderr : stdout); \
-			del = ret; ret = ret->next; delete del; } } \
-	const Jupiter::ReadableString & CLASS ## _AS_CONSOLE_COMMAND :: getHelp(const Jupiter::ReadableString &parameters) { \
-		return CLASS ## _instance.getHelp(parameters); } \
-	CONSOLE_COMMAND_INIT(CLASS ## _AS_CONSOLE_COMMAND)
-
 /** Generates a console command from a generic command. */
+template<typename T> class Generic_Command_As_Console_Command : public ConsoleCommand
+{
+public:
+	void trigger(const Jupiter::ReadableString &parameters);
+	const Jupiter::ReadableString &getHelp(const Jupiter::ReadableString &parameters);
+
+	Generic_Command_As_Console_Command();
+};
+
+template <typename T> Generic_Command_As_Console_Command<T>::Generic_Command_As_Console_Command() : ConsoleCommand()
+{
+	size_t index = 0;
+	while (index != T::instance.getTriggerCount())
+		this->addTrigger(T::instance.getTrigger(index++));
+}
+
+template<typename T> void Generic_Command_As_Console_Command<T>::trigger(const Jupiter::ReadableString &parameters)
+{
+	GenericCommand::ResponseLine *del;
+	GenericCommand::ResponseLine *ret = T::instance.trigger(parameters);
+	while (ret != nullptr)
+	{
+		ret->response.println(ret->type == GenericCommand::DisplayType::PublicError || ret->type == GenericCommand::DisplayType::PrivateError ? stderr : stdout);
+		del = ret;
+		ret = ret->next;
+		delete del;
+	}
+}
+
+template<typename T> const Jupiter::ReadableString &Generic_Command_As_Console_Command<T>::getHelp(const Jupiter::ReadableString &parameters)
+{
+	return T::instance.getHelp(parameters);
+}
+
+/** Generates a console command implementation from a generic command. */
 #define GENERIC_COMMAND_AS_CONSOLE_COMMAND(CLASS) \
-	GENERIC_CONSOLE_COMMAND(CLASS ## _AS_CONSOLE_COMMAND) \
-	GENERIC_COMMAND_AS_CONSOLE_COMMAND_IMPL(CLASS);
-
-
+	Generic_Command_As_Console_Command< CLASS > CLASS ## _AS_CONSOLE_COMMAND_instance;
 
 /** Re-enable warnings */
 #if defined _MSC_VER

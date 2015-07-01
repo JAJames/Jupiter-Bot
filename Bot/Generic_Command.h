@@ -105,7 +105,8 @@ JUPITER_BOT_API extern GenericCommand *getGenericCommand(const Jupiter::Readable
 	public: \
 	CLASS(); \
 	GenericCommand::ResponseLine *trigger(const Jupiter::ReadableString &parameters); \
-	const Jupiter::ReadableString &getHelp(const Jupiter::ReadableString &parameters);
+	const Jupiter::ReadableString &getHelp(const Jupiter::ReadableString &parameters); \
+	static CLASS instance;
 
 /** Expands to become the entire declaration for a generic command. In most cases, this will be sufficient. */
 #define GENERIC_GENERIC_COMMAND(CLASS) \
@@ -115,7 +116,8 @@ class CLASS : public GenericCommand { \
 
 /** Instantiates a generic command. */
 #define GENERIC_COMMAND_INIT(CLASS) \
-	CLASS CLASS ## _instance;
+	CLASS CLASS :: instance = CLASS (); \
+	CLASS & CLASS ## _instance = CLASS :: instance;
 
 /** Re-enable warnings */
 #if defined _MSC_VER

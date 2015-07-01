@@ -209,7 +209,7 @@ const Jupiter::ReadableString &WarnGameCommand::getHelp(const Jupiter::ReadableS
 	return defaultHelp;
 }
 
-IRC_COMMAND_INIT(WarnGameCommand)
+GAME_COMMAND_INIT(WarnGameCommand)
 
 // Pardon Game Command
 
@@ -243,7 +243,7 @@ const Jupiter::ReadableString &PardonGameCommand::getHelp(const Jupiter::Readabl
 	return defaultHelp;
 }
 
-IRC_COMMAND_INIT(PardonGameCommand)
+GAME_COMMAND_INIT(PardonGameCommand)
 
 extern "C" __declspec(dllexport) Jupiter::Plugin *getPlugin()
 {

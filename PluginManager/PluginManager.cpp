@@ -81,9 +81,8 @@ const Jupiter::ReadableString &PluginGenericCommand::getHelp(const Jupiter::Read
 }
 
 GENERIC_COMMAND_INIT(PluginGenericCommand)
-
 GENERIC_COMMAND_AS_CONSOLE_COMMAND(PluginGenericCommand)
-GENERIC_COMMAND_AS_IRC_COMMAND_2(PluginGenericCommand, 5)
+GENERIC_COMMAND_AS_IRC_COMMAND_ACCESS_CREATE(PluginGenericCommand, 5)
 
 // Plugin instantiation and entry point.
 PluginManager pluginInstance;

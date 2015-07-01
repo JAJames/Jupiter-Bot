@@ -140,7 +140,7 @@ const Jupiter::ReadableString &VersionGenericCommand::getHelp(const Jupiter::Rea
 
 GENERIC_COMMAND_INIT(VersionGenericCommand)
 GENERIC_COMMAND_AS_CONSOLE_COMMAND(VersionGenericCommand)
-GENERIC_COMMAND_AS_IRC_COMMAND(VersionGenericCommand)
+GENERIC_COMMAND_AS_IRC_COMMAND_NO_CREATE(VersionGenericCommand)
 
 // Sync Command
 
@@ -173,7 +173,7 @@ const Jupiter::ReadableString &SyncGenericCommand::getHelp(const Jupiter::Readab
 
 GENERIC_COMMAND_INIT(SyncGenericCommand)
 GENERIC_COMMAND_AS_CONSOLE_COMMAND(SyncGenericCommand)
-GENERIC_COMMAND_AS_IRC_COMMAND_2(SyncGenericCommand, 4)
+GENERIC_COMMAND_AS_IRC_COMMAND_ACCESS_CREATE(SyncGenericCommand, 4)
 
 // Rehash Command
 
@@ -203,7 +203,7 @@ const Jupiter::ReadableString &RehashGenericCommand::getHelp(const Jupiter::Read
 
 GENERIC_COMMAND_INIT(RehashGenericCommand)
 GENERIC_COMMAND_AS_CONSOLE_COMMAND(RehashGenericCommand)
-GENERIC_COMMAND_AS_IRC_COMMAND_2(RehashGenericCommand, 4)
+GENERIC_COMMAND_AS_IRC_COMMAND_ACCESS_CREATE(RehashGenericCommand, 4)
 
 // Plugin instantiation and entry point.
 CoreCommandsPlugin pluginInstance;
