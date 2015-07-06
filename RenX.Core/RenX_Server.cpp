@@ -116,13 +116,20 @@ int RenX::Server::think()
 int RenX::Server::OnRehash()
 {
 	Jupiter::StringS oldHostname = RenX::Server::hostname;
-	unsigned short oldPort = RenX::Server::port;
 	Jupiter::StringS oldClientHostname = RenX::Server::clientHostname;
 	Jupiter::StringS oldPass = RenX::Server::pass;
+	unsigned short oldPort = RenX::Server::port;
 	int oldSteamFormat = RenX::Server::steamFormat;
 	RenX::Server::commands.emptyAndDelete();
 	RenX::Server::init();
-	if (oldHostname.equalsi(RenX::Server::hostname) == false || oldPort != RenX::Server::port || oldClientHostname.equalsi(RenX::Server::clientHostname) == false || oldPass.equalsi(RenX::Server::pass) == false)
+	if (RenX::Server::port == 0 || RenX::Server::hostname.isNotEmpty())
+	{
+		RenX::Server::hostname = oldHostname;
+		RenX::Server::clientHostname = oldClientHostname;
+		RenX::Server::pass = oldPass;
+		RenX::Server::port = oldPort;
+	}
+	else if (oldHostname.equalsi(RenX::Server::hostname) == false || oldPort != RenX::Server::port || oldClientHostname.equalsi(RenX::Server::clientHostname) == false || oldPass.equalsi(RenX::Server::pass) == false)
 		RenX::Server::reconnect(RenX::DisconnectReason::Rehash);
 	return 0;
 }
