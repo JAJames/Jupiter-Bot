@@ -2486,11 +2486,18 @@ bool RenX::Server::reconnect(RenX::DisconnectReason reason)
 
 void RenX::Server::wipeData()
 {
+	RenX::PlayerInfo *player;
+	Jupiter::ArrayList<RenX::Plugin> &xPlugins = *RenX::getCore()->getPlugins();
+	while (RenX::Server::players.size() != 0)
+	{
+		player = RenX::Server::players.remove(0U);
+		for (size_t index = 0; index < xPlugins.size(); ++index)
+			xPlugins.get(index)->RenX_OnPlayerDelete(this, player);
+		delete player;
+	}
 	RenX::Server::awaitingPong = false;
 	RenX::Server::rconVersion = 0;
 	RenX::Server::rconUser.truncate(RenX::Server::rconUser.size());
-	while (RenX::Server::players.size() != 0)
-		delete RenX::Server::players.remove(0U);
 }
 
 unsigned int RenX::Server::getVersion() const
