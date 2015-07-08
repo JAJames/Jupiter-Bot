@@ -34,6 +34,7 @@ public: // RenX::Plugin
 	
 	void RenX_OnChat(RenX::Server *server, const RenX::PlayerInfo *player, const Jupiter::ReadableString &message) override;
 	void RenX_OnTeamChat(RenX::Server *server, const RenX::PlayerInfo *player, const Jupiter::ReadableString &message) override;
+	void RenX_OnRadioChat(RenX::Server *server, const RenX::PlayerInfo *player, const Jupiter::ReadableString &message) override;
 	void RenX_OnHostChat(RenX::Server *server, const Jupiter::ReadableString &message) override;
 	void RenX_OnHostPage(RenX::Server *server, const RenX::PlayerInfo *player, const Jupiter::ReadableString &message) override;
 	void RenX_OnOtherChat(RenX::Server *server, const Jupiter::ReadableString &raw) override;
@@ -131,6 +132,7 @@ private:
 	unsigned int playerPublic : 1;
 	unsigned int chatPublic : 1;
 	unsigned int teamChatPublic : 1;
+	unsigned int radioChatPublic : 1;
 	unsigned int hostChatPublic : 1;
 	unsigned int hostPagePublic : 1;
 	unsigned int otherChatPublic : 1;
@@ -205,6 +207,7 @@ private:
 	Jupiter::StringS playerFmt;
 	Jupiter::StringS chatFmt;
 	Jupiter::StringS teamChatFmt;
+	Jupiter::StringS radioChatFmt;
 	Jupiter::StringS hostChatFmt;
 	Jupiter::StringS hostPageFmt;
 	Jupiter::StringS otherChatFmt;

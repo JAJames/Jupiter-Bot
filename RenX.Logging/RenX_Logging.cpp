@@ -34,7 +34,8 @@ void RenX_LoggingPlugin::init()
 	RenX_LoggingPlugin::teamChangePublic = Jupiter::IRC::Client::Config->getBool(RenX_LoggingPlugin::getName(), STRING_LITERAL_AS_REFERENCE("TeamChangePublic"), true);
 	RenX_LoggingPlugin::playerPublic = Jupiter::IRC::Client::Config->getBool(RenX_LoggingPlugin::getName(), STRING_LITERAL_AS_REFERENCE("PlayerPublic"), false);
 	RenX_LoggingPlugin::chatPublic = Jupiter::IRC::Client::Config->getBool(RenX_LoggingPlugin::getName(), STRING_LITERAL_AS_REFERENCE("ChatPublic"), true);
-	RenX_LoggingPlugin::teamChatPublic = Jupiter::IRC::Client::Config->getBool(RenX_LoggingPlugin::getName(), STRING_LITERAL_AS_REFERENCE("TeamChatPublic"), true);
+	RenX_LoggingPlugin::teamChatPublic = Jupiter::IRC::Client::Config->getBool(RenX_LoggingPlugin::getName(), STRING_LITERAL_AS_REFERENCE("TeamChatPublic"), false);
+	RenX_LoggingPlugin::radioChatPublic = Jupiter::IRC::Client::Config->getBool(RenX_LoggingPlugin::getName(), STRING_LITERAL_AS_REFERENCE("RadioChatPublic"), false);
 	RenX_LoggingPlugin::hostChatPublic = Jupiter::IRC::Client::Config->getBool(RenX_LoggingPlugin::getName(), STRING_LITERAL_AS_REFERENCE("HostChatPublic"), true);
 	RenX_LoggingPlugin::hostPagePublic = Jupiter::IRC::Client::Config->getBool(RenX_LoggingPlugin::getName(), STRING_LITERAL_AS_REFERENCE("HostPagePublic"), false);
 	RenX_LoggingPlugin::otherChatPublic = Jupiter::IRC::Client::Config->getBool(RenX_LoggingPlugin::getName(), STRING_LITERAL_AS_REFERENCE("OtherChatPublic"), false);
@@ -133,6 +134,9 @@ void RenX_LoggingPlugin::init()
 
 	RenX_LoggingPlugin::teamChatFmt = Jupiter::IRC::Client::Config->get(this->getName(), STRING_LITERAL_AS_REFERENCE("TeamChatFormat"),
 		Jupiter::StringS::Format(IRCBOLD "%.*s" IRCBOLD ": %.*s", RenX::tags->nameTag.size(), RenX::tags->nameTag.ptr(), RenX::tags->messageTag.size(), RenX::tags->messageTag.ptr()));
+
+	RenX_LoggingPlugin::radioChatFmt = Jupiter::IRC::Client::Config->get(this->getName(), STRING_LITERAL_AS_REFERENCE("RadioChatFormat"),
+		Jupiter::StringS::Format(IRCBOLD "%.*s" IRCBOLD ": \x1D%.*s", RenX::tags->nameTag.size(), RenX::tags->nameTag.ptr(), RenX::tags->messageTag.size(), RenX::tags->messageTag.ptr()));
 
 	RenX_LoggingPlugin::hostChatFmt = Jupiter::IRC::Client::Config->get(this->getName(), STRING_LITERAL_AS_REFERENCE("HostChatFormat"),
 		Jupiter::StringS::Format(IRCCOLOR "12Host" IRCCOLOR "0: %.*s", RenX::tags->messageTag.size(), RenX::tags->messageTag.ptr()));
@@ -385,6 +389,7 @@ void RenX_LoggingPlugin::init()
 	RenX::sanitizeTags(playerFmt);
 	RenX::sanitizeTags(chatFmt);
 	RenX::sanitizeTags(teamChatFmt);
+	RenX::sanitizeTags(radioChatFmt);
 	RenX::sanitizeTags(otherChatFmt);
 	RenX::sanitizeTags(deployFmt);
 	RenX::sanitizeTags(mineDeployFmt);
@@ -619,6 +624,23 @@ void RenX_LoggingPlugin::RenX_OnTeamChat(RenX::Server *server, const RenX::Playe
 		func = &RenX::Server::sendAdmChan;
 	
 	Jupiter::String msg = this->teamChatFmt;
+	if (msg.isNotEmpty())
+	{
+		RenX::processTags(msg, server, player);
+		msg.replace(RenX::tags->INTERNAL_MESSAGE_TAG, message);
+		(server->*func)(msg);
+	}
+}
+
+void RenX_LoggingPlugin::RenX_OnRadioChat(RenX::Server *server, const RenX::PlayerInfo *player, const Jupiter::ReadableString &message)
+{
+	logFuncType func;
+	if (RenX_LoggingPlugin::radioChatPublic)
+		func = &RenX::Server::sendLogChan;
+	else
+		func = &RenX::Server::sendAdmChan;
+
+	Jupiter::String msg = this->radioChatFmt;
 	if (msg.isNotEmpty())
 	{
 		RenX::processTags(msg, server, player);
