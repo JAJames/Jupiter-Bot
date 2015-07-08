@@ -125,6 +125,11 @@ void RenX::Plugin::RenX_OnTeamChat(Server *, const RenX::PlayerInfo *, const Jup
 	return;
 }
 
+void RenX::Plugin::RenX_OnRadioChat(Server *, const RenX::PlayerInfo *, const Jupiter::ReadableString &)
+{
+	return;
+}
+
 void RenX::Plugin::RenX_OnHostChat(Server *, const Jupiter::ReadableString &)
 {
 	return;

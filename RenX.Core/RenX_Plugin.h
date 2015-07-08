@@ -64,6 +64,7 @@ namespace RenX
 		/** Chat type logs */
 		virtual void RenX_OnChat(Server *server, const PlayerInfo *player, const Jupiter::ReadableString &message);
 		virtual void RenX_OnTeamChat(Server *server, const PlayerInfo *player, const Jupiter::ReadableString &message);
+		virtual void RenX_OnRadioChat(Server *server, const PlayerInfo *player, const Jupiter::ReadableString &message);
 		virtual void RenX_OnHostChat(Server *server, const Jupiter::ReadableString &message);
 		virtual void RenX_OnHostPage(Server *server, const PlayerInfo *player, const Jupiter::ReadableString &message);
 		virtual void RenX_OnOtherChat(Server *server, const Jupiter::ReadableString &raw);

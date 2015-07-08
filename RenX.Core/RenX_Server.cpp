@@ -1927,6 +1927,14 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 							xPlugins.get(i)->RenX_OnTeamChat(this, player, message);
 						onAction();
 					}
+					else if (subHeader.equals("Radio;"))
+					{
+						RenX::PlayerInfo *player = parseGetPlayerOrAdd(buff.getToken(2, RenX::DelimC));
+						Jupiter::ReferenceString message = buff.getToken(4, RenX::DelimC);
+						for (size_t i = 0; i < xPlugins.size(); i++)
+							xPlugins.get(i)->RenX_OnRadioChat(this, player, message);
+						onAction();
+					}
 					else if (subHeader.equals("HostSay;"))
 					{
 						Jupiter::ReferenceString message = buff.getToken(3, RenX::DelimC);
