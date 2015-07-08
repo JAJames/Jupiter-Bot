@@ -25,6 +25,8 @@
 #include "RenX_Server.h"
 #include "RenX_PlayerInfo.h"
 
+using namespace Jupiter::literals;
+
 /** Team color translations */
 Jupiter::ReferenceString NodColor = "04";
 Jupiter::ReferenceString GDIColor = "08";
@@ -315,6 +317,30 @@ Jupiter::ReferenceString translated_IonCannonBeacon = STRING_LITERAL_AS_REFERENC
 Jupiter::ReferenceString translated_NukeBeacon = STRING_LITERAL_AS_REFERENCE("Nuclear Strike Beacon");
 Jupiter::ReferenceString translated_KillZDamageType = STRING_LITERAL_AS_REFERENCE("Kill Zone");
 
+/*****************************
+ * TIBERIAN SUN TRANSLATIONS
+ *****************************/
+
+/** Nod Tiberian Sun Vehicles */
+Jupiter::ReferenceString translated_TS_Vehicle_Buggy = STRING_LITERAL_AS_REFERENCE("TS Buggy");
+Jupiter::ReferenceString translated_TS_Vehicle_ReconBike = STRING_LITERAL_AS_REFERENCE("Recon Bike");
+Jupiter::ReferenceString translated_TS_Vehicle_TickTank = STRING_LITERAL_AS_REFERENCE("Tick-Tank");
+
+/** GDI Tiberian Sun Vehicles */
+Jupiter::ReferenceString translated_TS_Vehicle_HoverMRLS = STRING_LITERAL_AS_REFERENCE("Hover MRLS");
+Jupiter::ReferenceString translated_TS_Vehicle_Titan = STRING_LITERAL_AS_REFERENCE("Titan");
+Jupiter::ReferenceString translated_TS_Vehicle_Wolverine = STRING_LITERAL_AS_REFERENCE("Wolverine");
+
+/** Nod Tiberian Sun Vehicle Damage Types */
+Jupiter::ReferenceString translated_TS_Vehicle_Buggy_DmgType = STRING_LITERAL_AS_REFERENCE("TS Buggy");
+Jupiter::ReferenceString translated_TS_Vehicle_ReconBike_DmgType = STRING_LITERAL_AS_REFERENCE("Recon Bike");
+Jupiter::ReferenceString translated_TS_Vehicle_TickTank_DmgType = STRING_LITERAL_AS_REFERENCE("Tick-Tank");
+
+/** GDI Tiberian Sun Vehicle Damage Types*/
+Jupiter::ReferenceString translated_TS_Vehicle_HoverMRLS_DmgType = STRING_LITERAL_AS_REFERENCE("Hover MRLS");
+Jupiter::ReferenceString translated_TS_Vehicle_Titan_DmgType = STRING_LITERAL_AS_REFERENCE("Titan");
+Jupiter::ReferenceString translated_TS_Vehicle_Wolverine_DmgType = STRING_LITERAL_AS_REFERENCE("Wolverine");
+
 RenX::TeamType RenX::getTeam(int teamNum)
 {
 	switch (teamNum)
@@ -461,9 +487,38 @@ const Jupiter::ReferenceString RenX::translateName(const Jupiter::ReadableString
 	if (iniTranslation.isNotEmpty())
 		return iniTranslation;
 
-	static Jupiter::ReferenceString object;
-	object = obj;
+	Jupiter::ReferenceString object = obj;
 
+	if (object.find(STRING_LITERAL_AS_REFERENCE("TS_")) == 0)
+	{
+		object.shiftRight(3);
+		if (object.find(STRING_LITERAL_AS_REFERENCE("Vehicle_")) == 0)
+		{
+			object.shiftRight(8);
+
+			/** Nod Tiberian Sun Vehicles */
+			if (object.equals(STRING_LITERAL_AS_REFERENCE("Buggy"))) return translated_TS_Vehicle_Buggy;
+			if (object.equals(STRING_LITERAL_AS_REFERENCE("ReconBike"))) return translated_TS_Vehicle_ReconBike;
+			if (object.equals(STRING_LITERAL_AS_REFERENCE("TickTank"))) return translated_TS_Vehicle_TickTank;
+
+			/** GDI Tiberian Sun Vehicles */
+			if (object.equals(STRING_LITERAL_AS_REFERENCE("HoverMRLS"))) return translated_TS_Vehicle_HoverMRLS;
+			if (object.equals(STRING_LITERAL_AS_REFERENCE("Titan"))) return translated_TS_Vehicle_Titan;
+			if (object.equals(STRING_LITERAL_AS_REFERENCE("Wolverine"))) return translated_TS_Vehicle_Wolverine;
+
+			/** Nod Tiberian Sun Vehicle Damage Types */
+			if (object.equals(STRING_LITERAL_AS_REFERENCE("Buggy_DmgType"))) return translated_TS_Vehicle_Buggy_DmgType;
+			if (object.equals(STRING_LITERAL_AS_REFERENCE("ReconBike_DmgType"))) return translated_TS_Vehicle_ReconBike_DmgType;
+			if (object.equals(STRING_LITERAL_AS_REFERENCE("TickTank_DmgType"))) return translated_TS_Vehicle_TickTank_DmgType;
+
+			/** GDI Tiberian Sun Vehicle Damage Types */
+			if (object.equals(STRING_LITERAL_AS_REFERENCE("HoverMRLS_DmgType"))) return translated_TS_Vehicle_HoverMRLS_DmgType;
+			if (object.equals(STRING_LITERAL_AS_REFERENCE("Titan_DmgType"))) return translated_TS_Vehicle_Titan_DmgType;
+			if (object.equals(STRING_LITERAL_AS_REFERENCE("Wolverine_DmgType"))) return translated_TS_Vehicle_Wolverine_DmgType;
+		}
+		return object;
+	}
+	
 	if (object.find(STRING_LITERAL_AS_REFERENCE("Rx_")) == 0)
 		object.shiftRight(3);
 
