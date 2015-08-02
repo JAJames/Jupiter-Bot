@@ -69,6 +69,8 @@ namespace RenX
 		unsigned int loses = 0;
 		unsigned int beaconPlacements = 0;
 		unsigned int beaconDisarms = 0;
+		unsigned int proxy_placements = 0;
+		unsigned int proxy_disarms = 0;
 		unsigned int captures = 0;
 		unsigned int steals = 0;
 		unsigned int stolen = 0;

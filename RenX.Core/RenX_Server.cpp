@@ -184,6 +184,11 @@ bool RenX::Server::isLogChanType(int type) const
 	return RenX::Server::isPublicLogChanType(type) || RenX::Server::isAdminLogChanType(type);
 }
 
+bool RenX::Server::isPure() const
+{
+	return RenX::Server::pure;
+}
+
 int RenX::Server::send(const Jupiter::ReadableString &command)
 {
 	Jupiter::String cmd(command.size() + 2);
@@ -923,6 +928,8 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 					player->defenceKills = 0;
 					player->beaconPlacements = 0;
 					player->beaconDisarms = 0;
+					player->proxy_placements = 0;
+					player->proxy_disarms = 0;
 					player->captures = 0;
 					player->steals = 0;
 					player->stolen = 0;
@@ -1046,6 +1053,7 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 			if (r->name.isEmpty())
 			{
 				r->name = name;
+				r->name.processEscapeSequences();
 				recalcUUID = true;
 			}
 			if (recalcUUID)
@@ -1420,6 +1428,23 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 					buff.shiftLeft(1);
 				}
 			}
+			else if (this->lastCommand.equalsi("mutatorlist"_jrs))
+			{
+				// "The following mutators are loaded:" [ | Mutator [ | Mutator [ ... ] ] ]
+				buff.shiftRight(1);
+				size_t token_count = buff.tokenCount(RenX::DelimC);
+				if (token_count == 1)
+					RenX::Server::pure = true;
+				else if (token_count == 0)
+					RenX::Server::disconnect(RenX::DisconnectReason::ProtocolError);
+				else
+				{
+					RenX::Server::mutators.emptyAndDelete();
+					while (--token_count != 0)
+						RenX::Server::mutators.add(new Jupiter::StringS(Jupiter::ReferenceString::getToken(buff, token_count, RenX::DelimC)));
+				}
+				buff.shiftLeft(1);
+			}
 			else if (this->lastCommand.equalsi("changename"))
 			{
 				buff.shiftRight(1);
@@ -1445,7 +1470,9 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 						RenX::PlayerInfo *player = parseGetPlayerOrAdd(buff.getToken(4, RenX::DelimC));
 						Jupiter::ReferenceString objectType = buff.getToken(2, RenX::DelimC);
 						if (objectType.match("*Beacon"))
-							player->beaconPlacements++;
+							++player->beaconPlacements;
+						else if (objectType.equals("Rx_Weapon_DeployedProxyC4"_jrs))
+							++player->proxy_placements;
 						for (size_t i = 0; i < xPlugins.size(); i++)
 							xPlugins.get(i)->RenX_OnDeploy(this, player, objectType);
 						onAction();
@@ -1457,7 +1484,9 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 						RenX::PlayerInfo *player = parseGetPlayerOrAdd(buff.getToken(4, RenX::DelimC));
 						Jupiter::ReferenceString objectType = buff.getToken(2, RenX::DelimC);
 						if (objectType.match("*Beacon"))
-							player->beaconDisarms++;
+							++player->beaconDisarms;
+						else if (objectType.equals("Rx_Weapon_DeployedProxyC4"_jrs))
+							++player->proxy_disarms;
 
 						if (buff.getToken(5, RenX::DelimC).equals("owned by"))
 						{
@@ -2413,19 +2442,14 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 
 			if (this->rconVersion >= 3)
 			{
-				RenX::Server::sock.send(STRING_LITERAL_AS_REFERENCE("s\n"));
-				RenX::Server::send(STRING_LITERAL_AS_REFERENCE("serverinfo"));
+				RenX::Server::sock.send("s\n"_jrs);
+				RenX::Server::send("serverinfo"_jrs);
+				RenX::Server::send("mutatorlist"_jrs);
 				RenX::Server::fetchClientList();
 				RenX::Server::updateBuildingList();
 
 				this->firstGame = true;
 				this->seamless = true;
-
-				/*else if (this->firstGame == false)
-				{
-				this->firstAction = false;
-				this->silenceJoins = true;
-				}*/
 
 				for (size_t i = 0; i < xPlugins.size(); i++)
 					xPlugins.get(i)->RenX_OnVersion(this, buff);

@@ -70,6 +70,8 @@ namespace RenX
 	{
 		SocketError,
 		SocketErrorReconnect,
+		ProtocolError,
+		ProtocolErrorReconnect,
 		PingTimeout,
 		PingTimeoutReconnect,
 		IncompatibleVersion,
@@ -78,6 +80,8 @@ namespace RenX
 		TriggeredReconnect,
 		Rehash,
 		RehashReconnect,
+		OtherError,
+		OtherErrorReconnect,
 		Other,
 		OtherReconnect
 	};

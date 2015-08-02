@@ -285,7 +285,7 @@ Jupiter::StringS TagsImp::get_building_health_bar(const RenX::BuildingInfo *buil
 		return Jupiter::StringS::empty;
 
 	size_t index = 0;
-	size_t greenBars = (building->health / building->max_health) * TagsImp::bar_width;
+	size_t greenBars = static_cast<size_t>((building->health / building->max_health) * TagsImp::bar_width);
 	Jupiter::String r(TagsImp::bar_width);
 	if (greenBars != 0)
 	{

@@ -84,6 +84,7 @@ namespace RenX
 	public: // RenX::Server
 		Jupiter::DLList<RenX::PlayerInfo> players; /** A list of players in the server */
 		Jupiter::ArrayList<RenX::BuildingInfo> buildings; /** A list of buildings in the server */
+		Jupiter::ArrayList<Jupiter::StringS> mutators; /** A list of buildings the server is running */
 		Jupiter::INIFile varData; /** This may be replaced later with a more dedicated type. */
 
 		/**
@@ -158,6 +159,13 @@ namespace RenX
 		* @return True if this is either a public or administrative channel type, false otherwise.
 		*/
 		bool isLogChanType(int type) const;
+
+		/**
+		* @brief Checks if a server is "pure" (i.e: not running any mutators).
+		*
+		* @return True if the server is pure, false otherwise.
+		*/
+		bool isPure() const;
 
 		/**
 		* @brief Sends a command to the server.
@@ -814,6 +822,7 @@ namespace RenX
 		void init();
 
 		/** Tracking variables */
+		bool pure = false;
 		bool connected = false;
 		bool seamless = false;
 		bool passworded = false;
