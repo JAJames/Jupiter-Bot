@@ -81,8 +81,9 @@ void RenX::Core::addServer(RenX::Server *server)
 
 int RenX::Core::getServerIndex(RenX::Server *server)
 {
-	for (size_t i = 0; i != RenX::Core::servers.size(); i++)
-		if (server == RenX::Core::servers.get(i))
+	size_t i = RenX::Core::servers.size();
+	while (i != 0)
+		if (server == RenX::Core::servers.get(--i))
 			return i;
 	return -1;
 }
@@ -115,6 +116,15 @@ int RenX::Core::removeServer(RenX::Server *server)
 	int i = RenX::Core::getServerIndex(server);
 	if (i >= 0) delete RenX::Core::servers.remove(i);
 	return i;
+}
+
+bool RenX::Core::hasServer(RenX::Server *server)
+{
+	size_t i = RenX::Core::servers.size();
+	while (i != 0)
+		if (server == RenX::Core::servers.get(--i))
+			return true;
+	return false;
 }
 
 unsigned int RenX::Core::getServerCount()

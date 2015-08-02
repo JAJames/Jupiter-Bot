@@ -95,11 +95,11 @@ namespace RenX
 		bool isConnected() const;
 
 		/**
-		* @brief Checks if the game in progress is the first game.
+		* @brief Checks if a map start event has fired.
 		*
-		* @return True if this is the first game, false otherwise.
+		* @return True if a map start event has fired, false otherwise.
 		*/
-		bool isFirstGame() const;
+		bool hasSeenStart() const;
 
 		/**
 		* @brief Checks if the first kill has already been processed.
@@ -207,6 +207,37 @@ namespace RenX
 		* @return A player's data on success, nullptr otherwise.
 		*/
 		RenX::BuildingInfo *getBuildingByName(const Jupiter::ReadableString &name) const;
+
+		/**
+		* @brief Fetches the RCON command currently being processed.
+		*
+		* @return RCON command last executed.
+		*/
+		const Jupiter::ReadableString &getCurrentRCONCommand() const;
+
+		/**
+		* @brief Fetches the parameters of the RCON command currently being processed.
+		*
+		* @return Parameters of last RCON command last executed.
+		*/
+		const Jupiter::ReadableString &getCurrentRCONCommandParameters() const;
+
+		/**
+		* @brief Calculates the time since match start.
+		* Note: if hasSeenStart() is false, this is the time since the connection was established.
+		*
+		* @return Time since match start.
+		*/
+		std::chrono::milliseconds getGameTime() const;
+
+		/**
+		* @brief Calculates the time the player has been playing.
+		* Note: This will never be greater than getGameTime(void)
+		*
+		* @param player Player to calculate game-time of.
+		* @return Time player has been playing.
+		*/
+		std::chrono::milliseconds getGameTime(const RenX::PlayerInfo *player) const;
 
 		/**
 		* @brief Fetches a player's data based on their ID number.
@@ -829,7 +860,7 @@ namespace RenX
 		bool needsCList = false;
 		bool silenceParts = false;
 		bool silenceJoins = false;
-		bool firstGame = true;
+		bool seenStart = true;
 		bool firstKill = false;
 		bool firstDeath = false;
 		bool firstAction = false;
@@ -837,6 +868,7 @@ namespace RenX
 		unsigned int rconVersion = 0;
 		time_t lastAttempt = 0;
 		int attempts = 0;
+		std::chrono::steady_clock::time_point gameStart = std::chrono::steady_clock::now();
 		std::chrono::steady_clock::time_point lastClientListUpdate = std::chrono::steady_clock::now();
 		std::chrono::steady_clock::time_point lastBuildingListUpdate = std::chrono::steady_clock::now();
 		std::chrono::steady_clock::time_point lastActivity = std::chrono::steady_clock::now();

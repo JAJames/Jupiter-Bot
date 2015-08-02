@@ -23,6 +23,7 @@
  * @brief Provides some functions to be used at your convenience.
  */
 
+#include <chrono>
 #include "Jupiter/INIFile.h"
 #include "Jupiter/String.h"
 #include "RenX.h"
@@ -144,13 +145,12 @@ namespace RenX
 	RENX_API void sanitizeString(Jupiter::StringType &str);
 
 	/**
-	* @brief Calculates for how many seconds a player has been in-game.
-	* Note: This will always be at least 1.
+	* @brief Calculates for how many seconds a player has been in the server.
 	*
 	* @param player A player's data.
 	* @return Number of seconds a player has been in-game.
 	*/
-	RENX_API time_t getGameTime(const RenX::PlayerInfo *player);
+	RENX_API std::chrono::milliseconds getServerTime(const RenX::PlayerInfo *player);
 
 	/**
 	* @brief Calculates a player's UUID, based on their steam ID.
@@ -179,14 +179,6 @@ namespace RenX
 	* @return Player's Headshot-Kill ratio.
 	*/
 	RENX_API double getHeadshotKillRatio(const RenX::PlayerInfo *player);
-
-	/**
-	* @brief Calculates a player's kills-per-second since joining.
-	*
-	* @param player A player's data.
-	* @return Player's Kill-Death ratio.
-	*/
-	RENX_API double getKillsPerSecond(const RenX::PlayerInfo *player);
 
 	/** Constant variables */
 	RENX_API extern const char DelimC; /** RCON message deliminator */

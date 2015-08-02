@@ -501,8 +501,8 @@ void PlayerTableIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableStri
 				STRING_LITERAL_AS_NAMED_REFERENCE(NICK_COL_HEADER, "Nickname");
 				size_t maxNickLen = 8;
 				int highID = 999;
-				float highScore = 99999.0;
-				float highCredits = 9999999.0;
+				double highScore = 99999.0;
+				double highCredits = 9999999.0;
 
 				RenX::PlayerInfo *player;
 				for (Jupiter::DLList<RenX::PlayerInfo>::Node *node = server->players.getNode(0); node != nullptr; node = node->next)
@@ -836,7 +836,7 @@ void KillDeathRatioIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableS
 						if (player->name.findi(parameters) != Jupiter::INVALID_INDEX)
 						{
 							Jupiter::String &playerName = RenX::getFormattedPlayerName(player);
-							msg.format(IRCBOLD "%.*s" IRCBOLD IRCCOLOR ": Kills: %u - Deaths: %u - KDR: %.2f", playerName.size(), playerName.ptr(), player->kills, player->deaths, ((float)player->kills) / (player->deaths == 0 ? 1.0 : (float)player->deaths));
+							msg.format(IRCBOLD "%.*s" IRCBOLD IRCCOLOR ": Kills: %u - Deaths: %u - KDR: %.2f", playerName.size(), playerName.ptr(), player->kills, player->deaths, static_cast<double>(player->kills) / (player->deaths == 0 ? 1.0f : static_cast<double>(player->deaths)));
 							source->sendMessage(channel, msg);
 						}
 					}

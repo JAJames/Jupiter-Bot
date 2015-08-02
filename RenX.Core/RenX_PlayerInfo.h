@@ -23,6 +23,7 @@
  * @brief Defines the PlayerInfo structure.
  */
 
+#include <chrono>
 #include "Jupiter/String.h"
 #include "Jupiter/INIFile.h"
 #include "RenX.h"
@@ -53,11 +54,11 @@ namespace RenX
 		TeamType team = TeamType::Other;
 		int id = 0;
 		bool isBot = false;
-		time_t joinTime = 0;
+		std::chrono::steady_clock::time_point joinTime = std::chrono::steady_clock::now();
 
 		unsigned short ping = 0;
-		float score = 0.0f;
-		float credits = 0.0f;
+		double score = 0.0f;
+		double credits = 0.0f;
 		unsigned int kills = 0;
 		unsigned int deaths = 0;
 		unsigned int suicides = 0;

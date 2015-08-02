@@ -121,6 +121,14 @@ namespace RenX
 		int removeServer(RenX::Server *server);
 
 		/**
+		* @brief Checks is a server is in the server list.
+		*
+		* @param server Pointer to the server to look for.
+		* @return True if the server is in the list, false otherwise.
+		*/
+		bool hasServer(RenX::Server *server);
+
+		/**
 		* @brief Fetches the number of servers.
 		*
 		* @return Number of servers.

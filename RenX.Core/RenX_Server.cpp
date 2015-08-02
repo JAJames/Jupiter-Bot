@@ -144,9 +144,9 @@ bool RenX::Server::isConnected() const
 	return RenX::Server::connected;
 }
 
-bool RenX::Server::isFirstGame() const
+bool RenX::Server::hasSeenStart() const
 {
-	return RenX::Server::firstGame;
+	return RenX::Server::seenStart;
 }
 
 bool RenX::Server::isFirstKill() const
@@ -241,6 +241,28 @@ RenX::BuildingInfo *RenX::Server::getBuildingByName(const Jupiter::ReadableStrin
 		if (RenX::Server::buildings.get(index)->name.equalsi(name))
 			return RenX::Server::buildings.get(index);
 	return nullptr;
+}
+
+const Jupiter::ReadableString &RenX::Server::getCurrentRCONCommand() const
+{
+	return RenX::Server::lastCommand;
+}
+
+const Jupiter::ReadableString &RenX::Server::getCurrentRCONCommandParameters() const
+{
+	return RenX::Server::lastCommandParams;
+}
+
+std::chrono::milliseconds RenX::Server::getGameTime() const
+{
+	return std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - RenX::Server::gameStart);
+}
+
+std::chrono::milliseconds RenX::Server::getGameTime(const RenX::PlayerInfo *player) const
+{
+	if (player->joinTime < RenX::Server::gameStart)
+		return RenX::Server::getGameTime();
+	return std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - player->joinTime);
 }
 
 RenX::PlayerInfo *RenX::Server::getPlayer(int id) const
@@ -904,7 +926,6 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 	};
 	auto onPostGameOver = [this](RenX::WinType winType, RenX::TeamType team, int gScore, int nScore)
 	{
-		this->firstGame = false;
 		this->firstAction = false;
 		this->firstKill = false;
 		this->firstDeath = false;
@@ -1026,7 +1047,7 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 			r->steamid = steamid;
 			if (r->isBot = isBot)
 				r->formatNamePrefix = IRCCOLOR "05[B]";
-			r->joinTime = time(nullptr);
+			r->joinTime = std::chrono::steady_clock::now();
 			if (id != 0)
 				this->players.add(r);
 
@@ -1139,11 +1160,11 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 
 						pair = table.getPair(STRING_LITERAL_AS_REFERENCE("Score"));
 						if (pair != nullptr)
-							player->score = static_cast<float>(pair->getValue().asDouble());
+							player->score = pair->getValue().asDouble();
 
 						pair = table.getPair(STRING_LITERAL_AS_REFERENCE("Credits"));
 						if (pair != nullptr)
-							player->credits = static_cast<float>(pair->getValue().asDouble());
+							player->credits = pair->getValue().asDouble();
 
 						pair = table.getPair(STRING_LITERAL_AS_REFERENCE("Character"));
 						if (pair != nullptr)
@@ -1292,11 +1313,11 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 
 						pair = table.getPair(STRING_LITERAL_AS_REFERENCE("Score"));
 						if (pair != nullptr)
-							player->score = static_cast<float>(pair->getValue().asDouble());
+							player->score = pair->getValue().asDouble();
 
 						pair = table.getPair(STRING_LITERAL_AS_REFERENCE("Credits"));
 						if (pair != nullptr)
-							player->credits = static_cast<float>(pair->getValue().asDouble());
+							player->credits = pair->getValue().asDouble();
 
 						pair = table.getPair(STRING_LITERAL_AS_REFERENCE("Character"));
 						if (pair != nullptr)
@@ -1996,7 +2017,6 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 						if (buff.getToken(5, RenX::DelimC).equals("steamid"))
 							steamid = buff.getToken(6, RenX::DelimC).asUnsignedLongLong();
 						RenX::PlayerInfo *player = getPlayerOrAdd(name, id, team, isBot, steamid, buff.getToken(4, RenX::DelimC));
-						player->joinTime = time(0);
 						for (size_t i = 0; i < xPlugins.size(); i++)
 							xPlugins.get(i)->RenX_OnJoin(this, player);
 					}
@@ -2357,6 +2377,8 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 					else if (subHeader.equals("Start;"))
 					{
 						// Map
+						this->seenStart = true;
+						this->gameStart = std::chrono::steady_clock::now();
 						Jupiter::ReferenceString map = buff.getToken(2, RenX::DelimC);
 						this->map = map;
 						for (size_t i = 0; i < xPlugins.size(); i++)
@@ -2448,7 +2470,8 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 				RenX::Server::fetchClientList();
 				RenX::Server::updateBuildingList();
 
-				this->firstGame = true;
+				RenX::Server::gameStart = std::chrono::steady_clock::now();
+				this->seenStart = false;
 				this->seamless = true;
 
 				for (size_t i = 0; i < xPlugins.size(); i++)

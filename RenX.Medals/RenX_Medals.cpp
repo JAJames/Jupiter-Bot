@@ -26,6 +26,8 @@
 #include "RenX_Core.h"
 #include "RenX_Tags.h"
 
+using namespace Jupiter::literals;
+
 RenX_MedalsPlugin::RenX_MedalsPlugin()
 {
 	this->INTERNAL_RECS_TAG = RenX::getUniqueInternalTag();
@@ -68,21 +70,27 @@ struct CongratPlayerData
 
 void congratPlayer(unsigned int, void *params)
 {
-	CongratPlayerData *congratPlayerData = (CongratPlayerData *) params;
+	CongratPlayerData *congratPlayerData = reinterpret_cast<CongratPlayerData *>(params);
 
-	switch (congratPlayerData->type)
+	if (RenX::getCore()->hasServer(congratPlayerData->server) && congratPlayerData->server->isConnected())
 	{
-	case 1:
-		congratPlayerData->server->sendMessage(Jupiter::StringS::Format("%.*s has been recommended for having the most kills last game!", congratPlayerData->playerName.size(), congratPlayerData->playerName.ptr()));
-		break;
-	case 2:
-		congratPlayerData->server->sendMessage(Jupiter::StringS::Format("%.*s has been recommended for having the most vehicle kills last game!", congratPlayerData->playerName.size(), congratPlayerData->playerName.ptr()));
-		break;
-	case 3:
-		congratPlayerData->server->sendMessage(Jupiter::StringS::Format("%.*s has been recommended for having the highest Kill-Death ratio last game!", congratPlayerData->playerName.size(), congratPlayerData->playerName.ptr()));
-		break;
-	default:
-		break;
+		switch (congratPlayerData->type)
+		{
+		case 0:
+			congratPlayerData->server->sendMessage(congratPlayerData->playerName + " has been recommended for having the highest score last game!"_jrs);
+			break;
+		case 1:
+			congratPlayerData->server->sendMessage(congratPlayerData->playerName + " has been recommended for having the most kills last game!"_jrs);
+			break;
+		case 2:
+			congratPlayerData->server->sendMessage(congratPlayerData->playerName + " has been recommended for having the most vehicle kills last game!"_jrs);
+			break;
+		case 3:
+			congratPlayerData->server->sendMessage(congratPlayerData->playerName + " has been recommended for having the highest Kill-Death ratio last game!"_jrs);
+			break;
+		default:
+			break;
+		}
 	}
 	delete congratPlayerData;
 }
@@ -159,11 +167,11 @@ void RenX_MedalsPlugin::RenX_OnJoin(RenX::Server *server, const RenX::PlayerInfo
 
 void RenX_MedalsPlugin::RenX_OnGameOver(RenX::Server *server, RenX::WinType winType, const RenX::TeamType &team, int gScore, int nScore)
 {
-	if (server->isFirstGame() == false) // No unfair medals for the first game! :D
+	if (server->hasSeenStart() && server->players.size() != 0) // No unfair medals for the first game! :D
 	{
-		if (server->players.size() == 0) return;
 		Jupiter::DLList<RenX::PlayerInfo>::Node *n = server->players.getNode(0);
 		RenX::PlayerInfo *pInfo = n->data;
+		RenX::PlayerInfo *bestScore = pInfo;
 		RenX::PlayerInfo *mostKills = pInfo;
 		RenX::PlayerInfo *mostVehicleKills = pInfo;
 		RenX::PlayerInfo *bestKD = pInfo;
@@ -171,6 +179,9 @@ void RenX_MedalsPlugin::RenX_OnGameOver(RenX::Server *server, RenX::WinType winT
 		while (n != nullptr)
 		{
 			pInfo = n->data;
+			if (pInfo->score > bestScore->score)
+				bestScore = pInfo;
+
 			if (pInfo->kills > mostKills->kills)
 				mostKills = pInfo;
 
@@ -184,6 +195,18 @@ void RenX_MedalsPlugin::RenX_OnGameOver(RenX::Server *server, RenX::WinType winT
 		}
 
 		CongratPlayerData *congratPlayerData;
+
+		/** +1 for best score */
+		if (bestScore->uuid.isNotEmpty() && bestScore->isBot == false && bestScore->score > 0)
+		{
+			addRec(bestScore);
+
+			congratPlayerData = new CongratPlayerData();
+			congratPlayerData->server = server;
+			congratPlayerData->playerName = bestScore->name;
+			congratPlayerData->type = 0;
+			new Jupiter::Timer(1, killCongratDelay, congratPlayer, congratPlayerData, false);
+		}
 
 		/** +1 for most kills */
 		if (mostKills->uuid.isNotEmpty() && mostKills->isBot == false && mostKills->kills > 0)

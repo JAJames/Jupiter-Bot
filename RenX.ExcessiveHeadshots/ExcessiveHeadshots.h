@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2014 Justin James.
+ * Copyright (C) 2014-2015 Justin James.
  *
  * This license must be preserved.
  * Any applications, libraries, or code which make any use of any
@@ -18,6 +18,7 @@
 #if !defined _EXCESSIVEHEADSHOTS_H_HEADER
 #define _EXCESSIVEHEADSHOTS_H_HEADER
 
+#include <chrono>
 #include "Jupiter/Plugin.h"
 #include "RenX_Plugin.h"
 
@@ -38,7 +39,7 @@ private:
 	double minKD = 5.0;
 	double minKPS = 0.1;
 	unsigned int minKills = 10;
-	time_t maxGameTime = 180;
+	std::chrono::seconds maxGameTime = std::chrono::seconds(180);
 };
 
 #endif // _EXCESSIVEHEADSHOTS_H_HEADER

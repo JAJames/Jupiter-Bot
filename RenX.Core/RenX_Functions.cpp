@@ -867,11 +867,9 @@ void RenX::sanitizeString(Jupiter::StringType &str)
 	}
 }
 
-time_t RenX::getGameTime(const RenX::PlayerInfo *player)
+std::chrono::milliseconds RenX::getServerTime(const RenX::PlayerInfo *player)
 {
-	time_t currentTime = time(0);
-	if (player->joinTime == currentTime) currentTime++;
-	return currentTime - player->joinTime;
+	return std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - player->joinTime);
 }
 
 Jupiter::StringS RenX::default_uuid_func(RenX::PlayerInfo *player)
@@ -891,9 +889,4 @@ double RenX::getHeadshotKillRatio(const RenX::PlayerInfo *player)
 {
 	if (player->kills == 0) return 0;
 	return ((double)player->headshots) / ((double)player->kills);
-}
-
-double RenX::getKillsPerSecond(const RenX::PlayerInfo *player)
-{
-	return ((double)player->kills) / ((double)RenX::getGameTime(player));
 }

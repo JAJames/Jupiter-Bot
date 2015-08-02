@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2014 Justin James.
+ * Copyright (C) 2014-2015 Justin James.
  *
  * This license must be preserved.
  * Any applications, libraries, or code which make any use of any
@@ -44,12 +44,14 @@ void RenX_ExcessiveHeadshotsPlugin::RenX_OnKill(RenX::Server *server, const RenX
 	if (damageType.equals("Rx_DmgType_Headshot"))
 	{
 		unsigned int flags = 0;
+		std::chrono::milliseconds game_time = server->getGameTime(player);
+		double kps = game_time == std::chrono::milliseconds(0) ? static_cast<double>(player->kills) : static_cast<double>(player->kills) / static_cast<double>(game_time.count());
 		if (player->kills >= RenX_ExcessiveHeadshotsPlugin::minKills) flags++;
 		if (RenX::getHeadshotKillRatio(player) >= RenX_ExcessiveHeadshotsPlugin::ratio) flags++;
 		if (RenX::getKillDeathRatio(player) >= RenX_ExcessiveHeadshotsPlugin::minKD) flags++;
-		if (RenX::getKillsPerSecond(player) >= RenX_ExcessiveHeadshotsPlugin::minKPS) flags++;
-		if (RenX::getKillsPerSecond(player) >= RenX_ExcessiveHeadshotsPlugin::minKPS * 2) flags++;
-		if (RenX::getGameTime(player) <= RenX_ExcessiveHeadshotsPlugin::maxGameTime) flags++;
+		if (kps >= RenX_ExcessiveHeadshotsPlugin::minKPS) flags++;
+		if (kps >= RenX_ExcessiveHeadshotsPlugin::minKPS * 2) flags++;
+		if (game_time <= RenX_ExcessiveHeadshotsPlugin::maxGameTime) flags++;
 
 		if (flags >= RenX_ExcessiveHeadshotsPlugin::minFlags)
 		{
