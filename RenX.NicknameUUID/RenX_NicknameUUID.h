@@ -34,7 +34,7 @@ public: // Jupiter::Plugin
 	~RenX_NicknameUUIDPlugin();
 
 private:
-	STRING_LITERAL_AS_NAMED_REFERENCE(name, "RenX_TemplatePlugin");
+	STRING_LITERAL_AS_NAMED_REFERENCE(name, "RenX.NicknameUUID");
 };
 
 #endif // _RENX_NICKNAMEUUID_H_HEADER

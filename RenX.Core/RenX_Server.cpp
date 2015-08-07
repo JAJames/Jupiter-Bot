@@ -37,7 +37,7 @@ int RenX::Server::think()
 	{
 		if (RenX::Server::maxAttempts < 0 || RenX::Server::attempts < RenX::Server::maxAttempts)
 		{
-			if (time(0) >= RenX::Server::lastAttempt + RenX::Server::delay)
+			if (std::chrono::steady_clock::now() >= RenX::Server::lastAttempt + RenX::Server::delay)
 			{
 				if (RenX::Server::connect())
 					RenX::Server::sendLogChan(IRCCOLOR "03[RenX]" IRCCOLOR " Socket successfully reconnected to Renegade-X server.");
@@ -240,6 +240,28 @@ RenX::BuildingInfo *RenX::Server::getBuildingByName(const Jupiter::ReadableStrin
 	for (size_t index = 0; index != RenX::Server::buildings.size(); ++index)
 		if (RenX::Server::buildings.get(index)->name.equalsi(name))
 			return RenX::Server::buildings.get(index);
+	return nullptr;
+}
+
+bool RenX::Server::hasMapInRotation(const Jupiter::ReadableString &name) const
+{
+	size_t index = RenX::Server::maps.size();
+	while (index != 0)
+		if (RenX::Server::maps.get(--index)->equalsi(name))
+			return true;
+	return false;
+}
+
+const Jupiter::ReadableString *RenX::Server::getMapName(const Jupiter::ReadableString &name) const
+{
+	size_t index = RenX::Server::maps.size();
+	const Jupiter::ReadableString *map_name;
+	while (index != 0)
+	{
+		map_name = RenX::Server::maps.get(--index);
+		if (map_name->findi(name) != Jupiter::INVALID_INDEX)
+			return map_name;
+	}
 	return nullptr;
 }
 
@@ -621,12 +643,12 @@ unsigned short RenX::Server::getSocketPort() const
 	return RenX::Server::sock.getPort();
 }
 
-time_t RenX::Server::getLastAttempt() const
+std::chrono::steady_clock::time_point RenX::Server::getLastAttempt() const
 {
 	return RenX::Server::lastAttempt;
 }
 
-time_t RenX::Server::getDelay() const
+std::chrono::milliseconds RenX::Server::getDelay() const
 {
 	return RenX::Server::delay;
 }
@@ -924,7 +946,7 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 			}
 		}
 	};
-	auto onPostGameOver = [this](RenX::WinType winType, RenX::TeamType team, int gScore, int nScore)
+	auto onMapChange = [this]()
 	{
 		this->firstAction = false;
 		this->firstKill = false;
@@ -1440,14 +1462,30 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 			{
 				if (this->lastCommandParams.isEmpty())
 				{
-					// "Port" | Port | "Name" | Name | "Passworded" | "True"/"False" | "Level" | Level
+					// "Port" | Port | "Name" | Name | "Level" | Level | "Players" | Players | "Bots" | Bots
 					buff.shiftRight(1);
 					this->port = static_cast<unsigned short>(buff.getToken(1, RenX::DelimC).asUnsignedInt(10));
 					this->serverName = buff.getToken(3, RenX::DelimC);
-					this->passworded = buff.getToken(5, RenX::DelimC).asBool();
-					this->map = buff.getToken(7, RenX::DelimC);
+					this->map = buff.getToken(5, RenX::DelimC);
 					buff.shiftLeft(1);
 				}
+			}
+			else if (this->lastCommand.equalsi("gameinfo"_jrs))
+			{
+				// "PlayerLimit" | PlayerLimit | "VehicleLimit" | VehicleLimit | "MineLimit" | MineLimit | "TimeLimit" | TimeLimit | "bPassworded" | bPassworded | "bSteamRequired" | bSteamRequired | "bPrivateMessageTeamOnly" | bPrivateMessageTeamOnly | "bAllowPrivateMessaging" | bAllowPrivateMessaging | "bAutoBalanceTeams" | bAutoBalanceTeams | "bSpawnCrates" | bSpawnCrates | "CrateRespawnAfterPickup" | CrateRespawnAfterPickup
+				buff.shiftRight(1);
+				this->playerLimit = buff.getToken(1, RenX::DelimC).asInt();
+				this->vehicleLimit = buff.getToken(3, RenX::DelimC).asInt();
+				this->mineLimit = buff.getToken(5, RenX::DelimC).asInt();
+				this->timeLimit = buff.getToken(7, RenX::DelimC).asInt();
+				this->passworded = buff.getToken(9, RenX::DelimC).asBool();
+				this->steamRequired = buff.getToken(11, RenX::DelimC).asBool();
+				this->privateMessageTeamOnly = buff.getToken(13, RenX::DelimC).asBool();
+				this->allowPrivateMessaging = buff.getToken(15, RenX::DelimC).asBool();
+				this->autoBalanceTeams = buff.getToken(17, RenX::DelimC).asBool();
+				this->spawnCrates = buff.getToken(19, RenX::DelimC).asBool();
+				this->crateRespawnAfterPickup = buff.getToken(21, RenX::DelimC).asDouble();
+				buff.shiftLeft(1);
 			}
 			else if (this->lastCommand.equalsi("mutatorlist"_jrs))
 			{
@@ -1466,6 +1504,14 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 				}
 				buff.shiftLeft(1);
 			}
+			else if (this->lastCommand.equalsi("rotation"_jrs))
+			{
+				// Map
+				buff.shiftRight(1);
+				if (this->hasMapInRotation(buff) == false)
+					this->maps.add(new Jupiter::StringS(buff));
+				buff.shiftLeft(1);
+			}
 			else if (this->lastCommand.equalsi("changename"))
 			{
 				buff.shiftRight(1);
@@ -1475,6 +1521,7 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 				for (size_t i = 0; i < xPlugins.size(); i++)
 					xPlugins.get(i)->RenX_OnNameChange(this, player, newName);
 				player->name = newName;
+				buff.shiftLeft(1);
 			}
 			break;
 		case 'l':
@@ -1939,7 +1986,6 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 							onPreGameOver(winType, team, gScore, nScore);
 							for (size_t i = 0; i < xPlugins.size(); i++)
 								xPlugins.get(i)->RenX_OnGameOver(this, winType, team, gScore, nScore);
-							onPostGameOver(winType, team, gScore, nScore);
 						}
 						else if (winTieToken.equals("tie"))
 						{
@@ -1947,7 +1993,6 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 							int nScore = buff.getToken(5, RenX::DelimC).getToken(1, '=').asInt();
 							for (size_t i = 0; i < xPlugins.size(); i++)
 								xPlugins.get(i)->RenX_OnGameOver(this, RenX::WinType::Tie, RenX::TeamType::None, gScore, nScore);
-							onPostGameOver(WinType::Tie, RenX::TeamType::None, gScore, nScore);
 						}
 					}
 					else
@@ -2365,6 +2410,7 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 						for (size_t i = 0; i < xPlugins.size(); i++)
 							xPlugins.get(i)->RenX_OnMapChange(this, map, seamless);
 						this->map = map;
+						onMapChange();
 					}
 					else if (subHeader.equals("Loaded;"))
 					{
@@ -2466,7 +2512,9 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 			{
 				RenX::Server::sock.send("s\n"_jrs);
 				RenX::Server::send("serverinfo"_jrs);
+				RenX::Server::send("gameinfo"_jrs);
 				RenX::Server::send("mutatorlist"_jrs);
+				RenX::Server::send("rotation"_jrs);
 				RenX::Server::fetchClientList();
 				RenX::Server::updateBuildingList();
 
@@ -2518,7 +2566,7 @@ void RenX::Server::disconnect(RenX::DisconnectReason reason)
 
 bool RenX::Server::connect()
 {
-	RenX::Server::lastAttempt = time(0);
+	RenX::Server::lastAttempt = std::chrono::steady_clock::now();
 	if (RenX::Server::sock.connect(RenX::Server::hostname.c_str(), RenX::Server::port, RenX::Server::clientHostname.isEmpty() ? nullptr : RenX::Server::clientHostname.c_str()))
 	{
 		RenX::Server::sock.setBlocking(false);
@@ -2550,6 +2598,9 @@ void RenX::Server::wipeData()
 			xPlugins.get(index)->RenX_OnPlayerDelete(this, player);
 		delete player;
 	}
+	RenX::Server::buildings.emptyAndDelete();
+	RenX::Server::mutators.emptyAndDelete();
+	RenX::Server::maps.emptyAndDelete();
 	RenX::Server::awaitingPong = false;
 	RenX::Server::rconVersion = 0;
 	RenX::Server::rconUser.truncate(RenX::Server::rconUser.size());
@@ -2603,7 +2654,7 @@ void RenX::Server::init()
 	RenX::Server::setPrefix(Jupiter::IRC::Client::Config->get(RenX::Server::configSection, STRING_LITERAL_AS_REFERENCE("IRCPrefix")));
 
 	RenX::Server::rules = Jupiter::IRC::Client::Config->get(RenX::Server::configSection, STRING_LITERAL_AS_REFERENCE("Rules"), STRING_LITERAL_AS_REFERENCE("Anarchy!"));
-	RenX::Server::delay = Jupiter::IRC::Client::Config->getInt(RenX::Server::configSection, STRING_LITERAL_AS_REFERENCE("ReconnectDelay"), 10);
+	RenX::Server::delay = std::chrono::milliseconds(Jupiter::IRC::Client::Config->getInt(RenX::Server::configSection, STRING_LITERAL_AS_REFERENCE("ReconnectDelay"), 10000));
 	RenX::Server::maxAttempts = Jupiter::IRC::Client::Config->getInt(RenX::Server::configSection, STRING_LITERAL_AS_REFERENCE("MaxReconnectAttempts"), -1);
 	RenX::Server::rconBan = Jupiter::IRC::Client::Config->getBool(RenX::Server::configSection, STRING_LITERAL_AS_REFERENCE("RCONBan"), false);
 	RenX::Server::localSteamBan = Jupiter::IRC::Client::Config->getBool(RenX::Server::configSection, STRING_LITERAL_AS_REFERENCE("LocalSteamBan"), true);

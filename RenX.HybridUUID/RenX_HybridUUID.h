@@ -34,7 +34,7 @@ public: // Jupiter::Plugin
 	~RenX_HybridUUIDPlugin();
 
 private:
-	STRING_LITERAL_AS_NAMED_REFERENCE(name, "RenX_TemplatePlugin");
+	STRING_LITERAL_AS_NAMED_REFERENCE(name, "RenX.HybridUUID");
 };
 
 #endif // _RENX_HYBRIDUUID_H_HEADER

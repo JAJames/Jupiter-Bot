@@ -85,6 +85,7 @@ namespace RenX
 		Jupiter::DLList<RenX::PlayerInfo> players; /** A list of players in the server */
 		Jupiter::ArrayList<RenX::BuildingInfo> buildings; /** A list of buildings in the server */
 		Jupiter::ArrayList<Jupiter::StringS> mutators; /** A list of buildings the server is running */
+		Jupiter::ArrayList<Jupiter::StringS> maps; /** A list of maps in the server's rotation */
 		Jupiter::INIFile varData; /** This may be replaced later with a more dedicated type. */
 
 		/**
@@ -207,6 +208,22 @@ namespace RenX
 		* @return A player's data on success, nullptr otherwise.
 		*/
 		RenX::BuildingInfo *getBuildingByName(const Jupiter::ReadableString &name) const;
+
+		/**
+		* @brief Checks if a map name is in the rotation.
+		*
+		* @param name Name of map to search for
+		* @return True if the map exists, false otherwise.
+		*/
+		bool hasMapInRotation(const Jupiter::ReadableString &name) const;
+
+		/**
+		* @brief Searches for a map based on a part of its name.
+		*
+		* @param name Part of the map's name to search for
+		* @return A map's full name if it exists, nullptr otherwise.
+		*/
+		const Jupiter::ReadableString *getMapName(const Jupiter::ReadableString &name) const;
 
 		/**
 		* @brief Fetches the RCON command currently being processed.
@@ -609,14 +626,14 @@ namespace RenX
 		*
 		* @return Time of the last connection attempt.
 		*/
-		time_t getLastAttempt() const;
+		std::chrono::steady_clock::time_point getLastAttempt() const;
 
 		/**
 		* @brief Fetches the time delay between connection attempts.
 		*
 		* @return Time delay between connection attempts.
 		*/
-		time_t getDelay() const;
+		std::chrono::milliseconds getDelay() const;
 
 		/**
 		* @brief Checks if the server has a game password.
@@ -856,7 +873,6 @@ namespace RenX
 		bool pure = false;
 		bool connected = false;
 		bool seamless = false;
-		bool passworded = false;
 		bool needsCList = false;
 		bool silenceParts = false;
 		bool silenceJoins = false;
@@ -865,9 +881,20 @@ namespace RenX
 		bool firstDeath = false;
 		bool firstAction = false;
 		bool awaitingPong = false;
-		unsigned int rconVersion = 0;
-		time_t lastAttempt = 0;
+		bool passworded = false;
+		bool steamRequired = false;
+		bool privateMessageTeamOnly = false;
+		bool allowPrivateMessaging = true;
+		bool autoBalanceTeams = true;
+		bool spawnCrates = true;
 		int attempts = 0;
+		int playerLimit = 0;
+		int vehicleLimit = 0;
+		int mineLimit = 0;
+		int timeLimit = 0;
+		unsigned int rconVersion = 0;
+		double crateRespawnAfterPickup = 0.0;
+		std::chrono::steady_clock::time_point lastAttempt = std::chrono::steady_clock::now();
 		std::chrono::steady_clock::time_point gameStart = std::chrono::steady_clock::now();
 		std::chrono::steady_clock::time_point lastClientListUpdate = std::chrono::steady_clock::now();
 		std::chrono::steady_clock::time_point lastBuildingListUpdate = std::chrono::steady_clock::now();
@@ -881,8 +908,8 @@ namespace RenX
 		unsigned short port;
 		int logChanType;
 		int adminLogChanType;
-		time_t delay;
 		int maxAttempts;
+		std::chrono::milliseconds delay;
 		std::chrono::milliseconds clientUpdateRate;
 		std::chrono::milliseconds buildingUpdateRate;
 		std::chrono::milliseconds pingRate;

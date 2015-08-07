@@ -716,11 +716,142 @@ void BuildingInfoIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableStr
 
 const Jupiter::ReadableString &BuildingInfoIRCCommand::getHelp(const Jupiter::ReadableString &)
 {
-	static STRING_LITERAL_AS_NAMED_REFERENCE(defaultHelp, "Gets information about a player. Syntax: PlayerInfo <Player>");
+	static STRING_LITERAL_AS_NAMED_REFERENCE(defaultHelp, "Provides a list of buildings, and the status of each one. Syntax: BuildingInfo");
 	return defaultHelp;
 }
 
 IRC_COMMAND_INIT(BuildingInfoIRCCommand)
+
+// Mutators IRC Command
+
+void MutatorsIRCCommand::create()
+{
+	this->addTrigger("mutators"_jrs);
+	this->addTrigger("mutator"_jrs);
+}
+
+void MutatorsIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &channel, const Jupiter::ReadableString &nick, const Jupiter::ReadableString &parameters)
+{
+	Jupiter::IRC::Client::Channel *chan = source->getChannel(channel);
+	if (chan != nullptr)
+	{
+		int type = chan->getType();
+		Jupiter::String list;
+		size_t index = 0;
+		for (unsigned int i = 0; i != RenX::getCore()->getServerCount(); i++)
+		{
+			RenX::Server *server = RenX::getCore()->getServer(i);
+			if (server->isLogChanType(type))
+			{
+				list = STRING_LITERAL_AS_REFERENCE(IRCCOLOR "03[Mutators]" IRCNORMAL);
+				for (index = 0; index != server->mutators.size(); ++index)
+					list += " "_jrs + *server->mutators.get(index);
+				if (index == 0)
+					source->sendMessage(channel, "No mutators loaded"_jrs);
+				else
+					source->sendMessage(channel, list);
+			}
+		}
+		if (list.isEmpty())
+			source->sendMessage(channel, "Error: Channel not attached to any connected Renegade X servers."_jrs);
+	}
+}
+
+const Jupiter::ReadableString &MutatorsIRCCommand::getHelp(const Jupiter::ReadableString &)
+{
+	static STRING_LITERAL_AS_NAMED_REFERENCE(defaultHelp, "Provides a list of mutators being used. Syntax: Mutators");
+	return defaultHelp;
+}
+
+IRC_COMMAND_INIT(MutatorsIRCCommand)
+
+// Rotation IRC Command
+
+void RotationIRCCommand::create()
+{
+	this->addTrigger("rotation"_jrs);
+	this->addTrigger("maprotation"_jrs);
+	this->addTrigger("maps"_jrs);
+	this->addTrigger("rot"_jrs);
+}
+
+void RotationIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &channel, const Jupiter::ReadableString &nick, const Jupiter::ReadableString &parameters)
+{
+	Jupiter::IRC::Client::Channel *chan = source->getChannel(channel);
+	if (chan != nullptr)
+	{
+		const Jupiter::ReadableString *map;
+		int type = chan->getType();
+		Jupiter::String list;
+		size_t index = 0;
+		for (unsigned int i = 0; i != RenX::getCore()->getServerCount(); i++)
+		{
+			RenX::Server *server = RenX::getCore()->getServer(i);
+			if (server->isLogChanType(type))
+			{
+				list = STRING_LITERAL_AS_REFERENCE(IRCCOLOR "03[Rotation]" IRCNORMAL);
+				for (index = 0; index != server->maps.size(); ++index)
+				{
+					map = server->maps.get(index);
+					if (server->getMap().equalsi(*map))
+						list += STRING_LITERAL_AS_REFERENCE(" " IRCBOLD "[") + *server->maps.get(index) + STRING_LITERAL_AS_REFERENCE("]" IRCBOLD);
+					else
+						list += " "_jrs + *server->maps.get(index);
+				}
+				if (index == 0)
+					source->sendMessage(channel, "No maps in rotation"_jrs);
+				else
+					source->sendMessage(channel, list);
+			}
+		}
+		if (list.isEmpty())
+			source->sendMessage(channel, "Error: Channel not attached to any connected Renegade X servers."_jrs);
+	}
+}
+
+const Jupiter::ReadableString &RotationIRCCommand::getHelp(const Jupiter::ReadableString &)
+{
+	static STRING_LITERAL_AS_NAMED_REFERENCE(defaultHelp, "Provides a list of maps in the server rotation. Syntax: Rotation");
+	return defaultHelp;
+}
+
+IRC_COMMAND_INIT(RotationIRCCommand)
+
+// Map IRC Command
+
+void MapIRCCommand::create()
+{
+	this->addTrigger("map"_jrs);
+}
+
+void MapIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &channel, const Jupiter::ReadableString &nick, const Jupiter::ReadableString &parameters)
+{
+	Jupiter::IRC::Client::Channel *chan = source->getChannel(channel);
+	if (chan != nullptr)
+	{
+		int type = chan->getType();
+		bool match = false;
+		for (unsigned int i = 0; i != RenX::getCore()->getServerCount(); i++)
+		{
+			RenX::Server *server = RenX::getCore()->getServer(i);
+			if (server->isLogChanType(type))
+			{
+				match = true;
+				source->sendMessage(channel, "Current Map: "_jrs + server->getMap());
+			}
+		}
+		if (match == false)
+			source->sendMessage(channel, "Error: Channel not attached to any connected Renegade X servers."_jrs);
+	}
+}
+
+const Jupiter::ReadableString &MapIRCCommand::getHelp(const Jupiter::ReadableString &)
+{
+	static STRING_LITERAL_AS_NAMED_REFERENCE(defaultHelp, "Fetches the current map. Syntax: Map");
+	return defaultHelp;
+}
+
+IRC_COMMAND_INIT(MapIRCCommand)
 
 // Steam IRC Command
 
@@ -1269,19 +1400,21 @@ void SetMapIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &c
 		Jupiter::IRC::Client::Channel *chan = source->getChannel(channel);
 		if (chan != nullptr)
 		{
+			const Jupiter::ReadableString *map_name = nullptr;
 			int type = chan->getType();
-			bool match = false;
 			for (unsigned int i = 0; i != RenX::getCore()->getServerCount(); i++)
 			{
 				RenX::Server *server = RenX::getCore()->getServer(i);
 				if (server->isLogChanType(type))
 				{
-					match = true;
-					if (server->setMap(parameters) == false)
-						source->sendMessage(channel, STRING_LITERAL_AS_REFERENCE("Error: Server does not support setmap."));
+					map_name = server->getMapName(parameters);
+					if (map_name == nullptr)
+						source->sendMessage(channel, STRING_LITERAL_AS_REFERENCE("Error: Map not in rotation."));
+					else if (server->setMap(*map_name) == false)
+						source->sendMessage(channel, STRING_LITERAL_AS_REFERENCE("Error: Transmission error."));
 				}
 			}
-			if (match == false)
+			if (map_name == nullptr)
 				source->sendMessage(channel, STRING_LITERAL_AS_REFERENCE("Error: Channel not attached to any connected Renegade X servers."));
 		}
 	}
