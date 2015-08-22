@@ -739,7 +739,7 @@ namespace RenX
 		*
 		* @param function Function to calculate UUIDs with.
 		*/
-		void setUUIDFunction(uuid_func);
+		void setUUIDFunction(uuid_func function);
 
 		/**
 		* @brief Fetches the current UUID calculation function.
@@ -894,35 +894,40 @@ namespace RenX
 		int timeLimit = 0;
 		unsigned int rconVersion = 0;
 		double crateRespawnAfterPickup = 0.0;
+		uuid_func calc_uuid;
 		std::chrono::steady_clock::time_point lastAttempt = std::chrono::steady_clock::now();
 		std::chrono::steady_clock::time_point gameStart = std::chrono::steady_clock::now();
 		std::chrono::steady_clock::time_point lastClientListUpdate = std::chrono::steady_clock::now();
 		std::chrono::steady_clock::time_point lastBuildingListUpdate = std::chrono::steady_clock::now();
 		std::chrono::steady_clock::time_point lastActivity = std::chrono::steady_clock::now();
 		Jupiter::String lastLine;
-		Jupiter::StringS commandListFormat;
+		Jupiter::StringS rconUser;
 		Jupiter::StringS gameVersion;
+		Jupiter::StringS serverName;
+		Jupiter::StringS map;
+		Jupiter::StringS lastCommand;
+		Jupiter::StringS lastCommandParams;
+		Jupiter::TCPSocket sock;
+		Jupiter::ReadableString::TokenizeResult<Jupiter::String_Strict> commandListFormat;
 		Jupiter::ArrayList<RenX::GameCommand> commands;
 
 		/** Configuration variables */
-		unsigned short port;
-		int logChanType;
-		int adminLogChanType;
-		int maxAttempts;
-		std::chrono::milliseconds delay;
-		std::chrono::milliseconds clientUpdateRate;
-		std::chrono::milliseconds buildingUpdateRate;
-		std::chrono::milliseconds pingRate;
-		std::chrono::milliseconds pingTimeoutThreshold;
-		int steamFormat; /** 16 = hex, 10 = base 10, 8 = octal, -2 = SteamID 2, -3 = SteamID 3 */
 		bool rconBan;
 		bool localBan;
 		bool localSteamBan;
 		bool localIPBan;
 		bool localNameBan;
 		bool neverSay;
-		uuid_func calc_uuid;
-		Jupiter::TCPSocket sock;
+		unsigned short port;
+		int logChanType;
+		int adminLogChanType;
+		int maxAttempts;
+		int steamFormat; /** 16 = hex, 10 = base 10, 8 = octal, -2 = SteamID 2, -3 = SteamID 3 */
+		std::chrono::milliseconds delay;
+		std::chrono::milliseconds clientUpdateRate;
+		std::chrono::milliseconds buildingUpdateRate;
+		std::chrono::milliseconds pingRate;
+		std::chrono::milliseconds pingTimeoutThreshold;
 		Jupiter::CStringS clientHostname;
 		Jupiter::CStringS hostname;
 		Jupiter::StringS pass;
@@ -930,11 +935,6 @@ namespace RenX
 		Jupiter::StringS rules;
 		Jupiter::StringS IRCPrefix;
 		Jupiter::StringS CommandPrefix;
-		Jupiter::StringS rconUser;
-		Jupiter::StringS serverName;
-		Jupiter::StringS lastCommand;
-		Jupiter::StringS lastCommandParams;
-		Jupiter::StringS map;
 		Jupiter::INIFile::Section *commandAccessLevels;
 		Jupiter::INIFile::Section *commandAliases;
 	};
