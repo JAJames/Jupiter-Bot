@@ -924,7 +924,6 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 	if (line.isEmpty())
 		return;
 
-	Jupiter::ReferenceString buff = line;
 	Jupiter::ArrayList<RenX::Plugin> &xPlugins = *RenX::getCore()->getPlugins();
 	Jupiter::ReadableString::TokenizeResult<Jupiter::String_Strict> tokens = Jupiter::StringS::tokenize(line, RenX::DelimC);
 
@@ -1114,7 +1113,7 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 		PARSE_PLAYER_DATA_P(token);
 		return getPlayerOrAdd(name, id, team, isBot, 0U, Jupiter::ReferenceString::empty);
 	};
-	auto gotoToken = [&buff, &tokens](size_t index)
+	auto gotoToken = [&line, &tokens](size_t index)
 	{
 		if (index >= tokens.token_count)
 			return Jupiter::ReferenceString::empty;
@@ -1123,7 +1122,7 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 		while (index != 0)
 			offset += tokens.tokens[--index].size();
 
-		return buff.substring(offset);
+		return Jupiter::ReferenceString::substring(line, offset + 1);
 	};
 
 	if (tokens.tokens[0].isNotEmpty())
@@ -1167,7 +1166,6 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 			}
 			else if (this->lastCommand.equalsi("clientvarlist"))
 			{
-				buff.shiftRight(1);
 				if (this->commandListFormat.token_count == 0)
 					this->commandListFormat = tokens;
 				else
@@ -1306,7 +1304,6 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 						}
 					}
 				}
-				buff.shiftLeft(1);
 			}
 			else if (this->lastCommand.equalsi("botlist"))
 			{
@@ -1318,7 +1315,6 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 			}
 			else if (this->lastCommand.equalsi("botvarlist"))
 			{
-				buff.shiftRight(1);
 				if (this->commandListFormat.token_count == 0)
 					this->commandListFormat = tokens;
 				else
@@ -1413,11 +1409,9 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 						}
 					}
 				}
-				buff.shiftLeft(1);
 			}
 			else if (this->lastCommand.equalsi("binfo") || this->lastCommand.equalsi("buildinginfo") || this->lastCommand.equalsi("blist") || this->lastCommand.equalsi("buildinglist"))
 			{
-				buff.shiftRight(1);
 				if (this->commandListFormat.token_count == 0)
 					this->commandListFormat = tokens;
 				else
@@ -1463,28 +1457,24 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 							building->capturable = pair->getValue().asBool();
 					}
 				}
-				buff.shiftLeft(1);
 			}
 			else if (this->lastCommand.equalsi("ping"))
 				RenX::Server::awaitingPong = false;
 			else if (this->lastCommand.equalsi("map"))
-				this->map = buff.substring(1);
+				this->map = std::move(Jupiter::StringS::substring(line, 1));
 			else if (this->lastCommand.equalsi("serverinfo"))
 			{
 				if (this->lastCommandParams.isEmpty())
 				{
 					// "Port" | Port | "Name" | Name | "Level" | Level | "Players" | Players | "Bots" | Bots
-					buff.shiftRight(1);
 					this->port = static_cast<unsigned short>(tokens.getToken(1).asUnsignedInt(10));
 					this->serverName = tokens.getToken(3);
 					this->map = tokens.getToken(5);
-					buff.shiftLeft(1);
 				}
 			}
 			else if (this->lastCommand.equalsi("gameinfo"_jrs))
 			{
 				// "PlayerLimit" | PlayerLimit | "VehicleLimit" | VehicleLimit | "MineLimit" | MineLimit | "TimeLimit" | TimeLimit | "bPassworded" | bPassworded | "bSteamRequired" | bSteamRequired | "bPrivateMessageTeamOnly" | bPrivateMessageTeamOnly | "bAllowPrivateMessaging" | bAllowPrivateMessaging | "bAutoBalanceTeams" | bAutoBalanceTeams | "bSpawnCrates" | bSpawnCrates | "CrateRespawnAfterPickup" | CrateRespawnAfterPickup
-				buff.shiftRight(1);
 				this->playerLimit = tokens.getToken(1).asInt();
 				this->vehicleLimit = tokens.getToken(3).asInt();
 				this->mineLimit = tokens.getToken(5).asInt();
@@ -1496,7 +1486,6 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 				this->autoBalanceTeams = tokens.getToken(17).asBool();
 				this->spawnCrates = tokens.getToken(19).asBool();
 				this->crateRespawnAfterPickup = tokens.getToken(21).asDouble();
-				buff.shiftLeft(1);
 			}
 			else if (this->lastCommand.equalsi("mutatorlist"_jrs))
 			{
@@ -1516,20 +1505,17 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 			else if (this->lastCommand.equalsi("rotation"_jrs))
 			{
 				// Map
-				buff.shiftRight(1);
-				if (this->hasMapInRotation(buff) == false)
-					this->maps.add(new Jupiter::StringS(buff));
-				buff.shiftLeft(1);
+				Jupiter::ReferenceString in_map = Jupiter::ReferenceString::substring(line, 1);
+				if (this->hasMapInRotation(in_map) == false)
+					this->maps.add(new Jupiter::StringS(in_map));
 			}
 			else if (this->lastCommand.equalsi("changename"))
 			{
-				buff.shiftRight(1);
 				RenX::PlayerInfo *player = parseGetPlayerOrAdd(tokens.getToken(0));
 				Jupiter::StringS newName = tokens.getToken(2);
 				for (size_t i = 0; i < xPlugins.size(); i++)
 					xPlugins.get(i)->RenX_OnNameChange(this, player, newName);
 				player->name = newName;
-				buff.shiftLeft(1);
 			}
 			break;
 		case 'l':
@@ -2004,10 +1990,9 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 					}
 					else
 					{
-						buff.shiftRight(tokens.tokens[0].size() + 2);
+						Jupiter::ReferenceString raw = gotoToken(1);
 						for (size_t i = 0; i < xPlugins.size(); i++)
-							xPlugins.get(i)->RenX_OnGame(this, buff);
-						buff.shiftLeft(tokens.tokens[0].size() + 2);
+							xPlugins.get(i)->RenX_OnGame(this, raw);
 					}
 				}
 				else if (tokens.tokens[0].equals("CHAT"))
@@ -2056,10 +2041,9 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 					}*/
 					else
 					{
-						buff.shiftRight(tokens.tokens[0].size() + 2);
+						Jupiter::ReferenceString raw = gotoToken(1);
 						for (size_t i = 0; i < xPlugins.size(); i++)
-							xPlugins.get(i)->RenX_OnOtherChat(this, buff);
-						buff.shiftLeft(tokens.tokens[0].size() + 2);
+							xPlugins.get(i)->RenX_OnOtherChat(this, raw);
 					}
 				}
 				else if (tokens.tokens[0].equals("PLAYER"))
@@ -2130,10 +2114,9 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 					}
 					else
 					{
-						buff.shiftRight(tokens.tokens[0].size() + 2);
+						Jupiter::ReferenceString raw = gotoToken(1);
 						for (size_t i = 0; i < xPlugins.size(); i++)
-							xPlugins.get(i)->RenX_OnPlayer(this, buff);
-						buff.shiftLeft(tokens.tokens[0].size() + 2);
+							xPlugins.get(i)->RenX_OnPlayer(this, raw);
 					}
 				}
 				else if (tokens.tokens[0].equals("RCON"))
@@ -2146,6 +2129,7 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 						{
 							Jupiter::ReferenceString command = gotoToken(4);
 							Jupiter::ReferenceString cmd = command.getWord(0, " ");
+
 							if (cmd.equalsi("hostprivatesay"))
 							{
 								RenX::PlayerInfo *player = this->getPlayerByName(command.getWord(1, " "));
@@ -2258,10 +2242,9 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 					}
 					else
 					{
-						buff.shiftRight(tokens.tokens[0].size() + 2);
+						Jupiter::ReferenceString raw = gotoToken(1);
 						for (size_t i = 0; i < xPlugins.size(); i++)
-							xPlugins.get(i)->RenX_OnRCON(this, buff);
-						buff.shiftLeft(tokens.tokens[0].size() + 2);
+							xPlugins.get(i)->RenX_OnRCON(this, raw);
 					}
 				}
 				else if (tokens.tokens[0].equals("ADMIN"))
@@ -2303,10 +2286,9 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 					}
 					else
 					{
-						buff.shiftRight(tokens.tokens[0].size() + 2);
+						Jupiter::ReferenceString raw = gotoToken(1);
 						for (size_t i = 0; i < xPlugins.size(); i++)
-							xPlugins.get(i)->RenX_OnAdmin(this, buff);
-						buff.shiftLeft(tokens.tokens[0].size() + 2);
+							xPlugins.get(i)->RenX_OnAdmin(this, raw);
 					}
 				}
 				else if (tokens.tokens[0].equals("VOTE"))
@@ -2400,10 +2382,9 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 					}
 					else
 					{
-						buff.shiftRight(tokens.tokens[0].size() + 2);
+						Jupiter::ReferenceString raw = gotoToken(1);
 						for (size_t i = 0; i < xPlugins.size(); i++)
-							xPlugins.get(i)->RenX_OnVote(this, buff);
-						buff.shiftLeft(tokens.tokens[0].size() + 2);
+							xPlugins.get(i)->RenX_OnVote(this, raw);
 					}
 				}
 				else if (tokens.tokens[0].equals("MAP"))
@@ -2444,10 +2425,9 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 					}
 					else
 					{
-						buff.shiftRight(tokens.tokens[0].size() + 2);
+						Jupiter::ReferenceString raw = gotoToken(1);
 						for (size_t i = 0; i < xPlugins.size(); i++)
-							xPlugins.get(i)->RenX_OnMap(this, buff);
-						buff.shiftLeft(tokens.tokens[0].size() + 2);
+							xPlugins.get(i)->RenX_OnMap(this, raw);
 					}
 				}
 				else if (tokens.tokens[0].equals("DEMO"))
@@ -2479,10 +2459,9 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 					}
 					else
 					{
-						buff.shiftRight(tokens.tokens[0].size() + 2);
+						Jupiter::ReferenceString raw = gotoToken(1);
 						for (size_t i = 0; i < xPlugins.size(); i++)
-							xPlugins.get(i)->RenX_OnDemo(this, buff);
-						buff.shiftLeft(tokens.tokens[0].size() + 2);
+							xPlugins.get(i)->RenX_OnDemo(this, raw);
 					}
 				}
 				/*else if (tokens.tokens[0].equals("ERROR;")) // Decided to disable this entirely, since it's unreachable anyways.
@@ -2492,78 +2471,81 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 				}*/
 				else
 				{
-					buff.shiftRight(1);
+					Jupiter::ReferenceString raw = Jupiter::ReferenceString::substring(line, 1);
 					for (size_t i = 0; i < xPlugins.size(); i++)
-						xPlugins.get(i)->RenX_OnLog(this, buff);
-					buff.shiftLeft(1);
+						xPlugins.get(i)->RenX_OnLog(this, raw);
 				}
 			}
 			break;
 
 		case 'c':
-			buff.shiftRight(1);
-			for (size_t i = 0; i < xPlugins.size(); i++)
-				xPlugins.get(i)->RenX_OnCommand(this, buff);
-			this->commandListFormat.erase();
-			this->lastCommand = Jupiter::ReferenceString::empty;
-			this->lastCommandParams = Jupiter::ReferenceString::empty;
-			buff.shiftLeft(1);
+			{
+				Jupiter::ReferenceString raw = Jupiter::ReferenceString::substring(line, 1);
+				for (size_t i = 0; i < xPlugins.size(); i++)
+					xPlugins.get(i)->RenX_OnCommand(this, raw);
+				this->commandListFormat.erase();
+				this->lastCommand = Jupiter::ReferenceString::empty;
+				this->lastCommandParams = Jupiter::ReferenceString::empty;
+			}
 			break;
 
 		case 'e':
-			buff.shiftRight(1);
-			for (size_t i = 0; i < xPlugins.size(); i++)
-				xPlugins.get(i)->RenX_OnError(this, buff);
-			buff.shiftLeft(1);
+			{
+				Jupiter::ReferenceString raw = Jupiter::ReferenceString::substring(line, 1);
+				for (size_t i = 0; i < xPlugins.size(); i++)
+					xPlugins.get(i)->RenX_OnError(this, raw);
+			}
 			break;
 
 		case 'v':
-			buff.shiftRight(1);
-			this->rconVersion = buff.asInt(10);
-			this->gameVersion = buff.substring(3);
-
-			if (this->rconVersion >= 3)
 			{
-				RenX::Server::sock.send("s\n"_jrs);
-				RenX::Server::send("serverinfo"_jrs);
-				RenX::Server::send("gameinfo"_jrs);
-				RenX::Server::send("mutatorlist"_jrs);
-				RenX::Server::send("rotation"_jrs);
-				RenX::Server::fetchClientList();
-				RenX::Server::updateBuildingList();
-
-				RenX::Server::gameStart = std::chrono::steady_clock::now();
-				this->seenStart = false;
-				this->seamless = true;
-
-				for (size_t i = 0; i < xPlugins.size(); i++)
-					xPlugins.get(i)->RenX_OnVersion(this, buff);
-				buff.shiftLeft(1);
-			}
-			else
-			{
-				RenX::Server::sendLogChan(STRING_LITERAL_AS_REFERENCE(IRCCOLOR "04[Error]" IRCCOLOR " Disconnected from Renegade-X server (incompatible RCON version)."));
-				this->disconnect(RenX::DisconnectReason::IncompatibleVersion);
+				Jupiter::ReferenceString raw = Jupiter::ReferenceString::substring(line, 1);
+				this->rconVersion = raw.asInt(10);
+				this->gameVersion = raw.substring(3);
+				
+				if (this->rconVersion >= 3)
+				{
+					RenX::Server::sock.send("s\n"_jrs);
+					RenX::Server::send("serverinfo"_jrs);
+					RenX::Server::send("gameinfo"_jrs);
+					RenX::Server::send("mutatorlist"_jrs);
+					RenX::Server::send("rotation"_jrs);
+					RenX::Server::fetchClientList();
+					RenX::Server::updateBuildingList();
+					
+					RenX::Server::gameStart = std::chrono::steady_clock::now();
+					this->seenStart = false;
+					this->seamless = true;
+					
+					for (size_t i = 0; i < xPlugins.size(); i++)
+						xPlugins.get(i)->RenX_OnVersion(this, raw);
+				}
+				else
+				{
+					RenX::Server::sendLogChan(STRING_LITERAL_AS_REFERENCE(IRCCOLOR "04[Error]" IRCCOLOR " Disconnected from Renegade-X server (incompatible RCON version)."));
+					this->disconnect(RenX::DisconnectReason::IncompatibleVersion);
+				}
 			}
 			break;
 
 		case 'a':
-			buff.shiftRight(1);
-			RenX::Server::rconUser = buff;
-			for (size_t i = 0; i < xPlugins.size(); i++)
-				xPlugins.get(i)->RenX_OnAuthorized(this, buff);
-			buff.shiftLeft(1);
+			{
+				RenX::Server::rconUser = Jupiter::ReferenceString::substring(line, 1);;
+				for (size_t i = 0; i < xPlugins.size(); i++)
+					xPlugins.get(i)->RenX_OnAuthorized(this, RenX::Server::rconUser);
+			}
 			break;
 
 		default:
-			buff.shiftRight(1);
-			for (size_t i = 0; i < xPlugins.size(); i++)
-				xPlugins.get(i)->RenX_OnOther(this, header, buff);
-			buff.shiftLeft(1);
+			{
+				Jupiter::ReferenceString raw = Jupiter::ReferenceString::substring(line, 1);
+				for (size_t i = 0; i < xPlugins.size(); i++)
+					xPlugins.get(i)->RenX_OnOther(this, header, raw);
+			}
 			break;
 		}
 		for (size_t i = 0; i < xPlugins.size(); i++)
-			xPlugins.get(i)->RenX_OnRaw(this, buff);
+			xPlugins.get(i)->RenX_OnRaw(this, line);
 	}
 }
 
