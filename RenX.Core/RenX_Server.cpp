@@ -189,7 +189,7 @@ bool RenX::Server::isPure() const
 
 int RenX::Server::send(const Jupiter::ReadableString &command)
 {
-	return RenX::Server::sock.send("c"_jrs + command + "\n"_jrs);
+	return RenX::Server::sock.send("c"_jrs + command + '\n');
 }
 
 int RenX::Server::sendMessage(const Jupiter::ReadableString &message)
@@ -204,12 +204,12 @@ int RenX::Server::sendMessage(const Jupiter::ReadableString &message)
 		return r;
 	}
 	else
-		return RenX::Server::sock.send("chostsay "_jrs + message + "\n"_jrs);
+		return RenX::Server::sock.send("chostsay "_jrs + message + '\n');
 }
 
 int RenX::Server::sendMessage(const RenX::PlayerInfo *player, const Jupiter::ReadableString &message)
 {
-	auto cmd = "chostprivatesay pid"_jrs + Jupiter::StringS::Format("%d ", player->id) + message + "\n"_jrs;
+	auto cmd = "chostprivatesay pid"_jrs + Jupiter::StringS::Format("%d ", player->id) + message  + '\n';
 	RenX::sanitizeString(cmd);
 	return RenX::Server::sock.send(cmd);
 }
