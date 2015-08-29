@@ -204,12 +204,12 @@ int RenX::Server::sendMessage(const Jupiter::ReadableString &message)
 		return r;
 	}
 	else
-		return RenX::Server::sock.send("chostsay "_jrs + message + '\n');
+		return RenX::Server::sock.send("chostsay "_jrs + message + "\n"_jrs);
 }
 
 int RenX::Server::sendMessage(const RenX::PlayerInfo *player, const Jupiter::ReadableString &message)
 {
-	auto cmd = "chostprivatesay pid"_jrs + Jupiter::StringS::Format("%d ", player->id) + message  + '\n';
+	auto cmd = "chostprivatesay pid"_jrs + Jupiter::StringS::Format("%d ", player->id) + message + "\n"_jrs;
 	RenX::sanitizeString(cmd);
 	return RenX::Server::sock.send(cmd);
 }
