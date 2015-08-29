@@ -189,7 +189,7 @@ bool RenX::Server::isPure() const
 
 int RenX::Server::send(const Jupiter::ReadableString &command)
 {
-	return RenX::Server::sock.send("c"_jrs + command + '\n');
+	return RenX::Server::sock.send("c"_jrs + command + "\n"_jrs);
 }
 
 int RenX::Server::sendMessage(const Jupiter::ReadableString &message)
