@@ -2559,6 +2559,7 @@ bool RenX::Server::connect()
 		RenX::Server::attempts = 0;
 		return true;
 	}
+	RenX::Server::sock.closeSocket();
 	RenX::Server::connected = false;
 	++RenX::Server::attempts;
 	return false;
