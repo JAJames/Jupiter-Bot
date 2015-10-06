@@ -56,7 +56,7 @@ int RenX_ListenPlugin::OnRehash()
 	uint16_t port = Jupiter::IRC::Client::Config->getInt(this->getName(), STRING_LITERAL_AS_REFERENCE("Port"), 21337);
 	const Jupiter::ReadableString &address = Jupiter::IRC::Client::Config->get(this->getName(), STRING_LITERAL_AS_REFERENCE("Address"), STRING_LITERAL_AS_REFERENCE("0.0.0.0"));
 	RenX_ListenPlugin::serverSection = Jupiter::IRC::Client::Config->get(this->getName(), STRING_LITERAL_AS_REFERENCE("ServerSection"), this->getName());
-	if (port != RenX_ListenPlugin::socket.getPort() || address.equals(RenX_ListenPlugin::socket.getHostname()) == false)
+	if (port != RenX_ListenPlugin::socket.getRemotePort() || address.equals(RenX_ListenPlugin::socket.getRemoteHostname()) == false)
 	{
 		puts("Notice: The Renegade-X listening socket has been changed!");
 		RenX_ListenPlugin::socket.closeSocket();

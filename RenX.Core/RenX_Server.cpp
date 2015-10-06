@@ -620,12 +620,12 @@ unsigned short RenX::Server::getPort() const
 
 const Jupiter::ReadableString &RenX::Server::getSocketHostname() const
 {
-	return RenX::Server::sock.getHostname();
+	return RenX::Server::sock.getRemoteHostname();
 }
 
 unsigned short RenX::Server::getSocketPort() const
 {
-	return RenX::Server::sock.getPort();
+	return RenX::Server::sock.getRemotePort();
 }
 
 std::chrono::steady_clock::time_point RenX::Server::getLastAttempt() const
@@ -2559,7 +2559,6 @@ bool RenX::Server::connect()
 		RenX::Server::attempts = 0;
 		return true;
 	}
-	RenX::Server::sock.closeSocket();
 	RenX::Server::connected = false;
 	++RenX::Server::attempts;
 	return false;
@@ -2608,7 +2607,7 @@ const Jupiter::ReadableString &RenX::Server::getRCONUsername() const
 RenX::Server::Server(Jupiter::Socket &&socket, const Jupiter::ReadableString &configurationSection) : Server(configurationSection)
 {
 	RenX::Server::sock = std::move(socket);
-	RenX::Server::hostname = RenX::Server::sock.getHostname();
+	RenX::Server::hostname = RenX::Server::sock.getRemoteHostname();
 	RenX::Server::sock.send(Jupiter::StringS::Format("a%.*s\n", RenX::Server::pass.size(), RenX::Server::pass.ptr()));
 	RenX::Server::connected = true;
 	RenX::Server::silenceParts = false;
