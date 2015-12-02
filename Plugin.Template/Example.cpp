@@ -3,7 +3,7 @@
  * support, and with no warranty, express or implied, as to its usefulness for
  * any purpose.
  *
- * Written by Justin James <justin.aj@hotmail.com>
+ * Written by Jessica James <jessica.aj@outlook.com>
  */
 
 #include "Example.h"

@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2014-2015 Justin James.
+ * Copyright (C) 2014-2015 Jessica James.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -13,7 +13,7 @@
  * OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
- * Written by Justin James <justin.aj@hotmail.com>
+ * Written by Jessica James <jessica.aj@outlook.com>
  */
 
 #include "Jupiter/INIFile.h"
