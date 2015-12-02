@@ -1,5 +1,5 @@
 @ECHO OFF
-if NOT "%2" == "-scr" ECHO Copyright (C) 2014 Justin James. All rights reserved.
+if NOT "%2" == "-scr" ECHO Copyright (C) 2014 Jessica James. All rights reserved.
 ECHO.
 
 if "%1" == "/?" GOTO Help
