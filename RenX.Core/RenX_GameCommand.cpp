@@ -22,6 +22,10 @@
 Jupiter::ArrayList<RenX::GameCommand> _GameMasterCommandList;
 Jupiter::ArrayList<RenX::GameCommand> *RenX::GameMasterCommandList = &_GameMasterCommandList;
 
+RenX::GameCommand::GameCommand(nullptr_t)
+{
+}
+
 RenX::GameCommand::GameCommand(const RenX::GameCommand &command)
 {
 	//RenX::GameMasterCommandList->add(this);
@@ -59,4 +63,46 @@ int RenX::GameCommand::getAccessLevel()
 void RenX::GameCommand::setAccessLevel(int accessLevel)
 {
 	RenX::GameCommand::access = accessLevel;
+}
+
+// Basic Game Command
+
+RenX::BasicGameCommand::BasicGameCommand() : RenX::GameCommand(nullptr)
+{
+}
+
+RenX::BasicGameCommand::BasicGameCommand(BasicGameCommand &c) : RenX::GameCommand(c)
+{
+}
+
+RenX::BasicGameCommand::BasicGameCommand(const Jupiter::ReadableString &in_trigger, const Jupiter::ReadableString &in_message, const Jupiter::ReadableString &in_help_message) : RenX::GameCommand(nullptr)
+{
+	this->addTrigger(in_trigger);
+	RenX::BasicGameCommand::message = in_message;
+	RenX::BasicGameCommand::help_message = in_help_message;
+}
+
+void RenX::BasicGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *player, const Jupiter::ReadableString &parameters)
+{
+	source->sendMessage(RenX::BasicGameCommand::message);
+}
+
+const Jupiter::ReadableString &RenX::BasicGameCommand::getHelp(const Jupiter::ReadableString &)
+{
+	static STRING_LITERAL_AS_NAMED_REFERENCE(defaultHelp, "Returns a basic text string.");
+	if (RenX::BasicGameCommand::help_message.isEmpty())
+		return defaultHelp;
+	return RenX::BasicGameCommand::help_message;
+}
+
+RenX::BasicGameCommand *RenX::BasicGameCommand::copy()
+{
+	RenX::BasicGameCommand *r = new RenX::BasicGameCommand(*this);
+	r->message = RenX::BasicGameCommand::message;
+	r->help_message = RenX::BasicGameCommand::help_message;
+	return r;
+}
+
+void RenX::BasicGameCommand::create()
+{
 }

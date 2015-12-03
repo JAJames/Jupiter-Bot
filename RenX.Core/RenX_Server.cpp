@@ -2653,10 +2653,42 @@ void RenX::Server::init()
 
 	Jupiter::INIFile &commandsFile = RenX::getCore()->getCommandsFile();
 	RenX::Server::commandAccessLevels = commandsFile.getSection(RenX::Server::configSection);
-	RenX::Server::commandAliases = commandsFile.getSection(Jupiter::StringS::Format("%.*s.Aliases", RenX::Server::configSection.size(), RenX::Server::configSection.ptr()));
+	RenX::Server::commandAliases = commandsFile.getSection(RenX::Server::configSection + ".Aliases"_jrs);
 
-	for (size_t i = 0; i < RenX::GameMasterCommandList->size(); i++)
+	for (size_t i = 0; i != RenX::GameMasterCommandList->size(); ++i)
 		RenX::Server::addCommand(RenX::GameMasterCommandList->get(i)->copy());
+
+	auto load_basic_commands = [this, &commandsFile](const Jupiter::ReadableString &section_prefix)
+	{
+		Jupiter::INIFile::Section *basic_commands = commandsFile.getSection(section_prefix + ".Basic"_jrs);
+		if (basic_commands != nullptr)
+		{
+			Jupiter::INIFile::Section *basic_commands_help = commandsFile.getSection(section_prefix + ".Basic.Help"_jrs);
+			Jupiter::INIFile::Section::KeyValuePair *pair;
+			size_t i = 0;
+			if (basic_commands_help == nullptr)
+				while (i != basic_commands->size())
+				{
+					pair = basic_commands->getPair(i);
+					++i;
+					if (this->getCommand(pair->getKey()) == nullptr)
+						this->addCommand(new RenX::BasicGameCommand(pair->getKey(), pair->getValue(), ""_jrs));
+				}
+			else
+				while (i != basic_commands->size())
+				{
+					pair = basic_commands->getPair(i);
+					++i;
+					if (this->getCommand(pair->getKey()) == nullptr)
+						this->addCommand(new RenX::BasicGameCommand(pair->getKey(), pair->getValue(), basic_commands_help->get(pair->getKey(), ""_jrs)));
+				}
+		}
+	};
+
+	load_basic_commands(RenX::Server::configSection);
+	load_basic_commands("Default"_jrs);
+
+	// ADD CHECKS FOR DEFAULT BASIC COMMANDS HERE
 }
 
 RenX::Server::~Server()
