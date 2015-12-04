@@ -2331,19 +2331,19 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 							success = false;
 
 						int yesVotes = 0;
-						Jupiter::ReferenceString yesVotesToken = tokens.getToken(5);
-						if (yesVotesToken.size() > 4)
+						Jupiter::ReferenceString votes_token = tokens.getToken(5);
+						if (votes_token.size() > 4)
 						{
-							yesVotesToken.shiftRight(4);
-							yesVotes = yesVotesToken.asInt();
+							votes_token.shiftRight(4);
+							yesVotes = votes_token.asInt();
 						}
 
 						int noVotes = 0;
-						Jupiter::ReferenceString noVotesToken = tokens.getToken(5);
-						if (yesVotesToken.size() > 3)
+						votes_token = tokens.getToken(6);
+						if (votes_token.size() > 3)
 						{
-							yesVotesToken.shiftRight(3);
-							yesVotes = yesVotesToken.asInt();
+							votes_token.shiftRight(3);
+							noVotes = votes_token.asInt();
 						}
 
 						for (size_t i = 0; i < xPlugins.size(); i++)
