@@ -95,7 +95,7 @@ public:
 	* @param cmds Commands to construct the string with.
 	* @return A string containing the triggers of the commands in a space-deliminated list.
 	*/
-	static Jupiter::StringL getTriggers(Jupiter::ArrayList<IRCCommand> cmds);
+	static Jupiter::StringL getTriggers(Jupiter::ArrayList<IRCCommand> &cmds);
 
 	/**
 	* @brief Reloads some settings.

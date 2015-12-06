@@ -101,7 +101,7 @@ Jupiter::ArrayList<IRCCommand> IRC_Bot::getAccessCommands(Jupiter::IRC::Client::
 	return r;
 }
 
-Jupiter::StringL IRC_Bot::getTriggers(Jupiter::ArrayList<IRCCommand> cmds)
+Jupiter::StringL IRC_Bot::getTriggers(Jupiter::ArrayList<IRCCommand> &cmds)
 {
 	Jupiter::StringL r;
 	for (size_t i = 0; i < cmds.size(); i++)

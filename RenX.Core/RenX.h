@@ -47,6 +47,7 @@ namespace RenX
 		Beacon,
 		Tie,
 		Shutdown,
+		Surrender,
 		Unknown
 	};
 

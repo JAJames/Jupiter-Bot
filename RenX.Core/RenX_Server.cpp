@@ -1957,6 +1957,8 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 								winType = WinType::Base;
 							else if (sWinType.equals("triggered"))
 								winType = WinType::Shutdown;
+							else if (sWinType.equals("Surrender"))
+								winType = WinType::Surrender;
 
 							TeamType team = RenX::getTeam(tokens.getToken(3));
 
