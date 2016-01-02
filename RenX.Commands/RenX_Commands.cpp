@@ -549,11 +549,17 @@ void PlayerTableIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableStri
 				while ((highCredits /= 10) >= 1.0)
 					++creditColLen;
 
-				source->sendMessage(channel, Jupiter::StringS::Format(IRCUNDERLINE IRCCOLOR "03%*.*s | %*s | %*s | %*s", maxNickLen, NICK_COL_HEADER.size(), NICK_COL_HEADER.ptr(), idColLen, "ID", scoreColLen, "Score", creditColLen, "Credits"));
+				if (server->isAdminLogChanType(type))
+					source->sendMessage(channel, Jupiter::StringS::Format(IRCUNDERLINE IRCCOLOR "03%*.*s | %*s | %*s | %*s | IP Address", maxNickLen, NICK_COL_HEADER.size(), NICK_COL_HEADER.ptr(), idColLen, "ID", scoreColLen, "Score", creditColLen, "Credits"));
+				else
+					source->sendMessage(channel, Jupiter::StringS::Format(IRCUNDERLINE IRCCOLOR "03%*.*s | %*s | %*s | %*s", maxNickLen, NICK_COL_HEADER.size(), NICK_COL_HEADER.ptr(), idColLen, "ID", scoreColLen, "Score", creditColLen, "Credits"));
 
-				auto output_player = [source, &channel, maxNickLen, idColLen, scoreColLen, creditColLen](RenX::PlayerInfo *player, const Jupiter::ReadableString &color)
+				auto output_player = [server, type, source, &channel, maxNickLen, idColLen, scoreColLen, creditColLen](RenX::PlayerInfo *player, const Jupiter::ReadableString &color)
 				{
-					source->sendMessage(channel, Jupiter::StringS::Format(IRCCOLOR "%.*s%*.*s" IRCCOLOR " " IRCCOLOR "03|" IRCCOLOR " %*d " IRCCOLOR "03|" IRCCOLOR " %*.0f " IRCCOLOR "03|" IRCCOLOR " %*.0f", color.size(), color.ptr(), maxNickLen, player->name.size(), player->name.ptr(), idColLen, player->id, scoreColLen, player->score, creditColLen, player->credits));
+					if (server->isAdminLogChanType(type))
+						source->sendMessage(channel, Jupiter::StringS::Format(IRCCOLOR "%.*s%*.*s" IRCCOLOR " " IRCCOLOR "03|" IRCCOLOR " %*d " IRCCOLOR "03|" IRCCOLOR " %*.0f " IRCCOLOR "03|" IRCCOLOR " %*.0f " IRCCOLOR "03|" IRCNORMAL "%.*s", color.size(), color.ptr(), maxNickLen, player->name.size(), player->name.ptr(), idColLen, player->id, scoreColLen, player->score, creditColLen, player->credits, player->ip.size(), player->ip.ptr()));
+					else
+						source->sendMessage(channel, Jupiter::StringS::Format(IRCCOLOR "%.*s%*.*s" IRCCOLOR " " IRCCOLOR "03|" IRCCOLOR " %*d " IRCCOLOR "03|" IRCCOLOR " %*.0f " IRCCOLOR "03|" IRCCOLOR " %*.0f", color.size(), color.ptr(), maxNickLen, player->name.size(), player->name.ptr(), idColLen, player->id, scoreColLen, player->score, creditColLen, player->credits));
 				};
 
 				for (Jupiter::SLList<RenX::PlayerInfo>::Node *node = gPlayers.getNode(0); node != nullptr; node = node->next)
@@ -1472,8 +1478,8 @@ void MuteIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &cha
 					player = server->getPlayerByPartName(parameters);
 					if (player != nullptr)
 					{
-						if (server->mute(player) == false)
-							source->sendMessage(channel, STRING_LITERAL_AS_REFERENCE("Error: Server does not support muting players."));
+						server->mute(player);
+						source->sendMessage(channel, RenX::getFormattedPlayerName(player) + STRING_LITERAL_AS_REFERENCE(IRCCOLOR " has been muted."));
 					}
 					else
 						source->sendNotice(nick, STRING_LITERAL_AS_REFERENCE("Error: Player not found."));
@@ -1521,8 +1527,8 @@ void UnMuteIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &c
 					player = server->getPlayerByPartName(parameters);
 					if (player != nullptr)
 					{
-						if (server->unmute(player) == false)
-							source->sendMessage(channel, STRING_LITERAL_AS_REFERENCE("Error: Server does not support muting players."));
+						server->unmute(player);
+						source->sendMessage(channel, RenX::getFormattedPlayerName(player) + STRING_LITERAL_AS_REFERENCE(IRCCOLOR " has been unmuted."));
 					}
 					else
 						source->sendNotice(nick, STRING_LITERAL_AS_REFERENCE("Error: Player not found."));
@@ -1569,10 +1575,7 @@ void KillIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &cha
 					match = true;
 					player = server->getPlayerByPartName(parameters);
 					if (player != nullptr)
-					{
-						if (server->kill(player) == false)
-							source->sendMessage(channel, STRING_LITERAL_AS_REFERENCE("Error: Server does not support muting players."));
-					}
+						server->kill(player);
 					else
 						source->sendNotice(nick, STRING_LITERAL_AS_REFERENCE("Error: Player not found."));
 				}
@@ -1619,8 +1622,8 @@ void DisarmIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &c
 					player = server->getPlayerByPartName(parameters);
 					if (player != nullptr)
 					{
-						if (server->disarm(player) == false)
-							source->sendMessage(channel, STRING_LITERAL_AS_REFERENCE("Error: Server does not support muting players."));
+						server->disarm(player);
+						source->sendMessage(channel, STRING_LITERAL_AS_REFERENCE("All deployables (c4, beacons, etc) belonging to ") + RenX::getFormattedPlayerName(player) + STRING_LITERAL_AS_REFERENCE(IRCCOLOR " have been disarmed."));
 					}
 					else
 						source->sendNotice(nick, STRING_LITERAL_AS_REFERENCE("Error: Player not found."));
@@ -1668,8 +1671,8 @@ void DisarmC4IRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString 
 					player = server->getPlayerByPartName(parameters);
 					if (player != nullptr)
 					{
-						if (server->disarmC4(player) == false)
-							source->sendMessage(channel, STRING_LITERAL_AS_REFERENCE("Error: Server does not support muting players."));
+						server->disarmC4(player);
+						source->sendMessage(channel, STRING_LITERAL_AS_REFERENCE("All C4 belonging to ") + RenX::getFormattedPlayerName(player) + STRING_LITERAL_AS_REFERENCE(IRCCOLOR " have been disarmed."));
 					}
 					else
 						source->sendNotice(nick, STRING_LITERAL_AS_REFERENCE("Error: Player not found."));
@@ -1719,8 +1722,8 @@ void DisarmBeaconIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableStr
 					player = server->getPlayerByPartName(parameters);
 					if (player != nullptr)
 					{
-						if (server->disarmBeacon(player) == false)
-							source->sendMessage(channel, STRING_LITERAL_AS_REFERENCE("Error: Server does not support muting players."));
+						server->disarmBeacon(player);
+						source->sendMessage(channel, STRING_LITERAL_AS_REFERENCE("All beacons belonging to ") + RenX::getFormattedPlayerName(player) + STRING_LITERAL_AS_REFERENCE(IRCCOLOR " have been disarmed."));
 					}
 					else
 						source->sendNotice(nick, STRING_LITERAL_AS_REFERENCE("Error: Player not found."));
@@ -1740,6 +1743,55 @@ const Jupiter::ReadableString &DisarmBeaconIRCCommand::getHelp(const Jupiter::Re
 }
 
 IRC_COMMAND_INIT(DisarmBeaconIRCCommand)
+
+// MineBan IRC Command
+
+void MineBanIRCCommand::create()
+{
+	this->addTrigger(STRING_LITERAL_AS_REFERENCE("mineban"));
+	this->setAccessLevel(2);
+}
+
+void MineBanIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &channel, const Jupiter::ReadableString &nick, const Jupiter::ReadableString &parameters)
+{
+	if (parameters.isNotEmpty())
+	{
+		Jupiter::IRC::Client::Channel *chan = source->getChannel(channel);
+		if (chan != nullptr)
+		{
+			int type = chan->getType();
+			RenX::PlayerInfo *player;
+			bool match = false;
+			for (unsigned int i = 0; i != RenX::getCore()->getServerCount(); i++)
+			{
+				RenX::Server *server = RenX::getCore()->getServer(i);
+				if (server->isLogChanType(type))
+				{
+					match = true;
+					player = server->getPlayerByPartName(parameters);
+					if (player != nullptr)
+					{
+						server->mineBan(player);
+						source->sendMessage(channel, STRING_LITERAL_AS_REFERENCE("Player can no longer place mines."));
+					}
+					else
+						source->sendNotice(nick, STRING_LITERAL_AS_REFERENCE("Error: Player not found."));
+				}
+			}
+			if (match == false)
+				source->sendNotice(nick, STRING_LITERAL_AS_REFERENCE("Error: Channel not attached to any connected Renegade X servers."));
+		}
+	}
+	else source->sendNotice(nick, STRING_LITERAL_AS_REFERENCE("Error: Too Few Parameters. Syntax: disarmb <player>"));
+}
+
+const Jupiter::ReadableString &MineBanIRCCommand::getHelp(const Jupiter::ReadableString &)
+{
+	static STRING_LITERAL_AS_NAMED_REFERENCE(defaultHelp, "Bans a player from mining for 1 game (or until they leave). Syntax: mineban <player>");
+	return defaultHelp;
+}
+
+IRC_COMMAND_INIT(MineBanIRCCommand)
 
 // Kick IRC Command
 
@@ -2653,6 +2705,41 @@ const Jupiter::ReadableString &DisarmBeaconGameCommand::getHelp(const Jupiter::R
 }
 
 GAME_COMMAND_INIT(DisarmBeaconGameCommand)
+
+// MineBan Game Command
+
+void MineBanGameCommand::create()
+{
+	this->addTrigger(STRING_LITERAL_AS_REFERENCE("mineban"));
+	this->setAccessLevel(1);
+}
+
+void MineBanGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *player, const Jupiter::ReadableString &parameters)
+{
+	if (parameters.isNotEmpty())
+	{
+		RenX::PlayerInfo *target = source->getPlayerByPartName(parameters);
+		if (target == nullptr)
+			source->sendMessage(player, STRING_LITERAL_AS_REFERENCE("Error: Player not found."));
+		else if (target->access >= player->access)
+			source->sendMessage(player, STRING_LITERAL_AS_REFERENCE("Error: You can not mine-ban higher level moderators."));
+		else
+		{
+			source->mineBan(target);
+			source->sendMessage(player, STRING_LITERAL_AS_REFERENCE("Player can no longer place mines."));
+		}
+	}
+	else
+		source->sendMessage(player, STRING_LITERAL_AS_REFERENCE("Error: Too few parameters. Syntax: mineban <player>"));
+}
+
+const Jupiter::ReadableString &MineBanGameCommand::getHelp(const Jupiter::ReadableString &)
+{
+	static STRING_LITERAL_AS_NAMED_REFERENCE(defaultHelp, "Bans a player from mining for 1 game (or until they leave). Syntax: mineban <player>");
+	return defaultHelp;
+}
+
+GAME_COMMAND_INIT(MineBanGameCommand)
 
 // Kick Game Command
 

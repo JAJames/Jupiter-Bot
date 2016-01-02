@@ -534,6 +534,22 @@ namespace RenX
 		bool disarmBeacon(RenX::PlayerInfo *player);
 
 		/**
+		* @brief Bans a player from mining in-game for 1 game (or until they disconnect).
+		*
+		* @param player Id of the player to mine-ban
+		* @return True on success, false otherwise.
+		*/
+		bool mineBan(int id);
+
+		/**
+		* @brief Bans a player from mining in-game for 1 game (or until they disconnect).
+		*
+		* @param player Player to mine-ban
+		* @return True on success, false otherwise.
+		*/
+		bool mineBan(RenX::PlayerInfo *player);
+
+		/**
 		* @brief Forces a player to change teams.
 		*
 		* @param id ID of the player to give credits to

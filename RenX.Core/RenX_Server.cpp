@@ -403,7 +403,7 @@ void RenX::Server::banPlayer(const RenX::PlayerInfo *player, const Jupiter::Read
 			RenX::Server::forceKickPlayer(player, Jupiter::StringS::Format("You are permanently banned from the server for: %.*s", reason.size(), reason.ptr()));
 	}
 	else
-		RenX::Server::forceKickPlayer(player, Jupiter::StringS::Format("You are banned from the server for the next %d days, %d:%d:%d for: %.*s", length/3600, length%3600, length/60, length%60, reason.size(), reason.ptr()));
+		RenX::Server::forceKickPlayer(player, Jupiter::StringS::Format("You are banned from the server for the next %d days, %d:%d:%d for: %.*s", length/86400, length%3600, (length%3600)/60, length%60, reason.size(), reason.ptr()));
 }
 
 bool RenX::Server::removePlayer(int id)
@@ -562,6 +562,16 @@ bool RenX::Server::disarmBeacon(int id)
 bool RenX::Server::disarmBeacon(RenX::PlayerInfo *player)
 {
 	return RenX::Server::disarmBeacon(player->id);
+}
+
+bool RenX::Server::mineBan(int id)
+{
+	return RenX::Server::send(Jupiter::StringS::Format("mineban pid%d", id)) > 0;
+}
+
+bool RenX::Server::mineBan(RenX::PlayerInfo *player)
+{
+	return RenX::Server::mineBan(player->id);
 }
 
 bool RenX::Server::changeTeam(int id, bool resetCredits)
