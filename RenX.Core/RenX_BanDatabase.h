@@ -53,6 +53,7 @@ namespace RenX
 			time_t length /** Duration of the ban; 0 if permanent */;
 			uint64_t steamid /** SteamID of the banned player */;
 			uint32_t ip /** IPv4 address of the banned player */;
+			Jupiter::StringS rdns /** RDNS of the banned player */;
 			Jupiter::StringS name /** Name of the banned player */;
 			Jupiter::StringS reason /** Reason the player was banned */;
 			Jupiter::INIFile::Section varData; /** Variable entry data */

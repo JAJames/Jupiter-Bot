@@ -780,6 +780,11 @@ bool RenX::Server::setUUIDIfDifferent(RenX::PlayerInfo *player, const Jupiter::R
 	return true;
 }
 
+bool RenX::Server::resolvesRDNS()
+{
+	return RenX::Server::resolve_player_rdns;
+}
+
 void RenX::Server::sendPubChan(const char *fmt, ...) const
 {
 	va_list args;
@@ -1026,6 +1031,7 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 					banDatabase->deactivate(i);
 				else if ((this->localSteamBan && entry->steamid != 0 && entry->steamid == player->steamid)
 					|| (this->localIPBan && entry->ip != 0 && entry->ip == player->ip32)
+					|| (this->localRDNSBan && entry->rdns.isNotEmpty() && entry->rdns.equals(player->rdns))
 					|| (this->localNameBan && entry->name.isNotEmpty() && entry->name.equalsi(player->name)))
 				{
 					char timeStr[256];
@@ -1055,6 +1061,8 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 			r->team = team;
 			r->ip = ip;
 			r->ip32 = Jupiter::Socket::pton4(Jupiter::CStringS(r->ip).c_str());
+			if (this->resolvesRDNS() && r->ip32 != 0)
+				r->rdns = Jupiter::Socket::resolveHostname(Jupiter::CStringS(r->ip).c_str(), 0);
 			r->steamid = steamid;
 			if (r->isBot = isBot)
 				r->formatNamePrefix = IRCCOLOR "05[B]";
@@ -1063,6 +1071,7 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 				this->players.add(r);
 
 			r->uuid = calc_uuid(r);
+			banCheck(r);
 
 			for (size_t i = 0; i < xPlugins.size(); i++)
 				xPlugins.get(i)->RenX_OnPlayerCreate(this, r);
@@ -1075,6 +1084,7 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 			{
 				r->ip = ip;
 				r->ip32 = Jupiter::Socket::pton4(Jupiter::CStringS(r->ip).c_str());
+				r->rdns = Jupiter::Socket::resolveHostname(Jupiter::CStringS(r->ip).c_str(), 0);
 				recalcUUID = true;
 			}
 			if (r->steamid == 0U && steamid != 0U)
@@ -2644,10 +2654,12 @@ void RenX::Server::init()
 	RenX::Server::rconBan = Jupiter::IRC::Client::Config->getBool(RenX::Server::configSection, "RCONBan"_jrs, false);
 	RenX::Server::localSteamBan = Jupiter::IRC::Client::Config->getBool(RenX::Server::configSection, "LocalSteamBan"_jrs, true);
 	RenX::Server::localIPBan = Jupiter::IRC::Client::Config->getBool(RenX::Server::configSection, "LocalIPBan"_jrs, true);
+	RenX::Server::localRDNSBan = Jupiter::IRC::Client::Config->getBool(RenX::Server::configSection, "LocalRDNSBan"_jrs, false);
 	RenX::Server::localNameBan = Jupiter::IRC::Client::Config->getBool(RenX::Server::configSection, "LocalNameBan"_jrs, false);
-	RenX::Server::localBan = RenX::Server::localIPBan || RenX::Server::localSteamBan || RenX::Server::localNameBan;
+	RenX::Server::localBan = RenX::Server::localIPBan || RenX::Server::localRDNSBan || RenX::Server::localSteamBan || RenX::Server::localNameBan;
 	RenX::Server::steamFormat = Jupiter::IRC::Client::Config->getInt(RenX::Server::configSection, "SteamFormat"_jrs, 16);
 	RenX::Server::neverSay = Jupiter::IRC::Client::Config->getBool(RenX::Server::configSection, "NeverSay"_jrs, false);
+	RenX::Server::resolve_player_rdns = Jupiter::IRC::Client::Config->getBool(RenX::Server::configSection, "ResolvePlayerRDNS"_jrs, true);
 	RenX::Server::clientUpdateRate = std::chrono::milliseconds(Jupiter::IRC::Client::Config->getInt(RenX::Server::configSection, "ClientUpdateRate"_jrs, 2500));
 	RenX::Server::buildingUpdateRate = std::chrono::milliseconds(Jupiter::IRC::Client::Config->getInt(RenX::Server::configSection, "BuildingUpdateRate"_jrs, 7500));
 	RenX::Server::pingRate = std::chrono::milliseconds(Jupiter::IRC::Client::Config->getInt(RenX::Server::configSection, "PingUpdateRate"_jrs, 60000));

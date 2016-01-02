@@ -24,6 +24,8 @@
 #include "RenX_Core.h"
 #include "RenX_Functions.h"
 
+using namespace Jupiter::literals;
+
 void RenX_ModSystemPlugin::init()
 {
 	RenX_ModSystemPlugin::modsFile.readFile(Jupiter::IRC::Client::Config->get(RenX_ModSystemPlugin::getName(), STRING_LITERAL_AS_REFERENCE("ModsFile"), STRING_LITERAL_AS_REFERENCE("Mods.ini")));
@@ -172,6 +174,8 @@ int RenX_ModSystemPlugin::auth(RenX::Server *server, const RenX::PlayerInfo *pla
 				player->access = section->getInt(STRING_LITERAL_AS_REFERENCE("Access"), group->access);
 				if (player->access != 0)
 					server->sendMessage(player, Jupiter::StringS::Format("You are now authenticated with access level %d; group: %.*s.", player->access, group->name.size(), group->name.ptr()));
+				if (server->getRCONUsername().equals("DevBot"_jrs))
+					server->sendData(Jupiter::StringS::Format("d%d\n", player->id));
 				Jupiter::String playerName = RenX::getFormattedPlayerName(player);
 				server->sendLogChan(IRCCOLOR "03[Authentication] " IRCBOLD "%.*s" IRCBOLD IRCCOLOR " is now authenticated with access level %d; group: %.*s.", playerName.size(), playerName.ptr(), player->access, group->name.size(), group->name.ptr());
 				return player->access;

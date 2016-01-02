@@ -73,7 +73,7 @@ int RenX_CommandsPlugin::OnRehash()
 {
 	RenX_CommandsPlugin::_defaultTempBanTime = Jupiter::IRC::Client::Config->getLongLong(RenX_CommandsPlugin::getName(), STRING_LITERAL_AS_REFERENCE("TBanTime"), 86400);
 	RenX_CommandsPlugin::playerInfoFormat = Jupiter::IRC::Client::Config->get(RenX_CommandsPlugin::getName(), STRING_LITERAL_AS_REFERENCE("PlayerInfoFormat"), STRING_LITERAL_AS_REFERENCE(IRCCOLOR "03[Player Info]" IRCCOLOR "{TCOLOR} Name: " IRCBOLD "{RNAME}" IRCBOLD " - ID: {ID} - Team: " IRCBOLD "{TEAML}" IRCBOLD " - Vehicle Kills: {VEHICLEKILLS} - Building Kills {BUILDINGKILLS} - Kills {KILLS} - Deaths: {DEATHS} - KDR: {KDR} - Access: {ACCESS}"));
-	RenX_CommandsPlugin::adminPlayerInfoFormat = Jupiter::IRC::Client::Config->get(RenX_CommandsPlugin::getName(), STRING_LITERAL_AS_REFERENCE("AdminPlayerInfoFormat"), Jupiter::StringS::Format("%.*s - IP: " IRCBOLD "{IP}" IRCBOLD " - Steam ID: " IRCBOLD "{STEAM}", RenX_CommandsPlugin::playerInfoFormat.size(), RenX_CommandsPlugin::playerInfoFormat.ptr()));
+	RenX_CommandsPlugin::adminPlayerInfoFormat = Jupiter::IRC::Client::Config->get(RenX_CommandsPlugin::getName(), STRING_LITERAL_AS_REFERENCE("AdminPlayerInfoFormat"), Jupiter::StringS::Format("%.*s - IP: " IRCBOLD "{IP}" IRCBOLD " - RDNS: " IRCBOLD "{RDNS}" IRCBOLD " - Steam ID: " IRCBOLD "{STEAM}", RenX_CommandsPlugin::playerInfoFormat.size(), RenX_CommandsPlugin::playerInfoFormat.ptr()));
 	RenX_CommandsPlugin::buildingInfoFormat = Jupiter::IRC::Client::Config->get(RenX_CommandsPlugin::getName(), STRING_LITERAL_AS_REFERENCE("BuildingInfoFormat"), STRING_LITERAL_AS_REFERENCE(IRCCOLOR) + RenX::tags->buildingTeamColorTag + RenX::tags->buildingNameTag + STRING_LITERAL_AS_REFERENCE(IRCCOLOR " - " IRCCOLOR "07") + RenX::tags->buildingHealthPercentageTag + STRING_LITERAL_AS_REFERENCE("%"));
 
 	RenX::sanitizeTags(RenX_CommandsPlugin::playerInfoFormat);
@@ -1118,18 +1118,20 @@ void BanSearchIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString
 					return isMatch(1) || isMatch(2) || isMatch(3) || isMatch(4);
 				case 1:	// IP
 					return entry->ip == params.asUnsignedInt();
-				case 2:	// STEAM
+				case 2: // RDNS
+					return entry->rdns.equals(params);
+				case 3:	// STEAM
 					return entry->steamid == params.asUnsignedLongLong();
-				case 3:	// NAME
+				case 4:	// NAME
 					return entry->name.equalsi(params);
-				case 4:	// BANNER
+				case 5:	// BANNER
 					return entry->varData.get(pluginInstance.getName()).equalsi(params);
-				case 5:	// ACTIVE
+				case 6:	// ACTIVE
 					if (params.asBool()) // Got tired of seeing a compiler warning.
 						return entry->active == 1;
 					else
 						return entry->active == 0;
-				case 6:	// ALL
+				case 7:	// ALL
 					return true;
 				}
 			};
@@ -1138,18 +1140,20 @@ void BanSearchIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString
 			Jupiter::ReferenceString type_str = Jupiter::ReferenceString::getWord(parameters, 0, WHITESPACE);
 			if (type_str.equalsi(STRING_LITERAL_AS_REFERENCE("ip")))
 				type = 1;
-			else if (type_str.equalsi(STRING_LITERAL_AS_REFERENCE("steam")))
+			else if (type_str.equalsi(STRING_LITERAL_AS_REFERENCE("rdns")))
 				type = 2;
-			else if (type_str.equalsi(STRING_LITERAL_AS_REFERENCE("name")))
+			else if (type_str.equalsi(STRING_LITERAL_AS_REFERENCE("steam")))
 				type = 3;
-			else if (type_str.equalsi(STRING_LITERAL_AS_REFERENCE("banner")))
+			else if (type_str.equalsi(STRING_LITERAL_AS_REFERENCE("name")))
 				type = 4;
-			else if (type_str.equalsi(STRING_LITERAL_AS_REFERENCE("active")))
+			else if (type_str.equalsi(STRING_LITERAL_AS_REFERENCE("banner")))
 				type = 5;
+			else if (type_str.equalsi(STRING_LITERAL_AS_REFERENCE("active")))
+				type = 6;
 			else if (type_str.equalsi(STRING_LITERAL_AS_REFERENCE("any")))
 				type = 0;
 			else if (type_str.equalsi(STRING_LITERAL_AS_REFERENCE("all")) || type_str.equals('*'))
-				type = 6;
+				type = 7;
 			else
 			{
 				type = 0;
@@ -1168,6 +1172,16 @@ void BanSearchIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString
 					strftime(timeStr, sizeof(timeStr), "%b %d %Y; Time: %H:%M:%S", localtime(&(entry->timestamp)));
 					out.format("ID: %lu; Status: %sactive; Date: %s; IP: %.*s; Steam: %llu; Name: %.*s%s", i, entry->active ? "" : "in", timeStr, ip_str.size(), ip_str.ptr(), entry->steamid, entry->name.size(), entry->name.ptr(), banner.isEmpty() ? "" : "; Banner: ");
 					out.concat(banner);
+					if (entry->rdns.isNotEmpty())
+					{
+						out.concat("; RDNS: "_jrs);
+						out.concat(entry->rdns);
+					}
+					if (entry->reason.isNotEmpty())
+					{
+						out.concat("; Reason: "_jrs);
+						out.concat(entry->reason);
+					}
 					source->sendNotice(nick, out);
 				}
 			}
@@ -1181,7 +1195,7 @@ void BanSearchIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString
 
 const Jupiter::ReadableString &BanSearchIRCCommand::getHelp(const Jupiter::ReadableString &)
 {
-	static STRING_LITERAL_AS_NAMED_REFERENCE(defaultHelp, "Searches the ban database for an entry. Syntax: bsearch [ip/steam/name/banner/active/any/all = any] <player ip/steam/name/banner>");
+	static STRING_LITERAL_AS_NAMED_REFERENCE(defaultHelp, "Searches the ban database for an entry. Syntax: bsearch [ip/rdns/steam/name/banner/active/any/all = any] <player ip/steam/name/banner>");
 	return defaultHelp;
 }
 
@@ -1872,7 +1886,7 @@ void KickBanIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &
 					server = servers.get(i);
 					if (server != nullptr)
 					{
-						player = server->getPlayerByPartName(parameters);
+						player = server->getPlayerByPartName(name);
 						if (player != nullptr)
 						{
 							player->varData.set(pluginInstance.getName(), STRING_LITERAL_AS_REFERENCE("banner"), nick);
@@ -1881,7 +1895,10 @@ void KickBanIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &
 						}
 					}
 				}
-				source->sendMessage(channel, Jupiter::StringS::Format("%u players kicked.", kicks));
+				if (kicks == 0)
+					source->sendMessage(channel, "Player \""_jrs + name + "\" not found."_jrs);
+				else
+					source->sendMessage(channel, Jupiter::StringS::Format("%u players kicked.", kicks));
 			}
 			else source->sendMessage(channel, STRING_LITERAL_AS_REFERENCE("Error: Channel not attached to any connected Renegade X servers."));
 		}

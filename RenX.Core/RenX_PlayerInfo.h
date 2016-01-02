@@ -46,6 +46,7 @@ namespace RenX
 		// TODO: Add backpack
 		Jupiter::StringS name;
 		Jupiter::StringS ip;
+		Jupiter::StringS rdns;
 		Jupiter::StringS adminType;
 		Jupiter::StringS uuid;
 		Jupiter::StringS character;

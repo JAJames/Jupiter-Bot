@@ -767,6 +767,13 @@ namespace RenX
 		bool setUUIDIfDifferent(RenX::PlayerInfo *player, const Jupiter::ReadableString &uuid);
 
 		/**
+		* @brief Checks if reverse DNS resolution is occuring for players.
+		*
+		* @return True if this bot resolves RDNS, false otherwise.
+		*/
+		bool resolvesRDNS();
+
+		/**
 		* @brief Formats and sends a message to a server's corresponding public channels.
 		*
 		* @param fmt String containing the format specifiers indicating what message to send.
@@ -917,8 +924,10 @@ namespace RenX
 		bool localBan;
 		bool localSteamBan;
 		bool localIPBan;
+		bool localRDNSBan;
 		bool localNameBan;
 		bool neverSay;
+		bool resolve_player_rdns;
 		unsigned short port;
 		int logChanType;
 		int adminLogChanType;

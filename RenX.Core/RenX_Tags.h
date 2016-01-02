@@ -71,6 +71,7 @@ namespace RenX
 		Jupiter::StringS INTERNAL_NAME_TAG;
 		Jupiter::StringS INTERNAL_RAW_NAME_TAG;
 		Jupiter::StringS INTERNAL_IP_TAG;
+		Jupiter::StringS INTERNAL_RDNS_TAG;
 		Jupiter::StringS INTERNAL_STEAM_TAG;
 		Jupiter::StringS INTERNAL_UUID_TAG;
 		Jupiter::StringS INTERNAL_ID_TAG;
@@ -106,6 +107,7 @@ namespace RenX
 		Jupiter::StringS INTERNAL_VICTIM_NAME_TAG;
 		Jupiter::StringS INTERNAL_VICTIM_RAW_NAME_TAG;
 		Jupiter::StringS INTERNAL_VICTIM_IP_TAG;
+		Jupiter::StringS INTERNAL_VICTIM_RDNS_TAG;
 		Jupiter::StringS INTERNAL_VICTIM_STEAM_TAG;
 		Jupiter::StringS INTERNAL_VICTIM_UUID_TAG;
 		Jupiter::StringS INTERNAL_VICTIM_ID_TAG;
@@ -179,6 +181,7 @@ namespace RenX
 		Jupiter::StringS nameTag;
 		Jupiter::StringS rawNameTag;
 		Jupiter::StringS ipTag;
+		Jupiter::StringS rdnsTag;
 		Jupiter::StringS steamTag;
 		Jupiter::StringS uuidTag;
 		Jupiter::StringS idTag;
@@ -214,6 +217,7 @@ namespace RenX
 		Jupiter::StringS victimNameTag;
 		Jupiter::StringS victimRawNameTag;
 		Jupiter::StringS victimIPTag;
+		Jupiter::StringS victimRDNSTag;
 		Jupiter::StringS victimSteamTag;
 		Jupiter::StringS victimUUIDTag;
 		Jupiter::StringS victimIDTag;

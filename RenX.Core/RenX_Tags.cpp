@@ -86,6 +86,7 @@ TagsImp::TagsImp()
 	this->INTERNAL_NAME_TAG = this->getUniqueInternalTag();
 	this->INTERNAL_RAW_NAME_TAG = this->getUniqueInternalTag();
 	this->INTERNAL_IP_TAG = this->getUniqueInternalTag();
+	this->INTERNAL_RDNS_TAG = this->getUniqueInternalTag();
 	this->INTERNAL_STEAM_TAG = this->getUniqueInternalTag();
 	this->INTERNAL_UUID_TAG = this->getUniqueInternalTag();
 	this->INTERNAL_ID_TAG = this->getUniqueInternalTag();
@@ -121,6 +122,7 @@ TagsImp::TagsImp()
 	this->INTERNAL_VICTIM_NAME_TAG = this->getUniqueInternalTag();
 	this->INTERNAL_VICTIM_RAW_NAME_TAG = this->getUniqueInternalTag();
 	this->INTERNAL_VICTIM_IP_TAG = this->getUniqueInternalTag();
+	this->INTERNAL_VICTIM_RDNS_TAG = this->getUniqueInternalTag();
 	this->INTERNAL_VICTIM_STEAM_TAG = this->getUniqueInternalTag();
 	this->INTERNAL_VICTIM_UUID_TAG = this->getUniqueInternalTag();
 	this->INTERNAL_VICTIM_ID_TAG = this->getUniqueInternalTag();
@@ -194,6 +196,7 @@ TagsImp::TagsImp()
 	this->nameTag = Jupiter::IRC::Client::Config->get(configSection, STRING_LITERAL_AS_REFERENCE("NameTag"), STRING_LITERAL_AS_REFERENCE("{NAME}"));
 	this->rawNameTag = Jupiter::IRC::Client::Config->get(configSection, STRING_LITERAL_AS_REFERENCE("RawNameTag"), STRING_LITERAL_AS_REFERENCE("{RNAME}"));
 	this->ipTag = Jupiter::IRC::Client::Config->get(configSection, STRING_LITERAL_AS_REFERENCE("IPTag"), STRING_LITERAL_AS_REFERENCE("{IP}"));
+	this->rdnsTag = Jupiter::IRC::Client::Config->get(configSection, STRING_LITERAL_AS_REFERENCE("RDNSTag"), STRING_LITERAL_AS_REFERENCE("{RDNS}"));
 	this->steamTag = Jupiter::IRC::Client::Config->get(configSection, STRING_LITERAL_AS_REFERENCE("SteamTag"), STRING_LITERAL_AS_REFERENCE("{STEAM}"));
 	this->uuidTag = Jupiter::IRC::Client::Config->get(configSection, STRING_LITERAL_AS_REFERENCE("UUIDTag"), STRING_LITERAL_AS_REFERENCE("{UUID}"));
 	this->idTag = Jupiter::IRC::Client::Config->get(configSection, STRING_LITERAL_AS_REFERENCE("IDTag"), STRING_LITERAL_AS_REFERENCE("{ID}"));
@@ -229,6 +232,7 @@ TagsImp::TagsImp()
 	this->victimNameTag = Jupiter::IRC::Client::Config->get(configSection, STRING_LITERAL_AS_REFERENCE("VictimNameTag"), STRING_LITERAL_AS_REFERENCE("{VNAME}"));
 	this->victimRawNameTag = Jupiter::IRC::Client::Config->get(configSection, STRING_LITERAL_AS_REFERENCE("VictimRawNameTag"), STRING_LITERAL_AS_REFERENCE("{VRNAME}"));
 	this->victimIPTag = Jupiter::IRC::Client::Config->get(configSection, STRING_LITERAL_AS_REFERENCE("VictimIPTag"), STRING_LITERAL_AS_REFERENCE("{VIP}"));
+	this->victimRDNSTag = Jupiter::IRC::Client::Config->get(configSection, STRING_LITERAL_AS_REFERENCE("VictimRDNSTag"), STRING_LITERAL_AS_REFERENCE("{VRDNS}"));
 	this->victimSteamTag = Jupiter::IRC::Client::Config->get(configSection, STRING_LITERAL_AS_REFERENCE("VictimSteamTag"), STRING_LITERAL_AS_REFERENCE("{VSTEAM}"));
 	this->victimUUIDTag = Jupiter::IRC::Client::Config->get(configSection, STRING_LITERAL_AS_REFERENCE("VictimUUIDTag"), STRING_LITERAL_AS_REFERENCE("{VUUID}"));
 	this->victimIDTag = Jupiter::IRC::Client::Config->get(configSection, STRING_LITERAL_AS_REFERENCE("VictimIDTag"), STRING_LITERAL_AS_REFERENCE("{VID}"));
@@ -352,6 +356,7 @@ void TagsImp::processTags(Jupiter::StringType &msg, const RenX::Server *server, 
 		PROCESS_TAG(this->INTERNAL_NAME_TAG, RenX::getFormattedPlayerName(player));
 		PROCESS_TAG(this->INTERNAL_RAW_NAME_TAG, player->name);
 		PROCESS_TAG(this->INTERNAL_IP_TAG, player->ip);
+		PROCESS_TAG(this->INTERNAL_RDNS_TAG, player->rdns);
 		PROCESS_TAG(this->INTERNAL_UUID_TAG, player->uuid);
 		PROCESS_TAG(this->INTERNAL_ID_TAG, Jupiter::StringS::Format("%d", player->id));
 		PROCESS_TAG(this->INTERNAL_CHARACTER_TAG, RenX::translateName(player->character));
@@ -387,6 +392,7 @@ void TagsImp::processTags(Jupiter::StringType &msg, const RenX::Server *server, 
 		PROCESS_TAG(this->INTERNAL_VICTIM_NAME_TAG, RenX::getFormattedPlayerName(victim));
 		PROCESS_TAG(this->INTERNAL_VICTIM_RAW_NAME_TAG, victim->name);
 		PROCESS_TAG(this->INTERNAL_VICTIM_IP_TAG, victim->ip);
+		PROCESS_TAG(this->INTERNAL_VICTIM_RDNS_TAG, victim->rdns);
 		PROCESS_TAG(this->INTERNAL_VICTIM_UUID_TAG, victim->uuid);
 		PROCESS_TAG(this->INTERNAL_VICTIM_ID_TAG, Jupiter::StringS::Format("%d", victim->id));
 		PROCESS_TAG(this->INTERNAL_VICTIM_CHARACTER_TAG, RenX::translateName(victim->character));
@@ -458,6 +464,7 @@ void TagsImp::sanitizeTags(Jupiter::StringType &fmt)
 	fmt.replace(this->nameTag, this->INTERNAL_NAME_TAG);
 	fmt.replace(this->rawNameTag, this->INTERNAL_RAW_NAME_TAG);
 	fmt.replace(this->ipTag, this->INTERNAL_IP_TAG);
+	fmt.replace(this->rdnsTag, this->INTERNAL_RDNS_TAG);
 	fmt.replace(this->steamTag, this->INTERNAL_STEAM_TAG);
 	fmt.replace(this->uuidTag, this->INTERNAL_UUID_TAG);
 	fmt.replace(this->idTag, this->INTERNAL_ID_TAG);
@@ -493,6 +500,7 @@ void TagsImp::sanitizeTags(Jupiter::StringType &fmt)
 	fmt.replace(this->victimNameTag, this->INTERNAL_VICTIM_NAME_TAG);
 	fmt.replace(this->victimRawNameTag, this->INTERNAL_VICTIM_RAW_NAME_TAG);
 	fmt.replace(this->victimIPTag, this->INTERNAL_VICTIM_IP_TAG);
+	fmt.replace(this->victimRDNSTag, this->INTERNAL_VICTIM_RDNS_TAG);
 	fmt.replace(this->victimSteamTag, this->INTERNAL_VICTIM_STEAM_TAG);
 	fmt.replace(this->victimUUIDTag, this->INTERNAL_VICTIM_UUID_TAG);
 	fmt.replace(this->victimIDTag, this->INTERNAL_VICTIM_ID_TAG);
