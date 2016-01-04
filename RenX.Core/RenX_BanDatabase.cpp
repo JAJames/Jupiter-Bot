@@ -39,7 +39,7 @@ void RenX::BanDatabase::process_data(Jupiter::DataBuffer &buffer, FILE *file, fp
 	entry->pos = pos;
 
 	// Read data from buffer to entry
-	entry->flags = buffer.pop<uint8_t>();
+	entry->flags = buffer.pop<uint16_t>();
 	entry->timestamp = buffer.pop<time_t>();
 	entry->length = buffer.pop<time_t>();
 	entry->steamid = buffer.pop<uint64_t>();
@@ -138,7 +138,7 @@ void RenX::BanDatabase::write(RenX::BanDatabase::Entry *entry, FILE *file)
 	buffer.push_to(file);
 }
 
-void RenX::BanDatabase::add(RenX::Server *server, const RenX::PlayerInfo *player, const Jupiter::ReadableString &banner, const Jupiter::ReadableString &reason, time_t length, uint8_t flags)
+void RenX::BanDatabase::add(RenX::Server *server, const RenX::PlayerInfo *player, const Jupiter::ReadableString &banner, const Jupiter::ReadableString &reason, time_t length, uint16_t flags)
 {
 	Entry *entry = new Entry();
 	entry->set_active();
@@ -164,7 +164,7 @@ void RenX::BanDatabase::add(RenX::Server *server, const RenX::PlayerInfo *player
 	RenX::BanDatabase::write(entry);
 }
 
-void RenX::BanDatabase::add(const Jupiter::ReadableString &name, uint32_t ip, uint8_t prefix_length, uint64_t steamid, const Jupiter::ReadableString &rdns, Jupiter::ReadableString &banner, Jupiter::ReadableString &reason, time_t length, uint8_t flags)
+void RenX::BanDatabase::add(const Jupiter::ReadableString &name, uint32_t ip, uint8_t prefix_length, uint64_t steamid, const Jupiter::ReadableString &rdns, Jupiter::ReadableString &banner, Jupiter::ReadableString &reason, time_t length, uint16_t flags)
 {
 	Entry *entry = new Entry();
 	entry->set_active();

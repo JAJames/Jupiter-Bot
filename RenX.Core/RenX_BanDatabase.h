@@ -80,7 +80,7 @@ namespace RenX
 		struct RENX_API Entry
 		{
 			fpos_t pos; /** Position of the entry in the database */
-			uint8_t flags /** Flags affecting this ban entry (0 = Active, 1 = Game, 2 = Chat, 3 = Command, 4 = Vote, 5 = Mine, 6 = Ladder, 7 = Alert Mods) */ = 0x00;
+			uint16_t flags /** Flags affecting this ban entry (See below for flags) */ = 0x00;
 			time_t timestamp /** Time the ban was created */;
 			time_t length /** Duration of the ban; 0 if permanent */;
 			uint64_t steamid /** SteamID of the banned player */;
@@ -92,16 +92,19 @@ namespace RenX
 			Jupiter::StringS reason /** Reason the player was banned */;
 			Jupiter::INIFile::Section varData; /** Variable entry data */
 
-			static const uint8_t FLAG_ACTIVE = 0x80;
-			static const uint8_t FLAG_TYPE_GAME = 0x40;
-			static const uint8_t FLAG_TYPE_CHAT = 0x20;
-			static const uint8_t FLAG_TYPE_BOT = 0x10;
-			static const uint8_t FLAG_TYPE_VOTE = 0x08;
-			static const uint8_t FLAG_TYPE_MINE = 0x04;
-			static const uint8_t FLAG_TYPE_LADDER = 0x02;
-			static const uint8_t FLAG_TYPE_ALERT = 0x01;
+			static const uint16_t FLAG_ACTIVE = 0x8000U;
+			static const uint16_t FLAG_USE_RDNS = 0x4000U;
+			static const uint16_t FLAG_TYPE_GAME = 0x0080U;
+			static const uint16_t FLAG_TYPE_CHAT = 0x0040U;
+			static const uint16_t FLAG_TYPE_BOT = 0x0020U;
+			static const uint16_t FLAG_TYPE_VOTE = 0x0010U;
+			static const uint16_t FLAG_TYPE_MINE = 0x0008U;
+			static const uint16_t FLAG_TYPE_LADDER = 0x0004U;
+			static const uint16_t FLAG_TYPE_ALERT = 0x0002U;
+			
 
 			inline bool is_active() { return (flags & FLAG_ACTIVE) != 0; };
+			inline bool is_rdns_ban() { return (flags & FLAG_USE_RDNS) != 0; };
 			inline bool is_type_game() { return (flags & FLAG_TYPE_GAME) != 0; };
 			inline bool is_type_chat() { return (flags & FLAG_TYPE_CHAT) != 0; };
 			inline bool is_type_bot() { return (flags & FLAG_TYPE_BOT) != 0; };
@@ -109,9 +112,9 @@ namespace RenX
 			inline bool is_type_mine() { return (flags & FLAG_TYPE_MINE) != 0; };
 			inline bool is_type_ladder() { return (flags & FLAG_TYPE_LADDER) != 0; };
 			inline bool is_type_alert() { return (flags & FLAG_TYPE_ALERT) != 0; };
-			inline bool is_type_global() { return ~(flags | 0x01) == 0; };
 
 			inline void set_active() { flags |= FLAG_ACTIVE; };
+			inline void set_rdns_ban() { flags |= FLAG_USE_RDNS; }
 			inline void set_type_game() { flags |= FLAG_TYPE_GAME; };
 			inline void set_type_chat() { flags |= FLAG_TYPE_CHAT; };
 			inline void set_type_bot() { flags |= FLAG_TYPE_BOT; };
@@ -119,9 +122,10 @@ namespace RenX
 			inline void set_type_mine() { flags |= FLAG_TYPE_MINE; };
 			inline void set_type_ladder() { flags |= FLAG_TYPE_LADDER; };
 			inline void set_type_alert() { flags |= FLAG_TYPE_ALERT; };
-			inline void set_type_global() { flags = 0xFF; };
+			inline void set_type_global() { flags = 0xFFFFU; };
 
 			inline void unset_active() { flags &= ~FLAG_ACTIVE; };
+			inline void unset_rdns_ban() { flags &= ~FLAG_USE_RDNS; }
 			inline void unset_type_game() { flags &= ~FLAG_TYPE_GAME; };
 			inline void unset_type_chat() { flags &= ~FLAG_TYPE_CHAT; };
 			inline void unset_type_bot() { flags &= ~FLAG_TYPE_BOT; };
@@ -129,7 +133,7 @@ namespace RenX
 			inline void unset_type_mine() { flags &= ~FLAG_TYPE_MINE; };
 			inline void unset_type_ladder() { flags &= ~FLAG_TYPE_LADDER; };
 			inline void unset_type_alert() { flags &= ~FLAG_TYPE_ALERT; };
-			inline void unset_type_global() { flags = 0x00; };
+			inline void unset_type_global() { flags = 0x0000U; };
 		};
 
 		/**
@@ -139,7 +143,7 @@ namespace RenX
 		* @param player Data of the player to be banned
 		* @param length Duration of the ban
 		*/
-		void add(RenX::Server *server, const RenX::PlayerInfo *player, const Jupiter::ReadableString &banner, const Jupiter::ReadableString &reason, time_t length, uint8_t flags = RenX::BanDatabase::Entry::FLAG_TYPE_GAME);
+		void add(RenX::Server *server, const RenX::PlayerInfo *player, const Jupiter::ReadableString &banner, const Jupiter::ReadableString &reason, time_t length, uint16_t flags = RenX::BanDatabase::Entry::FLAG_TYPE_GAME);
 
 		/**
 		* @brief Adds a ban entry for a set of player information and immediately writes it to the database.
@@ -152,7 +156,7 @@ namespace RenX
 		* @param reason Reason the player is getting banned
 		* @param length Duration of the ban
 		*/
-		void add(const Jupiter::ReadableString &name, uint32_t ip, uint8_t prefix_length, uint64_t steamid, const Jupiter::ReadableString &rdns, Jupiter::ReadableString &banner, Jupiter::ReadableString &reason, time_t length, uint8_t flags = RenX::BanDatabase::Entry::FLAG_TYPE_GAME);
+		void add(const Jupiter::ReadableString &name, uint32_t ip, uint8_t prefix_length, uint64_t steamid, const Jupiter::ReadableString &rdns, Jupiter::ReadableString &banner, Jupiter::ReadableString &reason, time_t length, uint16_t flags = RenX::BanDatabase::Entry::FLAG_TYPE_GAME);
 
 		/**
 		* @brief Upgrades the ban database to the current write_version.

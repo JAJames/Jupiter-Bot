@@ -1073,7 +1073,7 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 
 					if ((this->localSteamBan && entry->steamid != 0 && entry->steamid == player->steamid)
 						|| (this->localIPBan && entry->ip != 0 && (entry->ip & netmask) == (player->ip32 & netmask))
-						|| (this->localRDNSBan && entry->rdns.isNotEmpty() && entry->rdns.equals(player->rdns))
+						|| (this->localRDNSBan && entry->rdns.isNotEmpty() && entry->is_rdns_ban() && player->rdns.match(entry->rdns))
 						|| (this->localNameBan && entry->name.isNotEmpty() && entry->name.equalsi(player->name)))
 					{
 						player->ban_flags |= entry->flags;

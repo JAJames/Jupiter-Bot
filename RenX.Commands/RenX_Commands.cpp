@@ -1167,11 +1167,13 @@ void BanSearchIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString
 					const Jupiter::ReadableString &banner = entry->varData.get(pluginInstance.getName());
 					strftime(timeStr, sizeof(timeStr), "%b %d %Y; Time: %H:%M:%S", localtime(&(entry->timestamp)));
 
-					if ((entry->flags & 0x7F) == 0)
+					if ((entry->flags & 0x7FFF) == 0)
 						types = " NULL;"_jrs;
 					else
 					{
 						types.erase();
+						if (entry->is_rdns_ban())
+							types += " rdns"_jrs;
 						if (entry->is_type_game())
 							types += " game"_jrs;
 						if (entry->is_type_chat())
@@ -1978,6 +1980,167 @@ const Jupiter::ReadableString &KickBanIRCCommand::getHelp(const Jupiter::Readabl
 }
 
 IRC_COMMAND_INIT(KickBanIRCCommand)
+
+// AddBan IRC Command
+
+#define ADDBAN_WHITESPACE " \t="
+
+void AddBanIRCCommand::create()
+{
+	this->addTrigger("addban"_jrs);
+	this->addTrigger("banadd"_jrs);
+	this->setAccessLevel(4);
+}
+
+void AddBanIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &channel, const Jupiter::ReadableString &nick, const Jupiter::ReadableString &parameters)
+{
+	if (parameters.isNotEmpty())
+	{
+		Jupiter::IRC::Client::Channel *chan = source->getChannel(channel);
+		if (chan != nullptr)
+		{
+			size_t words = parameters.wordCount(ADDBAN_WHITESPACE);
+			if (words == 0)
+				source->sendNotice(nick, STRING_LITERAL_AS_REFERENCE("Error: Too Few Parameters. Syntax: KickBan <Player> [Reason]"));
+			else if (words == 1)
+				KickBanIRCCommand_instance.trigger(source, channel, nick, parameters);
+			else
+			{
+				size_t index = 0;
+				Jupiter::ReferenceString name;
+				Jupiter::CStringS ip_str;
+				uint32_t ip = 0U;
+				uint8_t prefix_length = 32U;
+				uint64_t steamid = 0U;
+				Jupiter::StringS rdns;
+				Jupiter::String banner = nick + "@IRC"_jrs;
+				Jupiter::ReferenceString reason = "No reason"_jrs;
+				time_t duration = 0;
+				uint16_t flags = 0;
+
+				Jupiter::ReferenceString word;
+				while (index != words)
+				{
+					word = Jupiter::ReferenceString::getWord(parameters, index++, ADDBAN_WHITESPACE);
+
+					if (word.equalsi("Name"_jrs) || word.equalsi("Nick"_jrs) || word.equalsi("Nickname"_jrs) || word.equalsi("Username"_jrs))
+					{
+						if (index == words)
+						{
+							source->sendNotice(nick, "ERROR: No value specified for token: "_jrs + word);
+							return;
+						}
+
+						name = Jupiter::ReferenceString::getWord(parameters, index++, ADDBAN_WHITESPACE);
+					}
+					else if (word.equalsi("IP"_jrs) || word.equalsi("IPAddress"_jrs) || word.equalsi("Address"_jrs))
+					{
+						if (index == words)
+						{
+							source->sendNotice(nick, "ERROR: No value specified for token: "_jrs + word);
+							return;
+						}
+
+						ip_str = Jupiter::ReferenceString::getWord(parameters, index++, ADDBAN_WHITESPACE);
+					}
+					else if (word.equalsi("Steam"_jrs) || word.equalsi("SteamID"_jrs))
+					{
+						if (index == words)
+						{
+							source->sendNotice(nick, "ERROR: No value specified for token: "_jrs + word);
+							return;
+						}
+
+						steamid = Jupiter::ReferenceString::getWord(parameters, index++, ADDBAN_WHITESPACE).asUnsignedLongLong();
+					}
+					else if (word.equalsi("RDNS"_jrs) || word.equalsi("DNS"_jrs))
+					{
+						if (index == words)
+						{
+							source->sendNotice(nick, "ERROR: No value specified for token: "_jrs + word);
+							return;
+						}
+
+						rdns = Jupiter::ReferenceString::getWord(parameters, index++, ADDBAN_WHITESPACE);
+					}
+					else if (word.equalsi("Reason"_jrs))
+					{
+						if (index == words)
+						{
+							source->sendNotice(nick, "ERROR: No value specified for token: "_jrs + word);
+							return;
+						}
+
+						reason = Jupiter::ReferenceString::gotoWord(parameters, index++, ADDBAN_WHITESPACE);
+						break;
+					}
+					else if (word.equalsi("Duration"_jrs) || word.equalsi("Length"_jrs) || word.equalsi("Time"_jrs))
+					{
+						if (index == words)
+						{
+							source->sendNotice(nick, "ERROR: No value specified for token: "_jrs + word);
+							return;
+						}
+
+						duration = Jupiter::ReferenceString::getWord(parameters, index++, ADDBAN_WHITESPACE).asUnsignedLongLong();
+					}
+					else if (word.equalsi("Game"_jrs))
+						flags |= RenX::BanDatabase::Entry::FLAG_TYPE_GAME;
+					else if (word.equalsi("Chat"_jrs))
+						flags |= RenX::BanDatabase::Entry::FLAG_TYPE_CHAT;
+					else if (word.equalsi("Bot"_jrs) || word.equalsi("Command"_jrs))
+						flags |= RenX::BanDatabase::Entry::FLAG_TYPE_BOT;
+					else if (word.equalsi("Vote"_jrs) || word.equalsi("Poll"_jrs))
+						flags |= RenX::BanDatabase::Entry::FLAG_TYPE_VOTE;
+					else if (word.equalsi("Mine"_jrs))
+						flags |= RenX::BanDatabase::Entry::FLAG_TYPE_MINE;
+					else if (word.equalsi("Ladder"_jrs))
+						flags |= RenX::BanDatabase::Entry::FLAG_TYPE_LADDER;
+					else if (word.equalsi("Alert"_jrs))
+						flags |= RenX::BanDatabase::Entry::FLAG_TYPE_ALERT;
+					else
+					{
+						source->sendNotice(nick, "ERROR: Unknown token: "_jrs + word);
+						return;
+					}
+				}
+
+				// Default to Game type
+				if (flags == 0)
+					flags = RenX::BanDatabase::Entry::FLAG_TYPE_GAME;
+
+				index = ip_str.find('/');
+				if (index != JUPITER_INVALID_INDEX)
+				{
+					prefix_length = Jupiter::ReferenceString::substring(ip_str, index + 1).asUnsignedInt();
+					if (prefix_length == 0)
+						prefix_length = 32U;
+					ip_str.set(ip_str.ptr(), index);
+				}
+				ip = Jupiter::Socket::pton4(ip_str.c_str());
+
+				if (rdns.isEmpty())
+					Jupiter::Socket::resolveHostname(ip_str.c_str(), 0);
+				else
+					flags |= RenX::BanDatabase::Entry::FLAG_USE_RDNS;
+
+				RenX::banDatabase->add(name, ip, prefix_length, steamid, rdns, banner, reason, duration);
+			}
+		}
+	}
+	else source->sendNotice(nick, STRING_LITERAL_AS_REFERENCE("Error: Too Few Parameters. Syntax: AddBan <Key> <Value> [...]"));
+}
+
+const Jupiter::ReadableString &AddBanIRCCommand::getHelp(const Jupiter::ReadableString &parameters)
+{
+	static STRING_LITERAL_AS_NAMED_REFERENCE(defaultHelp, "Adds a ban entry to the ban list. Use \"help addban keys\" for a list of input keys. Syntax: AddBan <Key> <Value> [<Key> <Value> ...]");
+	static STRING_LITERAL_AS_NAMED_REFERENCE(keyHelp, "Valueless keys (flags): Game, Chat, Bot, Vote, Mine, Ladder, Alert; Value-paired keys: Name, IP, Steam, RDNS, Duration, Reason (MUST BE LAST)");
+	if (parameters.isNotEmpty() && parameters.equalsi("keys"_jrs))
+		return keyHelp;
+	return defaultHelp;
+}
+
+IRC_COMMAND_INIT(AddBanIRCCommand)
 
 // UnBan IRC Command
 
