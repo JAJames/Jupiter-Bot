@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2014-2015 Jessica James.
+ * Copyright (C) 2014-2016 Jessica James.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -339,7 +339,7 @@ namespace RenX
 		*
 		* @param id Player ID of the player to ban.
 		*/
-		void banPlayer(int id, const Jupiter::ReadableString &reason);
+		void banPlayer(int id, const Jupiter::ReadableString &banner, const Jupiter::ReadableString &reason);
 
 		/**
 		* @brief Bans a player from the server.
@@ -347,7 +347,7 @@ namespace RenX
 		* @param player Data of the player to ban.
 		* @param length Duration of the ban (0 for permanent).
 		*/
-		void banPlayer(const RenX::PlayerInfo *player, const Jupiter::ReadableString &reason, time_t length = 0);
+		void banPlayer(const RenX::PlayerInfo *player, const Jupiter::ReadableString &banner, const Jupiter::ReadableString &reason, time_t length = 0);
 
 		/**
 		* @brief Removes a player's data based on their ID number.

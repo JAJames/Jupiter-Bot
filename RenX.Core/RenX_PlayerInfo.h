@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2014-2015 Jessica James.
+ * Copyright (C) 2014-2016 Jessica James.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -53,6 +53,7 @@ namespace RenX
 		Jupiter::StringS vehicle;
 		uint64_t steamid = 0;
 		uint32_t ip32 = 0;
+		uint8_t ban_flags = 0;
 		TeamType team = TeamType::Other;
 		int id = 0;
 		bool isBot = false;

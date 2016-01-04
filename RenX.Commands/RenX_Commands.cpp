@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2014-2015 Jessica James.
+ * Copyright (C) 2014-2016 Jessica James.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -46,12 +46,6 @@ inline void onDie(RenX::Server *server, const RenX::PlayerInfo *player)
 {
 	if (player->isBot && server->varData.getBool(STRING_LITERAL_AS_REFERENCE("RenX.Commands"), STRING_LITERAL_AS_REFERENCE("phasing"), false))
 		server->kickPlayer(player, Jupiter::StringS::empty);
-}
-
-bool RenX_CommandsPlugin::RenX_OnBan(RenX::Server *server, const RenX::PlayerInfo *player, Jupiter::StringType &data)
-{
-	data = player->varData.get(this->getName(), STRING_LITERAL_AS_REFERENCE("banner"));
-	return !data.isEmpty();
 }
 
 void RenX_CommandsPlugin::RenX_OnSuicide(RenX::Server *server, const RenX::PlayerInfo *player, const Jupiter::ReadableString &)
@@ -1122,43 +1116,38 @@ void BanSearchIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString
 				default:
 				case 0:	// ANY
 					return isMatch(1) || isMatch(2) || isMatch(3) || isMatch(4);
-				case 1:	// IP
-					return entry->ip == params.asUnsignedInt();
-				case 2: // RDNS
-					return entry->rdns.equals(params);
-				case 3:	// STEAM
-					return entry->steamid == params.asUnsignedLongLong();
-				case 4:	// NAME
-					return entry->name.equalsi(params);
-				case 5:	// BANNER
-					return entry->varData.get(pluginInstance.getName()).equalsi(params);
-				case 6:	// ACTIVE
-					if (params.asBool()) // Got tired of seeing a compiler warning.
-						return entry->active == 1;
-					else
-						return entry->active == 0;
-				case 7:	// ALL
+				case 1: // ALL
 					return true;
+				case 2:	// IP
+					return entry->ip == params.asUnsignedInt();
+				case 3: // RDNS
+					return entry->rdns.equals(params);
+				case 4:	// STEAM
+					return entry->steamid == params.asUnsignedLongLong();
+				case 5:	// NAME
+					return entry->name.equalsi(params);
+				case 6:	// BANNER
+					return entry->varData.get(pluginInstance.getName()).equalsi(params);
+				case 7:	// ACTIVE
+					return params.asBool() == entry->is_active();
 				}
 			};
 
 			unsigned int type;
 			Jupiter::ReferenceString type_str = Jupiter::ReferenceString::getWord(parameters, 0, WHITESPACE);
-			if (type_str.equalsi(STRING_LITERAL_AS_REFERENCE("ip")))
+			if (type_str.equalsi(STRING_LITERAL_AS_REFERENCE("all")) || type_str.equals('*'))
 				type = 1;
-			else if (type_str.equalsi(STRING_LITERAL_AS_REFERENCE("rdns")))
+			else if (type_str.equalsi(STRING_LITERAL_AS_REFERENCE("ip")))
 				type = 2;
-			else if (type_str.equalsi(STRING_LITERAL_AS_REFERENCE("steam")))
+			else if (type_str.equalsi(STRING_LITERAL_AS_REFERENCE("rdns")))
 				type = 3;
-			else if (type_str.equalsi(STRING_LITERAL_AS_REFERENCE("name")))
+			else if (type_str.equalsi(STRING_LITERAL_AS_REFERENCE("steam")))
 				type = 4;
-			else if (type_str.equalsi(STRING_LITERAL_AS_REFERENCE("banner")))
+			else if (type_str.equalsi(STRING_LITERAL_AS_REFERENCE("name")))
 				type = 5;
-			else if (type_str.equalsi(STRING_LITERAL_AS_REFERENCE("active")))
+			else if (type_str.equalsi(STRING_LITERAL_AS_REFERENCE("banner")))
 				type = 6;
-			else if (type_str.equalsi(STRING_LITERAL_AS_REFERENCE("any")))
-				type = 0;
-			else if (type_str.equalsi(STRING_LITERAL_AS_REFERENCE("all")) || type_str.equals('*'))
+			else if (type_str.equalsi(STRING_LITERAL_AS_REFERENCE("active")))
 				type = 7;
 			else
 			{
@@ -1167,17 +1156,43 @@ void BanSearchIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString
 			}
 
 			Jupiter::String out(256);
+			Jupiter::String types(64);
 			char timeStr[256];
 			for (size_t i = 0; i != entries.size(); i++)
 			{
 				entry = entries.get(i);
 				if (isMatch(type))
 				{
-					Jupiter::StringS ip_str = Jupiter::Socket::ntop4(entry->ip);
+					Jupiter::StringS &ip_str = Jupiter::Socket::ntop4(entry->ip);
 					const Jupiter::ReadableString &banner = entry->varData.get(pluginInstance.getName());
 					strftime(timeStr, sizeof(timeStr), "%b %d %Y; Time: %H:%M:%S", localtime(&(entry->timestamp)));
-					out.format("ID: %lu; Status: %sactive; Date: %s; IP: %.*s; Steam: %llu; Name: %.*s%s", i, entry->active ? "" : "in", timeStr, ip_str.size(), ip_str.ptr(), entry->steamid, entry->name.size(), entry->name.ptr(), banner.isEmpty() ? "" : "; Banner: ");
-					out.concat(banner);
+
+					if ((entry->flags & 0x7F) == 0)
+						types = " NULL;"_jrs;
+					else
+					{
+						types.erase();
+						if (entry->is_type_game())
+							types += " game"_jrs;
+						if (entry->is_type_chat())
+							types += " chat"_jrs;
+						if (entry->is_type_bot())
+							types += " bot"_jrs;
+						if (entry->is_type_vote())
+							types += " vote"_jrs;
+						if (entry->is_type_mine())
+							types += " mine"_jrs;
+						if (entry->is_type_ladder())
+							types += " ladder"_jrs;
+						if (entry->is_type_alert())
+							types += " alert"_jrs;
+						types += ";"_jrs;
+					}
+					
+					out.format("ID: %lu (%sactive); Date: %s; IP: %.*s/%u; Steam: %llu; Types:%.*s Name: %.*s; Banner: %.*s",
+						i, entry->is_active() ? "" : "in", timeStr, ip_str.size(), ip_str.ptr(), entry->prefix_length, entry->steamid, types.size(), types.ptr(),
+						entry->name.size(), entry->name.ptr(), banner.size(), banner.ptr());
+
 					if (entry->rdns.isNotEmpty())
 					{
 						out.concat("; RDNS: "_jrs);
@@ -1883,8 +1898,7 @@ void TempBanIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &
 						player = server->getPlayerByPartName(name);
 						if (player != nullptr)
 						{
-							player->varData.set(pluginInstance.getName(), STRING_LITERAL_AS_REFERENCE("banner"), nick);
-							server->banPlayer(player, reason, pluginInstance.getTBanTime());
+							server->banPlayer(player, banner, reason, pluginInstance.getTBanTime());
 							kicks++;
 						}
 					}
@@ -1941,8 +1955,7 @@ void KickBanIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &
 						player = server->getPlayerByPartName(name);
 						if (player != nullptr)
 						{
-							player->varData.set(pluginInstance.getName(), STRING_LITERAL_AS_REFERENCE("banner"), nick);
-							server->banPlayer(player, reason);
+							server->banPlayer(player, banner, reason);
 							kicks++;
 						}
 					}
@@ -2519,37 +2532,29 @@ void ModRequestGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *play
 	Jupiter::IRC::Client::Channel *channel;
 	unsigned int channelCount;
 	unsigned int messageCount = 0;
-	int type;
 	Jupiter::String &fmtName = RenX::getFormattedPlayerName(player);
 	Jupiter::StringL msg = Jupiter::StringL::Format(IRCCOLOR "12[Moderator Request] " IRCCOLOR IRCBOLD "%.*s" IRCBOLD IRCCOLOR "07 has requested assistance in-game; please look in ", fmtName.size(), fmtName.ptr());
 	Jupiter::StringS msg2 = Jupiter::StringS::Format(IRCCOLOR "12[Moderator Request] " IRCCOLOR IRCBOLD "%.*s" IRCBOLD IRCCOLOR "07 has requested assistance in-game!" IRCCOLOR, fmtName.size(), fmtName.ptr());
 	for (unsigned int a = 0; a < serverCount; a++)
 	{
 		server = serverManager->getServer(a);
-		if (server != nullptr)
+		channelCount = server->getChannelCount();
+		for (unsigned int b = 0; b < channelCount; b++)
 		{
-			channelCount = server->getChannelCount();
-			for (unsigned int b = 0; b < channelCount; b++)
+			channel = server->getChannel(b);
+			if (source->isLogChanType(channel->getType()))
 			{
-				channel = server->getChannel(b);
-				if (channel != nullptr)
+				server->sendMessage(channel->getName(), msg2);
+				msg += channel->getName();
+				for (unsigned int c = 0; c < channel->getUserCount(); c++)
 				{
-					type = channel->getType();
-					if (source->isLogChanType(type))
+					if (channel->getUserPrefix(c) != 0 && channel->getUser(c)->getNickname().equals(server->getNickname()) == false)
 					{
-						server->sendMessage(channel->getName(), msg2);
-						msg += channel->getName();
-						for (unsigned int c = 0; c < channel->getUserCount(); c++)
-						{
-							if (channel->getUserPrefix(c) != 0 && channel->getUser(c)->getNickname().equals(server->getNickname()) == false)
-							{
-								server->sendMessage(channel->getUser(c)->getUser()->getNickname(), msg);
-								messageCount++;
-							}
-						}
-						msg -= channel->getName().size();
+						server->sendMessage(channel->getUser(c)->getUser()->getNickname(), msg);
+						messageCount++;
 					}
 				}
+				msg -= channel->getName().size();
 			}
 		}
 	}
@@ -2807,8 +2812,7 @@ void TempBanGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *player,
 			source->sendMessage(player, STRING_LITERAL_AS_REFERENCE("Error: You can not ban higher level moderators."));
 		else
 		{
-			target->varData.set(pluginInstance.getName(), STRING_LITERAL_AS_REFERENCE("banner"), player->name);
-			source->banPlayer(target, reason, pluginInstance.getTBanTime());
+			source->banPlayer(target, player->name, reason, pluginInstance.getTBanTime());
 			source->sendMessage(player, STRING_LITERAL_AS_REFERENCE("Player has been temporarily banned and kicked from the game."));
 		}
 	}
@@ -2850,8 +2854,7 @@ void KickBanGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *player,
 			source->sendMessage(player, STRING_LITERAL_AS_REFERENCE("Error: You can not ban higher level moderators."));
 		else
 		{
-			target->varData.set(pluginInstance.getName(), STRING_LITERAL_AS_REFERENCE("banner"), player->name);
-			source->banPlayer(target, reason);
+			source->banPlayer(target, player->name, reason);
 			source->sendMessage(player, STRING_LITERAL_AS_REFERENCE("Player has been banned and kicked from the game."));
 		}
 	}

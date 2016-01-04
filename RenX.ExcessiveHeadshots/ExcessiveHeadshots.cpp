@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2014-2015 Jessica James.
+ * Copyright (C) 2014-2016 Jessica James.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -24,6 +24,8 @@
 #include "RenX_PlayerInfo.h"
 #include "RenX_Functions.h"
 
+using namespace Jupiter::literals;
+
 RenX_ExcessiveHeadshotsPlugin::RenX_ExcessiveHeadshotsPlugin()
 {
 	RenX_ExcessiveHeadshotsPlugin::OnRehash();
@@ -31,18 +33,18 @@ RenX_ExcessiveHeadshotsPlugin::RenX_ExcessiveHeadshotsPlugin()
 
 int RenX_ExcessiveHeadshotsPlugin::OnRehash()
 {
-	RenX_ExcessiveHeadshotsPlugin::ratio = Jupiter::IRC::Client::Config->getDouble(RenX_ExcessiveHeadshotsPlugin::getName(), STRING_LITERAL_AS_REFERENCE("HeadshotKillRatio"), 0.5);
-	RenX_ExcessiveHeadshotsPlugin::minKills = Jupiter::IRC::Client::Config->getInt(RenX_ExcessiveHeadshotsPlugin::getName(), STRING_LITERAL_AS_REFERENCE("Kills"), 10);
-	RenX_ExcessiveHeadshotsPlugin::minKD = Jupiter::IRC::Client::Config->getDouble(RenX_ExcessiveHeadshotsPlugin::getName(), STRING_LITERAL_AS_REFERENCE("KillDeathRatio"), 5.0);
-	RenX_ExcessiveHeadshotsPlugin::minKPS = Jupiter::IRC::Client::Config->getDouble(RenX_ExcessiveHeadshotsPlugin::getName(), STRING_LITERAL_AS_REFERENCE("KillsPerSecond"), 0.5);
-	RenX_ExcessiveHeadshotsPlugin::minFlags = Jupiter::IRC::Client::Config->getInt(RenX_ExcessiveHeadshotsPlugin::getName(), STRING_LITERAL_AS_REFERENCE("Flags"), 4);
+	RenX_ExcessiveHeadshotsPlugin::ratio = Jupiter::IRC::Client::Config->getDouble(RenX_ExcessiveHeadshotsPlugin::getName(), "HeadshotKillRatio"_jrs, 0.5);
+	RenX_ExcessiveHeadshotsPlugin::minKills = Jupiter::IRC::Client::Config->getInt(RenX_ExcessiveHeadshotsPlugin::getName(), "Kills"_jrs, 10);
+	RenX_ExcessiveHeadshotsPlugin::minKD = Jupiter::IRC::Client::Config->getDouble(RenX_ExcessiveHeadshotsPlugin::getName(), "KillDeathRatio"_jrs, 5.0);
+	RenX_ExcessiveHeadshotsPlugin::minKPS = Jupiter::IRC::Client::Config->getDouble(RenX_ExcessiveHeadshotsPlugin::getName(), "KillsPerSecond"_jrs, 0.5);
+	RenX_ExcessiveHeadshotsPlugin::minFlags = Jupiter::IRC::Client::Config->getInt(RenX_ExcessiveHeadshotsPlugin::getName(), "Flags"_jrs, 4);
 	return 0;
 }
 
 void RenX_ExcessiveHeadshotsPlugin::RenX_OnKill(RenX::Server *server, const RenX::PlayerInfo *player, const RenX::PlayerInfo *victim, const Jupiter::ReadableString &damageType)
 {
 	if (player->kills < 3) return;
-	if (damageType.equals("Rx_DmgType_Headshot"))
+	if (damageType.equals("Rx_DmgType_Headshot"_jrs))
 	{
 		unsigned int flags = 0;
 		std::chrono::milliseconds game_time = server->getGameTime(player);
@@ -56,7 +58,7 @@ void RenX_ExcessiveHeadshotsPlugin::RenX_OnKill(RenX::Server *server, const RenX
 
 		if (flags >= RenX_ExcessiveHeadshotsPlugin::minFlags)
 		{
-			server->banPlayer(player, STRING_LITERAL_AS_REFERENCE("Aimbot detected"));
+			server->banPlayer(player, "Jupiter Bot"_jrs, "Aimbot detected"_jrs);
 			server->sendPubChan(IRCCOLOR "13[Aimbot]" IRCCOLOR " %.*s was banned from the server! Kills: %u - Deaths: %u - Headshots: %u", player->name.size(), player->name.ptr(), player->kills, player->deaths, player->headshots);
 			const Jupiter::ReadableString &steamid = server->formatSteamID(player);
 			server->sendAdmChan(IRCCOLOR "13[Aimbot]" IRCCOLOR " %.*s was banned from the server! Kills: %u - Deaths: %u - Headshots: %u - IP: " IRCBOLD "%.*s" IRCBOLD " - Steam ID: " IRCBOLD "%.*s" IRCBOLD, player->name.size(), player->name.ptr(), player->kills, player->deaths, player->headshots, player->ip.size(), player->ip.ptr(), steamid.size(), steamid.ptr());

@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2015 Jessica James.
+ * Copyright (C) 2015-2016 Jessica James.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -21,6 +21,7 @@
 #include "RenX_Ladder.h"
 #include "RenX_Server.h"
 #include "RenX_PlayerInfo.h"
+#include "RenX_BanDatabase.h"
 
 using namespace Jupiter::literals;
 
@@ -49,7 +50,7 @@ void RenX_LadderPlugin::updateLadder(RenX::Server *server, const RenX::TeamType 
 		for (Jupiter::DLList<RenX::PlayerInfo>::Node *node = server->players.getNode(0); node != nullptr; node = node->next)
 		{
 			player = node->data;
-			if (player->steamid != 0)
+			if (player->steamid != 0 && (player->ban_flags & RenX::BanDatabase::Entry::FLAG_TYPE_LADDER) == 0)
 			{
 				entry = RenX_LadderPlugin::database.getPlayerEntry(player->steamid);
 				if (entry == nullptr)

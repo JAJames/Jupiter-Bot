@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2014-2015 Jessica James.
+ * Copyright (C) 2014-2016 Jessica James.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -21,6 +21,7 @@
 
 #include <ctime>
 #include <cstdint>
+#include "Jupiter/Database.h"
 #include "Jupiter/String.h"
 #include "Jupiter/CString.h"
 #include "Jupiter/ArrayList.h"
@@ -39,8 +40,39 @@ namespace RenX
 	/**
 	* @brief Represents the local ban database.
 	*/
-	class RENX_API BanDatabase
+	class RENX_API BanDatabase : public Jupiter::Database
 	{
+	public: // Jupiter::Database
+		/**
+		* @brief Processes a chunk of data in a database.
+		*
+		* @param buffer Buffer to process
+		* @param file File being processed
+		* @param pos position that the buffer starts at in the file
+		*/
+		void process_data(Jupiter::DataBuffer &buffer, FILE *file, fpos_t pos) override;
+
+		/**
+		* @brief Processes the header for a database.
+		*
+		* @param file File being processed
+		*/
+		void process_header(FILE *file) override;
+
+		/**
+		* @brief Generates a header for a database.
+		*
+		* @param file File being created
+		*/
+		void create_header(FILE *file) override;
+
+		/**
+		* @brief Called when process_file() is successfully completed.
+		*
+		* @param file File being processed
+		*/
+		void process_file_finish(FILE *file) override;
+
 	public:
 		/**
 		* @brief Represents a Ban entry in the database.
@@ -48,25 +80,57 @@ namespace RenX
 		struct RENX_API Entry
 		{
 			fpos_t pos; /** Position of the entry in the database */
-			unsigned char active; /** 1 if the ban is active, 0 otherwise */
+			uint8_t flags /** Flags affecting this ban entry (0 = Active, 1 = Game, 2 = Chat, 3 = Command, 4 = Vote, 5 = Mine, 6 = Ladder, 7 = Alert Mods) */ = 0x00;
 			time_t timestamp /** Time the ban was created */;
 			time_t length /** Duration of the ban; 0 if permanent */;
 			uint64_t steamid /** SteamID of the banned player */;
 			uint32_t ip /** IPv4 address of the banned player */;
+			uint8_t prefix_length /** Prefix length for the IPv4 address block */;
 			Jupiter::StringS rdns /** RDNS of the banned player */;
 			Jupiter::StringS name /** Name of the banned player */;
+			Jupiter::StringS banner /** Name of the user who initiated the ban */;
 			Jupiter::StringS reason /** Reason the player was banned */;
 			Jupiter::INIFile::Section varData; /** Variable entry data */
-		};
 
-		/**
-		* @brief Loads a file into the ban system.
-		* Note: This will generate a database file if none is found.
-		*
-		* @param fname String containing the name of the file to load
-		* @return True on success, false otherwise.
-		*/
-		bool load(const Jupiter::ReadableString &fname);
+			static const uint8_t FLAG_ACTIVE = 0x80;
+			static const uint8_t FLAG_TYPE_GAME = 0x40;
+			static const uint8_t FLAG_TYPE_CHAT = 0x20;
+			static const uint8_t FLAG_TYPE_BOT = 0x10;
+			static const uint8_t FLAG_TYPE_VOTE = 0x08;
+			static const uint8_t FLAG_TYPE_MINE = 0x04;
+			static const uint8_t FLAG_TYPE_LADDER = 0x02;
+			static const uint8_t FLAG_TYPE_ALERT = 0x01;
+
+			inline bool is_active() { return (flags & FLAG_ACTIVE) != 0; };
+			inline bool is_type_game() { return (flags & FLAG_TYPE_GAME) != 0; };
+			inline bool is_type_chat() { return (flags & FLAG_TYPE_CHAT) != 0; };
+			inline bool is_type_bot() { return (flags & FLAG_TYPE_BOT) != 0; };
+			inline bool is_type_vote() { return (flags & FLAG_TYPE_VOTE) != 0; };
+			inline bool is_type_mine() { return (flags & FLAG_TYPE_MINE) != 0; };
+			inline bool is_type_ladder() { return (flags & FLAG_TYPE_LADDER) != 0; };
+			inline bool is_type_alert() { return (flags & FLAG_TYPE_ALERT) != 0; };
+			inline bool is_type_global() { return ~(flags | 0x01) == 0; };
+
+			inline void set_active() { flags |= FLAG_ACTIVE; };
+			inline void set_type_game() { flags |= FLAG_TYPE_GAME; };
+			inline void set_type_chat() { flags |= FLAG_TYPE_CHAT; };
+			inline void set_type_bot() { flags |= FLAG_TYPE_BOT; };
+			inline void set_type_vote() { flags |= FLAG_TYPE_VOTE; };
+			inline void set_type_mine() { flags |= FLAG_TYPE_MINE; };
+			inline void set_type_ladder() { flags |= FLAG_TYPE_LADDER; };
+			inline void set_type_alert() { flags |= FLAG_TYPE_ALERT; };
+			inline void set_type_global() { flags = 0xFF; };
+
+			inline void unset_active() { flags &= ~FLAG_ACTIVE; };
+			inline void unset_type_game() { flags &= ~FLAG_TYPE_GAME; };
+			inline void unset_type_chat() { flags &= ~FLAG_TYPE_CHAT; };
+			inline void unset_type_bot() { flags &= ~FLAG_TYPE_BOT; };
+			inline void unset_type_vote() { flags &= ~FLAG_TYPE_VOTE; };
+			inline void unset_type_mine() { flags &= ~FLAG_TYPE_MINE; };
+			inline void unset_type_ladder() { flags &= ~FLAG_TYPE_LADDER; };
+			inline void unset_type_alert() { flags &= ~FLAG_TYPE_ALERT; };
+			inline void unset_type_global() { flags = 0x00; };
+		};
 
 		/**
 		* @brief Adds a ban entry for a player and immediately writes it to the database.
@@ -75,17 +139,35 @@ namespace RenX
 		* @param player Data of the player to be banned
 		* @param length Duration of the ban
 		*/
-		void add(RenX::Server *server, const RenX::PlayerInfo *player, const Jupiter::ReadableString &reason, time_t length);
+		void add(RenX::Server *server, const RenX::PlayerInfo *player, const Jupiter::ReadableString &banner, const Jupiter::ReadableString &reason, time_t length, uint8_t flags = RenX::BanDatabase::Entry::FLAG_TYPE_GAME);
 
 		/**
-		* @brief Writes a ban file to the database.
+		* @brief Adds a ban entry for a set of player information and immediately writes it to the database.
+		*
+		* @param name Name of the player to ban
+		* @param ip IPv4 address of the player to ban
+		* @param steamid SteamID of the player to ban
+		* @param rdns RDNS of the player to ban
+		* @param banner Person implementing the ban
+		* @param reason Reason the player is getting banned
+		* @param length Duration of the ban
+		*/
+		void add(const Jupiter::ReadableString &name, uint32_t ip, uint8_t prefix_length, uint64_t steamid, const Jupiter::ReadableString &rdns, Jupiter::ReadableString &banner, Jupiter::ReadableString &reason, time_t length, uint8_t flags = RenX::BanDatabase::Entry::FLAG_TYPE_GAME);
+
+		/**
+		* @brief Upgrades the ban database to the current write_version.
+		*/
+		void upgrade_database();
+
+		/**
+		* @brief Writes a ban entry to the database.
 		*
 		* @param entry Entry to write to the database.
 		*/
 		void write(Entry *entry);
 
 		/**
-		* @brief Writes a ban file to the database.
+		* @brief Writes a ban entry to the database.
 		*
 		* @param entry Entry to write to the database.
 		* @param file FILE stream to write to.
@@ -125,7 +207,10 @@ namespace RenX
 		~BanDatabase();
 
 	private:
-		uint8_t version;
+		/** Database version */
+		const uint8_t write_version = 3U;
+		uint8_t read_version = write_version;
+
 		Jupiter::CStringS filename;
 		Jupiter::ArrayList<RenX::BanDatabase::Entry> entries;
 	};
