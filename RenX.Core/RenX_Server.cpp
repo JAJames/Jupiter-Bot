@@ -1639,7 +1639,7 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 				Jupiter::StringS newName = tokens.getToken(2);
 				for (size_t i = 0; i < xPlugins.size(); i++)
 					xPlugins.get(i)->RenX_OnNameChange(this, player, newName);
-				player->name = newName;
+				player->name = tokens.getToken(2).gotoToken(2, ',');
 			}
 			break;
 		case 'l':
