@@ -1376,10 +1376,7 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 									if (steamid != 0)
 									{
 										player->steamid = steamid;
-										if (calc_uuid == RenX::default_uuid_func)
-											setUUID(player, this->formatSteamID(steamid));
-										else
-											this->setUUIDIfDifferent(player, calc_uuid(player));
+										this->setUUIDIfDifferent(player, calc_uuid(player));
 									}
 								}
 
@@ -1411,10 +1408,7 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 									if (steamid != 0)
 									{
 										player->steamid = steamid;
-										if (calc_uuid == RenX::default_uuid_func)
-											setUUID(player, this->formatSteamID(steamid));
-										else
-											this->setUUIDIfDifferent(player, calc_uuid(player));
+										this->setUUIDIfDifferent(player, calc_uuid(player));
 									}
 								}
 
