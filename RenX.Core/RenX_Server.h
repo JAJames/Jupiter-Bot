@@ -35,6 +35,7 @@
 #include "Jupiter/Thinker.h"
 #include "Jupiter/Rehash.h"
 #include "RenX.h"
+#include "RenX_Map.h"
 
 /** DLL Linkage Nagging */
 #if defined _MSC_VER
@@ -86,7 +87,7 @@ namespace RenX
 		Jupiter::DLList<RenX::PlayerInfo> players; /** A list of players in the server */
 		Jupiter::ArrayList<RenX::BuildingInfo> buildings; /** A list of buildings in the server */
 		Jupiter::ArrayList<Jupiter::StringS> mutators; /** A list of buildings the server is running */
-		Jupiter::ArrayList<Jupiter::StringS> maps; /** A list of maps in the server's rotation */
+		Jupiter::ArrayList<RenX::Map> maps; /** A list of maps in the server's rotation */
 		Jupiter::INIFile varData; /** This may be replaced later with a more dedicated type. */
 
 		/**
@@ -705,7 +706,7 @@ namespace RenX
 		*
 		* @return String containing the current map.
 		*/
-		const Jupiter::ReadableString &getMap() const;
+		const RenX::Map &getMap() const;
 
 		/**
 		* @brief Fetches a command from the list.
@@ -949,9 +950,9 @@ namespace RenX
 		Jupiter::StringS rconUser;
 		Jupiter::StringS gameVersion;
 		Jupiter::StringS serverName;
-		Jupiter::StringS map;
 		Jupiter::StringS lastCommand;
 		Jupiter::StringS lastCommandParams;
+		RenX::Map map;
 		Jupiter::TCPSocket sock;
 		Jupiter::ReadableString::TokenizeResult<Jupiter::String_Strict> commandListFormat;
 		Jupiter::ArrayList<RenX::GameCommand> commands;

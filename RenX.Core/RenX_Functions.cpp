@@ -862,6 +862,11 @@ Jupiter::String RenX::getFormattedPlayerName(const RenX::PlayerInfo *player)
 	return r;
 }
 
+Jupiter::StringS RenX::formatGUID(const RenX::Map &map)
+{
+	return Jupiter::StringS::Format("%.8llX%.8llX", map.guid[0], map.guid[1]);
+}
+
 void RenX::sanitizeString(Jupiter::StringType &str)
 {
 	if (str.isNotEmpty())

@@ -781,7 +781,7 @@ void RotationIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString 
 	Jupiter::IRC::Client::Channel *chan = source->getChannel(channel);
 	if (chan != nullptr)
 	{
-		const Jupiter::ReadableString *map;
+		const RenX::Map *map;
 		int type = chan->getType();
 		Jupiter::String list;
 		size_t index = 0;
@@ -794,10 +794,10 @@ void RotationIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString 
 				for (index = 0; index != server->maps.size(); ++index)
 				{
 					map = server->maps.get(index);
-					if (server->getMap().equalsi(*map))
-						list += STRING_LITERAL_AS_REFERENCE(" " IRCBOLD "[") + *server->maps.get(index) + STRING_LITERAL_AS_REFERENCE("]" IRCBOLD);
+					if (server->getMap().name.equalsi(map->name))
+						list += STRING_LITERAL_AS_REFERENCE(" " IRCBOLD "[") + server->maps.get(index)->name + STRING_LITERAL_AS_REFERENCE("]" IRCBOLD);
 					else
-						list += " "_jrs + *server->maps.get(index);
+						list += " "_jrs + server->maps.get(index)->name;
 				}
 				if (index == 0)
 					source->sendMessage(channel, "No maps in rotation"_jrs);
@@ -838,7 +838,8 @@ void MapIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &chan
 			if (server->isLogChanType(type))
 			{
 				match = true;
-				source->sendMessage(channel, "Current Map: "_jrs + server->getMap());
+				const RenX::Map &map = server->getMap();
+				source->sendMessage(channel, "Current Map: "_jrs + map.name + "; GUID: "_jrs + RenX::formatGUID(map));
 			}
 		}
 		if (match == false)

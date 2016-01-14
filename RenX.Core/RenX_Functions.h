@@ -28,6 +28,7 @@
 #include "Jupiter/INIFile.h"
 #include "Jupiter/String.h"
 #include "RenX.h"
+#include "RenX_Map.h"
 
 namespace RenX
 {
@@ -135,6 +136,14 @@ namespace RenX
 	* @return IRC-ready version of the player's name.
 	*/
 	RENX_API Jupiter::String getFormattedPlayerName(const RenX::PlayerInfo *player);
+
+	/**
+	* @brief Creates a string containing a human-readable version of a map's GUID
+	*
+	* @param map Map containing the GUID to interpret
+	* @return Human-readable map GUID
+	*/
+	RENX_API Jupiter::StringS formatGUID(const RenX::Map &map);
 
 	/**
 	* @brief Sanitizes a string into a RCON-ready state by replacing special

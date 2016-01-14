@@ -76,6 +76,7 @@ TagsImp::TagsImp()
 	this->INTERNAL_USER_TAG = this->getUniqueInternalTag();
 	this->INTERNAL_SERVER_NAME_TAG = this->getUniqueInternalTag();
 	this->INTERNAL_MAP_TAG = this->getUniqueInternalTag();
+	this->INTERNAL_MAP_GUID_TAG = this->getUniqueInternalTag();
 	this->INTERNAL_SERVER_HOSTNAME_TAG = this->getUniqueInternalTag();
 	this->INTERNAL_SERVER_PORT_TAG = this->getUniqueInternalTag();
 	this->INTERNAL_SOCKET_HOSTNAME_TAG = this->getUniqueInternalTag();
@@ -186,6 +187,7 @@ TagsImp::TagsImp()
 	this->userTag = Jupiter::IRC::Client::Config->get(configSection, STRING_LITERAL_AS_REFERENCE("UserTag"), STRING_LITERAL_AS_REFERENCE("{USER}"));
 	this->serverNameTag = Jupiter::IRC::Client::Config->get(configSection, STRING_LITERAL_AS_REFERENCE("ServerNameTag"), STRING_LITERAL_AS_REFERENCE("{SERVERNAME}"));
 	this->mapTag = Jupiter::IRC::Client::Config->get(configSection, STRING_LITERAL_AS_REFERENCE("MapTag"), STRING_LITERAL_AS_REFERENCE("{MAP}"));
+	this->mapGUIDTag = Jupiter::IRC::Client::Config->get(configSection, STRING_LITERAL_AS_REFERENCE("MapGUIDTag"), STRING_LITERAL_AS_REFERENCE("{MGUID}"));
 	this->serverHostnameTag = Jupiter::IRC::Client::Config->get(configSection, STRING_LITERAL_AS_REFERENCE("ServerHostnameTag"), STRING_LITERAL_AS_REFERENCE("{SERVERHOST}"));
 	this->serverPortTag = Jupiter::IRC::Client::Config->get(configSection, STRING_LITERAL_AS_REFERENCE("ServerPortTag"), STRING_LITERAL_AS_REFERENCE("{SERVERPORT}"));
 	this->socketHostnameTag = Jupiter::IRC::Client::Config->get(configSection, STRING_LITERAL_AS_REFERENCE("SocketHostnameTag"), STRING_LITERAL_AS_REFERENCE("{SOCKHOST}"));
@@ -336,7 +338,8 @@ void TagsImp::processTags(Jupiter::StringType &msg, const RenX::Server *server, 
 		PROCESS_TAG(this->INTERNAL_RULES_TAG, server->getRules());
 		PROCESS_TAG(this->INTERNAL_USER_TAG, server->getUser());
 		PROCESS_TAG(this->INTERNAL_SERVER_NAME_TAG, server->getName());
-		PROCESS_TAG(this->INTERNAL_MAP_TAG, server->getMap());
+		PROCESS_TAG(this->INTERNAL_MAP_TAG, server->getMap().name);
+		PROCESS_TAG(this->INTERNAL_MAP_GUID_TAG, RenX::formatGUID(server->getMap()));
 		PROCESS_TAG(this->INTERNAL_SERVER_HOSTNAME_TAG, server->getHostname());
 		PROCESS_TAG(this->INTERNAL_SERVER_PORT_TAG, Jupiter::StringS::Format("%u", server->getPort()));
 		PROCESS_TAG(this->INTERNAL_SOCKET_HOSTNAME_TAG, server->getSocketHostname());
@@ -454,6 +457,7 @@ void TagsImp::sanitizeTags(Jupiter::StringType &fmt)
 	fmt.replace(this->userTag, this->INTERNAL_USER_TAG);
 	fmt.replace(this->serverNameTag, this->INTERNAL_SERVER_NAME_TAG);
 	fmt.replace(this->mapTag, this->INTERNAL_MAP_TAG);
+	fmt.replace(this->mapGUIDTag, this->INTERNAL_MAP_GUID_TAG);
 	fmt.replace(this->serverHostnameTag, this->INTERNAL_SERVER_HOSTNAME_TAG);
 	fmt.replace(this->serverPortTag, this->INTERNAL_SERVER_PORT_TAG);
 	fmt.replace(this->socketHostnameTag, this->INTERNAL_SOCKET_HOSTNAME_TAG);

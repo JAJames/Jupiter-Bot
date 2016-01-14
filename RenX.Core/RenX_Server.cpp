@@ -238,7 +238,7 @@ bool RenX::Server::hasMapInRotation(const Jupiter::ReadableString &name) const
 {
 	size_t index = RenX::Server::maps.size();
 	while (index != 0)
-		if (RenX::Server::maps.get(--index)->equalsi(name))
+		if (RenX::Server::maps.get(--index)->name.equalsi(name))
 			return true;
 	return false;
 }
@@ -249,7 +249,7 @@ const Jupiter::ReadableString *RenX::Server::getMapName(const Jupiter::ReadableS
 	const Jupiter::ReadableString *map_name;
 	while (index != 0)
 	{
-		map_name = RenX::Server::maps.get(--index);
+		map_name = &RenX::Server::maps.get(--index)->name;
 		if (map_name->findi(name) != Jupiter::INVALID_INDEX)
 			return map_name;
 	}
@@ -837,7 +837,7 @@ const Jupiter::ReadableString &RenX::Server::getName() const
 	return RenX::Server::serverName;
 }
 
-const Jupiter::ReadableString &RenX::Server::getMap() const
+const RenX::Map &RenX::Server::getMap() const
 {
 	return RenX::Server::map;
 }
@@ -1599,15 +1599,32 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 			else if (this->lastCommand.equalsi("ping"))
 				RenX::Server::awaitingPong = false;
 			else if (this->lastCommand.equalsi("map"))
-				this->map = std::move(Jupiter::StringS::substring(line, 1));
+			{
+				// Map | Guid
+				this->map.name = tokens.getToken(0);
+				const Jupiter::ReferenceString guid_token = tokens.getToken(1);
+
+				if (guid_token.size() == 32U)
+				{
+					this->map.guid[0] = guid_token.substring(0U, 16U).asUnsignedLongLong(16);
+					this->map.guid[1] = guid_token.substring(16U).asUnsignedLongLong(16);
+				}
+			}
 			else if (this->lastCommand.equalsi("serverinfo"))
 			{
 				if (this->lastCommandParams.isEmpty())
 				{
-					// "Port" | Port | "Name" | Name | "Level" | Level | "Players" | Players | "Bots" | Bots
+					// "Port" | Port | "Name" | Name | "Level" | Level | "Players" | Players | "Bots" | Bots | "LevelGUID" | Level GUID
 					this->port = static_cast<unsigned short>(tokens.getToken(1).asUnsignedInt(10));
 					this->serverName = tokens.getToken(3);
-					this->map = tokens.getToken(5);
+					this->map.name = tokens.getToken(5);
+
+					const Jupiter::ReferenceString guid_token = tokens.getToken(11);
+					if (guid_token.size() == 32U)
+					{
+						this->map.guid[0] = guid_token.substring(0U, 16U).asUnsignedLongLong(16);
+						this->map.guid[1] = guid_token.substring(16U).asUnsignedLongLong(16);
+					}
 				}
 			}
 			else if (this->lastCommand.equalsi("gameinfo"_jrs))
@@ -1647,10 +1664,22 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 			}
 			else if (this->lastCommand.equalsi("rotation"_jrs))
 			{
-				// Map
-				Jupiter::ReferenceString in_map = Jupiter::ReferenceString::substring(line, 1);
+				// Map | Guid
+				const Jupiter::ReadableString &in_map = tokens.getToken(0);
 				if (this->hasMapInRotation(in_map) == false)
-					this->maps.add(new Jupiter::StringS(in_map));
+				{
+					const Jupiter::ReferenceString guid_token = tokens.getToken(1);
+
+					if (guid_token.size() == 32U)
+					{
+						RenX::Map *map = new RenX::Map(in_map);
+						map->guid[0] = guid_token.substring(0U, 16U).asUnsignedLongLong(16);
+						map->guid[1] = guid_token.substring(16U).asUnsignedLongLong(16);
+						this->maps.add(map);
+					}
+					else
+						this->maps.add(new RenX::Map(in_map));
+				}
 			}
 			else if (this->lastCommand.equalsi("changename"))
 			{

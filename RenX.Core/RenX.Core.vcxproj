@@ -76,6 +76,7 @@
     <ClInclude Include="RenX.h" />
     <ClInclude Include="RenX_Functions.h" />
     <ClInclude Include="RenX_GameCommand.h" />
+    <ClInclude Include="RenX_Map.h" />
     <ClInclude Include="RenX_PlayerInfo.h" />
     <ClInclude Include="RenX_Plugin.h" />
     <ClInclude Include="RenX_Server.h" />
@@ -86,6 +87,7 @@
     <ClCompile Include="RenX_Core.cpp" />
     <ClCompile Include="RenX_Functions.cpp" />
     <ClCompile Include="RenX_GameCommand.cpp" />
+    <ClCompile Include="RenX_Map.cpp" />
     <ClCompile Include="RenX_Plugin.cpp" />
     <ClCompile Include="RenX_Server.cpp" />
     <ClCompile Include="RenX_Tags.cpp" />
