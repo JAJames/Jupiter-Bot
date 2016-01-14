@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2013-2015 Jessica James.
+ * Copyright (C) 2013-2016 Jessica James.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -16,19 +16,6 @@
  * Written by Jessica James <jessica.aj@outlook.com>
  */
 
-/**
- * Long term plan:
- * Eventually, this file and its header will no longer be a part of this project.
- * The features made available by this core will slowly be transferred away in pieces
- * to other locations, such as the internal Jupiter library, or various plugins.
- *
- * There is a relatively thin line between what will go in Jupiter, and what will be
- * pushed to plugins.
- * Example: The "Command" and "Plugin" classes ended up in Jupiter; they're abstract concepts
- * that doesn't put a specific behavior on any mechanisms. The "IRCCommand" class, however,
- * alters the behavior of the IRC Client, and thus should be contained within a plugin.
- */
-
 #include <cstdio>
 #include <cstring>
 #include <cctype>
@@ -38,9 +25,11 @@
 #include "IRC_Bot.h"
 #include "IRC_Command.h"
 
+using namespace Jupiter::literals;
+
 IRC_Bot::IRC_Bot(const Jupiter::ReadableString &configSection) : Client(configSection)
 {
-	IRC_Bot::commandPrefix = this->readConfigValue(STRING_LITERAL_AS_REFERENCE("Prefix"));
+	IRC_Bot::commandPrefix = this->readConfigValue("Prefix"_jrs);
 	for (size_t i = 0; i != IRCMasterCommandList->size(); i++)
 		IRC_Bot::addCommand(IRCMasterCommandList->get(i)->copy());
 	IRC_Bot::setCommandAccessLevels();
@@ -200,11 +189,13 @@ void IRC_Bot::OnChat(const Jupiter::ReadableString &channel, const Jupiter::Read
 					if (cmd != nullptr)
 					{
 						IRCCommand::active_server = this;
-						int cAccess = cmd->getAccessLevel(chan);
-						if (cAccess >= 0 && Jupiter::IRC::Client::getAccessLevel(channel, nick) >= cAccess)
-							cmd->trigger(this, channel, nick, parameters);
+						int command_access = cmd->getAccessLevel(chan);
+						if (command_access < 0)
+							this->sendNotice(nick, "Error: Command disabled."_jrs);
+						else if (Jupiter::IRC::Client::getAccessLevel(channel, nick) < command_access)
+							this->sendNotice(nick, "Access Denied."_jrs);
 						else
-							this->sendNotice(nick, STRING_LITERAL_AS_REFERENCE("Access Denied."));
+							cmd->trigger(this, channel, nick, parameters);
 						IRCCommand::active_server = IRCCommand::selected_server;
 					}
 				}

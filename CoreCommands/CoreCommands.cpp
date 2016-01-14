@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2014-2015 Jessica James.
+ * Copyright (C) 2014-2016 Jessica James.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -68,7 +68,7 @@ CONSOLE_COMMAND_INIT(HelpConsoleCommand)
 
 void HelpIRCCommand::create()
 {
-	this->addTrigger(STRING_LITERAL_AS_REFERENCE("help"));
+	this->addTrigger("help"_jrs);
 }
 
 void HelpIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &channel, const Jupiter::ReadableString &nick, const Jupiter::ReadableString &parameters)
@@ -90,18 +90,23 @@ void HelpIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &cha
 						source->sendNotice(nick, Jupiter::StringS::Format("Access level %d commands: %.*s", i, triggers.size(), triggers.ptr()));
 				}
 			}
-			source->sendNotice(nick, STRING_LITERAL_AS_REFERENCE("For command-specific help, use: help <command>"));
+			source->sendNotice(nick, "For command-specific help, use: help <command>"_jrs);
 		}
 		else
 		{
 			IRCCommand *cmd = source->getCommand(Jupiter::ReferenceString::getWord(parameters, 0, WHITESPACE));
 			if (cmd)
 			{
-				if (access >= cmd->getAccessLevel(chan))
+				int command_access = cmd->getAccessLevel(chan);
+
+				if (command_access < 0)
+					source->sendNotice(nick, "Error: Command disabled."_jrs);
+				else if (access < command_access)
+					source->sendNotice(nick, "Access Denied."_jrs);
+				else
 					source->sendNotice(nick, cmd->getHelp(Jupiter::ReferenceString::gotoWord(parameters, 1, WHITESPACE)));
-				else source->sendNotice(nick, STRING_LITERAL_AS_REFERENCE("Access Denied."));
 			}
-			else source->sendNotice(nick, STRING_LITERAL_AS_REFERENCE("Error: Command not found."));
+			else source->sendNotice(nick, "Error: Command not found."_jrs);
 		}
 	}
 }

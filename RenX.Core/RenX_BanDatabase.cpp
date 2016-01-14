@@ -44,7 +44,7 @@ void RenX::BanDatabase::process_data(Jupiter::DataBuffer &buffer, FILE *file, fp
 	entry->length = buffer.pop<time_t>();
 	entry->steamid = buffer.pop<uint64_t>();
 	entry->ip = buffer.pop<uint32_t>();
-	entry->prefix_length = buffer.pop<uint32_t>();
+	entry->prefix_length = buffer.pop<uint8_t>();
 	entry->rdns = buffer.pop<Jupiter::String_Strict, char>();
 	entry->name = buffer.pop<Jupiter::String_Strict, char>();
 	entry->banner = buffer.pop<Jupiter::String_Strict, char>();
@@ -53,6 +53,8 @@ void RenX::BanDatabase::process_data(Jupiter::DataBuffer &buffer, FILE *file, fp
 	// Read varData from buffer to entry
 	for (size_t varData_entries = buffer.pop<size_t>(); varData_entries != 0; --varData_entries)
 		entry->varData.set(buffer.pop<Jupiter::String_Strict, char>(), buffer.pop<Jupiter::String_Strict, char>());
+
+	RenX::BanDatabase::entries.add(entry);
 }
 
 void RenX::BanDatabase::process_header(FILE *file)
@@ -77,9 +79,13 @@ void RenX::BanDatabase::process_file_finish(FILE *file)
 		{
 			puts("Warning: Unsupported ban database file version. The database will be removed and rewritten.");
 			this->create_header(file);
+			fgetpos(file, std::addressof(RenX::BanDatabase::eof));
 			RenX::BanDatabase::read_version = RenX::BanDatabase::write_version;
 		}
+		return;
 	}
+
+	fgetpos(file, std::addressof(RenX::BanDatabase::eof));
 }
 
 void RenX::BanDatabase::upgrade_database()
@@ -97,7 +103,8 @@ void RenX::BanDatabase::upgrade_database()
 
 void RenX::BanDatabase::write(RenX::BanDatabase::Entry *entry)
 {
-	FILE *file = fopen(filename.c_str(), "ab");
+	FILE *file = fopen(filename.c_str(), "r+b");
+	fsetpos(file, std::addressof(RenX::BanDatabase::eof));
 	if (file != nullptr)
 	{
 		RenX::BanDatabase::write(entry, file);
@@ -136,6 +143,7 @@ void RenX::BanDatabase::write(RenX::BanDatabase::Entry *entry, FILE *file)
 
 	// push buffer to file
 	buffer.push_to(file);
+	fgetpos(file, std::addressof(RenX::BanDatabase::eof));
 }
 
 void RenX::BanDatabase::add(RenX::Server *server, const RenX::PlayerInfo *player, const Jupiter::ReadableString &banner, const Jupiter::ReadableString &reason, time_t length, uint16_t flags)
@@ -193,7 +201,8 @@ bool RenX::BanDatabase::deactivate(size_t index)
 		if (file != nullptr)
 		{
 			fsetpos(file, &entry->pos);
-			fputc(entry->flags, file);
+			fseek(file, sizeof(size_t), SEEK_CUR);
+			fwrite(std::addressof(entry->flags), sizeof(entry->flags), 1, file);
 			fclose(file);
 		}
 		return true;

@@ -139,6 +139,13 @@ namespace RenX
 		bool isSeamless() const;
 
 		/**
+		* @brief Checks if the server is marked as competitive.
+		*
+		* @return True if the server is a competitive server, false otherwise.
+		*/
+		bool isCompetitive() const;
+
+		/**
 		* @brief Checks if a channel type is a public channel type.
 		*
 		* @param type Type to check against.
@@ -333,6 +340,19 @@ namespace RenX
 		* @param player Data of the player to kick.
 		*/
 		void forceKickPlayer(const RenX::PlayerInfo *player, const Jupiter::ReadableString &reason);
+
+		/**
+		* @brief Checks if any players are in the ban list, and kicks any players listed.
+		*/
+		void banCheck();
+
+		/**
+		* @brief Checks if a player is in the ban list, and kicks them if they are.
+		* Note: Check a player's ban_flags to see what ban types are active on them.
+		*
+		* @param player Data of the player to check.
+		*/
+		void banCheck(RenX::PlayerInfo *player);
 
 		/**
 		* @brief Bans a player from the server.
@@ -911,6 +931,7 @@ namespace RenX
 		bool allowPrivateMessaging = true;
 		bool autoBalanceTeams = true;
 		bool spawnCrates = true;
+		bool competitive = false;
 		int attempts = 0;
 		int playerLimit = 0;
 		int vehicleLimit = 0;

@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2014-2015 Jessica James.
+ * Copyright (C) 2014-2016 Jessica James.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -94,6 +94,11 @@ RenX::Server *RenX::Core::getServer(unsigned int index)
 	return RenX::Core::servers.get(index);
 }
 
+Jupiter::ArrayList<RenX::Server> RenX::Core::getServers()
+{
+	return RenX::Core::servers;
+}
+
 Jupiter::ArrayList<RenX::Server> RenX::Core::getServers(int type)
 {
 	Jupiter::ArrayList<RenX::Server> r;
@@ -150,12 +155,15 @@ Jupiter::INIFile &RenX::Core::getCommandsFile()
 
 int RenX::Core::addCommand(RenX::GameCommand *command)
 {
-	for (size_t i = 0; i != RenX::Core::servers.size(); i++)
-	{
-		RenX::Server *server = RenX::Core::servers.get(i);
-		server->addCommand(command->copy());
-	}
+	for (size_t i = 0; i != RenX::Core::servers.size(); ++i)
+		RenX::Core::servers.get(i)->addCommand(command->copy());
 	return RenX::Core::servers.size();
+}
+
+void RenX::Core::banCheck()
+{
+	for (size_t index = 0; index != RenX::Core::servers.size(); ++index)
+		RenX::Core::servers.get(index)->banCheck();
 }
 
 int RenX::Core::think()

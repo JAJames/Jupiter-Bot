@@ -176,7 +176,7 @@ namespace RenX
 		* @param entry Entry to write to the database.
 		* @param file FILE stream to write to.
 		*/
-		static void write(Entry *entry, FILE *file);
+		void write(Entry *entry, FILE *file);
 
 		/**
 		* @brief Deactivates a ban entry.
@@ -214,6 +214,7 @@ namespace RenX
 		/** Database version */
 		const uint8_t write_version = 3U;
 		uint8_t read_version = write_version;
+		fpos_t eof;
 
 		Jupiter::CStringS filename;
 		Jupiter::ArrayList<RenX::BanDatabase::Entry> entries;

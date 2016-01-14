@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2014-2015 Jessica James.
+ * Copyright (C) 2014-2016 Jessica James.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -94,6 +94,8 @@ public:
 public: // RenX::Plugin
 	void RenX_OnPlayerCreate(RenX::Server *server, const RenX::PlayerInfo *player) override;
 	void RenX_OnPlayerDelete(RenX::Server *server, const RenX::PlayerInfo *player) override;
+
+	void RenX_OnIDChange(RenX::Server *server, const RenX::PlayerInfo *player, int oldID) override;
 
 	void RenX_OnAdminLogin(RenX::Server *server, const RenX::PlayerInfo *player) override;
 	void RenX_OnAdminGrant(RenX::Server *server, const RenX::PlayerInfo *player) override;

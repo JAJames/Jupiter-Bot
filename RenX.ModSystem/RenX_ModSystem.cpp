@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2014-2015 Jessica James.
+ * Copyright (C) 2014-2016 Jessica James.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -173,9 +173,11 @@ int RenX_ModSystemPlugin::auth(RenX::Server *server, const RenX::PlayerInfo *pla
 				player->gamePrefix = section->get(STRING_LITERAL_AS_REFERENCE("GamePrefix"), group->gamePrefix);
 				player->access = section->getInt(STRING_LITERAL_AS_REFERENCE("Access"), group->access);
 				if (player->access != 0)
+				{
 					server->sendMessage(player, Jupiter::StringS::Format("You are now authenticated with access level %d; group: %.*s.", player->access, group->name.size(), group->name.ptr()));
-				if (server->getRCONUsername().equals("DevBot"_jrs))
-					server->sendData(Jupiter::StringS::Format("d%d\n", player->id));
+					if (server->getRCONUsername().equals("DevBot"_jrs))
+						server->sendData(Jupiter::StringS::Format("d%d\n", player->id));
+				}
 				Jupiter::String playerName = RenX::getFormattedPlayerName(player);
 				server->sendLogChan(IRCCOLOR "03[Authentication] " IRCBOLD "%.*s" IRCBOLD IRCCOLOR " is now authenticated with access level %d; group: %.*s.", playerName.size(), playerName.ptr(), player->access, group->name.size(), group->name.ptr());
 				return player->access;
@@ -352,6 +354,12 @@ void RenX_ModSystemPlugin::RenX_OnPlayerDelete(RenX::Server *server, const RenX:
 			section->set(STRING_LITERAL_AS_REFERENCE("Name"), player->name);
 		}
 	}
+}
+
+void RenX_ModSystemPlugin::RenX_OnIDChange(RenX::Server *server, const RenX::PlayerInfo *player, int oldID)
+{
+	if (player->access != 0 && server->getRCONUsername().equals("DevBot"_jrs))
+		server->sendData(Jupiter::StringS::Format("d%d\n", player->id));
 }
 
 void RenX_ModSystemPlugin::RenX_OnAdminLogin(RenX::Server *server, const RenX::PlayerInfo *player)

@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2014-2015 Jessica James.
+ * Copyright (C) 2014-2016 Jessica James.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -99,6 +99,14 @@ namespace RenX
 		RenX::Server *getServer(unsigned int index);
 
 		/**
+		* @brief Fetches the list of servers
+		* Note: This copies the array of pointers, not the objects themselves.
+		*
+		* @return Copy of the list of servers.
+		*/
+		Jupiter::ArrayList<RenX::Server> getServers();
+
+		/**
 		* @brief Constructs a list of servers based on their type.
 		*
 		* @param type Type of servers to fetch.
@@ -164,6 +172,11 @@ namespace RenX
 		* @return Number of commands added.
 		*/
 		int addCommand(GameCommand *command);
+
+		/**
+		* @brief Performs a ban check on every player on each server, and kicks as appropriate.
+		*/
+		void banCheck();
 
 		/**
 		* @brief Initializes the Core.

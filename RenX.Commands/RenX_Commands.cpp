@@ -1164,8 +1164,7 @@ void BanSearchIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString
 				if (isMatch(type))
 				{
 					Jupiter::StringS &ip_str = Jupiter::Socket::ntop4(entry->ip);
-					const Jupiter::ReadableString &banner = entry->varData.get(pluginInstance.getName());
-					strftime(timeStr, sizeof(timeStr), "%b %d %Y; Time: %H:%M:%S", localtime(&(entry->timestamp)));
+					strftime(timeStr, sizeof(timeStr), "%b %d %Y, %H:%M:%S", localtime(&(entry->timestamp)));
 
 					if ((entry->flags & 0x7FFF) == 0)
 						types = " NULL;"_jrs;
@@ -1193,7 +1192,7 @@ void BanSearchIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString
 					
 					out.format("ID: %lu (%sactive); Date: %s; IP: %.*s/%u; Steam: %llu; Types:%.*s Name: %.*s; Banner: %.*s",
 						i, entry->is_active() ? "" : "in", timeStr, ip_str.size(), ip_str.ptr(), entry->prefix_length, entry->steamid, types.size(), types.ptr(),
-						entry->name.size(), entry->name.ptr(), banner.size(), banner.ptr());
+						entry->name.size(), entry->name.ptr(), entry->banner.size(), entry->banner.ptr());
 
 					if (entry->rdns.isNotEmpty())
 					{
@@ -1639,8 +1638,10 @@ void DisarmIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &c
 					player = server->getPlayerByPartName(parameters);
 					if (player != nullptr)
 					{
-						server->disarm(player);
-						source->sendMessage(channel, STRING_LITERAL_AS_REFERENCE("All deployables (c4, beacons, etc) belonging to ") + RenX::getFormattedPlayerName(player) + STRING_LITERAL_AS_REFERENCE(IRCCOLOR " have been disarmed."));
+						if (server->disarm(player))
+							source->sendMessage(channel, STRING_LITERAL_AS_REFERENCE("All deployables (c4, beacons, etc) belonging to ") + RenX::getFormattedPlayerName(player) + STRING_LITERAL_AS_REFERENCE(IRCCOLOR " have been disarmed."));
+						else
+							source->sendMessage(channel, "Error: Server does not support disarms."_jrs);
 					}
 					else
 						source->sendNotice(nick, STRING_LITERAL_AS_REFERENCE("Error: Player not found."));
@@ -1688,8 +1689,10 @@ void DisarmC4IRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString 
 					player = server->getPlayerByPartName(parameters);
 					if (player != nullptr)
 					{
-						server->disarmC4(player);
-						source->sendMessage(channel, STRING_LITERAL_AS_REFERENCE("All C4 belonging to ") + RenX::getFormattedPlayerName(player) + STRING_LITERAL_AS_REFERENCE(IRCCOLOR " have been disarmed."));
+						if (server->disarmC4(player))
+							source->sendMessage(channel, STRING_LITERAL_AS_REFERENCE("All C4 belonging to ") + RenX::getFormattedPlayerName(player) + STRING_LITERAL_AS_REFERENCE(IRCCOLOR " have been disarmed."));
+						else
+							source->sendMessage(channel, "Error: Server does not support disarms."_jrs);
 					}
 					else
 						source->sendNotice(nick, STRING_LITERAL_AS_REFERENCE("Error: Player not found."));
@@ -1739,8 +1742,10 @@ void DisarmBeaconIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableStr
 					player = server->getPlayerByPartName(parameters);
 					if (player != nullptr)
 					{
-						server->disarmBeacon(player);
-						source->sendMessage(channel, STRING_LITERAL_AS_REFERENCE("All beacons belonging to ") + RenX::getFormattedPlayerName(player) + STRING_LITERAL_AS_REFERENCE(IRCCOLOR " have been disarmed."));
+						if (server->disarmBeacon(player))
+							source->sendMessage(channel, STRING_LITERAL_AS_REFERENCE("All beacons belonging to ") + RenX::getFormattedPlayerName(player) + STRING_LITERAL_AS_REFERENCE(IRCCOLOR " have been disarmed."));
+						else
+							source->sendMessage(channel, "Error: Server does not support disarms."_jrs);
 					}
 					else
 						source->sendNotice(nick, STRING_LITERAL_AS_REFERENCE("Error: Player not found."));
@@ -1799,7 +1804,7 @@ void MineBanIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &
 				source->sendNotice(nick, STRING_LITERAL_AS_REFERENCE("Error: Channel not attached to any connected Renegade X servers."));
 		}
 	}
-	else source->sendNotice(nick, STRING_LITERAL_AS_REFERENCE("Error: Too Few Parameters. Syntax: disarmb <player>"));
+	else source->sendNotice(nick, STRING_LITERAL_AS_REFERENCE("Error: Too Few Parameters. Syntax: mineban <player>"));
 }
 
 const Jupiter::ReadableString &MineBanIRCCommand::getHelp(const Jupiter::ReadableString &)
@@ -1887,8 +1892,8 @@ void TempBanIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &
 				RenX::PlayerInfo *player;
 				RenX::Server *server;
 				unsigned int kicks = 0;
-				Jupiter::StringS name = Jupiter::StringS::getWord(parameters, 0, WHITESPACE);
-				Jupiter::StringS reason = parameters.wordCount(WHITESPACE) > 1 ? Jupiter::StringS::gotoWord(parameters, 1, WHITESPACE) : STRING_LITERAL_AS_REFERENCE("No reason");
+				Jupiter::ReferenceString name = Jupiter::ReferenceString::getWord(parameters, 0, WHITESPACE);
+				Jupiter::ReferenceString reason = parameters.wordCount(WHITESPACE) > 1 ? Jupiter::ReferenceString::gotoWord(parameters, 1, WHITESPACE) : "No reason"_jrs;
 				Jupiter::String banner(nick.size() + 4);
 				banner += nick;
 				banner += "@IRC";
@@ -1965,7 +1970,10 @@ void KickBanIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &
 				if (kicks == 0)
 					source->sendMessage(channel, "Player \""_jrs + name + "\" not found."_jrs);
 				else
+				{
 					source->sendMessage(channel, Jupiter::StringS::Format("%u players kicked.", kicks));
+					RenX::getCore()->banCheck();
+				}
 			}
 			else source->sendMessage(channel, STRING_LITERAL_AS_REFERENCE("Error: Channel not attached to any connected Renegade X servers."));
 		}
@@ -2125,6 +2133,7 @@ void AddBanIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &c
 					flags |= RenX::BanDatabase::Entry::FLAG_USE_RDNS;
 
 				RenX::banDatabase->add(name, ip, prefix_length, steamid, rdns, banner, reason, duration);
+				RenX::getCore()->banCheck();
 			}
 		}
 	}
@@ -2397,21 +2406,18 @@ void RefundIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &c
 				RenX::Server *server = RenX::getCore()->getServer(i);
 				if (server->isLogChanType(type) && server->players.size() != 0)
 				{
-					for (Jupiter::DLList<RenX::PlayerInfo>::Node *node = server->players.getNode(0); node != nullptr; node = node->next)
+					player = server->getPlayerByPartName(playerName);
+					if (player != nullptr)
 					{
-						player = node->data;
-						if (player->name.findi(playerName) != Jupiter::INVALID_INDEX)
+						if (server->giveCredits(player, credits))
 						{
-							if (server->giveCredits(player, credits))
-							{
-								msg.format("You have been refunded %.0f credits by %.*s.", credits, nick.size(), nick.ptr());
-								server->sendMessage(player, msg);
-								msg.format("%.*s has been refunded %.0f credits.", player->name.size(), player->name.ptr(), credits);
-							}
-							else
-								msg.set("Error: Server does not support refunds.");
-							source->sendMessage(channel, msg);
+							msg.format("You have been refunded %.0f credits by %.*s.", credits, nick.size(), nick.ptr());
+							server->sendMessage(player, msg);
+							msg.format("%.*s has been refunded %.0f credits.", player->name.size(), player->name.ptr(), credits);
 						}
+						else
+							msg.set("Error: Server does not support refunds.");
+						source->sendMessage(channel, msg);
 					}
 				}
 			}
@@ -2784,11 +2790,10 @@ void DisarmGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *player, 
 			source->sendMessage(player, STRING_LITERAL_AS_REFERENCE("Error: Player not found."));
 		else if (target->access >= player->access)
 			source->sendMessage(player, STRING_LITERAL_AS_REFERENCE("Error: You can not disarm higher level moderators."));
+		else if (source->disarm(target) == false)
+			source->sendMessage(player, "Error: Server does not support disarms."_jrs);
 		else
-		{
-			source->disarm(target);
 			source->sendMessage(player, STRING_LITERAL_AS_REFERENCE("Player has been disarmed."));
-		}
 	}
 	else
 		source->sendMessage(player, STRING_LITERAL_AS_REFERENCE("Error: Too few parameters. Syntax: disarm <player>"));
@@ -2819,11 +2824,10 @@ void DisarmC4GameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *player
 			source->sendMessage(player, STRING_LITERAL_AS_REFERENCE("Error: Player not found."));
 		else if (target->access >= player->access)
 			source->sendMessage(player, STRING_LITERAL_AS_REFERENCE("Error: You can not disarm higher level moderators."));
+		else if (source->disarmC4(target) == false)
+			source->sendMessage(player, "Error: Server does not support disarms."_jrs);
 		else
-		{
-			source->disarmC4(target);
 			source->sendMessage(player, STRING_LITERAL_AS_REFERENCE("Player has been disarmed."));
-		}
 	}
 	else
 		source->sendMessage(player, STRING_LITERAL_AS_REFERENCE("Error: Too few parameters. Syntax: disarmc4 <player>"));
@@ -2856,11 +2860,10 @@ void DisarmBeaconGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *pl
 			source->sendMessage(player, STRING_LITERAL_AS_REFERENCE("Error: Player not found."));
 		else if (target->access >= player->access)
 			source->sendMessage(player, STRING_LITERAL_AS_REFERENCE("Error: You can not disarm higher level moderators."));
+		else if (source->disarmBeacon(target) == false)
+			source->sendMessage(player, "Error: Server does not support disarms."_jrs);
 		else
-		{
-			source->disarmBeacon(target);
 			source->sendMessage(player, STRING_LITERAL_AS_REFERENCE("Player has been disarmed."));
-		}
 	}
 	else
 		source->sendMessage(player, STRING_LITERAL_AS_REFERENCE("Error: Too few parameters. Syntax: disarmb <player>"));
@@ -3019,6 +3022,7 @@ void KickBanGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *player,
 		{
 			source->banPlayer(target, player->name, reason);
 			source->sendMessage(player, STRING_LITERAL_AS_REFERENCE("Player has been banned and kicked from the game."));
+			RenX::getCore()->banCheck();
 		}
 	}
 	else

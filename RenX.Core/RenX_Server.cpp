@@ -169,6 +169,11 @@ bool RenX::Server::isSeamless() const
 	return RenX::Server::seamless;
 }
 
+bool RenX::Server::isCompetitive() const
+{
+	return RenX::Server::competitive;
+}
+
 bool RenX::Server::isPublicLogChanType(int type) const
 {
 	return RenX::Server::logChanType == type;
@@ -295,7 +300,8 @@ RenX::PlayerInfo *RenX::Server::getPlayerByName(const Jupiter::ReadableString &n
 		idToken.shiftRight(6);
 	else if (name.matchi("pid?*"))
 		idToken.shiftRight(3);
-	else return nullptr;
+	else
+		return nullptr;
 	int id = idToken.asInt(10);
 
 	for (Jupiter::DLList<RenX::PlayerInfo>::Node *node = RenX::Server::players.getNode(0); node != nullptr; node = node->next)
@@ -379,6 +385,164 @@ void RenX::Server::forceKickPlayer(const RenX::PlayerInfo *player, const Jupiter
 	RenX::Server::forceKickPlayer(player->id, reason);
 }
 
+void RenX::Server::banCheck()
+{
+	for (Jupiter::DLList<RenX::PlayerInfo>::Node *node = RenX::Server::players.getNode(0); node != nullptr; node = node->next)
+		this->banCheck(node->data);
+}
+
+void RenX::Server::banCheck(RenX::PlayerInfo *player)
+{
+	const Jupiter::ArrayList<RenX::BanDatabase::Entry> &entries = RenX::banDatabase->getEntries();
+	RenX::BanDatabase::Entry *entry = nullptr;
+	uint32_t netmask;
+
+	RenX::BanDatabase::Entry *last_to_expire[7];
+	for (size_t index = 0; index != sizeof(last_to_expire); ++index)
+		last_to_expire[index] = nullptr;
+
+	auto handle_type = [&entry, &last_to_expire](size_t index)
+	{
+		if (last_to_expire[index] == nullptr)
+			last_to_expire[index] = entry;
+		else if (last_to_expire[index]->length == 0)
+		{
+			// favor older bans if they're also permanent
+			if (entry->length == 0 && entry->timestamp < last_to_expire[index]->timestamp)
+				last_to_expire[index] = entry;
+		}
+		else if (entry->length == 0 || entry->timestamp + entry->length > last_to_expire[index]->timestamp + last_to_expire[index]->length)
+			last_to_expire[index] = entry;
+	};
+
+	for (size_t i = 0; i != entries.size(); i++)
+	{
+		entry = entries.get(i);
+		if (entry->is_active())
+		{
+			if (entry->length != 0 && entry->timestamp + entry->length < time(0))
+				banDatabase->deactivate(i);
+			else
+			{
+				if (entry->prefix_length >= 32)
+					netmask = 0xFFFFFFFF;
+				else
+					netmask = Jupiter_prefix_length_to_netmask(entry->prefix_length);
+
+				printf("%d vs %d" ENDL, (entry->ip & netmask), (player->ip32 & netmask));
+				if ((this->localSteamBan && entry->steamid != 0 && entry->steamid == player->steamid)
+					|| (this->localIPBan && entry->ip != 0 && (entry->ip & netmask) == (player->ip32 & netmask))
+					|| (this->localRDNSBan && entry->rdns.isNotEmpty() && entry->is_rdns_ban() && player->rdns.match(entry->rdns))
+					|| (this->localNameBan && entry->name.isNotEmpty() && entry->name.equalsi(player->name)))
+				{
+					player->ban_flags |= entry->flags;
+					if (entry->is_type_game())
+						handle_type(0);
+					if (entry->is_type_chat())
+						handle_type(1);
+					if (entry->is_type_bot())
+						handle_type(2);
+					if (entry->is_type_vote())
+						handle_type(3);
+					if (entry->is_type_mine())
+						handle_type(4);
+					if (entry->is_type_ladder())
+						handle_type(5);
+					if (entry->is_type_alert())
+						handle_type(6);
+				}
+			}
+		}
+	}
+
+	char timeStr[256];
+	if (last_to_expire[0] != nullptr) // Game ban
+	{
+		strftime(timeStr, sizeof(timeStr), "%b %d %Y at %H:%M:%S", localtime(std::addressof<const time_t>(last_to_expire[0]->timestamp + last_to_expire[0]->length)));
+		if (last_to_expire[0]->length == 0)
+			this->forceKickPlayer(player, Jupiter::StringS::Format("You were permanently banned from the server on %s for: %.*s", timeStr, last_to_expire[0]->reason.size(), last_to_expire[0]->reason.ptr()));
+		else
+			this->forceKickPlayer(player, Jupiter::StringS::Format("You are banned from the server until %s for: %.*s", timeStr, last_to_expire[0]->reason.size(), last_to_expire[0]->reason.ptr()));
+
+		player->ban_flags |= RenX::BanDatabase::Entry::FLAG_TYPE_BOT; // implies FLAG_TYPE_BOT
+	}
+	else
+	{
+		if (last_to_expire[1] != nullptr) // Chat ban
+		{
+			strftime(timeStr, sizeof(timeStr), "%b %d %Y at %H:%M:%S", localtime(std::addressof<const time_t>(last_to_expire[1]->timestamp + last_to_expire[1]->length)));
+			this->mute(player);
+			if (last_to_expire[1]->length == 0)
+				this->sendMessage(player, Jupiter::StringS::Format("You were permanently muted on this server on %s for: %.*s", timeStr, last_to_expire[1]->reason.size(), last_to_expire[1]->reason.ptr()));
+			else
+				this->sendMessage(player, Jupiter::StringS::Format("You are muted on this server until %s for: %.*s", timeStr, last_to_expire[1]->reason.size(), last_to_expire[1]->reason.ptr()));
+
+			player->ban_flags |= RenX::BanDatabase::Entry::FLAG_TYPE_BOT; // implies FLAG_TYPE_BOT
+		}
+		else if (last_to_expire[2] != nullptr) // Bot ban
+		{
+			strftime(timeStr, sizeof(timeStr), "%b %d %Y at %H:%M:%S", localtime(std::addressof<const time_t>(last_to_expire[2]->timestamp + last_to_expire[2]->length)));
+			if (last_to_expire[2]->length == 0)
+				this->sendMessage(player, Jupiter::StringS::Format("You were permanently bot-muted on this server on %s for: %.*s", timeStr, last_to_expire[2]->reason.size(), last_to_expire[2]->reason.ptr()));
+			else
+				this->sendMessage(player, Jupiter::StringS::Format("You are bot-muted on this server until %s for: %.*s", timeStr, last_to_expire[2]->reason.size(), last_to_expire[2]->reason.ptr()));
+		}
+		if (last_to_expire[3] != nullptr) // Vote ban
+		{
+			strftime(timeStr, sizeof(timeStr), "%b %d %Y at %H:%M:%S", localtime(std::addressof<const time_t>(last_to_expire[3]->timestamp + last_to_expire[3]->length)));
+			if (last_to_expire[3]->length == 0)
+				this->sendMessage(player, Jupiter::StringS::Format("You were permanently vote-muted on this server on %s for: %.*s", timeStr, last_to_expire[3]->reason.size(), last_to_expire[3]->reason.ptr()));
+			else
+				this->sendMessage(player, Jupiter::StringS::Format("You are vote-muted on this server until %s for: %.*s", timeStr, last_to_expire[3]->reason.size(), last_to_expire[3]->reason.ptr()));
+		}
+		if (last_to_expire[4] != nullptr) // Mine ban
+		{
+			this->mineBan(player);
+			strftime(timeStr, sizeof(timeStr), "%b %d %Y at %H:%M:%S", localtime(std::addressof<const time_t>(last_to_expire[4]->timestamp + last_to_expire[4]->length)));
+			if (last_to_expire[4]->length == 0)
+				this->sendMessage(player, Jupiter::StringS::Format("You were permanently mine-banned on this server on %s for: %.*s", timeStr, last_to_expire[4]->reason.size(), last_to_expire[4]->reason.ptr()));
+			else
+				this->sendMessage(player, Jupiter::StringS::Format("You are mine-banned on this server until %s for: %.*s", timeStr, last_to_expire[4]->reason.size(), last_to_expire[4]->reason.ptr()));
+		}
+		if (last_to_expire[5] != nullptr) // Ladder ban
+		{
+			strftime(timeStr, sizeof(timeStr), "%b %d %Y at %H:%M:%S", localtime(std::addressof<const time_t>(last_to_expire[5]->timestamp + last_to_expire[5]->length)));
+			if (last_to_expire[5]->length == 0)
+				this->sendMessage(player, Jupiter::StringS::Format("You were permanently ladder-banned on this server on %s for: %.*s", timeStr, last_to_expire[5]->reason.size(), last_to_expire[5]->reason.ptr()));
+			else
+				this->sendMessage(player, Jupiter::StringS::Format("You are ladder-banned on this server until %s for: %.*s", timeStr, last_to_expire[5]->reason.size(), last_to_expire[5]->reason.ptr()));
+		}
+		if (last_to_expire[6] != nullptr) // Alert
+		{
+			unsigned int serverCount = serverManager->size();
+			IRC_Bot *server;
+			Jupiter::IRC::Client::Channel *channel;
+			unsigned int channelCount;
+			Jupiter::String &fmtName = RenX::getFormattedPlayerName(player);
+			Jupiter::StringL msg = Jupiter::StringL::Format(IRCCOLOR "04[Alert] " IRCCOLOR IRCBOLD "%.*s" IRCBOLD IRCCOLOR " is marked for monitoring by %.*s for: \"%.*s\". Please keep an eye on them in ", fmtName.size(), fmtName.ptr(), last_to_expire[6]->banner.size(), last_to_expire[6]->banner.ptr(), last_to_expire[6]->reason.size(), last_to_expire[6]->reason.ptr());
+			Jupiter::StringS msg2 = Jupiter::StringS::Format(IRCCOLOR "04[Alert] " IRCCOLOR IRCBOLD "%.*s" IRCBOLD IRCCOLOR " is marked for monitoring by %.*s for: \"%.*s\"." IRCCOLOR, fmtName.size(), fmtName.ptr(), last_to_expire[6]->banner.size(), last_to_expire[6]->banner.ptr(), last_to_expire[6]->reason.size(), last_to_expire[6]->reason.ptr());
+			for (unsigned int a = 0; a < serverCount; a++)
+			{
+				server = serverManager->getServer(a);
+				channelCount = server->getChannelCount();
+				for (unsigned int b = 0; b < channelCount; b++)
+				{
+					channel = server->getChannel(b);
+					if (this->isAdminLogChanType(channel->getType()))
+					{
+						server->sendMessage(channel->getName(), msg2);
+						msg += channel->getName();
+						for (unsigned int c = 0; c < channel->getUserCount(); c++)
+							if (channel->getUserPrefix(c) != 0 && channel->getUser(c)->getNickname().equals(server->getNickname()) == false)
+								server->sendMessage(channel->getUser(c)->getUser()->getNickname(), msg);
+						msg -= channel->getName().size();
+					}
+				}
+			}
+		}
+	}
+};
+
 void RenX::Server::banPlayer(int id, const Jupiter::ReadableString &banner, const Jupiter::ReadableString &reason)
 {
 	if (RenX::Server::rconBan)
@@ -406,9 +570,9 @@ void RenX::Server::banPlayer(const RenX::PlayerInfo *player, const Jupiter::Read
 			RenX::Server::forceKickPlayer(player, Jupiter::StringS::Format("You are permanently banned from the server for: %.*s", reason.size(), reason.ptr()));
 	}
 	else if (banner.isNotEmpty())
-		RenX::Server::forceKickPlayer(player, Jupiter::StringS::Format("You are banned from the server by %.*s for the next %d days, %d:%d:%d for: %.*s", banner.size(), banner.ptr(), length / 86400, length % 3600, (length % 3600) / 60, length % 60, reason.size(), reason.ptr()));
+		RenX::Server::forceKickPlayer(player, Jupiter::StringS::Format("You are banned from the server by %.*s for the next %lld days, %.2d:%.2d:%.2d for: %.*s", banner.size(), banner.ptr(), static_cast<long long>(length / 86400), static_cast<int>(length % 3600), static_cast<int>((length % 3600) / 60), static_cast<int>(length % 60), reason.size(), reason.ptr()));
 	else
-		RenX::Server::forceKickPlayer(player, Jupiter::StringS::Format("You are banned from the server for the next %d days, %d:%d:%d for: %.*s", length/86400, length%3600, (length%3600)/60, length%60, reason.size(), reason.ptr()));
+		RenX::Server::forceKickPlayer(player, Jupiter::StringS::Format("You are banned from the server for the next %lld days, %.2d:%.2d:%.2d for: %.*s", static_cast<long long>(length/86400), static_cast<int>(length%3600), static_cast<int>((length%3600)/60), static_cast<int>(length%60), reason.size(), reason.ptr()));
 }
 
 bool RenX::Server::removePlayer(int id)
@@ -521,7 +685,7 @@ bool RenX::Server::unmute(const RenX::PlayerInfo *player)
 
 bool RenX::Server::giveCredits(int id, double credits)
 {
-	return RenX::Server::send(Jupiter::StringS::Format("givecredits pid%d %f", id, credits)) > 0;
+	return RenX::Server::competitive == false && RenX::Server::send(Jupiter::StringS::Format("givecredits pid%d %f", id, credits)) > 0;
 }
 
 bool RenX::Server::giveCredits(RenX::PlayerInfo *player, double credits)
@@ -531,7 +695,7 @@ bool RenX::Server::giveCredits(RenX::PlayerInfo *player, double credits)
 
 bool RenX::Server::kill(int id)
 {
-	return RenX::Server::send(Jupiter::StringS::Format("kill pid%d", id)) > 0;
+	return RenX::Server::competitive == false && RenX::Server::send(Jupiter::StringS::Format("kill pid%d", id)) > 0;
 }
 
 bool RenX::Server::kill(RenX::PlayerInfo *player)
@@ -541,7 +705,7 @@ bool RenX::Server::kill(RenX::PlayerInfo *player)
 
 bool RenX::Server::disarm(int id)
 {
-	return RenX::Server::send(Jupiter::StringS::Format("disarm pid%d", id)) > 0;
+	return RenX::Server::competitive == false && RenX::Server::send(Jupiter::StringS::Format("disarm pid%d", id)) > 0;
 }
 
 bool RenX::Server::disarm(RenX::PlayerInfo *player)
@@ -551,7 +715,7 @@ bool RenX::Server::disarm(RenX::PlayerInfo *player)
 
 bool RenX::Server::disarmC4(int id)
 {
-	return RenX::Server::send(Jupiter::StringS::Format("disarmc4 pid%d", id)) > 0;
+	return RenX::Server::competitive == false && RenX::Server::send(Jupiter::StringS::Format("disarmc4 pid%d", id)) > 0;
 }
 
 bool RenX::Server::disarmC4(RenX::PlayerInfo *player)
@@ -561,7 +725,7 @@ bool RenX::Server::disarmC4(RenX::PlayerInfo *player)
 
 bool RenX::Server::disarmBeacon(int id)
 {
-	return RenX::Server::send(Jupiter::StringS::Format("disarmb pid%d", id)) > 0;
+	return RenX::Server::competitive == false && RenX::Server::send(Jupiter::StringS::Format("disarmb pid%d", id)) > 0;
 }
 
 bool RenX::Server::disarmBeacon(RenX::PlayerInfo *player)
@@ -1033,156 +1197,6 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 			isBot = false;
 		id = idToken.asInt(10);
 	};
-	auto banCheck = [this](RenX::PlayerInfo *player)
-	{
-		const Jupiter::ArrayList<RenX::BanDatabase::Entry> &entries = RenX::banDatabase->getEntries();
-		RenX::BanDatabase::Entry *entry = nullptr;
-		uint32_t netmask;
-		
-		RenX::BanDatabase::Entry *last_to_expire[7];
-		for (size_t index = 0; index != sizeof(last_to_expire); ++index)
-			last_to_expire[index] = nullptr;
-
-		auto handle_type = [entry](RenX::BanDatabase::Entry *&last_to_expire)
-		{
-			if (last_to_expire == nullptr)
-				last_to_expire = entry;
-			else if (last_to_expire->length == 0)
-			{
-				// favor older bans if they're also permanent
-				if (entry->length == 0 && entry->timestamp < last_to_expire->timestamp)
-					last_to_expire = entry;
-			}
-			else if (entry->length == 0 || entry->timestamp + entry->length > last_to_expire->timestamp + last_to_expire->length)
-				last_to_expire = entry;
-		};
-
-		for (size_t i = 0; i != entries.size(); i++)
-		{
-			entry = entries.get(i);
-			if (entry->is_active())
-			{
-				if (entry->length != 0 && entry->timestamp + entry->length < time(0))
-					banDatabase->deactivate(i);
-				else
-				{
-					if (entry->prefix_length >= 32)
-						netmask = 0xFFFFFFFF;
-					else
-						netmask = Jupiter_prefix_length_to_netmask(entry->prefix_length);
-
-					if ((this->localSteamBan && entry->steamid != 0 && entry->steamid == player->steamid)
-						|| (this->localIPBan && entry->ip != 0 && (entry->ip & netmask) == (player->ip32 & netmask))
-						|| (this->localRDNSBan && entry->rdns.isNotEmpty() && entry->is_rdns_ban() && player->rdns.match(entry->rdns))
-						|| (this->localNameBan && entry->name.isNotEmpty() && entry->name.equalsi(player->name)))
-					{
-						player->ban_flags |= entry->flags;
-						if (entry->is_type_game())
-							handle_type(last_to_expire[0]);
-						if (entry->is_type_chat())
-							handle_type(last_to_expire[1]);
-						if (entry->is_type_bot())
-							handle_type(last_to_expire[2]);
-						if (entry->is_type_vote())
-							handle_type(last_to_expire[3]);
-						if (entry->is_type_mine())
-							handle_type(last_to_expire[4]);
-						if (entry->is_type_ladder())
-							handle_type(last_to_expire[5]);
-						if (entry->is_type_alert())
-							handle_type(last_to_expire[6]);
-					}
-				}
-			}
-		}
-
-		char timeStr[256];
-		if (last_to_expire[0] != nullptr) // Game ban
-		{
-			strftime(timeStr, sizeof(timeStr), "%b %d %Y at %H:%M:%S", localtime(std::addressof<const time_t>(last_to_expire[0]->timestamp + last_to_expire[0]->length)));
-			if (last_to_expire[0]->length == 0)
-				this->forceKickPlayer(player, Jupiter::StringS::Format("You were permanently banned from the server on %s for: %.*s", timeStr, last_to_expire[0]->reason.size(), last_to_expire[0]->reason.ptr()));
-			else
-				this->forceKickPlayer(player, Jupiter::StringS::Format("You are banned from the server until %s for: %.*s", timeStr, last_to_expire[0]->reason.size(), last_to_expire[0]->reason.ptr()));
-
-			player->ban_flags |= RenX::BanDatabase::Entry::FLAG_TYPE_BOT; // implies FLAG_TYPE_BOT
-		}
-		else
-		{
-			if (last_to_expire[1] != nullptr) // Chat ban
-			{
-				strftime(timeStr, sizeof(timeStr), "%b %d %Y at %H:%M:%S", localtime(std::addressof<const time_t>(last_to_expire[1]->timestamp + last_to_expire[1]->length)));
-				this->mute(player);
-				if (last_to_expire[1]->length == 0)
-					this->sendMessage(player, Jupiter::StringS::Format("You were permanently muted on this server on %s for: %.*s", timeStr, last_to_expire[1]->reason.size(), last_to_expire[1]->reason.ptr()));
-				else
-					this->sendMessage(player, Jupiter::StringS::Format("You are muted on this server until %s for: %.*s", timeStr, last_to_expire[1]->reason.size(), last_to_expire[1]->reason.ptr()));
-
-				player->ban_flags |= RenX::BanDatabase::Entry::FLAG_TYPE_BOT; // implies FLAG_TYPE_BOT
-			}
-			else if (last_to_expire[2] != nullptr) // Bot ban
-			{
-				strftime(timeStr, sizeof(timeStr), "%b %d %Y at %H:%M:%S", localtime(std::addressof<const time_t>(last_to_expire[2]->timestamp + last_to_expire[2]->length)));
-				if (last_to_expire[2]->length == 0)
-					this->sendMessage(player, Jupiter::StringS::Format("You were permanently bot-muted on this server on %s for: %.*s", timeStr, last_to_expire[2]->reason.size(), last_to_expire[2]->reason.ptr()));
-				else
-					this->sendMessage(player, Jupiter::StringS::Format("You are bot-muted on this server until %s for: %.*s", timeStr, last_to_expire[2]->reason.size(), last_to_expire[2]->reason.ptr()));
-			}
-			if (last_to_expire[3] != nullptr) // Vote ban
-			{
-				strftime(timeStr, sizeof(timeStr), "%b %d %Y at %H:%M:%S", localtime(std::addressof<const time_t>(last_to_expire[3]->timestamp + last_to_expire[3]->length)));
-				if (last_to_expire[3]->length == 0)
-					this->sendMessage(player, Jupiter::StringS::Format("You were permanently vote-muted on this server on %s for: %.*s", timeStr, last_to_expire[3]->reason.size(), last_to_expire[3]->reason.ptr()));
-				else
-					this->sendMessage(player, Jupiter::StringS::Format("You are vote-muted on this server until %s for: %.*s", timeStr, last_to_expire[3]->reason.size(), last_to_expire[3]->reason.ptr()));
-			}
-			if (last_to_expire[4] != nullptr) // Mine ban
-			{
-				this->mineBan(player);
-				strftime(timeStr, sizeof(timeStr), "%b %d %Y at %H:%M:%S", localtime(std::addressof<const time_t>(last_to_expire[4]->timestamp + last_to_expire[4]->length)));
-				if (last_to_expire[4]->length == 0)
-					this->sendMessage(player, Jupiter::StringS::Format("You were permanently mine-banned on this server on %s for: %.*s", timeStr, last_to_expire[4]->reason.size(), last_to_expire[4]->reason.ptr()));
-				else
-					this->sendMessage(player, Jupiter::StringS::Format("You are mine-banned on this server until %s for: %.*s", timeStr, last_to_expire[4]->reason.size(), last_to_expire[4]->reason.ptr()));
-			}
-			if (last_to_expire[5] != nullptr) // Ladder ban
-			{
-				strftime(timeStr, sizeof(timeStr), "%b %d %Y at %H:%M:%S", localtime(std::addressof<const time_t>(last_to_expire[5]->timestamp + last_to_expire[5]->length)));
-				if (last_to_expire[5]->length == 0)
-					this->sendMessage(player, Jupiter::StringS::Format("You were permanently ladder-banned on this server on %s for: %.*s", timeStr, last_to_expire[5]->reason.size(), last_to_expire[5]->reason.ptr()));
-				else
-					this->sendMessage(player, Jupiter::StringS::Format("You are ladder-banned on this server until %s for: %.*s", timeStr, last_to_expire[5]->reason.size(), last_to_expire[5]->reason.ptr()));
-			}
-			if (last_to_expire[6] != nullptr) // Alert
-			{
-				unsigned int serverCount = serverManager->size();
-				IRC_Bot *server;
-				Jupiter::IRC::Client::Channel *channel;
-				unsigned int channelCount;
-				Jupiter::String &fmtName = RenX::getFormattedPlayerName(player);
-				Jupiter::StringL msg = Jupiter::StringL::Format(IRCCOLOR "04[Alert] " IRCCOLOR IRCBOLD "%.*s" IRCBOLD IRCCOLOR " is marked for monitoring by %.*s for: \"%.*s\". Please keep an eye on them in ", fmtName.size(), fmtName.ptr(), last_to_expire[6]->banner.size(), last_to_expire[6]->banner.ptr(), last_to_expire[6]->reason.size(), last_to_expire[6]->reason.ptr());
-				Jupiter::StringS msg2 = Jupiter::StringS::Format(IRCCOLOR "04[Alert] " IRCCOLOR IRCBOLD "%.*s" IRCBOLD IRCCOLOR " is marked for monitoring by %.*s for: \"%.*s\"." IRCCOLOR, fmtName.size(), fmtName.ptr(), last_to_expire[6]->banner.size(), last_to_expire[6]->banner.ptr(), last_to_expire[6]->reason.size(), last_to_expire[6]->reason.ptr());
-				for (unsigned int a = 0; a < serverCount; a++)
-				{
-					server = serverManager->getServer(a);
-					channelCount = server->getChannelCount();
-					for (unsigned int b = 0; b < channelCount; b++)
-					{
-						channel = server->getChannel(b);
-						if (this->isAdminLogChanType(channel->getType()))
-						{
-							server->sendMessage(channel->getName(), msg2);
-							msg += channel->getName();
-							for (unsigned int c = 0; c < channel->getUserCount(); c++)
-								if (channel->getUserPrefix(c) != 0 && channel->getUser(c)->getNickname().equals(server->getNickname()) == false)
-									server->sendMessage(channel->getUser(c)->getUser()->getNickname(), msg);
-							msg -= channel->getName().size();
-						}
-					}
-				}
-			}
-		}
-	};
 	auto getPlayerOrAdd = [&](const Jupiter::ReadableString &name, int id, RenX::TeamType team, bool isBot, uint64_t steamid, const Jupiter::ReadableString &ip)
 	{
 		RenX::PlayerInfo *r = this->getPlayer(id);
@@ -1204,7 +1218,7 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 				this->players.add(r);
 
 			r->uuid = calc_uuid(r);
-			banCheck(r);
+			this->banCheck(r);
 
 			for (size_t i = 0; i < xPlugins.size(); i++)
 				xPlugins.get(i)->RenX_OnPlayerCreate(this, r);
@@ -1233,7 +1247,7 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 			if (recalcUUID)
 			{
 				this->setUUIDIfDifferent(r, calc_uuid(r));
-				banCheck(r);
+				this->banCheck(r);
 			}
 		}
 		return r;
@@ -1598,18 +1612,23 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 			}
 			else if (this->lastCommand.equalsi("gameinfo"_jrs))
 			{
-				// "PlayerLimit" | PlayerLimit | "VehicleLimit" | VehicleLimit | "MineLimit" | MineLimit | "TimeLimit" | TimeLimit | "bPassworded" | bPassworded | "bSteamRequired" | bSteamRequired | "bPrivateMessageTeamOnly" | bPrivateMessageTeamOnly | "bAllowPrivateMessaging" | bAllowPrivateMessaging | "bAutoBalanceTeams" | bAutoBalanceTeams | "bSpawnCrates" | bSpawnCrates | "CrateRespawnAfterPickup" | CrateRespawnAfterPickup
-				this->playerLimit = tokens.getToken(1).asInt();
-				this->vehicleLimit = tokens.getToken(3).asInt();
-				this->mineLimit = tokens.getToken(5).asInt();
-				this->timeLimit = tokens.getToken(7).asInt();
-				this->passworded = tokens.getToken(9).asBool();
-				this->steamRequired = tokens.getToken(11).asBool();
-				this->privateMessageTeamOnly = tokens.getToken(13).asBool();
-				this->allowPrivateMessaging = tokens.getToken(15).asBool();
-				this->autoBalanceTeams = tokens.getToken(17).asBool();
-				this->spawnCrates = tokens.getToken(19).asBool();
-				this->crateRespawnAfterPickup = tokens.getToken(21).asDouble();
+				if (this->lastCommandParams.isEmpty())
+				{
+					// "PlayerLimit" | PlayerLimit | "VehicleLimit" | VehicleLimit | "MineLimit" | MineLimit | "TimeLimit" | TimeLimit | "bPassworded" | bPassworded | "bSteamRequired" | bSteamRequired | "bPrivateMessageTeamOnly" | bPrivateMessageTeamOnly | "bAllowPrivateMessaging" | bAllowPrivateMessaging | "bAutoBalanceTeams" | bAutoBalanceTeams | "bSpawnCrates" | bSpawnCrates | "CrateRespawnAfterPickup" | CrateRespawnAfterPickup | bIsCompetitive | "bIsCompetitive"
+					this->playerLimit = tokens.getToken(1).asInt();
+					this->vehicleLimit = tokens.getToken(3).asInt();
+					this->mineLimit = tokens.getToken(5).asInt();
+					this->timeLimit = tokens.getToken(7).asInt();
+					this->passworded = tokens.getToken(9).asBool();
+					this->steamRequired = tokens.getToken(11).asBool();
+					this->privateMessageTeamOnly = tokens.getToken(13).asBool();
+					this->allowPrivateMessaging = tokens.getToken(15).asBool();
+					this->autoBalanceTeams = tokens.getToken(17).asBool();
+					this->spawnCrates = tokens.getToken(19).asBool();
+					this->crateRespawnAfterPickup = tokens.getToken(21).asDouble();
+				}
+				else if (this->lastCommandParams.equalsi("bIsCompetitive"))
+					this->competitive = tokens.getToken(0).asBool();
 			}
 			else if (this->lastCommand.equalsi("mutatorlist"_jrs))
 			{
@@ -2233,7 +2252,7 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 						if (player != nullptr)
 						{
 							player->id = tokens.getToken(3).asInt();
-							banCheck(player);
+							this->banCheck(player);
 							for (size_t i = 0; i < xPlugins.size(); i++)
 								xPlugins.get(i)->RenX_OnIDChange(this, player, oldID);
 						}
@@ -2638,6 +2657,7 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 					RenX::Server::sock.send("s\n"_jrs);
 					RenX::Server::send("serverinfo"_jrs);
 					RenX::Server::send("gameinfo"_jrs);
+					RenX::Server::send("gameinfo bIsCompetitive"_jrs);
 					RenX::Server::send("mutatorlist"_jrs);
 					RenX::Server::send("rotation"_jrs);
 					RenX::Server::fetchClientList();
