@@ -112,6 +112,7 @@ Jupiter::ReferenceString translated_Weapon_Airstrike_GDI = STRING_LITERAL_AS_REF
 Jupiter::ReferenceString translated_Weapon_Airstrike_Nod = STRING_LITERAL_AS_REFERENCE("Nod Airstrike");
 Jupiter::ReferenceString translated_Weapon_TiberiumFlechetteRifle = STRING_LITERAL_AS_REFERENCE("Tiberium Flechette Gun");
 Jupiter::ReferenceString translated_Weapon_TiberiumAutoRifle = STRING_LITERAL_AS_REFERENCE("Tiberium Automatic Rifle");
+Jupiter::ReferenceString translated_Weapon_TiberiumAutoRifle_Blue = STRING_LITERAL_AS_REFERENCE("Blue Tiberium Automatic Rifle Burst");
 Jupiter::ReferenceString translated_Weapon_EMPGrenade = STRING_LITERAL_AS_REFERENCE("EMP Grenade");
 Jupiter::ReferenceString translated_Weapon_SmokeGrenade = STRING_LITERAL_AS_REFERENCE("Smoke Grenade");
 Jupiter::ReferenceString translated_Weapon_TimedC4 = STRING_LITERAL_AS_REFERENCE("Timed C4");
@@ -128,6 +129,7 @@ Jupiter::ReferenceString translated_Weapon_DeployedATMine = STRING_LITERAL_AS_RE
 Jupiter::ReferenceString translated_Weapon_DeployedIonCannonBeacon = STRING_LITERAL_AS_REFERENCE("Ion Cannon Beacon");
 Jupiter::ReferenceString translated_Weapon_DeployedNukeBeacon = STRING_LITERAL_AS_REFERENCE("Nuclear Missile Beacon");
 Jupiter::ReferenceString translated_Weapon_CrateNuke = STRING_LITERAL_AS_REFERENCE("Nuclear Crate Explosion");
+Jupiter::ReferenceString translated_Weapon_DevNuke = STRING_LITERAL_AS_REFERENCE("Nuclear Dev Explosion");
 
 /** Projectiles */
 Jupiter::ReferenceString translated_Projectile_EMPGrenade = STRING_LITERAL_AS_REFERENCE("EMP Grenade");
@@ -181,6 +183,8 @@ Jupiter::ReferenceString translated_DmgType_HeavyPistol = STRING_LITERAL_AS_REFE
 Jupiter::ReferenceString translated_DmgType_Carbine = STRING_LITERAL_AS_REFERENCE("Carbine");
 Jupiter::ReferenceString translated_DmgType_TiberiumFlechetteRifle = STRING_LITERAL_AS_REFERENCE("Tiberium Flechette Gun"); // Not a rifle.
 Jupiter::ReferenceString translated_DmgType_TiberiumAutoRifle = STRING_LITERAL_AS_REFERENCE("Tiberium Automatic Rifle");
+Jupiter::ReferenceString translated_DmgType_TiberiumAutoRifle_Blue = STRING_LITERAL_AS_REFERENCE("Blue Tiberium Automatic Rifle Burst");
+Jupiter::ReferenceString translated_DmgType_TiberiumAutoRifle_Flechette_Blue = STRING_LITERAL_AS_REFERENCE("Blue Tiberium Automatic Rifle");
 
 Jupiter::ReferenceString translated_DmgType_Grenade = STRING_LITERAL_AS_REFERENCE("Grenade");
 Jupiter::ReferenceString translated_DmgType_TimedC4 = STRING_LITERAL_AS_REFERENCE("Timed C4");
@@ -564,6 +568,7 @@ const Jupiter::ReferenceString RenX::translateName(const Jupiter::ReadableString
 		if (object.equals(STRING_LITERAL_AS_REFERENCE("Airstrike_Nod"))) return translated_Weapon_Airstrike_Nod;
 		if (object.equals(STRING_LITERAL_AS_REFERENCE("TiberiumFlechetteRifle"))) return translated_Weapon_TiberiumFlechetteRifle;
 		if (object.equals(STRING_LITERAL_AS_REFERENCE("TiberiumAutoRifle"))) return translated_Weapon_TiberiumAutoRifle;
+		if (object.equals(STRING_LITERAL_AS_REFERENCE("TiberiumAutoRifle_Blue"))) return translated_Weapon_TiberiumAutoRifle_Blue;
 		if (object.equals(STRING_LITERAL_AS_REFERENCE("EMPGrenade"))) return translated_Weapon_EMPGrenade;
 		if (object.equals(STRING_LITERAL_AS_REFERENCE("SmokeGrenade"))) return translated_Weapon_SmokeGrenade;
 		if (object.equals(STRING_LITERAL_AS_REFERENCE("TimedC4"))) return translated_Weapon_TimedC4;
@@ -615,6 +620,8 @@ const Jupiter::ReferenceString RenX::translateName(const Jupiter::ReadableString
 		if (object.equals(STRING_LITERAL_AS_REFERENCE("Carbine"))) return translated_DmgType_Carbine;
 		if (object.equals(STRING_LITERAL_AS_REFERENCE("TiberiumFlechetteRifle"))) return translated_DmgType_TiberiumFlechetteRifle; // Not a rifle.
 		if (object.equals(STRING_LITERAL_AS_REFERENCE("TiberiumAutoRifle"))) return translated_DmgType_TiberiumAutoRifle;
+		if (object.equals(STRING_LITERAL_AS_REFERENCE("TiberiumAutoRifle_Blue"))) return translated_DmgType_TiberiumAutoRifle_Blue;
+		if (object.equals(STRING_LITERAL_AS_REFERENCE("TiberiumAutoRifle_Flechette_Blue"))) return translated_DmgType_TiberiumAutoRifle_Flechette_Blue;
 
 		if (object.equals(STRING_LITERAL_AS_REFERENCE("Grenade"))) return translated_DmgType_Grenade;
 		if (object.equals(STRING_LITERAL_AS_REFERENCE("TimedC4"))) return translated_DmgType_TimedC4;
