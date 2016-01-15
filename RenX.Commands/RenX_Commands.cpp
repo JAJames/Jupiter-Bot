@@ -855,6 +855,50 @@ const Jupiter::ReadableString &MapIRCCommand::getHelp(const Jupiter::ReadableStr
 
 IRC_COMMAND_INIT(MapIRCCommand)
 
+// GameInfo IRC Command
+
+void GameInfoIRCCommand::create()
+{
+	this->addTrigger("gameinfo"_jrs);
+	this->addTrigger("gi"_jrs);
+	this->addTrigger("serverinfo"_jrs);
+	this->addTrigger("si"_jrs);
+}
+
+void GameInfoIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &channel, const Jupiter::ReadableString &nick, const Jupiter::ReadableString &parameters)
+{
+	Jupiter::IRC::Client::Channel *chan = source->getChannel(channel);
+	if (chan != nullptr)
+	{
+		int type = chan->getType();
+		bool match = false;
+		for (unsigned int i = 0; i != RenX::getCore()->getServerCount(); i++)
+		{
+			RenX::Server *server = RenX::getCore()->getServer(i);
+			if (server->isLogChanType(type))
+			{
+				match = true;
+				const RenX::Map &map = server->getMap();
+				std::chrono::seconds time = std::chrono::duration_cast<std::chrono::seconds>(server->getGameTime());
+				source->sendMessage(channel, IRCCOLOR "03[GameInfo] "_jrs IRCCOLOR + server->getGameVersion());
+				source->sendMessage(channel, IRCCOLOR "03[GameInfo] " IRCCOLOR "10Map" IRCCOLOR ": "_jrs + map.name + "; " IRCCOLOR "10GUID" IRCCOLOR ": "_jrs + RenX::formatGUID(map));
+				source->sendMessage(channel, Jupiter::StringS::Format(IRCCOLOR "03[GameInfo] " IRCCOLOR "10Elapsed time" IRCCOLOR ": %.2lld:%.2lld:%.2lld", time.count() / 3600, (time.count() % 3600) / 60, time.count() % 60));
+				source->sendMessage(channel, Jupiter::StringS::Format(IRCCOLOR "03[GameInfo] " IRCCOLOR "There are " IRCCOLOR "10%d" IRCCOLOR " players online.", server->players.size()));
+			}
+		}
+		if (match == false)
+			source->sendMessage(channel, "Error: Channel not attached to any connected Renegade X servers."_jrs);
+	}
+}
+
+const Jupiter::ReadableString &GameInfoIRCCommand::getHelp(const Jupiter::ReadableString &)
+{
+	static STRING_LITERAL_AS_NAMED_REFERENCE(defaultHelp, "Returns information about the game in progress. Syntax: GameInfo");
+	return defaultHelp;
+}
+
+IRC_COMMAND_INIT(GameInfoIRCCommand)
+
 // Steam IRC Command
 
 void SteamIRCCommand::create()
