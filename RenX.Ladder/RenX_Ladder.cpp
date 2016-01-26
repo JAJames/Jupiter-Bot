@@ -16,8 +16,9 @@
  * Written by Jessica James <jessica.aj@outlook.com>
  */
 
-#include "Console_Command.h"
+#include <cinttypes>
 #include "Jupiter/INIFile.h"
+#include "Console_Command.h"
 #include "RenX_Ladder.h"
 #include "RenX_Server.h"
 #include "RenX_PlayerInfo.h"
@@ -176,7 +177,7 @@ size_t RenX_LadderPlugin::getMaxLadderCommandPartNameOutput() const
 RenX_LadderPlugin pluginInstance;
 
 /** Ladder Commands */
-#include <cinttypes>
+
 Jupiter::StringS FormatLadderResponse(RenX_LadderDatabase::Entry *entry, size_t rank)
 {
 	return Jupiter::StringS::Format("#%" PRIuPTR ": \"%.*s\" - Score: %" PRIu64 " - Kills: %" PRIu32 " - Deaths: %" PRIu32 " - KDR: %.2f - SPM: %.2f", rank, entry->most_recent_name.size(), entry->most_recent_name.ptr(), entry->total_score, entry->total_kills, entry->total_deaths, static_cast<double>(entry->total_kills) / (entry->total_deaths == 0 ? 1 : static_cast<double>(entry->total_deaths)), static_cast<double>(entry->total_score) / (entry->total_game_time == 0 ? 1.0 : static_cast<double>(entry->total_game_time)) * 60.0);

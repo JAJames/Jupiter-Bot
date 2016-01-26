@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2014-2015 Jessica James.
+ * Copyright (C) 2014-2016 Jessica James.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -192,6 +192,7 @@ namespace RenX
 
 	/** Constant variables */
 	RENX_API extern const char DelimC; /** RCON message deliminator */
+	RENX_API extern const Jupiter::ReferenceString DevBotName;
 }
 
 #endif // _RENX_FUNCTIONS_H_HEADER

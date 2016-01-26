@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2013-2015 Jessica James.
+ * Copyright (C) 2013-2016 Jessica James.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -16,7 +16,6 @@
  * Written by Jessica James <jessica.aj@outlook.com>
  */
 
-#include <ctime>
 #include <cstdlib>
 #include <cstdio>
 #include <cstring>
@@ -32,6 +31,8 @@
 #include "ServerManager.h"
 #include "Console_Command.h"
 #include "IRC_Command.h"
+
+using namespace Jupiter::literals;
 
 Jupiter::Queue inputQueue;
 
@@ -65,21 +66,26 @@ int main(int argc, const char **args)
 	atexit(onExit);
 	std::set_terminate(onTerminate);
 	std::thread inputThread(inputLoop);
-	srand((unsigned int) time(0));
+
+	srand(static_cast<unsigned int>(std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now().time_since_epoch()).count()));
 	puts(Jupiter::copyright);
 	const char *configFileName = CONFIG_INI;
 
 	for (int i = 1; i < argc; i++)
 	{
-		if (streqli(args[i], "-help"))
+		if ("-help"_jrs.equalsi(args[i]))
 		{
 			puts("Help coming soon, to a theatre near you!");
 			return 0;
 		}
-		else if (streqli(args[i], "-config") && ++i < argc) configFileName = args[i];
-		else if (streqli(args[i], "-pluginsdir") && ++i < argc) Jupiter::setPluginDirectory(Jupiter::ReferenceString(args[i]));
-		else if (streqli(args[i], "-configFormat") && ++i < argc) puts("Feature not yet supported!");
-		else printf("Warning: Unknown command line argument \"%s\" specified. Ignoring...", args[i]);
+		else if ("-config"_jrs.equalsi(args[i]) && ++i < argc)
+			configFileName = args[i];
+		else if ("-pluginsdir"_jrs.equalsi(args[i]) && ++i < argc)
+			Jupiter::setPluginDirectory(Jupiter::ReferenceString(args[i]));
+		else if ("-configFormat"_jrs.equalsi(args[i]) && ++i < argc)
+			puts("Feature not yet supported!");
+		else
+			printf("Warning: Unknown command line argument \"%s\" specified. Ignoring...", args[i]);
 	}
 
 	puts("Loading config file...");

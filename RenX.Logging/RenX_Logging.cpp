@@ -25,358 +25,362 @@
 #include "RenX_Server.h"
 #include "RenX_Tags.h"
 
+using namespace Jupiter::literals;
+
 void RenX_LoggingPlugin::init()
 {
-	RenX_LoggingPlugin::muteOwnExecute = Jupiter::IRC::Client::Config->getBool(RenX_LoggingPlugin::getName(), STRING_LITERAL_AS_REFERENCE("MuteOwnExecute"), true);
-	RenX_LoggingPlugin::joinPublic = Jupiter::IRC::Client::Config->getBool(RenX_LoggingPlugin::getName(), STRING_LITERAL_AS_REFERENCE("JoinPublic"), true);
-	RenX_LoggingPlugin::partPublic = Jupiter::IRC::Client::Config->getBool(RenX_LoggingPlugin::getName(), STRING_LITERAL_AS_REFERENCE("PartPublic"), true);
-	RenX_LoggingPlugin::kickPublic = Jupiter::IRC::Client::Config->getBool(RenX_LoggingPlugin::getName(), STRING_LITERAL_AS_REFERENCE("KickPublic"), true);
-	RenX_LoggingPlugin::nameChangePublic = Jupiter::IRC::Client::Config->getBool(RenX_LoggingPlugin::getName(), STRING_LITERAL_AS_REFERENCE("NameChangePublic"), true);
-	RenX_LoggingPlugin::teamChangePublic = Jupiter::IRC::Client::Config->getBool(RenX_LoggingPlugin::getName(), STRING_LITERAL_AS_REFERENCE("TeamChangePublic"), true);
-	RenX_LoggingPlugin::playerPublic = Jupiter::IRC::Client::Config->getBool(RenX_LoggingPlugin::getName(), STRING_LITERAL_AS_REFERENCE("PlayerPublic"), false);
-	RenX_LoggingPlugin::chatPublic = Jupiter::IRC::Client::Config->getBool(RenX_LoggingPlugin::getName(), STRING_LITERAL_AS_REFERENCE("ChatPublic"), true);
-	RenX_LoggingPlugin::teamChatPublic = Jupiter::IRC::Client::Config->getBool(RenX_LoggingPlugin::getName(), STRING_LITERAL_AS_REFERENCE("TeamChatPublic"), false);
-	RenX_LoggingPlugin::radioChatPublic = Jupiter::IRC::Client::Config->getBool(RenX_LoggingPlugin::getName(), STRING_LITERAL_AS_REFERENCE("RadioChatPublic"), false);
-	RenX_LoggingPlugin::hostChatPublic = Jupiter::IRC::Client::Config->getBool(RenX_LoggingPlugin::getName(), STRING_LITERAL_AS_REFERENCE("HostChatPublic"), true);
-	RenX_LoggingPlugin::hostPagePublic = Jupiter::IRC::Client::Config->getBool(RenX_LoggingPlugin::getName(), STRING_LITERAL_AS_REFERENCE("HostPagePublic"), false);
-	RenX_LoggingPlugin::otherChatPublic = Jupiter::IRC::Client::Config->getBool(RenX_LoggingPlugin::getName(), STRING_LITERAL_AS_REFERENCE("OtherChatPublic"), false);
-	RenX_LoggingPlugin::deployPublic = Jupiter::IRC::Client::Config->getBool(RenX_LoggingPlugin::getName(), STRING_LITERAL_AS_REFERENCE("DeployPublic"), true);
-	RenX_LoggingPlugin::mineDeployPublic = Jupiter::IRC::Client::Config->getBool(RenX_LoggingPlugin::getName(), STRING_LITERAL_AS_REFERENCE("MineDeployPublic"), false);
-	RenX_LoggingPlugin::disarmPublic = Jupiter::IRC::Client::Config->getBool(RenX_LoggingPlugin::getName(), STRING_LITERAL_AS_REFERENCE("DisarmPublic"), true);
-	RenX_LoggingPlugin::mineDisarmPublic = Jupiter::IRC::Client::Config->getBool(RenX_LoggingPlugin::getName(), STRING_LITERAL_AS_REFERENCE("MineDisarmPublic"), false);
-	RenX_LoggingPlugin::explodePublic = Jupiter::IRC::Client::Config->getBool(RenX_LoggingPlugin::getName(), STRING_LITERAL_AS_REFERENCE("ExplodePublic"), false);
-	RenX_LoggingPlugin::suicidePublic = Jupiter::IRC::Client::Config->getBool(RenX_LoggingPlugin::getName(), STRING_LITERAL_AS_REFERENCE("SuicidePublic"), true);
-	RenX_LoggingPlugin::killPublic = Jupiter::IRC::Client::Config->getBool(RenX_LoggingPlugin::getName(), STRING_LITERAL_AS_REFERENCE("KillPublic"), true);
-	RenX_LoggingPlugin::diePublic = Jupiter::IRC::Client::Config->getBool(RenX_LoggingPlugin::getName(), STRING_LITERAL_AS_REFERENCE("DiePublic"), true);
-	RenX_LoggingPlugin::destroyPublic = Jupiter::IRC::Client::Config->getBool(RenX_LoggingPlugin::getName(), STRING_LITERAL_AS_REFERENCE("DestroyPublic"), true);
-	RenX_LoggingPlugin::capturePublic = Jupiter::IRC::Client::Config->getBool(RenX_LoggingPlugin::getName(), STRING_LITERAL_AS_REFERENCE("CapturePublic"), true);
-	RenX_LoggingPlugin::neutralizePublic = Jupiter::IRC::Client::Config->getBool(RenX_LoggingPlugin::getName(), STRING_LITERAL_AS_REFERENCE("NeutralizePublic"), true);
-	RenX_LoggingPlugin::characterPurchasePublic = Jupiter::IRC::Client::Config->getBool(RenX_LoggingPlugin::getName(), STRING_LITERAL_AS_REFERENCE("CharacterPurchasePublic"), false);
-	RenX_LoggingPlugin::itemPurchasePublic = Jupiter::IRC::Client::Config->getBool(RenX_LoggingPlugin::getName(), STRING_LITERAL_AS_REFERENCE("ItemPurchasePublic"), false);
-	RenX_LoggingPlugin::weaponPurchasePublic = Jupiter::IRC::Client::Config->getBool(RenX_LoggingPlugin::getName(), STRING_LITERAL_AS_REFERENCE("WeaponPurchasePublic"), false);
-	RenX_LoggingPlugin::refillPurchasePublic = Jupiter::IRC::Client::Config->getBool(RenX_LoggingPlugin::getName(), STRING_LITERAL_AS_REFERENCE("RefillPurchasePublic"), false);
-	RenX_LoggingPlugin::vehiclePurchasePublic = Jupiter::IRC::Client::Config->getBool(RenX_LoggingPlugin::getName(), STRING_LITERAL_AS_REFERENCE("VehiclePurchasePublic"), false);
-	RenX_LoggingPlugin::vehicleSpawnPublic = Jupiter::IRC::Client::Config->getBool(RenX_LoggingPlugin::getName(), STRING_LITERAL_AS_REFERENCE("VehicleSpawnPublic"), true);
-	RenX_LoggingPlugin::spawnPublic = Jupiter::IRC::Client::Config->getBool(RenX_LoggingPlugin::getName(), STRING_LITERAL_AS_REFERENCE("SpawnPublic"), true);
-	RenX_LoggingPlugin::botJoinPublic = Jupiter::IRC::Client::Config->getBool(RenX_LoggingPlugin::getName(), STRING_LITERAL_AS_REFERENCE("BotJoinPublic"), true);
-	RenX_LoggingPlugin::vehicleCratePublic = Jupiter::IRC::Client::Config->getBool(RenX_LoggingPlugin::getName(), STRING_LITERAL_AS_REFERENCE("VehicleCratePublic"), false);
-	RenX_LoggingPlugin::TSVehicleCratePublic = Jupiter::IRC::Client::Config->getBool(RenX_LoggingPlugin::getName(), STRING_LITERAL_AS_REFERENCE("TSVehicleCratePublic"), RenX_LoggingPlugin::vehicleCratePublic);
-	RenX_LoggingPlugin::RAVehicleCratePublic = Jupiter::IRC::Client::Config->getBool(RenX_LoggingPlugin::getName(), STRING_LITERAL_AS_REFERENCE("RAVehicleCratePublic"), RenX_LoggingPlugin::vehicleCratePublic);
-	RenX_LoggingPlugin::deathCratePublic = Jupiter::IRC::Client::Config->getBool(RenX_LoggingPlugin::getName(), STRING_LITERAL_AS_REFERENCE("DeathCratePublic"), true);
-	RenX_LoggingPlugin::moneyCratePublic = Jupiter::IRC::Client::Config->getBool(RenX_LoggingPlugin::getName(), STRING_LITERAL_AS_REFERENCE("MoneyCratePublic"), false);
-	RenX_LoggingPlugin::characterCratePublic = Jupiter::IRC::Client::Config->getBool(RenX_LoggingPlugin::getName(), STRING_LITERAL_AS_REFERENCE("CharacterCratePublic"), false);
-	RenX_LoggingPlugin::spyCratePublic = Jupiter::IRC::Client::Config->getBool(RenX_LoggingPlugin::getName(), STRING_LITERAL_AS_REFERENCE("SpyCratePublic"), false);
-	RenX_LoggingPlugin::refillCratePublic = Jupiter::IRC::Client::Config->getBool(RenX_LoggingPlugin::getName(), STRING_LITERAL_AS_REFERENCE("RefillCratePublic"), false);
-	RenX_LoggingPlugin::timeBombCratePublic = Jupiter::IRC::Client::Config->getBool(RenX_LoggingPlugin::getName(), STRING_LITERAL_AS_REFERENCE("TimeBombCratePublic"), false);
-	RenX_LoggingPlugin::speedCratePublic = Jupiter::IRC::Client::Config->getBool(RenX_LoggingPlugin::getName(), STRING_LITERAL_AS_REFERENCE("SpeedCratePublic"), false);
-	RenX_LoggingPlugin::nukeCratePublic = Jupiter::IRC::Client::Config->getBool(RenX_LoggingPlugin::getName(), STRING_LITERAL_AS_REFERENCE("NukeCratePublic"), true);
-	RenX_LoggingPlugin::abductionCratePublic = Jupiter::IRC::Client::Config->getBool(RenX_LoggingPlugin::getName(), STRING_LITERAL_AS_REFERENCE("AbductionCratePublic"), true);
-	RenX_LoggingPlugin::unspecifiedCratePublic = Jupiter::IRC::Client::Config->getBool(RenX_LoggingPlugin::getName(), STRING_LITERAL_AS_REFERENCE("UnspecifiedCratePublic"), false);
-	RenX_LoggingPlugin::otherCratePublic = Jupiter::IRC::Client::Config->getBool(RenX_LoggingPlugin::getName(), STRING_LITERAL_AS_REFERENCE("OtherCratePublic"), false);
-	RenX_LoggingPlugin::stealPublic = Jupiter::IRC::Client::Config->getBool(RenX_LoggingPlugin::getName(), STRING_LITERAL_AS_REFERENCE("StealPublic"), true);
-	RenX_LoggingPlugin::donatePublic = Jupiter::IRC::Client::Config->getBool(RenX_LoggingPlugin::getName(), STRING_LITERAL_AS_REFERENCE("DonatePublic"), true);
-	RenX_LoggingPlugin::gamePublic = Jupiter::IRC::Client::Config->getBool(RenX_LoggingPlugin::getName(), STRING_LITERAL_AS_REFERENCE("GamePublic"), true);
-	RenX_LoggingPlugin::gameOverPublic = Jupiter::IRC::Client::Config->getBool(RenX_LoggingPlugin::getName(), STRING_LITERAL_AS_REFERENCE("GameOverPublic"), true);
-	RenX_LoggingPlugin::executePublic = Jupiter::IRC::Client::Config->getBool(RenX_LoggingPlugin::getName(), STRING_LITERAL_AS_REFERENCE("ExecutePublic"), false);
-	RenX_LoggingPlugin::subscribePublic = Jupiter::IRC::Client::Config->getBool(RenX_LoggingPlugin::getName(), STRING_LITERAL_AS_REFERENCE("SubscribePublic"), false);
-	RenX_LoggingPlugin::RCONPublic = Jupiter::IRC::Client::Config->getBool(RenX_LoggingPlugin::getName(), STRING_LITERAL_AS_REFERENCE("RCONPublic"), false);
-	RenX_LoggingPlugin::adminLoginPublic = Jupiter::IRC::Client::Config->getBool(RenX_LoggingPlugin::getName(), STRING_LITERAL_AS_REFERENCE("AdminLoginPublic"), true);
-	RenX_LoggingPlugin::adminGrantPublic = Jupiter::IRC::Client::Config->getBool(RenX_LoggingPlugin::getName(), STRING_LITERAL_AS_REFERENCE("AdminGrantPublic"), true);
-	RenX_LoggingPlugin::adminLogoutPublic = Jupiter::IRC::Client::Config->getBool(RenX_LoggingPlugin::getName(), STRING_LITERAL_AS_REFERENCE("AdminLogoutPublic"), true);
-	RenX_LoggingPlugin::adminPublic = Jupiter::IRC::Client::Config->getBool(RenX_LoggingPlugin::getName(), STRING_LITERAL_AS_REFERENCE("AdminPublic"), false);
-	RenX_LoggingPlugin::voteCallPublic = Jupiter::IRC::Client::Config->getBool(RenX_LoggingPlugin::getName(), STRING_LITERAL_AS_REFERENCE("VoteCallPublic"), true);
-	RenX_LoggingPlugin::voteOverPublic = Jupiter::IRC::Client::Config->getBool(RenX_LoggingPlugin::getName(), STRING_LITERAL_AS_REFERENCE("VoteOverPublic"), true);
-	RenX_LoggingPlugin::voteCancelPublic = Jupiter::IRC::Client::Config->getBool(RenX_LoggingPlugin::getName(), STRING_LITERAL_AS_REFERENCE("VoteCancelPublic"), true);
-	RenX_LoggingPlugin::votePublic = Jupiter::IRC::Client::Config->getBool(RenX_LoggingPlugin::getName(), STRING_LITERAL_AS_REFERENCE("VotePublic"), false);
-	RenX_LoggingPlugin::mapChangePublic = Jupiter::IRC::Client::Config->getBool(RenX_LoggingPlugin::getName(), STRING_LITERAL_AS_REFERENCE("MapChangePublic"), true);
-	RenX_LoggingPlugin::mapLoadPublic = Jupiter::IRC::Client::Config->getBool(RenX_LoggingPlugin::getName(), STRING_LITERAL_AS_REFERENCE("MapLoadPublic"), true);
-	RenX_LoggingPlugin::mapStartPublic = Jupiter::IRC::Client::Config->getBool(RenX_LoggingPlugin::getName(), STRING_LITERAL_AS_REFERENCE("MapStartPublic"), true);
-	RenX_LoggingPlugin::mapPublic = Jupiter::IRC::Client::Config->getBool(RenX_LoggingPlugin::getName(), STRING_LITERAL_AS_REFERENCE("MapPublic"), false);
-	RenX_LoggingPlugin::demoRecordPublic = Jupiter::IRC::Client::Config->getBool(RenX_LoggingPlugin::getName(), STRING_LITERAL_AS_REFERENCE("DemoRecordPublic"), true);
-	RenX_LoggingPlugin::demoRecordStopPublic = Jupiter::IRC::Client::Config->getBool(RenX_LoggingPlugin::getName(), STRING_LITERAL_AS_REFERENCE("DemoRecordStopPublic"), true);
-	RenX_LoggingPlugin::demoPublic = Jupiter::IRC::Client::Config->getBool(RenX_LoggingPlugin::getName(), STRING_LITERAL_AS_REFERENCE("DemoPublic"), false);
-	RenX_LoggingPlugin::logPublic = Jupiter::IRC::Client::Config->getBool(RenX_LoggingPlugin::getName(), STRING_LITERAL_AS_REFERENCE("LogPublic"), false);
-	RenX_LoggingPlugin::commandPublic = Jupiter::IRC::Client::Config->getBool(RenX_LoggingPlugin::getName(), STRING_LITERAL_AS_REFERENCE("CommandPublic"), false);
-	RenX_LoggingPlugin::errorPublic = Jupiter::IRC::Client::Config->getBool(RenX_LoggingPlugin::getName(), STRING_LITERAL_AS_REFERENCE("ErrorPublic"), false);
-	RenX_LoggingPlugin::versionPublic = Jupiter::IRC::Client::Config->getBool(RenX_LoggingPlugin::getName(), STRING_LITERAL_AS_REFERENCE("VersionPublic"), true);
-	RenX_LoggingPlugin::authorizedPublic = Jupiter::IRC::Client::Config->getBool(RenX_LoggingPlugin::getName(), STRING_LITERAL_AS_REFERENCE("AuthorizedPublic"), true);
-	RenX_LoggingPlugin::otherPublic = Jupiter::IRC::Client::Config->getBool(RenX_LoggingPlugin::getName(), STRING_LITERAL_AS_REFERENCE("OtherPublic"), false);
+	RenX_LoggingPlugin::muteOwnExecute = Jupiter::IRC::Client::Config->getBool(RenX_LoggingPlugin::getName(), "MuteOwnExecute"_jrs, true);
+	RenX_LoggingPlugin::joinPublic = Jupiter::IRC::Client::Config->getBool(RenX_LoggingPlugin::getName(), "JoinPublic"_jrs, true);
+	RenX_LoggingPlugin::partPublic = Jupiter::IRC::Client::Config->getBool(RenX_LoggingPlugin::getName(), "PartPublic"_jrs, true);
+	RenX_LoggingPlugin::kickPublic = Jupiter::IRC::Client::Config->getBool(RenX_LoggingPlugin::getName(), "KickPublic"_jrs, true);
+	RenX_LoggingPlugin::nameChangePublic = Jupiter::IRC::Client::Config->getBool(RenX_LoggingPlugin::getName(), "NameChangePublic"_jrs, true);
+	RenX_LoggingPlugin::teamChangePublic = Jupiter::IRC::Client::Config->getBool(RenX_LoggingPlugin::getName(), "TeamChangePublic"_jrs, true);
+	RenX_LoggingPlugin::playerPublic = Jupiter::IRC::Client::Config->getBool(RenX_LoggingPlugin::getName(), "PlayerPublic"_jrs, false);
+	RenX_LoggingPlugin::chatPublic = Jupiter::IRC::Client::Config->getBool(RenX_LoggingPlugin::getName(), "ChatPublic"_jrs, true);
+	RenX_LoggingPlugin::teamChatPublic = Jupiter::IRC::Client::Config->getBool(RenX_LoggingPlugin::getName(), "TeamChatPublic"_jrs, false);
+	RenX_LoggingPlugin::radioChatPublic = Jupiter::IRC::Client::Config->getBool(RenX_LoggingPlugin::getName(), "RadioChatPublic"_jrs, false);
+	RenX_LoggingPlugin::hostChatPublic = Jupiter::IRC::Client::Config->getBool(RenX_LoggingPlugin::getName(), "HostChatPublic"_jrs, true);
+	RenX_LoggingPlugin::hostPagePublic = Jupiter::IRC::Client::Config->getBool(RenX_LoggingPlugin::getName(), "HostPagePublic"_jrs, false);
+	RenX_LoggingPlugin::otherChatPublic = Jupiter::IRC::Client::Config->getBool(RenX_LoggingPlugin::getName(), "OtherChatPublic"_jrs, false);
+	RenX_LoggingPlugin::deployPublic = Jupiter::IRC::Client::Config->getBool(RenX_LoggingPlugin::getName(), "DeployPublic"_jrs, true);
+	RenX_LoggingPlugin::mineDeployPublic = Jupiter::IRC::Client::Config->getBool(RenX_LoggingPlugin::getName(), "MineDeployPublic"_jrs, false);
+	RenX_LoggingPlugin::disarmPublic = Jupiter::IRC::Client::Config->getBool(RenX_LoggingPlugin::getName(), "DisarmPublic"_jrs, true);
+	RenX_LoggingPlugin::mineDisarmPublic = Jupiter::IRC::Client::Config->getBool(RenX_LoggingPlugin::getName(), "MineDisarmPublic"_jrs, false);
+	RenX_LoggingPlugin::explodePublic = Jupiter::IRC::Client::Config->getBool(RenX_LoggingPlugin::getName(), "ExplodePublic"_jrs, false);
+	RenX_LoggingPlugin::suicidePublic = Jupiter::IRC::Client::Config->getBool(RenX_LoggingPlugin::getName(), "SuicidePublic"_jrs, true);
+	RenX_LoggingPlugin::killPublic = Jupiter::IRC::Client::Config->getBool(RenX_LoggingPlugin::getName(), "KillPublic"_jrs, true);
+	RenX_LoggingPlugin::diePublic = Jupiter::IRC::Client::Config->getBool(RenX_LoggingPlugin::getName(), "DiePublic"_jrs, true);
+	RenX_LoggingPlugin::destroyPublic = Jupiter::IRC::Client::Config->getBool(RenX_LoggingPlugin::getName(), "DestroyPublic"_jrs, true);
+	RenX_LoggingPlugin::capturePublic = Jupiter::IRC::Client::Config->getBool(RenX_LoggingPlugin::getName(), "CapturePublic"_jrs, true);
+	RenX_LoggingPlugin::neutralizePublic = Jupiter::IRC::Client::Config->getBool(RenX_LoggingPlugin::getName(), "NeutralizePublic"_jrs, true);
+	RenX_LoggingPlugin::characterPurchasePublic = Jupiter::IRC::Client::Config->getBool(RenX_LoggingPlugin::getName(), "CharacterPurchasePublic"_jrs, false);
+	RenX_LoggingPlugin::itemPurchasePublic = Jupiter::IRC::Client::Config->getBool(RenX_LoggingPlugin::getName(), "ItemPurchasePublic"_jrs, false);
+	RenX_LoggingPlugin::weaponPurchasePublic = Jupiter::IRC::Client::Config->getBool(RenX_LoggingPlugin::getName(), "WeaponPurchasePublic"_jrs, false);
+	RenX_LoggingPlugin::refillPurchasePublic = Jupiter::IRC::Client::Config->getBool(RenX_LoggingPlugin::getName(), "RefillPurchasePublic"_jrs, false);
+	RenX_LoggingPlugin::vehiclePurchasePublic = Jupiter::IRC::Client::Config->getBool(RenX_LoggingPlugin::getName(), "VehiclePurchasePublic"_jrs, false);
+	RenX_LoggingPlugin::vehicleSpawnPublic = Jupiter::IRC::Client::Config->getBool(RenX_LoggingPlugin::getName(), "VehicleSpawnPublic"_jrs, true);
+	RenX_LoggingPlugin::spawnPublic = Jupiter::IRC::Client::Config->getBool(RenX_LoggingPlugin::getName(), "SpawnPublic"_jrs, true);
+	RenX_LoggingPlugin::botJoinPublic = Jupiter::IRC::Client::Config->getBool(RenX_LoggingPlugin::getName(), "BotJoinPublic"_jrs, true);
+	RenX_LoggingPlugin::vehicleCratePublic = Jupiter::IRC::Client::Config->getBool(RenX_LoggingPlugin::getName(), "VehicleCratePublic"_jrs, false);
+	RenX_LoggingPlugin::TSVehicleCratePublic = Jupiter::IRC::Client::Config->getBool(RenX_LoggingPlugin::getName(), "TSVehicleCratePublic"_jrs, RenX_LoggingPlugin::vehicleCratePublic);
+	RenX_LoggingPlugin::RAVehicleCratePublic = Jupiter::IRC::Client::Config->getBool(RenX_LoggingPlugin::getName(), "RAVehicleCratePublic"_jrs, RenX_LoggingPlugin::vehicleCratePublic);
+	RenX_LoggingPlugin::deathCratePublic = Jupiter::IRC::Client::Config->getBool(RenX_LoggingPlugin::getName(), "DeathCratePublic"_jrs, true);
+	RenX_LoggingPlugin::moneyCratePublic = Jupiter::IRC::Client::Config->getBool(RenX_LoggingPlugin::getName(), "MoneyCratePublic"_jrs, false);
+	RenX_LoggingPlugin::characterCratePublic = Jupiter::IRC::Client::Config->getBool(RenX_LoggingPlugin::getName(), "CharacterCratePublic"_jrs, false);
+	RenX_LoggingPlugin::spyCratePublic = Jupiter::IRC::Client::Config->getBool(RenX_LoggingPlugin::getName(), "SpyCratePublic"_jrs, false);
+	RenX_LoggingPlugin::refillCratePublic = Jupiter::IRC::Client::Config->getBool(RenX_LoggingPlugin::getName(), "RefillCratePublic"_jrs, false);
+	RenX_LoggingPlugin::timeBombCratePublic = Jupiter::IRC::Client::Config->getBool(RenX_LoggingPlugin::getName(), "TimeBombCratePublic"_jrs, false);
+	RenX_LoggingPlugin::speedCratePublic = Jupiter::IRC::Client::Config->getBool(RenX_LoggingPlugin::getName(), "SpeedCratePublic"_jrs, false);
+	RenX_LoggingPlugin::nukeCratePublic = Jupiter::IRC::Client::Config->getBool(RenX_LoggingPlugin::getName(), "NukeCratePublic"_jrs, true);
+	RenX_LoggingPlugin::abductionCratePublic = Jupiter::IRC::Client::Config->getBool(RenX_LoggingPlugin::getName(), "AbductionCratePublic"_jrs, true);
+	RenX_LoggingPlugin::unspecifiedCratePublic = Jupiter::IRC::Client::Config->getBool(RenX_LoggingPlugin::getName(), "UnspecifiedCratePublic"_jrs, false);
+	RenX_LoggingPlugin::otherCratePublic = Jupiter::IRC::Client::Config->getBool(RenX_LoggingPlugin::getName(), "OtherCratePublic"_jrs, false);
+	RenX_LoggingPlugin::stealPublic = Jupiter::IRC::Client::Config->getBool(RenX_LoggingPlugin::getName(), "StealPublic"_jrs, true);
+	RenX_LoggingPlugin::donatePublic = Jupiter::IRC::Client::Config->getBool(RenX_LoggingPlugin::getName(), "DonatePublic"_jrs, true);
+	RenX_LoggingPlugin::gamePublic = Jupiter::IRC::Client::Config->getBool(RenX_LoggingPlugin::getName(), "GamePublic"_jrs, true);
+	RenX_LoggingPlugin::gameOverPublic = Jupiter::IRC::Client::Config->getBool(RenX_LoggingPlugin::getName(), "GameOverPublic"_jrs, true);
+	RenX_LoggingPlugin::executePublic = Jupiter::IRC::Client::Config->getBool(RenX_LoggingPlugin::getName(), "ExecutePublic"_jrs, false);
+	RenX_LoggingPlugin::subscribePublic = Jupiter::IRC::Client::Config->getBool(RenX_LoggingPlugin::getName(), "SubscribePublic"_jrs, false);
+	RenX_LoggingPlugin::RCONPublic = Jupiter::IRC::Client::Config->getBool(RenX_LoggingPlugin::getName(), "RCONPublic"_jrs, false);
+	RenX_LoggingPlugin::adminLoginPublic = Jupiter::IRC::Client::Config->getBool(RenX_LoggingPlugin::getName(), "AdminLoginPublic"_jrs, true);
+	RenX_LoggingPlugin::adminGrantPublic = Jupiter::IRC::Client::Config->getBool(RenX_LoggingPlugin::getName(), "AdminGrantPublic"_jrs, true);
+	RenX_LoggingPlugin::adminLogoutPublic = Jupiter::IRC::Client::Config->getBool(RenX_LoggingPlugin::getName(), "AdminLogoutPublic"_jrs, true);
+	RenX_LoggingPlugin::adminPublic = Jupiter::IRC::Client::Config->getBool(RenX_LoggingPlugin::getName(), "AdminPublic"_jrs, false);
+	RenX_LoggingPlugin::voteCallPublic = Jupiter::IRC::Client::Config->getBool(RenX_LoggingPlugin::getName(), "VoteCallPublic"_jrs, true);
+	RenX_LoggingPlugin::voteOverPublic = Jupiter::IRC::Client::Config->getBool(RenX_LoggingPlugin::getName(), "VoteOverPublic"_jrs, true);
+	RenX_LoggingPlugin::voteCancelPublic = Jupiter::IRC::Client::Config->getBool(RenX_LoggingPlugin::getName(), "VoteCancelPublic"_jrs, true);
+	RenX_LoggingPlugin::votePublic = Jupiter::IRC::Client::Config->getBool(RenX_LoggingPlugin::getName(), "VotePublic"_jrs, false);
+	RenX_LoggingPlugin::mapChangePublic = Jupiter::IRC::Client::Config->getBool(RenX_LoggingPlugin::getName(), "MapChangePublic"_jrs, true);
+	RenX_LoggingPlugin::mapLoadPublic = Jupiter::IRC::Client::Config->getBool(RenX_LoggingPlugin::getName(), "MapLoadPublic"_jrs, true);
+	RenX_LoggingPlugin::mapStartPublic = Jupiter::IRC::Client::Config->getBool(RenX_LoggingPlugin::getName(), "MapStartPublic"_jrs, true);
+	RenX_LoggingPlugin::mapPublic = Jupiter::IRC::Client::Config->getBool(RenX_LoggingPlugin::getName(), "MapPublic"_jrs, false);
+	RenX_LoggingPlugin::demoRecordPublic = Jupiter::IRC::Client::Config->getBool(RenX_LoggingPlugin::getName(), "DemoRecordPublic"_jrs, true);
+	RenX_LoggingPlugin::demoRecordStopPublic = Jupiter::IRC::Client::Config->getBool(RenX_LoggingPlugin::getName(), "DemoRecordStopPublic"_jrs, true);
+	RenX_LoggingPlugin::demoPublic = Jupiter::IRC::Client::Config->getBool(RenX_LoggingPlugin::getName(), "DemoPublic"_jrs, false);
+	RenX_LoggingPlugin::logPublic = Jupiter::IRC::Client::Config->getBool(RenX_LoggingPlugin::getName(), "LogPublic"_jrs, false);
+	RenX_LoggingPlugin::commandPublic = Jupiter::IRC::Client::Config->getBool(RenX_LoggingPlugin::getName(), "CommandPublic"_jrs, false);
+	RenX_LoggingPlugin::errorPublic = Jupiter::IRC::Client::Config->getBool(RenX_LoggingPlugin::getName(), "ErrorPublic"_jrs, false);
+	RenX_LoggingPlugin::versionPublic = Jupiter::IRC::Client::Config->getBool(RenX_LoggingPlugin::getName(), "VersionPublic"_jrs, true);
+	RenX_LoggingPlugin::authorizedPublic = Jupiter::IRC::Client::Config->getBool(RenX_LoggingPlugin::getName(), "AuthorizedPublic"_jrs, true);
+	RenX_LoggingPlugin::otherPublic = Jupiter::IRC::Client::Config->getBool(RenX_LoggingPlugin::getName(), "OtherPublic"_jrs, false);
 
 	/** Event formats */
-	RenX_LoggingPlugin::joinPublicFmt = Jupiter::IRC::Client::Config->get(this->getName(), STRING_LITERAL_AS_REFERENCE("JoinPublicFormat"),
+	RenX_LoggingPlugin::joinPublicFmt = Jupiter::IRC::Client::Config->get(this->getName(), "JoinPublicFormat"_jrs,
 		Jupiter::StringS::Format(IRCCOLOR "12[Join] " IRCBOLD "%.*s" IRCBOLD " joined the game fighting for the %.*s!", RenX::tags->nameTag.size(), RenX::tags->nameTag.ptr(), RenX::tags->teamLongTag.size(), RenX::tags->teamLongTag.ptr()));
 
-	RenX_LoggingPlugin::joinAdminFmt = Jupiter::IRC::Client::Config->get(this->getName(), STRING_LITERAL_AS_REFERENCE("JoinAdminFormat"),
+	RenX_LoggingPlugin::joinAdminFmt = Jupiter::IRC::Client::Config->get(this->getName(), "JoinAdminFormat"_jrs,
 		Jupiter::StringS::Format(IRCCOLOR "12[Join] " IRCBOLD "%.*s" IRCBOLD " joined the game fighting for the %.*s from " IRCBOLD "%.*s" IRCBOLD " using Steam ID " IRCBOLD "%.*s" IRCBOLD ". Their hostname is: " IRCBOLD "%.*s", RenX::tags->nameTag.size(), RenX::tags->nameTag.ptr(), RenX::tags->teamLongTag.size(), RenX::tags->teamLongTag.ptr(), RenX::tags->ipTag.size(), RenX::tags->ipTag.ptr(), RenX::tags->steamTag.size(), RenX::tags->steamTag.ptr(), RenX::tags->rdnsTag.size(), RenX::tags->rdnsTag.ptr()));
 
-	RenX_LoggingPlugin::joinNoSteamAdminFmt = Jupiter::IRC::Client::Config->get(this->getName(), STRING_LITERAL_AS_REFERENCE("JoinNoSteamAdminFormat"),
+	RenX_LoggingPlugin::joinNoSteamAdminFmt = Jupiter::IRC::Client::Config->get(this->getName(), "JoinNoSteamAdminFormat"_jrs,
 		Jupiter::StringS::Format(IRCCOLOR "12[Join] " IRCBOLD "%.*s" IRCBOLD " joined the game fighting for the %.*s from " IRCBOLD "%.*s" IRCBOLD ", but is " IRCBOLD "not" IRCBOLD " using Steam. Their hostname is: " IRCBOLD "%.*s", RenX::tags->nameTag.size(), RenX::tags->nameTag.ptr(), RenX::tags->teamLongTag.size(), RenX::tags->teamLongTag.ptr(), RenX::tags->ipTag.size(), RenX::tags->ipTag.ptr(), RenX::tags->rdnsTag.size(), RenX::tags->rdnsTag.ptr()));
 
-	RenX_LoggingPlugin::partFmt = Jupiter::IRC::Client::Config->get(this->getName(), STRING_LITERAL_AS_REFERENCE("PartFormat"),
+	RenX_LoggingPlugin::partFmt = Jupiter::IRC::Client::Config->get(this->getName(), "PartFormat"_jrs,
 		Jupiter::StringS::Format(IRCCOLOR "12[Part] " IRCBOLD "%.*s" IRCBOLD " left the %.*s.", RenX::tags->nameTag.size(), RenX::tags->nameTag.ptr(), RenX::tags->teamLongTag.size(), RenX::tags->teamLongTag.ptr()));
 
-	RenX_LoggingPlugin::kickFmt = Jupiter::IRC::Client::Config->get(this->getName(), STRING_LITERAL_AS_REFERENCE("KickFormat"),
+	RenX_LoggingPlugin::kickFmt = Jupiter::IRC::Client::Config->get(this->getName(), "KickFormat"_jrs,
 		Jupiter::StringS::Format(IRCCOLOR "04[Kick] " IRCBOLD "%.*s" IRCCOLOR IRCBOLD " was " IRCBOLD IRCCOLOR "04kicked" IRCCOLOR IRCBOLD " (" IRCCOLOR "04%.*s" IRCCOLOR ")", RenX::tags->nameTag.size(), RenX::tags->nameTag.ptr(), RenX::tags->messageTag.size(), RenX::tags->messageTag.ptr()));
 
-	RenX_LoggingPlugin::playerExecuteFmt = Jupiter::IRC::Client::Config->get(this->getName(), STRING_LITERAL_AS_REFERENCE("PlayerExecuteFormat"),
+	RenX_LoggingPlugin::playerExecuteFmt = Jupiter::IRC::Client::Config->get(this->getName(), "PlayerExecuteFormat"_jrs,
 		Jupiter::StringS::Format("%.*s" IRCCOLOR "07 executed: %.*s", RenX::tags->nameTag.size(), RenX::tags->nameTag.ptr(), RenX::tags->messageTag.size(), RenX::tags->messageTag.ptr()));
 
-	RenX_LoggingPlugin::playerFmt = Jupiter::IRC::Client::Config->get(this->getName(), STRING_LITERAL_AS_REFERENCE("PlayerFormat"),
+	RenX_LoggingPlugin::playerFmt = Jupiter::IRC::Client::Config->get(this->getName(), "PlayerFormat"_jrs,
 		Jupiter::StringS::Format(IRCCOLOR "12[Player]" IRCCOLOR " %.*s", RenX::tags->messageTag.size(), RenX::tags->messageTag.ptr()));
 
-	RenX_LoggingPlugin::nameChangeFmt = Jupiter::IRC::Client::Config->get(this->getName(), STRING_LITERAL_AS_REFERENCE("NameChangeFormat"),
+	RenX_LoggingPlugin::nameChangeFmt = Jupiter::IRC::Client::Config->get(this->getName(), "NameChangeFormat"_jrs,
 		Jupiter::StringS::Format(IRCBOLD "%.*s" IRCBOLD " changed their name to " IRCBOLD "%.*s" IRCBOLD ".", RenX::tags->nameTag.size(), RenX::tags->nameTag.ptr(), RenX::tags->newNameTag.size(), RenX::tags->newNameTag.ptr()));
 
-	RenX_LoggingPlugin::teamChangeFmt = Jupiter::IRC::Client::Config->get(this->getName(), STRING_LITERAL_AS_REFERENCE("TeamChangeFormat"),
+	RenX_LoggingPlugin::teamChangeFmt = Jupiter::IRC::Client::Config->get(this->getName(), "TeamChangeFormat"_jrs,
 		Jupiter::StringS::Format("%.*s" IRCCOLOR " switched teams!", RenX::tags->nameTag.size(), RenX::tags->nameTag.ptr()));
 
-	RenX_LoggingPlugin::chatFmt = Jupiter::IRC::Client::Config->get(this->getName(), STRING_LITERAL_AS_REFERENCE("ChatFormat"),
+	RenX_LoggingPlugin::chatFmt = Jupiter::IRC::Client::Config->get(this->getName(), "ChatFormat"_jrs,
 		Jupiter::StringS::Format(IRCBOLD "%.*s" IRCCOLOR IRCBOLD ": %.*s", RenX::tags->nameTag.size(), RenX::tags->nameTag.ptr(), RenX::tags->messageTag.size(), RenX::tags->messageTag.ptr()));
 
-	RenX_LoggingPlugin::teamChatFmt = Jupiter::IRC::Client::Config->get(this->getName(), STRING_LITERAL_AS_REFERENCE("TeamChatFormat"),
+	RenX_LoggingPlugin::teamChatFmt = Jupiter::IRC::Client::Config->get(this->getName(), "TeamChatFormat"_jrs,
 		Jupiter::StringS::Format(IRCBOLD "%.*s" IRCBOLD ": %.*s", RenX::tags->nameTag.size(), RenX::tags->nameTag.ptr(), RenX::tags->messageTag.size(), RenX::tags->messageTag.ptr()));
 
-	RenX_LoggingPlugin::radioChatFmt = Jupiter::IRC::Client::Config->get(this->getName(), STRING_LITERAL_AS_REFERENCE("RadioChatFormat"),
+	RenX_LoggingPlugin::radioChatFmt = Jupiter::IRC::Client::Config->get(this->getName(), "RadioChatFormat"_jrs,
 		Jupiter::StringS::Format(IRCBOLD "%.*s" IRCBOLD ": \x1D%.*s", RenX::tags->nameTag.size(), RenX::tags->nameTag.ptr(), RenX::tags->messageTag.size(), RenX::tags->messageTag.ptr()));
 
-	RenX_LoggingPlugin::hostChatFmt = Jupiter::IRC::Client::Config->get(this->getName(), STRING_LITERAL_AS_REFERENCE("HostChatFormat"),
+	RenX_LoggingPlugin::hostChatFmt = Jupiter::IRC::Client::Config->get(this->getName(), "HostChatFormat"_jrs,
 		Jupiter::StringS::Format(IRCCOLOR "12Host" IRCCOLOR "0: %.*s", RenX::tags->messageTag.size(), RenX::tags->messageTag.ptr()));
 
-	RenX_LoggingPlugin::hostPageFmt = Jupiter::IRC::Client::Config->get(this->getName(), STRING_LITERAL_AS_REFERENCE("HostPageFormat"),
+	RenX_LoggingPlugin::hostPageFmt = Jupiter::IRC::Client::Config->get(this->getName(), "HostPageFormat"_jrs,
 		Jupiter::StringS::Format(IRCCOLOR "12(Host -> %.*s): %.*s", RenX::tags->rawNameTag.size(), RenX::tags->rawNameTag.ptr(), RenX::tags->messageTag.size(), RenX::tags->messageTag.ptr()));
 
-	RenX_LoggingPlugin::otherChatFmt = Jupiter::IRC::Client::Config->get(this->getName(), STRING_LITERAL_AS_REFERENCE("OtherChatFormat"),
+	RenX_LoggingPlugin::otherChatFmt = Jupiter::IRC::Client::Config->get(this->getName(), "OtherChatFormat"_jrs,
 		Jupiter::StringS::Format(IRCCOLOR "06[Other Chat]" IRCCOLOR " %.*s", RenX::tags->messageTag.size(), RenX::tags->messageTag.ptr()));
 
-	RenX_LoggingPlugin::deployFmt = Jupiter::IRC::Client::Config->get(this->getName(), STRING_LITERAL_AS_REFERENCE("DeployFormat"),
+	RenX_LoggingPlugin::deployFmt = Jupiter::IRC::Client::Config->get(this->getName(), "DeployFormat"_jrs,
 		Jupiter::StringS::Format(IRCBOLD "%.*s" IRCCOLOR IRCBOLD " deployed a " IRCBOLD IRCCOLOR "12%.*s" IRCBOLD, RenX::tags->nameTag.size(), RenX::tags->nameTag.ptr(), RenX::tags->objectTag.size(), RenX::tags->objectTag.ptr()));
 
-	RenX_LoggingPlugin::mineDeployFmt = Jupiter::IRC::Client::Config->get(this->getName(), STRING_LITERAL_AS_REFERENCE("MineDeployFormat"),
+	RenX_LoggingPlugin::mineDeployFmt = Jupiter::IRC::Client::Config->get(this->getName(), "MineDeployFormat"_jrs,
 		RenX_LoggingPlugin::deployFmt);
 
-	RenX_LoggingPlugin::disarmFmt = Jupiter::IRC::Client::Config->get(this->getName(), STRING_LITERAL_AS_REFERENCE("DisarmFormat"),
+	RenX_LoggingPlugin::disarmFmt = Jupiter::IRC::Client::Config->get(this->getName(), "DisarmFormat"_jrs,
 		Jupiter::StringS::Format(IRCBOLD "%.*s" IRCCOLOR IRCBOLD " disarmed %.*s" IRCBOLD IRCCOLOR "'s " IRCCOLOR "12%.*s" IRCBOLD, RenX::tags->nameTag.size(), RenX::tags->nameTag.ptr(), RenX::tags->victimNameTag.size(), RenX::tags->victimNameTag.ptr(), RenX::tags->objectTag.size(), RenX::tags->objectTag.ptr()));
 
-	RenX_LoggingPlugin::mineDisarmFmt = Jupiter::IRC::Client::Config->get(this->getName(), STRING_LITERAL_AS_REFERENCE("MineDisarmFormat"),
+	RenX_LoggingPlugin::mineDisarmFmt = Jupiter::IRC::Client::Config->get(this->getName(), "MineDisarmFormat"_jrs,
 		RenX_LoggingPlugin::disarmFmt);
 
-	RenX_LoggingPlugin::disarmNoOwnerFmt = Jupiter::IRC::Client::Config->get(this->getName(), STRING_LITERAL_AS_REFERENCE("DisarmNoOwnerFormat"),
+	RenX_LoggingPlugin::disarmNoOwnerFmt = Jupiter::IRC::Client::Config->get(this->getName(), "DisarmNoOwnerFormat"_jrs,
 		Jupiter::StringS::Format(IRCBOLD "%.*s" IRCBOLD " disarmed a " IRCBOLD "%.*s" IRCBOLD, RenX::tags->nameTag.size(), RenX::tags->nameTag.ptr(), RenX::tags->objectTag.size(), RenX::tags->objectTag.ptr()));
 
-	RenX_LoggingPlugin::mineDisarmNoOwnerFmt = Jupiter::IRC::Client::Config->get(this->getName(), STRING_LITERAL_AS_REFERENCE("MineDisarmNoOwnerFormat"),
+	RenX_LoggingPlugin::mineDisarmNoOwnerFmt = Jupiter::IRC::Client::Config->get(this->getName(), "MineDisarmNoOwnerFormat"_jrs,
 		RenX_LoggingPlugin::disarmNoOwnerFmt);
 
-	RenX_LoggingPlugin::explodeFmt = Jupiter::IRC::Client::Config->get(this->getName(), STRING_LITERAL_AS_REFERENCE("ExplodeFormat"),
+	RenX_LoggingPlugin::explodeFmt = Jupiter::IRC::Client::Config->get(this->getName(), "ExplodeFormat"_jrs,
 		Jupiter::StringS::Format("%.*s" IRCCOLOR " detonated a " IRCCOLOR "07%.*s" IRCCOLOR ".", RenX::tags->nameTag.size(), RenX::tags->nameTag.ptr(), RenX::tags->weaponTag.size(), RenX::tags->weaponTag.ptr()));
 
-	RenX_LoggingPlugin::explodeNoOwnerFmt = Jupiter::IRC::Client::Config->get(this->getName(), STRING_LITERAL_AS_REFERENCE("ExplodeMoOwnerFormat"),
+	RenX_LoggingPlugin::explodeNoOwnerFmt = Jupiter::IRC::Client::Config->get(this->getName(), "ExplodeMoOwnerFormat"_jrs,
 		Jupiter::StringS::Format("A " IRCCOLOR "07%.*s" IRCCOLOR " detonated.", RenX::tags->weaponTag.size(), RenX::tags->weaponTag.ptr()));
 
-	RenX_LoggingPlugin::suicideFmt = Jupiter::IRC::Client::Config->get(this->getName(), STRING_LITERAL_AS_REFERENCE("SuicideFormat"),
+	RenX_LoggingPlugin::suicideFmt = Jupiter::IRC::Client::Config->get(this->getName(), "SuicideFormat"_jrs,
 		Jupiter::StringS::Format("%.*s" IRCCOLOR " suicided (" IRCCOLOR "12%.*s" IRCCOLOR ").", RenX::tags->nameTag.size(), RenX::tags->nameTag.ptr(), RenX::tags->weaponTag.size(), RenX::tags->weaponTag.ptr()));
 
-	RenX_LoggingPlugin::killFmt = Jupiter::IRC::Client::Config->get(this->getName(), STRING_LITERAL_AS_REFERENCE("KillFormat"),
+	RenX_LoggingPlugin::killFmt = Jupiter::IRC::Client::Config->get(this->getName(), "KillFormat"_jrs,
 		Jupiter::StringS::Format("%.*s" IRCCOLOR " killed %.*s" IRCCOLOR " (" IRCCOLOR "%.*s%.*s/%.*s" IRCCOLOR " vs " IRCCOLOR "%.*s%.*s" IRCCOLOR ").", RenX::tags->nameTag.size(), RenX::tags->nameTag.ptr(), RenX::tags->victimNameTag.size(), RenX::tags->victimNameTag.ptr(), RenX::tags->teamColorTag.size(), RenX::tags->teamColorTag.ptr(), RenX::tags->characterTag.size(), RenX::tags->characterTag.ptr(), RenX::tags->weaponTag.size(), RenX::tags->weaponTag.ptr(), RenX::tags->victimTeamColorTag.size(), RenX::tags->victimTeamColorTag.ptr(), RenX::tags->victimCharacterTag.size(), RenX::tags->victimCharacterTag.ptr()));
 
-	RenX_LoggingPlugin::killFmt2 = Jupiter::IRC::Client::Config->get(this->getName(), STRING_LITERAL_AS_REFERENCE("KillFormat2"),
+	RenX_LoggingPlugin::killFmt2 = Jupiter::IRC::Client::Config->get(this->getName(), "KillFormat2"_jrs,
 		Jupiter::StringS::Format(IRCCOLOR "%.*s%.*s" IRCCOLOR " killed %.*s" IRCCOLOR " (" IRCCOLOR "12%.*s" IRCCOLOR ").", RenX::tags->teamColorTag.size(), RenX::tags->teamColorTag.ptr(), RenX::tags->nameTag.size(), RenX::tags->nameTag.ptr(), RenX::tags->victimNameTag.size(), RenX::tags->victimNameTag.ptr(), RenX::tags->weaponTag.size(), RenX::tags->weaponTag.ptr()));
 
-	RenX_LoggingPlugin::dieFmt = Jupiter::IRC::Client::Config->get(this->getName(), STRING_LITERAL_AS_REFERENCE("DieFormat"),
+	RenX_LoggingPlugin::dieFmt = Jupiter::IRC::Client::Config->get(this->getName(), "DieFormat"_jrs,
 		Jupiter::StringS::Format("%.*s" IRCCOLOR " died (" IRCCOLOR "12%.*s" IRCCOLOR ").", RenX::tags->nameTag.size(), RenX::tags->nameTag.ptr(), RenX::tags->weaponTag.size(), RenX::tags->weaponTag.ptr()));
 
-	RenX_LoggingPlugin::dieFmt2 = Jupiter::IRC::Client::Config->get(this->getName(), STRING_LITERAL_AS_REFERENCE("DieFormat2"),
+	RenX_LoggingPlugin::dieFmt2 = Jupiter::IRC::Client::Config->get(this->getName(), "DieFormat2"_jrs,
 		Jupiter::StringS::Format(IRCCOLOR "%.*s%.*s" IRCCOLOR " died (" IRCCOLOR "12%.*s" IRCCOLOR ").", RenX::tags->teamColorTag.size(), RenX::tags->teamColorTag.ptr(), RenX::tags->nameTag.size(), RenX::tags->nameTag.ptr(), RenX::tags->weaponTag.size(), RenX::tags->weaponTag.ptr()));
 
-	RenX_LoggingPlugin::destroyBuildingFmt = Jupiter::IRC::Client::Config->get(this->getName(), STRING_LITERAL_AS_REFERENCE("DestroyBuildingFormat"),
+	RenX_LoggingPlugin::destroyBuildingFmt = Jupiter::IRC::Client::Config->get(this->getName(), "DestroyBuildingFormat"_jrs,
 		Jupiter::StringS::Format("%.*s" IRCCOLOR " destroyed the " IRCCOLOR "%.*s%.*s" IRCCOLOR " (" IRCCOLOR "12%.*s" IRCCOLOR ").", RenX::tags->nameTag.size(), RenX::tags->nameTag.ptr(), RenX::tags->victimTeamColorTag.size(), RenX::tags->victimTeamColorTag.ptr(), RenX::tags->objectTag.size(), RenX::tags->objectTag.ptr(), RenX::tags->weaponTag.size(), RenX::tags->weaponTag.ptr()));
 	
-	RenX_LoggingPlugin::destroyBuildingFmt2 = Jupiter::IRC::Client::Config->get(this->getName(), STRING_LITERAL_AS_REFERENCE("DestroyBuildingFormat2"),
+	RenX_LoggingPlugin::destroyBuildingFmt2 = Jupiter::IRC::Client::Config->get(this->getName(), "DestroyBuildingFormat2"_jrs,
 		Jupiter::StringS::Format(IRCCOLOR "%.*s%.*s" IRCCOLOR " destroyed the " IRCCOLOR "%.*s%.*s" IRCCOLOR " (" IRCCOLOR "12%.*s" IRCCOLOR ").", RenX::tags->teamColorTag.size(), RenX::tags->teamColorTag.ptr(), RenX::tags->nameTag.size(), RenX::tags->nameTag.ptr(), RenX::tags->victimTeamColorTag.size(), RenX::tags->victimTeamColorTag.ptr(), RenX::tags->objectTag.size(), RenX::tags->objectTag.ptr(), RenX::tags->weaponTag.size(), RenX::tags->weaponTag.ptr()));
 
-	RenX_LoggingPlugin::destroyDefenceFmt = Jupiter::IRC::Client::Config->get(this->getName(), STRING_LITERAL_AS_REFERENCE("DestroyDefenceFormat"),
+	RenX_LoggingPlugin::destroyDefenceFmt = Jupiter::IRC::Client::Config->get(this->getName(), "DestroyDefenceFormat"_jrs,
 		Jupiter::StringS::Format("%.*s" IRCCOLOR " destroyed a " IRCCOLOR "%.*s%.*s" IRCCOLOR " (" IRCCOLOR "12%.*s" IRCCOLOR ").", RenX::tags->nameTag.size(), RenX::tags->nameTag.ptr(), RenX::tags->victimTeamColorTag.size(), RenX::tags->victimTeamColorTag.ptr(), RenX::tags->objectTag.size(), RenX::tags->objectTag.ptr(), RenX::tags->weaponTag.size(), RenX::tags->weaponTag.ptr()));
 	
-	RenX_LoggingPlugin::destroyDefenceFmt2 = Jupiter::IRC::Client::Config->get(this->getName(), STRING_LITERAL_AS_REFERENCE("DestroyDefenceFormat2"),
+	RenX_LoggingPlugin::destroyDefenceFmt2 = Jupiter::IRC::Client::Config->get(this->getName(), "DestroyDefenceFormat2"_jrs,
 		Jupiter::StringS::Format(IRCCOLOR "%.*s%.*s" IRCCOLOR " destroyed a " IRCCOLOR "%.*s%.*s" IRCCOLOR " (" IRCCOLOR "12%.*s" IRCCOLOR ").", RenX::tags->teamColorTag.size(), RenX::tags->teamColorTag.ptr(), RenX::tags->nameTag.size(), RenX::tags->nameTag.ptr(), RenX::tags->victimTeamColorTag.size(), RenX::tags->victimTeamColorTag.ptr(), RenX::tags->objectTag.size(), RenX::tags->objectTag.ptr(), RenX::tags->weaponTag.size(), RenX::tags->weaponTag.ptr()));
 
-	RenX_LoggingPlugin::destroyVehicleFmt = Jupiter::IRC::Client::Config->get(this->getName(), STRING_LITERAL_AS_REFERENCE("DestroyVehicleFormat"),
+	RenX_LoggingPlugin::destroyVehicleFmt = Jupiter::IRC::Client::Config->get(this->getName(), "DestroyVehicleFormat"_jrs,
 		Jupiter::StringS::Format("%.*s" IRCCOLOR " destroyed a " IRCCOLOR "%.*s%.*s" IRCCOLOR " (" IRCCOLOR "12%.*s" IRCCOLOR ").", RenX::tags->nameTag.size(), RenX::tags->nameTag.ptr(), RenX::tags->victimTeamColorTag.size(), RenX::tags->victimTeamColorTag.ptr(), RenX::tags->objectTag.size(), RenX::tags->objectTag.ptr(), RenX::tags->weaponTag.size(), RenX::tags->weaponTag.ptr()));
 
-	RenX_LoggingPlugin::destroyVehicleFmt2 = Jupiter::IRC::Client::Config->get(this->getName(), STRING_LITERAL_AS_REFERENCE("DestroyVehicleFormat2"),
+	RenX_LoggingPlugin::destroyVehicleFmt2 = Jupiter::IRC::Client::Config->get(this->getName(), "DestroyVehicleFormat2"_jrs,
 		Jupiter::StringS::Format(IRCCOLOR "%.*s%.*s" IRCCOLOR " destroyed a " IRCCOLOR "%.*s%.*s" IRCCOLOR " (" IRCCOLOR "12%.*s" IRCCOLOR ").", RenX::tags->teamColorTag.size(), RenX::tags->teamColorTag.ptr(), RenX::tags->nameTag.size(), RenX::tags->nameTag.ptr(), RenX::tags->victimTeamColorTag.size(), RenX::tags->victimTeamColorTag.ptr(), RenX::tags->objectTag.size(), RenX::tags->objectTag.ptr(), RenX::tags->weaponTag.size(), RenX::tags->weaponTag.ptr()));
 
-	RenX_LoggingPlugin::captureFmt = Jupiter::IRC::Client::Config->get(this->getName(), STRING_LITERAL_AS_REFERENCE("CaptureFormat"),
+	RenX_LoggingPlugin::captureFmt = Jupiter::IRC::Client::Config->get(this->getName(), "CaptureFormat"_jrs,
 		Jupiter::StringS::Format(IRCBOLD "%.*s" IRCCOLOR IRCBOLD " captured the " IRCBOLD IRCCOLOR "%.*s%.*s" IRCCOLOR IRCBOLD ".", RenX::tags->nameTag.size(), RenX::tags->nameTag.ptr(), RenX::tags->victimTeamColorTag.size(), RenX::tags->victimTeamColorTag.ptr(), RenX::tags->objectTag.size(), RenX::tags->objectTag.ptr()));
 
-	RenX_LoggingPlugin::neutralizeFmt = Jupiter::IRC::Client::Config->get(this->getName(), STRING_LITERAL_AS_REFERENCE("NeutralizeFormat"),
+	RenX_LoggingPlugin::neutralizeFmt = Jupiter::IRC::Client::Config->get(this->getName(), "NeutralizeFormat"_jrs,
 		Jupiter::StringS::Format(IRCBOLD "%.*s" IRCCOLOR IRCBOLD " neutralized the " IRCBOLD IRCCOLOR "%.*s%.*s" IRCCOLOR IRCBOLD ".", RenX::tags->nameTag.size(), RenX::tags->nameTag.ptr(), RenX::tags->victimTeamColorTag.size(), RenX::tags->victimTeamColorTag.ptr(), RenX::tags->objectTag.size(), RenX::tags->objectTag.ptr()));
 
-	RenX_LoggingPlugin::characterPurchaseFmt = Jupiter::IRC::Client::Config->get(this->getName(), STRING_LITERAL_AS_REFERENCE("CharacterPurchaseFormat"),
+	RenX_LoggingPlugin::characterPurchaseFmt = Jupiter::IRC::Client::Config->get(this->getName(), "CharacterPurchaseFormat"_jrs,
 		Jupiter::StringS::Format(IRCBOLD "%.*s" IRCCOLOR IRCBOLD " purchased a " IRCBOLD IRCCOLOR "%.*s%.*s" IRCCOLOR IRCBOLD ".", RenX::tags->nameTag.size(), RenX::tags->nameTag.ptr(), RenX::tags->teamColorTag.size(), RenX::tags->teamColorTag.ptr(), RenX::tags->victimCharacterTag.size(), RenX::tags->victimCharacterTag.ptr()));
 
-	RenX_LoggingPlugin::itemPurchaseFmt = Jupiter::IRC::Client::Config->get(this->getName(), STRING_LITERAL_AS_REFERENCE("ItemPurchaseFormat"),
+	RenX_LoggingPlugin::itemPurchaseFmt = Jupiter::IRC::Client::Config->get(this->getName(), "ItemPurchaseFormat"_jrs,
 		Jupiter::StringS::Format(IRCBOLD "%.*s" IRCCOLOR IRCBOLD " purchased a " IRCBOLD IRCCOLOR "%.*s%.*s" IRCCOLOR IRCBOLD ".", RenX::tags->nameTag.size(), RenX::tags->nameTag.ptr(), RenX::tags->teamColorTag.size(), RenX::tags->teamColorTag.ptr(), RenX::tags->objectTag.size(), RenX::tags->objectTag.ptr()));
 
-	RenX_LoggingPlugin::weaponPurchaseFmt = Jupiter::IRC::Client::Config->get(this->getName(), STRING_LITERAL_AS_REFERENCE("WeaponPurchaseFormat"),
+	RenX_LoggingPlugin::weaponPurchaseFmt = Jupiter::IRC::Client::Config->get(this->getName(), "WeaponPurchaseFormat"_jrs,
 		Jupiter::StringS::Format(IRCBOLD "%.*s" IRCCOLOR IRCBOLD " purchased a " IRCBOLD IRCCOLOR "%.*s%.*s" IRCCOLOR IRCBOLD ".", RenX::tags->nameTag.size(), RenX::tags->nameTag.ptr(), RenX::tags->teamColorTag.size(), RenX::tags->teamColorTag.ptr(), RenX::tags->weaponTag.size(), RenX::tags->weaponTag.ptr()));
 
-	RenX_LoggingPlugin::refillPurchaseFmt = Jupiter::IRC::Client::Config->get(this->getName(), STRING_LITERAL_AS_REFERENCE("RefillPurchaseFormat"),
+	RenX_LoggingPlugin::refillPurchaseFmt = Jupiter::IRC::Client::Config->get(this->getName(), "RefillPurchaseFormat"_jrs,
 		Jupiter::StringS::Format(IRCBOLD "%.*s" IRCCOLOR IRCBOLD " purchased a " IRCBOLD IRCCOLOR "%.*srefill" IRCCOLOR IRCBOLD ".", RenX::tags->nameTag.size(), RenX::tags->nameTag.ptr(), RenX::tags->teamColorTag.size(), RenX::tags->teamColorTag.ptr()));
 
-	RenX_LoggingPlugin::vehiclePurchaseFmt = Jupiter::IRC::Client::Config->get(this->getName(), STRING_LITERAL_AS_REFERENCE("VehiclePurchaseFormat"),
+	RenX_LoggingPlugin::vehiclePurchaseFmt = Jupiter::IRC::Client::Config->get(this->getName(), "VehiclePurchaseFormat"_jrs,
 		Jupiter::StringS::Format(IRCBOLD "%.*s" IRCCOLOR IRCBOLD " purchased a " IRCBOLD IRCCOLOR "%.*s%.*s" IRCCOLOR IRCBOLD ".", RenX::tags->nameTag.size(), RenX::tags->nameTag.ptr(), RenX::tags->teamColorTag.size(), RenX::tags->teamColorTag.ptr(), RenX::tags->victimVehicleTag.size(), RenX::tags->victimVehicleTag.ptr()));
 
-	RenX_LoggingPlugin::vehicleSpawnFmt = Jupiter::IRC::Client::Config->get(this->getName(), STRING_LITERAL_AS_REFERENCE("VehicleSpawnFormat"),
+	RenX_LoggingPlugin::vehicleSpawnFmt = Jupiter::IRC::Client::Config->get(this->getName(), "VehicleSpawnFormat"_jrs,
 		Jupiter::StringS::Format("A " IRCBOLD IRCCOLOR "%.*s%.*s" IRCCOLOR IRCBOLD " has spawned.", RenX::tags->teamColorTag.size(), RenX::tags->teamColorTag.ptr(), RenX::tags->vehicleTag.size(), RenX::tags->vehicleTag.ptr()));
 
-	RenX_LoggingPlugin::spawnFmt = Jupiter::IRC::Client::Config->get(this->getName(), STRING_LITERAL_AS_REFERENCE("SpawnFormat"),
+	RenX_LoggingPlugin::spawnFmt = Jupiter::IRC::Client::Config->get(this->getName(), "SpawnFormat"_jrs,
 		Jupiter::StringS::Format(IRCBOLD "%.*s" IRCCOLOR IRCBOLD " spawned as a " IRCCOLOR "%.*s%.*s.", RenX::tags->nameTag.size(), RenX::tags->nameTag.ptr(), RenX::tags->teamColorTag.size(), RenX::tags->teamColorTag.ptr(), RenX::tags->victimCharacterTag.size(), RenX::tags->victimCharacterTag.ptr()));
 
-	RenX_LoggingPlugin::botJoinFmt = Jupiter::IRC::Client::Config->get(this->getName(), STRING_LITERAL_AS_REFERENCE("BotJoinFormat"),
+	RenX_LoggingPlugin::botJoinFmt = Jupiter::IRC::Client::Config->get(this->getName(), "BotJoinFormat"_jrs,
 		Jupiter::StringS::Format(IRCBOLD "%.*s" IRCCOLOR IRCBOLD " online.", RenX::tags->nameTag.size(), RenX::tags->nameTag.ptr()));
 
-	RenX_LoggingPlugin::vehicleCrateFmt = Jupiter::IRC::Client::Config->get(this->getName(), STRING_LITERAL_AS_REFERENCE("VehicleCrateFormat"),
+	RenX_LoggingPlugin::vehicleCrateFmt = Jupiter::IRC::Client::Config->get(this->getName(), "VehicleCrateFormat"_jrs,
 		Jupiter::StringS::Format(IRCBOLD "%.*s" IRCCOLOR IRCBOLD " picked up a %.*s vehicle crate.", RenX::tags->nameTag.size(), RenX::tags->nameTag.ptr(), RenX::tags->objectTag.size(), RenX::tags->objectTag.ptr()));
 
-	RenX_LoggingPlugin::TSVehicleCrateFmt = Jupiter::IRC::Client::Config->get(this->getName(), STRING_LITERAL_AS_REFERENCE("TSVehicleCrateFormat"),
+	RenX_LoggingPlugin::TSVehicleCrateFmt = Jupiter::IRC::Client::Config->get(this->getName(), "TSVehicleCrateFormat"_jrs,
 		RenX_LoggingPlugin::vehicleCrateFmt);
 
-	RenX_LoggingPlugin::RAVehicleCrateFmt = Jupiter::IRC::Client::Config->get(this->getName(), STRING_LITERAL_AS_REFERENCE("RAVehicleCrateFormat"),
+	RenX_LoggingPlugin::RAVehicleCrateFmt = Jupiter::IRC::Client::Config->get(this->getName(), "RAVehicleCrateFormat"_jrs,
 		RenX_LoggingPlugin::vehicleCrateFmt);
 
-	RenX_LoggingPlugin::deathCrateFmt = Jupiter::IRC::Client::Config->get(this->getName(), STRING_LITERAL_AS_REFERENCE("DeathCrateFormat"),
+	RenX_LoggingPlugin::deathCrateFmt = Jupiter::IRC::Client::Config->get(this->getName(), "DeathCrateFormat"_jrs,
 		Jupiter::StringS::Format(IRCBOLD "%.*s" IRCCOLOR IRCBOLD " picked up a " IRCCOLOR "12death" IRCCOLOR " crate.", RenX::tags->nameTag.size(), RenX::tags->nameTag.ptr()));
 
-	RenX_LoggingPlugin::moneyCrateFmt = Jupiter::IRC::Client::Config->get(this->getName(), STRING_LITERAL_AS_REFERENCE("MoneyCrateFormat"),
+	RenX_LoggingPlugin::moneyCrateFmt = Jupiter::IRC::Client::Config->get(this->getName(), "MoneyCrateFormat"_jrs,
 		Jupiter::StringS::Format(IRCBOLD "%.*s" IRCCOLOR IRCBOLD " picked up " IRCCOLOR "09%.*s credits" IRCCOLOR " from a " IRCCOLOR "12money" IRCCOLOR " crate.", RenX::tags->nameTag.size(), RenX::tags->nameTag.ptr(), RenX::tags->objectTag.size(), RenX::tags->objectTag.ptr()));
 
-	RenX_LoggingPlugin::characterCrateFmt = Jupiter::IRC::Client::Config->get(this->getName(), STRING_LITERAL_AS_REFERENCE("CharacterCrateFormat"),
+	RenX_LoggingPlugin::characterCrateFmt = Jupiter::IRC::Client::Config->get(this->getName(), "CharacterCrateFormat"_jrs,
 		Jupiter::StringS::Format(IRCBOLD "%.*s" IRCCOLOR IRCBOLD " picked up a " IRCCOLOR "%.*s%.*s" IRCCOLOR " " IRCCOLOR "12character" IRCCOLOR " crate.", RenX::tags->nameTag.size(), RenX::tags->nameTag.ptr(), RenX::tags->teamColorTag.size(), RenX::tags->teamColorTag.ptr(), RenX::tags->victimCharacterTag.size(), RenX::tags->victimCharacterTag.ptr()));
 
-	RenX_LoggingPlugin::spyCrateFmt = Jupiter::IRC::Client::Config->get(this->getName(), STRING_LITERAL_AS_REFERENCE("SpyCrateFormat"),
+	RenX_LoggingPlugin::spyCrateFmt = Jupiter::IRC::Client::Config->get(this->getName(), "SpyCrateFormat"_jrs,
 		Jupiter::StringS::Format(IRCBOLD "%.*s" IRCCOLOR IRCBOLD " picked up a " IRCCOLOR "%.*s%.*s" IRCCOLOR " " IRCCOLOR "12spy" IRCCOLOR " crate.", RenX::tags->nameTag.size(), RenX::tags->nameTag.ptr(), RenX::tags->victimTeamColorTag.size(), RenX::tags->victimTeamColorTag.ptr(), RenX::tags->victimCharacterTag.size(), RenX::tags->victimCharacterTag.ptr()));
 
-	RenX_LoggingPlugin::refillCrateFmt = Jupiter::IRC::Client::Config->get(this->getName(), STRING_LITERAL_AS_REFERENCE("RefillCrateFormat"),
+	RenX_LoggingPlugin::refillCrateFmt = Jupiter::IRC::Client::Config->get(this->getName(), "RefillCrateFormat"_jrs,
 		Jupiter::StringS::Format(IRCBOLD "%.*s" IRCCOLOR IRCBOLD " picked up a " IRCCOLOR "%.*srefill" IRCCOLOR " crate.", RenX::tags->nameTag.size(), RenX::tags->nameTag.ptr(), RenX::tags->teamColorTag.size(), RenX::tags->teamColorTag.ptr()));
 
-	RenX_LoggingPlugin::timeBombCrateFmt = Jupiter::IRC::Client::Config->get(this->getName(), STRING_LITERAL_AS_REFERENCE("TimeBombCrateFormat"),
+	RenX_LoggingPlugin::timeBombCrateFmt = Jupiter::IRC::Client::Config->get(this->getName(), "TimeBombCrateFormat"_jrs,
 		Jupiter::StringS::Format(IRCBOLD "%.*s" IRCCOLOR IRCBOLD " picked up a " IRCCOLOR "11time-bomb" IRCCOLOR " crate.", RenX::tags->nameTag.size(), RenX::tags->nameTag.ptr()));
 
-	RenX_LoggingPlugin::speedCrateFmt = Jupiter::IRC::Client::Config->get(this->getName(), STRING_LITERAL_AS_REFERENCE("SpeedCrateFormat"),
+	RenX_LoggingPlugin::speedCrateFmt = Jupiter::IRC::Client::Config->get(this->getName(), "SpeedCrateFormat"_jrs,
 		Jupiter::StringS::Format(IRCBOLD "%.*s" IRCCOLOR IRCBOLD " picked up a " IRCCOLOR "11speed" IRCCOLOR " crate.", RenX::tags->nameTag.size(), RenX::tags->nameTag.ptr()));
 
-	RenX_LoggingPlugin::nukeCrateFmt = Jupiter::IRC::Client::Config->get(this->getName(), STRING_LITERAL_AS_REFERENCE("NukeCrateFormat"),
+	RenX_LoggingPlugin::nukeCrateFmt = Jupiter::IRC::Client::Config->get(this->getName(), "NukeCrateFormat"_jrs,
 		Jupiter::StringS::Format(IRCBOLD "%.*s" IRCCOLOR IRCBOLD " picked up a " IRCCOLOR "04nuke" IRCCOLOR " crate.", RenX::tags->nameTag.size(), RenX::tags->nameTag.ptr()));
 
-	RenX_LoggingPlugin::abductionCrateFmt = Jupiter::IRC::Client::Config->get(this->getName(), STRING_LITERAL_AS_REFERENCE("AbductionCrateFormat"),
+	RenX_LoggingPlugin::abductionCrateFmt = Jupiter::IRC::Client::Config->get(this->getName(), "AbductionCrateFormat"_jrs,
 		Jupiter::StringS::Format(IRCBOLD "%.*s" IRCCOLOR IRCBOLD " has been " IRCBOLD IRCCOLOR "06abducted" IRCCOLOR IRCBOLD " by the " IRCBOLD IRCCOLOR "06Scrin" IRCCOLOR IRCBOLD "!", RenX::tags->nameTag.size(), RenX::tags->nameTag.ptr()));
 
-	RenX_LoggingPlugin::unspecifiedCrateFmt = Jupiter::IRC::Client::Config->get(this->getName(), STRING_LITERAL_AS_REFERENCE("UnspecifiedCrateFormat"),
+	RenX_LoggingPlugin::unspecifiedCrateFmt = Jupiter::IRC::Client::Config->get(this->getName(), "UnspecifiedCrateFormat"_jrs,
 		Jupiter::StringS::Format(IRCBOLD "%.*s" IRCCOLOR IRCBOLD " picked up an " IRCCOLOR "13unspecified" IRCCOLOR " crate.", RenX::tags->nameTag.size(), RenX::tags->nameTag.ptr()));
 
-	RenX_LoggingPlugin::otherCrateFmt = Jupiter::IRC::Client::Config->get(this->getName(), STRING_LITERAL_AS_REFERENCE("OtherCrateFormat"),
+	RenX_LoggingPlugin::otherCrateFmt = Jupiter::IRC::Client::Config->get(this->getName(), "OtherCrateFormat"_jrs,
 		Jupiter::StringS::Format(IRCBOLD "%.*s" IRCCOLOR IRCBOLD " picked up a " IRCCOLOR "13%.*s" IRCCOLOR " crate.", RenX::tags->nameTag.size(), RenX::tags->nameTag.ptr(), RenX::tags->objectTag.size(), RenX::tags->objectTag.ptr()));
 
-	RenX_LoggingPlugin::stealFmt = Jupiter::IRC::Client::Config->get(this->getName(), STRING_LITERAL_AS_REFERENCE("StealFormat"),
+	RenX_LoggingPlugin::stealFmt = Jupiter::IRC::Client::Config->get(this->getName(), "StealFormat"_jrs,
 		Jupiter::StringS::Format(IRCBOLD "%.*s" IRCCOLOR IRCBOLD " stole " IRCBOLD "%.*s" IRCBOLD "'s " IRCBOLD "%.*s" IRCBOLD "!", RenX::tags->nameTag.size(), RenX::tags->nameTag.ptr(), RenX::tags->victimNameTag.size(), RenX::tags->victimNameTag.ptr(), RenX::tags->objectTag.size(), RenX::tags->objectTag.ptr()));
 
-	RenX_LoggingPlugin::stealNoOwnerFmt = Jupiter::IRC::Client::Config->get(this->getName(), STRING_LITERAL_AS_REFERENCE("StealNoOwnerFormat"),
+	RenX_LoggingPlugin::stealNoOwnerFmt = Jupiter::IRC::Client::Config->get(this->getName(), "StealNoOwnerFormat"_jrs,
 		Jupiter::StringS::Format(IRCBOLD "%.*s" IRCCOLOR IRCBOLD " stole a " IRCBOLD IRCCOLOR "12%.*s" IRCBOLD "!", RenX::tags->nameTag.size(), RenX::tags->nameTag.ptr(), RenX::tags->objectTag.size(), RenX::tags->objectTag.ptr()));
 
-	RenX_LoggingPlugin::donateFmt = Jupiter::IRC::Client::Config->get(this->getName(), STRING_LITERAL_AS_REFERENCE("DonateFormat"),
+	RenX_LoggingPlugin::donateFmt = Jupiter::IRC::Client::Config->get(this->getName(), "DonateFormat"_jrs,
 		Jupiter::StringS::Format(IRCBOLD "%.*s" IRCCOLOR IRCBOLD " donated " IRCCOLOR "09%.*s credits" IRCCOLOR " to " IRCBOLD "%.*s" IRCBOLD ".", RenX::tags->nameTag.size(), RenX::tags->nameTag.ptr(), RenX::tags->objectTag.size(), RenX::tags->objectTag.ptr(), RenX::tags->victimNameTag.size(), RenX::tags->victimNameTag.ptr()));
 
-	RenX_LoggingPlugin::gameOverFmt = Jupiter::IRC::Client::Config->get(this->getName(), STRING_LITERAL_AS_REFERENCE("GameOverFormat"),
+	RenX_LoggingPlugin::gameOverFmt = Jupiter::IRC::Client::Config->get(this->getName(), "GameOverFormat"_jrs,
 		Jupiter::StringS::Format(IRCCOLOR "03[Game]" IRCCOLOR "%.*s The " IRCBOLD "%.*s" IRCBOLD " won by " IRCBOLD "%.*s" IRCBOLD, RenX::tags->teamColorTag.size(), RenX::tags->teamColorTag.ptr(), RenX::tags->teamLongTag.size(), RenX::tags->teamLongTag.ptr(), RenX::tags->messageTag.size(), RenX::tags->messageTag.ptr()));
 
-	RenX_LoggingPlugin::gameOverTieFmt = Jupiter::IRC::Client::Config->get(this->getName(), STRING_LITERAL_AS_REFERENCE("GameOverTieNoWinFormat"),
+	RenX_LoggingPlugin::gameOverTieFmt = Jupiter::IRC::Client::Config->get(this->getName(), "GameOverTieNoWinFormat"_jrs,
 		Jupiter::StringS::Format(IRCCOLOR "03[Game]" IRCCOLOR "10 The battle ended in a " IRCBOLD "%.*s" IRCBOLD " - Victory handed to " IRCBOLD IRCCOLOR "%.*s%.*s" IRCBOLD, RenX::tags->messageTag.size(), RenX::tags->messageTag.ptr(), RenX::tags->teamColorTag.size(), RenX::tags->teamColorTag.ptr(), RenX::tags->teamLongTag.size(), RenX::tags->teamLongTag.ptr()));
 
-	RenX_LoggingPlugin::gameOverTieNoWinFmt = Jupiter::IRC::Client::Config->get(this->getName(), STRING_LITERAL_AS_REFERENCE("GameOverTieFormat"),
+	RenX_LoggingPlugin::gameOverTieNoWinFmt = Jupiter::IRC::Client::Config->get(this->getName(), "GameOverTieFormat"_jrs,
 		Jupiter::StringS::Format(IRCCOLOR "03[Game]" IRCCOLOR "10 The battle ended in a " IRCBOLD "%.*s" IRCBOLD, RenX::tags->messageTag.size(), RenX::tags->messageTag.ptr()));
 
-	RenX_LoggingPlugin::gameOverScoreFmt = Jupiter::IRC::Client::Config->get(this->getName(), STRING_LITERAL_AS_REFERENCE("GameOverScoreFormat"),
+	RenX_LoggingPlugin::gameOverScoreFmt = Jupiter::IRC::Client::Config->get(this->getName(), "GameOverScoreFormat"_jrs,
 		Jupiter::StringS::Format(IRCCOLOR "03[Game]" IRCCOLOR "%.*s %.*s" IRCCOLOR ": %.*s | " IRCCOLOR "%.*s%.*s" IRCCOLOR ": %.*s", RenX::tags->teamColorTag.size(), RenX::tags->teamColorTag.ptr(), RenX::tags->teamLongTag.size(), RenX::tags->teamLongTag.ptr(), RenX::tags->winScoreTag.size(), RenX::tags->winScoreTag.ptr(), RenX::tags->victimTeamColorTag.size(), RenX::tags->victimTeamColorTag.ptr(), RenX::tags->victimTeamLongTag.size(), RenX::tags->victimTeamLongTag.ptr(), RenX::tags->loseScoreTag.size(), RenX::tags->loseScoreTag.ptr()));
 
-	RenX_LoggingPlugin::gameFmt = Jupiter::IRC::Client::Config->get(this->getName(), STRING_LITERAL_AS_REFERENCE("GameFormat"),
+	RenX_LoggingPlugin::gameFmt = Jupiter::IRC::Client::Config->get(this->getName(), "GameFormat"_jrs,
 		Jupiter::StringS::Format(IRCCOLOR "03[Game]" IRCCOLOR " %.*s", RenX::tags->messageTag.size(), RenX::tags->messageTag.ptr()));
 
-	RenX_LoggingPlugin::executeFmt = Jupiter::IRC::Client::Config->get(this->getName(), STRING_LITERAL_AS_REFERENCE("ExecuteFormat"),
+	RenX_LoggingPlugin::executeFmt = Jupiter::IRC::Client::Config->get(this->getName(), "ExecuteFormat"_jrs,
 		Jupiter::StringS::Format(IRCCOLOR "07%.*s executed: %.*s", RenX::tags->nameTag.size(), RenX::tags->nameTag.ptr(), RenX::tags->messageTag.size(), RenX::tags->messageTag.ptr()));
 
-	RenX_LoggingPlugin::subscribeFmt = Jupiter::IRC::Client::Config->get(this->getName(), STRING_LITERAL_AS_REFERENCE("SubscribeFormat"),
+	RenX_LoggingPlugin::devBotExecuteFmt = Jupiter::IRC::Client::Config->get(this->getName(), "DevBotExecuteFormat"_jrs);
+
+	RenX_LoggingPlugin::subscribeFmt = Jupiter::IRC::Client::Config->get(this->getName(), "SubscribeFormat"_jrs,
 		Jupiter::StringS::Format(IRCCOLOR "03%.*s subscribed to the RCON data stream.", RenX::tags->nameTag.size(), RenX::tags->nameTag.ptr()));
 
-	RenX_LoggingPlugin::rconFmt = Jupiter::IRC::Client::Config->get(this->getName(), STRING_LITERAL_AS_REFERENCE("RCONFormat"),
+	RenX_LoggingPlugin::rconFmt = Jupiter::IRC::Client::Config->get(this->getName(), "RCONFormat"_jrs,
 		Jupiter::StringS::Format(IRCCOLOR "05[RCON]" IRCCOLOR " %.*s", RenX::tags->messageTag.size(), RenX::tags->messageTag.ptr()));
 
-	RenX_LoggingPlugin::adminLoginFmt = Jupiter::IRC::Client::Config->get(this->getName(), STRING_LITERAL_AS_REFERENCE("AdminLoginFormat"),
+	RenX_LoggingPlugin::adminLoginFmt = Jupiter::IRC::Client::Config->get(this->getName(), "AdminLoginFormat"_jrs,
 		Jupiter::StringS::Format(IRCCOLOR "07[Admin] " IRCBOLD "%.*s" IRCBOLD IRCCOLOR " logged in with " IRCCOLOR "07" IRCBOLD "%.*s" IRCBOLD IRCNORMAL " privledges.", RenX::tags->nameTag.size(), RenX::tags->nameTag.ptr(), RenX::tags->adminTag.size(), RenX::tags->adminTag.ptr()));
 
-	RenX_LoggingPlugin::adminGrantFmt = Jupiter::IRC::Client::Config->get(this->getName(), STRING_LITERAL_AS_REFERENCE("AdminGrantFormat"),
+	RenX_LoggingPlugin::adminGrantFmt = Jupiter::IRC::Client::Config->get(this->getName(), "AdminGrantFormat"_jrs,
 		Jupiter::StringS::Format(IRCCOLOR "07[Admin] " IRCBOLD "%.*s" IRCBOLD IRCCOLOR " was granted " IRCCOLOR "07" IRCBOLD "%.*s" IRCBOLD IRCNORMAL " privledges.", RenX::tags->nameTag.size(), RenX::tags->nameTag.ptr(), RenX::tags->adminTag.size(), RenX::tags->adminTag.ptr()));
 
-	RenX_LoggingPlugin::adminLogoutFmt = Jupiter::IRC::Client::Config->get(this->getName(), STRING_LITERAL_AS_REFERENCE("AdminLogoutFormat"),
+	RenX_LoggingPlugin::adminLogoutFmt = Jupiter::IRC::Client::Config->get(this->getName(), "AdminLogoutFormat"_jrs,
 		Jupiter::StringS::Format(IRCCOLOR "07[Admin] " IRCBOLD "%.*s" IRCBOLD IRCCOLOR " logged out of their " IRCCOLOR "07" IRCBOLD "%.*s" IRCBOLD IRCNORMAL " privledges.", RenX::tags->nameTag.size(), RenX::tags->nameTag.ptr(), RenX::tags->adminTag.size(), RenX::tags->adminTag.ptr()));
 
-	RenX_LoggingPlugin::adminFmt = Jupiter::IRC::Client::Config->get(this->getName(), STRING_LITERAL_AS_REFERENCE("AdminFormat"),
+	RenX_LoggingPlugin::adminFmt = Jupiter::IRC::Client::Config->get(this->getName(), "AdminFormat"_jrs,
 		Jupiter::StringS::Format(IRCCOLOR "07[Admin]" IRCCOLOR " %.*s", RenX::tags->messageTag.size(), RenX::tags->messageTag.ptr()));
 
-	RenX_LoggingPlugin::voteCallFmt = Jupiter::IRC::Client::Config->get(this->getName(), STRING_LITERAL_AS_REFERENCE("VoteCallFormat"),
+	RenX_LoggingPlugin::voteCallFmt = Jupiter::IRC::Client::Config->get(this->getName(), "VoteCallFormat"_jrs,
 		Jupiter::StringS::Format(IRCCOLOR "%.*s[Vote] " IRCBOLD "%.*s" IRCBOLD " has called a \"%.*s\" vote.", RenX::tags->victimTeamColorTag.size(), RenX::tags->victimTeamColorTag.ptr(), RenX::tags->nameTag.size(), RenX::tags->nameTag.ptr(), RenX::tags->objectTag.size(), RenX::tags->objectTag.ptr(), RenX::tags->victimTeamColorTag.size(), RenX::tags->victimTeamColorTag.ptr()));
 
-	RenX_LoggingPlugin::voteOverSuccessFmt = Jupiter::IRC::Client::Config->get(this->getName(), STRING_LITERAL_AS_REFERENCE("VoteOverSuccessFormat"),
+	RenX_LoggingPlugin::voteOverSuccessFmt = Jupiter::IRC::Client::Config->get(this->getName(), "VoteOverSuccessFormat"_jrs,
 		Jupiter::StringS::Format(IRCCOLOR "%.*s[Vote] A vote for \"%.*s\" " IRCBOLD IRCCOLOR "09passed" IRCBOLD IRCCOLOR "%.*s (Votes Yes: %.*s | Votes No: %.*s).", RenX::tags->victimTeamColorTag.size(), RenX::tags->victimTeamColorTag.ptr(), RenX::tags->objectTag.size(), RenX::tags->objectTag.ptr(), RenX::tags->victimTeamColorTag.size(), RenX::tags->victimTeamColorTag.ptr(), RenX::tags->winScoreTag.size(), RenX::tags->winScoreTag.ptr(), RenX::tags->loseScoreTag.size(), RenX::tags->loseScoreTag.ptr()));
 
-	RenX_LoggingPlugin::voteOverFailFmt = Jupiter::IRC::Client::Config->get(this->getName(), STRING_LITERAL_AS_REFERENCE("VoteOverFailFormat"),
+	RenX_LoggingPlugin::voteOverFailFmt = Jupiter::IRC::Client::Config->get(this->getName(), "VoteOverFailFormat"_jrs,
 		Jupiter::StringS::Format(IRCCOLOR "%.*s[Vote] A vote for \"%.*s\" " IRCBOLD IRCCOLOR "04failed" IRCBOLD IRCCOLOR "%.*s (Votes Yes: %.*s | Votes No: %.*s).", RenX::tags->victimTeamColorTag.size(), RenX::tags->victimTeamColorTag.ptr(), RenX::tags->objectTag.size(), RenX::tags->objectTag.ptr(), RenX::tags->victimTeamColorTag.size(), RenX::tags->victimTeamColorTag.ptr(), RenX::tags->winScoreTag.size(), RenX::tags->winScoreTag.ptr(), RenX::tags->loseScoreTag.size(), RenX::tags->loseScoreTag.ptr()));
 
-	RenX_LoggingPlugin::voteCancelFmt = Jupiter::IRC::Client::Config->get(this->getName(), STRING_LITERAL_AS_REFERENCE("VoteCancelFormat"),
+	RenX_LoggingPlugin::voteCancelFmt = Jupiter::IRC::Client::Config->get(this->getName(), "VoteCancelFormat"_jrs,
 		Jupiter::StringS::Format(IRCCOLOR "%.*s[Vote] A vote for \"%.*s\" was " IRCBOLD IRCCOLOR "07cancelled" IRCCOLOR IRCBOLD ".", RenX::tags->victimTeamColorTag.size(), RenX::tags->victimTeamColorTag.ptr(), RenX::tags->objectTag.size(), RenX::tags->objectTag.ptr()));
 
-	RenX_LoggingPlugin::voteFmt = Jupiter::IRC::Client::Config->get(this->getName(), STRING_LITERAL_AS_REFERENCE("VoteFormat"),
+	RenX_LoggingPlugin::voteFmt = Jupiter::IRC::Client::Config->get(this->getName(), "VoteFormat"_jrs,
 		Jupiter::StringS::Format(IRCCOLOR "06[Vote]" IRCCOLOR " %.*s", RenX::tags->messageTag.size(), RenX::tags->messageTag.ptr()));
 
-	RenX_LoggingPlugin::mapChangeFmt = Jupiter::IRC::Client::Config->get(this->getName(), STRING_LITERAL_AS_REFERENCE("MapChangeFormat"),
+	RenX_LoggingPlugin::mapChangeFmt = Jupiter::IRC::Client::Config->get(this->getName(), "MapChangeFormat"_jrs,
 		Jupiter::StringS::Format(IRCCOLOR "03Loading %.*s...", RenX::tags->messageTag.size(), RenX::tags->messageTag.ptr()));
 
-	RenX_LoggingPlugin::mapLoadFmt = Jupiter::IRC::Client::Config->get(this->getName(), STRING_LITERAL_AS_REFERENCE("MapLoadFormat"),
+	RenX_LoggingPlugin::mapLoadFmt = Jupiter::IRC::Client::Config->get(this->getName(), "MapLoadFormat"_jrs,
 		Jupiter::StringS::Format(IRCCOLOR "03%.*s loaded.", RenX::tags->messageTag.size(), RenX::tags->messageTag.ptr()));
 
-	RenX_LoggingPlugin::mapStartFmt = Jupiter::IRC::Client::Config->get(this->getName(), STRING_LITERAL_AS_REFERENCE("MapStartFormat"),
+	RenX_LoggingPlugin::mapStartFmt = Jupiter::IRC::Client::Config->get(this->getName(), "MapStartFormat"_jrs,
 		Jupiter::StringS::Format(IRCCOLOR "03%.*s started.", RenX::tags->messageTag.size(), RenX::tags->messageTag.ptr()));
 
-	RenX_LoggingPlugin::mapFmt = Jupiter::IRC::Client::Config->get(this->getName(), STRING_LITERAL_AS_REFERENCE("MapFormat"),
+	RenX_LoggingPlugin::mapFmt = Jupiter::IRC::Client::Config->get(this->getName(), "MapFormat"_jrs,
 		Jupiter::StringS::Format(IRCCOLOR "06[Map]" IRCCOLOR " %.*s", RenX::tags->messageTag.size(), RenX::tags->messageTag.ptr()));
 
-	RenX_LoggingPlugin::demoRecordFmt = Jupiter::IRC::Client::Config->get(this->getName(), STRING_LITERAL_AS_REFERENCE("DemoRecordFormat"),
+	RenX_LoggingPlugin::demoRecordFmt = Jupiter::IRC::Client::Config->get(this->getName(), "DemoRecordFormat"_jrs,
 		Jupiter::StringS::Format("%.*s has started a demo recording.", RenX::tags->nameTag.size(), RenX::tags->nameTag.ptr()));
 
-	RenX_LoggingPlugin::rconDemoRecordFmt = Jupiter::IRC::Client::Config->get(this->getName(), STRING_LITERAL_AS_REFERENCE("RCONDemoRecordFormat"),
-		STRING_LITERAL_AS_REFERENCE(IRCCOLOR "07A demo recording has started."));
+	RenX_LoggingPlugin::rconDemoRecordFmt = Jupiter::IRC::Client::Config->get(this->getName(), "RCONDemoRecordFormat"_jrs,
+		IRCCOLOR "07A demo recording has started."_jrs);
 
-	RenX_LoggingPlugin::demoRecordStopFmt = Jupiter::IRC::Client::Config->get(this->getName(), STRING_LITERAL_AS_REFERENCE("DemoRecordStopFormat"),
-		STRING_LITERAL_AS_REFERENCE(IRCCOLOR "07The demo recording has stopped."));
+	RenX_LoggingPlugin::demoRecordStopFmt = Jupiter::IRC::Client::Config->get(this->getName(), "DemoRecordStopFormat"_jrs,
+		IRCCOLOR "07The demo recording has stopped."_jrs);
 
-	RenX_LoggingPlugin::demoFmt = Jupiter::IRC::Client::Config->get(this->getName(), STRING_LITERAL_AS_REFERENCE("DemoFormat"),
+	RenX_LoggingPlugin::demoFmt = Jupiter::IRC::Client::Config->get(this->getName(), "DemoFormat"_jrs,
 		Jupiter::StringS::Format(IRCCOLOR "06[Demo]" IRCCOLOR " %.*s", RenX::tags->messageTag.size(), RenX::tags->messageTag.ptr()));
 
-	RenX_LoggingPlugin::logFmt = Jupiter::IRC::Client::Config->get(this->getName(), STRING_LITERAL_AS_REFERENCE("LogFormat"),
+	RenX_LoggingPlugin::logFmt = Jupiter::IRC::Client::Config->get(this->getName(), "LogFormat"_jrs,
 		Jupiter::StringS::Format(IRCCOLOR "07[Log]" IRCCOLOR " %.*s", RenX::tags->messageTag.size(), RenX::tags->messageTag.ptr()));
 
-	RenX_LoggingPlugin::commandFmt = Jupiter::IRC::Client::Config->get(this->getName(), STRING_LITERAL_AS_REFERENCE("CommandFormat"),
+	RenX_LoggingPlugin::commandFmt = Jupiter::IRC::Client::Config->get(this->getName(), "CommandFormat"_jrs,
 		Jupiter::StringS::Format("")); // Disabled by default.
 
-	RenX_LoggingPlugin::errorFmt = Jupiter::IRC::Client::Config->get(this->getName(), STRING_LITERAL_AS_REFERENCE("ErrorFormat"),
+	RenX_LoggingPlugin::errorFmt = Jupiter::IRC::Client::Config->get(this->getName(), "ErrorFormat"_jrs,
 		Jupiter::StringS::Format(IRCCOLOR "04[Error]" IRCCOLOR " %.*s", RenX::tags->messageTag.size(), RenX::tags->messageTag.ptr()));
 
-	RenX_LoggingPlugin::versionFmt = Jupiter::IRC::Client::Config->get(this->getName(), STRING_LITERAL_AS_REFERENCE("VersionFormat"),
+	RenX_LoggingPlugin::versionFmt = Jupiter::IRC::Client::Config->get(this->getName(), "VersionFormat"_jrs,
 		Jupiter::StringS::Format(IRCCOLOR "03Renegade X RCON connection established; using RCON verison " IRCBOLD "%.*s" IRCBOLD " for game version " IRCBOLD "%.*s" IRCBOLD, RenX::tags->rconVersionTag.size(), RenX::tags->rconVersionTag.ptr(), RenX::tags->gameVersionTag.size(), RenX::tags->gameVersionTag.ptr()));
 
-	RenX_LoggingPlugin::authorizedFmt = Jupiter::IRC::Client::Config->get(this->getName(), STRING_LITERAL_AS_REFERENCE("AuthorizedFormat"),
+	RenX_LoggingPlugin::authorizedFmt = Jupiter::IRC::Client::Config->get(this->getName(), "AuthorizedFormat"_jrs,
 		Jupiter::StringS::Format(IRCCOLOR "03RCON authorization completed."));
 
-	RenX_LoggingPlugin::otherFmt = Jupiter::IRC::Client::Config->get(this->getName(), STRING_LITERAL_AS_REFERENCE("OtherFormat"),
+	RenX_LoggingPlugin::otherFmt = Jupiter::IRC::Client::Config->get(this->getName(), "OtherFormat"_jrs,
 		Jupiter::StringS::Format(IRCCOLOR "06[Other]" IRCCOLOR " %.*s", RenX::tags->messageTag.size(), RenX::tags->messageTag.ptr()));
 
 	/** Sanitize tags */
@@ -445,6 +449,7 @@ void RenX_LoggingPlugin::init()
 	RenX::sanitizeTags(gameFmt);
 	RenX::sanitizeTags(executeFmt);
 	RenX::sanitizeTags(playerExecuteFmt);
+	RenX::sanitizeTags(devBotExecuteFmt);
 	RenX::sanitizeTags(hostChatFmt);
 	RenX::sanitizeTags(hostPageFmt);
 	RenX::sanitizeTags(subscribeFmt);
@@ -1564,7 +1569,12 @@ void RenX_LoggingPlugin::RenX_OnExecute(RenX::Server *server, const Jupiter::Rea
 		else
 			func = &RenX::Server::sendAdmChan;
 
-		Jupiter::String msg = this->executeFmt;
+		Jupiter::String msg;
+		if (user.equals(RenX::DevBotName))
+			msg = this->executeFmt;
+		else
+			msg = this->devBotExecuteFmt;
+
 		if (msg.isNotEmpty())
 		{
 			processTags(msg, server);

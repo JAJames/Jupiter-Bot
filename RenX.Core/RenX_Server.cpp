@@ -832,6 +832,11 @@ const Jupiter::ReadableString &RenX::Server::getUser() const
 	return RenX::Server::rconUser;
 }
 
+bool RenX::Server::isDevBot() const
+{
+	return RenX::Server::devBot;
+}
+
 const Jupiter::ReadableString &RenX::Server::getName() const
 {
 	return RenX::Server::serverName;
@@ -2709,7 +2714,10 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 
 		case 'a':
 			{
-				RenX::Server::rconUser = Jupiter::ReferenceString::substring(line, 1);;
+				RenX::Server::rconUser = Jupiter::ReferenceString::substring(line, 1);
+				if (rconUser.equals(RenX::DevBotName))
+					RenX::Server::devBot = true;
+
 				for (size_t i = 0; i < xPlugins.size(); i++)
 					xPlugins.get(i)->RenX_OnAuthorized(this, RenX::Server::rconUser);
 			}

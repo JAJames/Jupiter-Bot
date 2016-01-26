@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2014-2015 Jessica James.
+ * Copyright (C) 2014-2016 Jessica James.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -45,6 +45,7 @@ Jupiter::ReferenceString OtherLongName = "Unknown";
 
 /** RenegadeX RCON protocol message deliminator */
 const char RenX::DelimC = '\xA0';
+const Jupiter::ReferenceString RenX::DevBotName = "DevBot"_jrs;
 
 /** WinType translations */
 

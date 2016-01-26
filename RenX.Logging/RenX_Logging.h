@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2014-2015 Jessica James.
+ * Copyright (C) 2014-2016 Jessica James.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -263,7 +263,7 @@ private:
 	Jupiter::StringS gameOverTieNoWinFmt;
 	Jupiter::StringS gameOverScoreFmt;
 	Jupiter::StringS gameFmt;
-	Jupiter::StringS executeFmt, playerExecuteFmt;
+	Jupiter::StringS executeFmt, playerExecuteFmt, devBotExecuteFmt;
 	Jupiter::StringS subscribeFmt;
 	Jupiter::StringS rconFmt;
 	Jupiter::StringS adminLoginFmt;

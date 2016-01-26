@@ -695,6 +695,13 @@ namespace RenX
 		const Jupiter::ReadableString &getUser() const;
 
 		/**
+		* @brief Checks if this connection is a DevBot connection.
+		*
+		* @return True if this is a DevBot connection, false otherwise.
+		*/
+		bool isDevBot() const;
+
+		/**
 		* @brief Fetches the name of this server.
 		*
 		* @return String containing the server name.
@@ -933,6 +940,7 @@ namespace RenX
 		bool autoBalanceTeams = true;
 		bool spawnCrates = true;
 		bool competitive = false;
+		bool devBot = false;
 		int attempts = 0;
 		int playerLimit = 0;
 		int vehicleLimit = 0;
