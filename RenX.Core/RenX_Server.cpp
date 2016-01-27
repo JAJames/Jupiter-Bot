@@ -387,8 +387,9 @@ void RenX::Server::forceKickPlayer(const RenX::PlayerInfo *player, const Jupiter
 
 void RenX::Server::banCheck()
 {
-	for (Jupiter::DLList<RenX::PlayerInfo>::Node *node = RenX::Server::players.getNode(0); node != nullptr; node = node->next)
-		this->banCheck(node->data);
+	if (RenX::Server::players.size() != 0)
+		for (Jupiter::DLList<RenX::PlayerInfo>::Node *node = RenX::Server::players.getNode(0); node != nullptr; node = node->next)
+			this->banCheck(node->data);
 }
 
 void RenX::Server::banCheck(RenX::PlayerInfo *player)

@@ -2179,6 +2179,7 @@ void AddBanIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &c
 
 				RenX::banDatabase->add(name, ip, prefix_length, steamid, rdns, banner, reason, duration);
 				RenX::getCore()->banCheck();
+				source->sendMessage(channel, Jupiter::StringS::Format("Ban added to the database with ID #%u", RenX::banDatabase->getEntries().size() - 1));
 			}
 		}
 	}
@@ -3056,7 +3057,7 @@ void KickBanGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *player,
 	{
 		Jupiter::StringS name = Jupiter::StringS::getWord(parameters, 0, WHITESPACE);
 		Jupiter::StringS reason = parameters.wordCount(WHITESPACE) > 1 ? Jupiter::StringS::gotoWord(parameters, 1, WHITESPACE) : STRING_LITERAL_AS_REFERENCE("No reason");
-		RenX::PlayerInfo *target = source->getPlayerByPartName(parameters);
+		RenX::PlayerInfo *target = source->getPlayerByPartName(name);
 		if (target == nullptr)
 			source->sendMessage(player, STRING_LITERAL_AS_REFERENCE("Error: Player not found."));
 		else if (player == target)
