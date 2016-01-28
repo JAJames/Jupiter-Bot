@@ -37,8 +37,7 @@ void EightBallIRCCommand::create()
 void EightBallIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &channel, const Jupiter::ReadableString &nick, const Jupiter::ReadableString &parameters)
 {
 	Jupiter::StringS msg;
-	unsigned short r = rand() % 20;
-	switch (r)
+	switch (rand() % 31)
 	{
 	case 0:
 		msg.set("No."_jrs);
@@ -68,7 +67,7 @@ void EightBallIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString
 		msg.set("Fuck me."_jrs);
 		break;
 	case 9:
-		msg.set("Good thing I bend that way. ;)"_jrs);
+		msg.set("Good thing I bend that way!"_jrs);
 		break;
 	case 10:
 		msg.format("Hai %.*s ;)", nick.size(), nick.ptr());
@@ -77,10 +76,13 @@ void EightBallIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString
 		msg.format("Let's ban %.*s!", nick.size(), nick.ptr());
 		break;
 	case 12:
-		msg.format("Sorry %.*s, but your IQ must be at least %d for me to care.", nick.size(), nick.ptr(), rand() % 50);
+		msg.set("Fuck your lineage."_jrs);
 		break;
 	case 13:
-		msg.set("Ask me those kind of questions in #Jail"_jrs);
+		if (channel.equals("#Jail"_jrs))
+			msg.set("Ask me those kind of questions in #Politics"_jrs);
+		else
+			msg.set("Ask me those kind of questions in #Jail"_jrs);
 		break;
 	case 14:
 		msg.set("I don't talk to slut-mongers."_jrs);
@@ -98,7 +100,40 @@ void EightBallIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString
 		msg.set("I hurr u liek mudkipz?"_jrs);
 		break;
 	case 19:
-		msg.set("Walk this way, babycakes ;)"_jrs);
+		msg.set("Fortune might be in your favor."_jrs);
+		break;
+	case 20:
+		msg.set("Fortune might not be in your favor."_jrs);
+		break;
+	case 21:
+		msg.set("Based on the tragectory of James Bond (9007) in relationship to the 9th circle of hell located on the 3rd planet of Sol, you're going to hell."_jrs);
+		break;
+	case 22:
+		msg.set("Based on the tragectory of James Bond (9007) in relationship to the 9th circle of hell located on the 3rd planet of Sol, yes!"_jrs);
+		break;
+	case 23:
+		msg.set("Based on the tragectory of James Bond (9007) in relationship to the 9th circle of hell located on the 3rd planet of Sol, it's approximately as likely as getting a \"yes\" from me."_jrs);
+		break;
+	case 24:
+		msg.set("Fucking campers."_jrs);
+		break;
+	case 25:
+		msg.set("The 8ball seems to be stuck. Try again later. (Dang, you can't even get an 8ball to work for you? That's pretty sad yo)"_jrs);
+		break;
+	case 26:
+		msg.set("The 8ball says... Go away? Wow, it really must not like you. Go away."_jrs);
+		break;
+	case 27:
+		msg.set("Swag"_jrs);
+		break;
+	case 28:
+		msg.set("Based on the orbit and trajectory of the 33rd moon of the planet assinine 6, no."_jrs);
+		break;
+	case 29:
+		msg.set("Based on the orbin and trajectory of the moon assinsix 9, yes!"_jrs);
+		break;
+	case 30:
+		msg.set("Come visit me on the 5th planet away from Sol, and I'll give you whatever you want."_jrs);
 		break;
 	default:
 		msg.set("Nothingness. You suck. Go rot."_jrs);

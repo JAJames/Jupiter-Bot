@@ -392,7 +392,8 @@ void RenX::Server::banCheck()
 {
 	if (RenX::Server::players.size() != 0)
 		for (Jupiter::DLList<RenX::PlayerInfo>::Node *node = RenX::Server::players.getNode(0); node != nullptr; node = node->next)
-			this->banCheck(node->data);
+			if (node->data->isBot == false)
+				this->banCheck(node->data);
 }
 
 void RenX::Server::banCheck(RenX::PlayerInfo *player)
@@ -436,7 +437,6 @@ void RenX::Server::banCheck(RenX::PlayerInfo *player)
 				else
 					netmask = Jupiter_prefix_length_to_netmask(entry->prefix_length);
 
-				printf("%d vs %d" ENDL, (entry->ip & netmask), (player->ip32 & netmask));
 				if ((this->localSteamBan && entry->steamid != 0 && entry->steamid == player->steamid)
 					|| (this->localIPBan && entry->ip != 0 && (entry->ip & netmask) == (player->ip32 & netmask))
 					|| (this->localRDNSBan && entry->rdns.isNotEmpty() && entry->is_rdns_ban() && player->rdns.match(entry->rdns))
@@ -1233,8 +1233,12 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 				this->players.add(r);
 
 			r->uuid = calc_uuid(r);
-			RenX::exemptionDatabase->exemption_check(r);
-			this->banCheck(r);
+
+			if (r->isBot == false)
+			{
+				RenX::exemptionDatabase->exemption_check(r);
+				this->banCheck(r);
+			}
 
 			for (size_t i = 0; i < xPlugins.size(); i++)
 				xPlugins.get(i)->RenX_OnPlayerCreate(this, r);
@@ -1263,8 +1267,11 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 			if (recalcUUID)
 			{
 				this->setUUIDIfDifferent(r, calc_uuid(r));
-				RenX::exemptionDatabase->exemption_check(r);
-				this->banCheck(r);
+				if (r->isBot == false)
+				{
+					RenX::exemptionDatabase->exemption_check(r);
+					this->banCheck(r);
+				}
 			}
 		}
 		return r;
@@ -2298,7 +2305,8 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 						if (player != nullptr)
 						{
 							player->id = tokens.getToken(3).asInt();
-							this->banCheck(player);
+							if (player->isBot == false)
+								this->banCheck(player);
 							for (size_t i = 0; i < xPlugins.size(); i++)
 								xPlugins.get(i)->RenX_OnIDChange(this, player, oldID);
 						}
