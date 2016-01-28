@@ -29,6 +29,7 @@
 #include "RenX_Functions.h"
 #include "RenX_Plugin.h"
 #include "RenX_BanDatabase.h"
+#include "RenX_ExemptionDatabase.h"
 #include "RenX_Tags.h"
 
 using namespace Jupiter::literals;
@@ -369,7 +370,8 @@ void RenX::Server::kickPlayer(int id, const Jupiter::ReadableString &reason)
 
 void RenX::Server::kickPlayer(const RenX::PlayerInfo *player, const Jupiter::ReadableString &reason)
 {
-	RenX::Server::kickPlayer(player->id, reason);
+	if ((player->exemption_flags & RenX::ExemptionDatabase::Entry::FLAG_TYPE_KICK) == 0)
+		RenX::Server::kickPlayer(player->id, reason);
 }
 
 void RenX::Server::forceKickPlayer(int id, const Jupiter::ReadableString &reason)
@@ -382,7 +384,8 @@ void RenX::Server::forceKickPlayer(int id, const Jupiter::ReadableString &reason
 
 void RenX::Server::forceKickPlayer(const RenX::PlayerInfo *player, const Jupiter::ReadableString &reason)
 {
-	RenX::Server::forceKickPlayer(player->id, reason);
+	if ((player->exemption_flags & RenX::ExemptionDatabase::Entry::FLAG_TYPE_KICK) == 0)
+		RenX::Server::forceKickPlayer(player->id, reason);
 }
 
 void RenX::Server::banCheck()
@@ -394,6 +397,9 @@ void RenX::Server::banCheck()
 
 void RenX::Server::banCheck(RenX::PlayerInfo *player)
 {
+	if ((player->exemption_flags & (RenX::ExemptionDatabase::Entry::FLAG_TYPE_BAN | RenX::ExemptionDatabase::Entry::FLAG_TYPE_KICK)) != 0)
+		return;
+
 	const Jupiter::ArrayList<RenX::BanDatabase::Entry> &entries = RenX::banDatabase->getEntries();
 	RenX::BanDatabase::Entry *entry = nullptr;
 	uint32_t netmask;
@@ -406,13 +412,13 @@ void RenX::Server::banCheck(RenX::PlayerInfo *player)
 	{
 		if (last_to_expire[index] == nullptr)
 			last_to_expire[index] = entry;
-		else if (last_to_expire[index]->length == 0)
+		else if (last_to_expire[index]->length == std::chrono::seconds::zero())
 		{
 			// favor older bans if they're also permanent
-			if (entry->length == 0 && entry->timestamp < last_to_expire[index]->timestamp)
+			if (entry->length == std::chrono::seconds::zero() && entry->timestamp < last_to_expire[index]->timestamp)
 				last_to_expire[index] = entry;
 		}
-		else if (entry->length == 0 || entry->timestamp + entry->length > last_to_expire[index]->timestamp + last_to_expire[index]->length)
+		else if (entry->length == std::chrono::seconds::zero() || entry->timestamp + entry->length > last_to_expire[index]->timestamp + last_to_expire[index]->length)
 			last_to_expire[index] = entry;
 	};
 
@@ -421,7 +427,7 @@ void RenX::Server::banCheck(RenX::PlayerInfo *player)
 		entry = entries.get(i);
 		if (entry->is_active())
 		{
-			if (entry->length != 0 && entry->timestamp + entry->length < time(0))
+			if (entry->length != std::chrono::seconds::zero() && entry->timestamp + entry->length < std::chrono::system_clock::now())
 				banDatabase->deactivate(i);
 			else
 			{
@@ -459,8 +465,8 @@ void RenX::Server::banCheck(RenX::PlayerInfo *player)
 	char timeStr[256];
 	if (last_to_expire[0] != nullptr) // Game ban
 	{
-		strftime(timeStr, sizeof(timeStr), "%b %d %Y at %H:%M:%S", localtime(std::addressof<const time_t>(last_to_expire[0]->timestamp + last_to_expire[0]->length)));
-		if (last_to_expire[0]->length == 0)
+		strftime(timeStr, sizeof(timeStr), "%b %d %Y at %H:%M:%S", localtime(std::addressof<const time_t>(std::chrono::system_clock::to_time_t(last_to_expire[0]->timestamp + last_to_expire[0]->length))));
+		if (last_to_expire[0]->length == std::chrono::seconds::zero())
 			this->forceKickPlayer(player, Jupiter::StringS::Format("You were permanently banned from the server on %s for: %.*s", timeStr, last_to_expire[0]->reason.size(), last_to_expire[0]->reason.ptr()));
 		else
 			this->forceKickPlayer(player, Jupiter::StringS::Format("You are banned from the server until %s for: %.*s", timeStr, last_to_expire[0]->reason.size(), last_to_expire[0]->reason.ptr()));
@@ -471,9 +477,9 @@ void RenX::Server::banCheck(RenX::PlayerInfo *player)
 	{
 		if (last_to_expire[1] != nullptr) // Chat ban
 		{
-			strftime(timeStr, sizeof(timeStr), "%b %d %Y at %H:%M:%S", localtime(std::addressof<const time_t>(last_to_expire[1]->timestamp + last_to_expire[1]->length)));
+			strftime(timeStr, sizeof(timeStr), "%b %d %Y at %H:%M:%S", localtime(std::addressof<const time_t>(std::chrono::system_clock::to_time_t(last_to_expire[1]->timestamp + last_to_expire[1]->length))));
 			this->mute(player);
-			if (last_to_expire[1]->length == 0)
+			if (last_to_expire[1]->length == std::chrono::seconds::zero())
 				this->sendMessage(player, Jupiter::StringS::Format("You were permanently muted on this server on %s for: %.*s", timeStr, last_to_expire[1]->reason.size(), last_to_expire[1]->reason.ptr()));
 			else
 				this->sendMessage(player, Jupiter::StringS::Format("You are muted on this server until %s for: %.*s", timeStr, last_to_expire[1]->reason.size(), last_to_expire[1]->reason.ptr()));
@@ -482,16 +488,16 @@ void RenX::Server::banCheck(RenX::PlayerInfo *player)
 		}
 		else if (last_to_expire[2] != nullptr) // Bot ban
 		{
-			strftime(timeStr, sizeof(timeStr), "%b %d %Y at %H:%M:%S", localtime(std::addressof<const time_t>(last_to_expire[2]->timestamp + last_to_expire[2]->length)));
-			if (last_to_expire[2]->length == 0)
+			strftime(timeStr, sizeof(timeStr), "%b %d %Y at %H:%M:%S", localtime(std::addressof<const time_t>(std::chrono::system_clock::to_time_t(last_to_expire[2]->timestamp + last_to_expire[2]->length))));
+			if (last_to_expire[2]->length == std::chrono::seconds::zero())
 				this->sendMessage(player, Jupiter::StringS::Format("You were permanently bot-muted on this server on %s for: %.*s", timeStr, last_to_expire[2]->reason.size(), last_to_expire[2]->reason.ptr()));
 			else
 				this->sendMessage(player, Jupiter::StringS::Format("You are bot-muted on this server until %s for: %.*s", timeStr, last_to_expire[2]->reason.size(), last_to_expire[2]->reason.ptr()));
 		}
 		if (last_to_expire[3] != nullptr) // Vote ban
 		{
-			strftime(timeStr, sizeof(timeStr), "%b %d %Y at %H:%M:%S", localtime(std::addressof<const time_t>(last_to_expire[3]->timestamp + last_to_expire[3]->length)));
-			if (last_to_expire[3]->length == 0)
+			strftime(timeStr, sizeof(timeStr), "%b %d %Y at %H:%M:%S", localtime(std::addressof<const time_t>(std::chrono::system_clock::to_time_t(last_to_expire[3]->timestamp + last_to_expire[3]->length))));
+			if (last_to_expire[3]->length == std::chrono::seconds::zero())
 				this->sendMessage(player, Jupiter::StringS::Format("You were permanently vote-muted on this server on %s for: %.*s", timeStr, last_to_expire[3]->reason.size(), last_to_expire[3]->reason.ptr()));
 			else
 				this->sendMessage(player, Jupiter::StringS::Format("You are vote-muted on this server until %s for: %.*s", timeStr, last_to_expire[3]->reason.size(), last_to_expire[3]->reason.ptr()));
@@ -499,16 +505,16 @@ void RenX::Server::banCheck(RenX::PlayerInfo *player)
 		if (last_to_expire[4] != nullptr) // Mine ban
 		{
 			this->mineBan(player);
-			strftime(timeStr, sizeof(timeStr), "%b %d %Y at %H:%M:%S", localtime(std::addressof<const time_t>(last_to_expire[4]->timestamp + last_to_expire[4]->length)));
-			if (last_to_expire[4]->length == 0)
+			strftime(timeStr, sizeof(timeStr), "%b %d %Y at %H:%M:%S", localtime(std::addressof<const time_t>(std::chrono::system_clock::to_time_t(last_to_expire[4]->timestamp + last_to_expire[4]->length))));
+			if (last_to_expire[4]->length == std::chrono::seconds::zero())
 				this->sendMessage(player, Jupiter::StringS::Format("You were permanently mine-banned on this server on %s for: %.*s", timeStr, last_to_expire[4]->reason.size(), last_to_expire[4]->reason.ptr()));
 			else
 				this->sendMessage(player, Jupiter::StringS::Format("You are mine-banned on this server until %s for: %.*s", timeStr, last_to_expire[4]->reason.size(), last_to_expire[4]->reason.ptr()));
 		}
 		if (last_to_expire[5] != nullptr) // Ladder ban
 		{
-			strftime(timeStr, sizeof(timeStr), "%b %d %Y at %H:%M:%S", localtime(std::addressof<const time_t>(last_to_expire[5]->timestamp + last_to_expire[5]->length)));
-			if (last_to_expire[5]->length == 0)
+			strftime(timeStr, sizeof(timeStr), "%b %d %Y at %H:%M:%S", localtime(std::addressof<const time_t>(std::chrono::system_clock::to_time_t(last_to_expire[5]->timestamp + last_to_expire[5]->length))));
+			if (last_to_expire[5]->length == std::chrono::seconds::zero())
 				this->sendMessage(player, Jupiter::StringS::Format("You were permanently ladder-banned on this server on %s for: %.*s", timeStr, last_to_expire[5]->reason.size(), last_to_expire[5]->reason.ptr()));
 			else
 				this->sendMessage(player, Jupiter::StringS::Format("You are ladder-banned on this server until %s for: %.*s", timeStr, last_to_expire[5]->reason.size(), last_to_expire[5]->reason.ptr()));
@@ -556,24 +562,27 @@ void RenX::Server::banPlayer(int id, const Jupiter::ReadableString &banner, cons
 	}
 }
 
-void RenX::Server::banPlayer(const RenX::PlayerInfo *player, const Jupiter::ReadableString &banner, const Jupiter::ReadableString &reason, time_t length)
+void RenX::Server::banPlayer(const RenX::PlayerInfo *player, const Jupiter::ReadableString &banner, const Jupiter::ReadableString &reason, std::chrono::seconds length)
 {
-	if (RenX::Server::localBan)
-		RenX::banDatabase->add(this, player, banner, reason, length);
-
-	if (length == 0)
+	if ((player->exemption_flags & RenX::ExemptionDatabase::Entry::FLAG_TYPE_BAN) == 0)
 	{
-		if (RenX::Server::rconBan)
-			RenX::Server::sock.send(Jupiter::StringS::Format("ckickban pid%d %.*s\n", player->id, reason.size(), reason.ptr()));
+		if (RenX::Server::localBan)
+			RenX::banDatabase->add(this, player, banner, reason, length);
+
+		if (length == std::chrono::seconds::zero())
+		{
+			if (RenX::Server::rconBan)
+				RenX::Server::sock.send(Jupiter::StringS::Format("ckickban pid%d %.*s\n", player->id, reason.size(), reason.ptr()));
+			else if (banner.isNotEmpty())
+				RenX::Server::forceKickPlayer(player, Jupiter::StringS::Format("You are permanently banned from the server by %.*s for: %.*s", banner.size(), banner.ptr(), reason.size(), reason.ptr()));
+			else
+				RenX::Server::forceKickPlayer(player, Jupiter::StringS::Format("You are permanently banned from the server for: %.*s", reason.size(), reason.ptr()));
+		}
 		else if (banner.isNotEmpty())
-			RenX::Server::forceKickPlayer(player, Jupiter::StringS::Format("You are permanently banned from the server by %.*s for: %.*s", banner.size(), banner.ptr(), reason.size(), reason.ptr()));
+			RenX::Server::forceKickPlayer(player, Jupiter::StringS::Format("You are banned from the server by %.*s for the next %lld days, %.2d:%.2d:%.2d for: %.*s", banner.size(), banner.ptr(), static_cast<long long>(length.count() / 86400), static_cast<int>(length.count() % 3600), static_cast<int>((length.count() % 3600) / 60), static_cast<int>(length.count() % 60), reason.size(), reason.ptr()));
 		else
-			RenX::Server::forceKickPlayer(player, Jupiter::StringS::Format("You are permanently banned from the server for: %.*s", reason.size(), reason.ptr()));
+			RenX::Server::forceKickPlayer(player, Jupiter::StringS::Format("You are banned from the server for the next %lld days, %.2d:%.2d:%.2d for: %.*s", static_cast<long long>(length.count() / 86400), static_cast<int>(length.count() % 3600), static_cast<int>((length.count() % 3600) / 60), static_cast<int>(length.count() % 60), reason.size(), reason.ptr()));
 	}
-	else if (banner.isNotEmpty())
-		RenX::Server::forceKickPlayer(player, Jupiter::StringS::Format("You are banned from the server by %.*s for the next %lld days, %.2d:%.2d:%.2d for: %.*s", banner.size(), banner.ptr(), static_cast<long long>(length / 86400), static_cast<int>(length % 3600), static_cast<int>((length % 3600) / 60), static_cast<int>(length % 60), reason.size(), reason.ptr()));
-	else
-		RenX::Server::forceKickPlayer(player, Jupiter::StringS::Format("You are banned from the server for the next %lld days, %.2d:%.2d:%.2d for: %.*s", static_cast<long long>(length/86400), static_cast<int>(length%3600), static_cast<int>((length%3600)/60), static_cast<int>(length%60), reason.size(), reason.ptr()));
 }
 
 bool RenX::Server::removePlayer(int id)
@@ -1224,6 +1233,7 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 				this->players.add(r);
 
 			r->uuid = calc_uuid(r);
+			RenX::exemptionDatabase->exemption_check(r);
 			this->banCheck(r);
 
 			for (size_t i = 0; i < xPlugins.size(); i++)
@@ -1253,6 +1263,7 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 			if (recalcUUID)
 			{
 				this->setUUIDIfDifferent(r, calc_uuid(r));
+				RenX::exemptionDatabase->exemption_check(r);
 				this->banCheck(r);
 			}
 		}

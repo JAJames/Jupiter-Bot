@@ -48,7 +48,7 @@ void RenX_ExcessiveHeadshotsPlugin::RenX_OnKill(RenX::Server *server, const RenX
 	{
 		unsigned int flags = 0;
 		std::chrono::milliseconds game_time = server->getGameTime(player);
-		double kps = game_time == std::chrono::milliseconds(0) ? static_cast<double>(player->kills) : static_cast<double>(player->kills) / static_cast<double>(game_time.count());
+		double kps = game_time == std::chrono::milliseconds::zero() ? static_cast<double>(player->kills) : static_cast<double>(player->kills) / static_cast<double>(game_time.count());
 		if (player->kills >= RenX_ExcessiveHeadshotsPlugin::minKills) flags++;
 		if (RenX::getHeadshotKillRatio(player) >= RenX_ExcessiveHeadshotsPlugin::ratio) flags++;
 		if (RenX::getKillDeathRatio(player) >= RenX_ExcessiveHeadshotsPlugin::minKD) flags++;

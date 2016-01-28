@@ -54,6 +54,7 @@ namespace RenX
 		uint64_t steamid = 0;
 		uint32_t ip32 = 0;
 		uint16_t ban_flags = 0;
+		uint8_t exemption_flags = 0;
 		TeamType team = TeamType::Other;
 		int id = 0;
 		bool isBot = false;

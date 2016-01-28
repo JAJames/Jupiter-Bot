@@ -77,7 +77,7 @@ void WarnIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &cha
 									source->sendNotice(nick, Jupiter::StringS::Format("%.*s has been kicked from the server for exceeding the warning limit (%d warnings).", player->name.size(), player->name.ptr(), warns));
 									break;
 								default:
-									server->banPlayer(player, STRING_LITERAL_AS_REFERENCE("Jupiter Bot/RenX.Warn"), Jupiter::StringS::Format("Warning limit reached (%d warnings)", warns), pluginInstance.warnAction);
+									server->banPlayer(player, STRING_LITERAL_AS_REFERENCE("Jupiter Bot/RenX.Warn"), Jupiter::StringS::Format("Warning limit reached (%d warnings)", warns), std::chrono::seconds(pluginInstance.warnAction));
 									source->sendNotice(nick, Jupiter::StringS::Format("%.*s has been banned from the server for exceeding the warning limit (%d warnings).", player->name.size(), player->name.ptr(), warns));
 									break;
 								}
@@ -187,7 +187,7 @@ void WarnGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *player, co
 					source->sendMessage(player, Jupiter::StringS::Format("%.*s has been kicked from the server for exceeding the warning limit (%d warnings).", target->name.size(), target->name.ptr(), warns));
 					break;
 				default:
-					source->banPlayer(target, STRING_LITERAL_AS_REFERENCE("Jupiter Bot/RenX.Warn"), Jupiter::StringS::Format("Warning limit reached (%d warnings)", warns), pluginInstance.warnAction);
+					source->banPlayer(target, STRING_LITERAL_AS_REFERENCE("Jupiter Bot/RenX.Warn"), Jupiter::StringS::Format("Warning limit reached (%d warnings)", warns), std::chrono::seconds(pluginInstance.warnAction));
 					source->sendMessage(player, Jupiter::StringS::Format("%.*s has been banned from the server for exceeding the warning limit (%d warnings).", target->name.size(), target->name.ptr(), warns));
 					break;
 				}

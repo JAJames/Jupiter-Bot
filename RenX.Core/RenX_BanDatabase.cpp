@@ -16,6 +16,7 @@
  * Written by Jessica James <jessica.aj@outlook.com>
  */
 
+#include <ctime>
 #include <cstdio>
 #include "Jupiter/IRC_Client.h"
 #include "Jupiter/INIFile.h"
@@ -40,8 +41,16 @@ void RenX::BanDatabase::process_data(Jupiter::DataBuffer &buffer, FILE *file, fp
 
 	// Read data from buffer to entry
 	entry->flags = buffer.pop<uint16_t>();
-	entry->timestamp = buffer.pop<time_t>();
-	entry->length = buffer.pop<time_t>();
+	if (RenX::BanDatabase::read_version >= 4U)
+	{
+		entry->timestamp = std::chrono::system_clock::time_point(std::chrono::seconds(buffer.pop<uint64_t>()));
+		entry->length = std::chrono::seconds(buffer.pop<uint64_t>());
+	}
+	else
+	{
+		entry->timestamp = std::chrono::system_clock::from_time_t(buffer.pop<time_t>());
+		entry->length = std::chrono::seconds(static_cast<long long>(buffer.pop<time_t>()));
+	}
 	entry->steamid = buffer.pop<uint64_t>();
 	entry->ip = buffer.pop<uint32_t>();
 	entry->prefix_length = buffer.pop<uint8_t>();
@@ -119,8 +128,8 @@ void RenX::BanDatabase::write(RenX::BanDatabase::Entry *entry, FILE *file)
 
 	// push data from entry to buffer
 	buffer.push(entry->flags);
-	buffer.push(entry->timestamp);
-	buffer.push(entry->length);
+	buffer.push(static_cast<uint64_t>(std::chrono::duration_cast<std::chrono::seconds>(entry->timestamp.time_since_epoch()).count()));
+	buffer.push(static_cast<uint64_t>(entry->length.count()));
 	buffer.push(entry->steamid);
 	buffer.push(entry->ip);
 	buffer.push(entry->prefix_length);
@@ -146,12 +155,12 @@ void RenX::BanDatabase::write(RenX::BanDatabase::Entry *entry, FILE *file)
 	fgetpos(file, std::addressof(RenX::BanDatabase::eof));
 }
 
-void RenX::BanDatabase::add(RenX::Server *server, const RenX::PlayerInfo *player, const Jupiter::ReadableString &banner, const Jupiter::ReadableString &reason, time_t length, uint16_t flags)
+void RenX::BanDatabase::add(RenX::Server *server, const RenX::PlayerInfo *player, const Jupiter::ReadableString &banner, const Jupiter::ReadableString &reason, std::chrono::seconds length, uint16_t flags)
 {
 	Entry *entry = new Entry();
 	entry->set_active();
 	entry->flags |= flags;
-	entry->timestamp = time(0);
+	entry->timestamp = std::chrono::system_clock::now();
 	entry->length = length;
 	entry->steamid = player->steamid;
 	entry->ip = player->ip32;
@@ -172,12 +181,12 @@ void RenX::BanDatabase::add(RenX::Server *server, const RenX::PlayerInfo *player
 	RenX::BanDatabase::write(entry);
 }
 
-void RenX::BanDatabase::add(const Jupiter::ReadableString &name, uint32_t ip, uint8_t prefix_length, uint64_t steamid, const Jupiter::ReadableString &rdns, Jupiter::ReadableString &banner, Jupiter::ReadableString &reason, time_t length, uint16_t flags)
+void RenX::BanDatabase::add(const Jupiter::ReadableString &name, uint32_t ip, uint8_t prefix_length, uint64_t steamid, const Jupiter::ReadableString &rdns, const Jupiter::ReadableString &banner, Jupiter::ReadableString &reason, std::chrono::seconds length, uint16_t flags)
 {
 	Entry *entry = new Entry();
 	entry->set_active();
 	entry->flags |= flags;
-	entry->timestamp = time(0);
+	entry->timestamp = std::chrono::system_clock::now();
 	entry->length = length;
 	entry->steamid = steamid;
 	entry->ip = ip;

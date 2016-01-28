@@ -1571,9 +1571,9 @@ void RenX_LoggingPlugin::RenX_OnExecute(RenX::Server *server, const Jupiter::Rea
 
 		Jupiter::String msg;
 		if (user.equals(RenX::DevBotName))
-			msg = this->executeFmt;
-		else
 			msg = this->devBotExecuteFmt;
+		else
+			msg = this->executeFmt;
 
 		if (msg.isNotEmpty())
 		{

@@ -368,7 +368,7 @@ namespace RenX
 		* @param player Data of the player to ban.
 		* @param length Duration of the ban (0 for permanent).
 		*/
-		void banPlayer(const RenX::PlayerInfo *player, const Jupiter::ReadableString &banner, const Jupiter::ReadableString &reason, time_t length = 0);
+		void banPlayer(const RenX::PlayerInfo *player, const Jupiter::ReadableString &banner, const Jupiter::ReadableString &reason, std::chrono::seconds length = std::chrono::seconds::zero());
 
 		/**
 		* @brief Removes a player's data based on their ID number.

@@ -175,7 +175,7 @@ int RenX_ModSystemPlugin::auth(RenX::Server *server, const RenX::PlayerInfo *pla
 				if (player->access != 0)
 				{
 					server->sendMessage(player, Jupiter::StringS::Format("You are now authenticated with access level %d; group: %.*s.", player->access, group->name.size(), group->name.ptr()));
-					if (server->getRCONUsername().equals("DevBot"_jrs))
+					if (server->isDevBot())
 						server->sendData(Jupiter::StringS::Format("d%d\n", player->id));
 				}
 				Jupiter::String playerName = RenX::getFormattedPlayerName(player);
@@ -358,7 +358,7 @@ void RenX_ModSystemPlugin::RenX_OnPlayerDelete(RenX::Server *server, const RenX:
 
 void RenX_ModSystemPlugin::RenX_OnIDChange(RenX::Server *server, const RenX::PlayerInfo *player, int oldID)
 {
-	if (player->access != 0 && server->getRCONUsername().equals("DevBot"_jrs))
+	if (player->access != 0 && server->isDevBot())
 		server->sendData(Jupiter::StringS::Format("d%d\n", player->id));
 }
 

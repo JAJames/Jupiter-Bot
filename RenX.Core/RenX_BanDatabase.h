@@ -19,12 +19,12 @@
 #if !defined _RENX_BANDATABASE_H_HEADER
 #define _RENX_BANDATABASE_H_HEADER
 
-#include <ctime>
 #include <cstdint>
 #include "Jupiter/Database.h"
 #include "Jupiter/String.h"
 #include "Jupiter/CString.h"
 #include "Jupiter/ArrayList.h"
+#include "RenX.h"
 
 /** DLL Linkage Nagging */
 #if defined _MSC_VER
@@ -81,8 +81,8 @@ namespace RenX
 		{
 			fpos_t pos; /** Position of the entry in the database */
 			uint16_t flags /** Flags affecting this ban entry (See below for flags) */ = 0x00;
-			time_t timestamp /** Time the ban was created */;
-			time_t length /** Duration of the ban; 0 if permanent */;
+			std::chrono::system_clock::time_point timestamp /** Time the ban was created */;
+			std::chrono::seconds length /** Duration of the ban; 0 if permanent */;
 			uint64_t steamid /** SteamID of the banned player */;
 			uint32_t ip /** IPv4 address of the banned player */;
 			uint8_t prefix_length /** Prefix length for the IPv4 address block */;
@@ -101,7 +101,6 @@ namespace RenX
 			static const uint16_t FLAG_TYPE_MINE = 0x0008U;
 			static const uint16_t FLAG_TYPE_LADDER = 0x0004U;
 			static const uint16_t FLAG_TYPE_ALERT = 0x0002U;
-			
 
 			inline bool is_active() { return (flags & FLAG_ACTIVE) != 0; };
 			inline bool is_rdns_ban() { return (flags & FLAG_USE_RDNS) != 0; };
@@ -143,7 +142,7 @@ namespace RenX
 		* @param player Data of the player to be banned
 		* @param length Duration of the ban
 		*/
-		void add(RenX::Server *server, const RenX::PlayerInfo *player, const Jupiter::ReadableString &banner, const Jupiter::ReadableString &reason, time_t length, uint16_t flags = RenX::BanDatabase::Entry::FLAG_TYPE_GAME);
+		void add(RenX::Server *server, const RenX::PlayerInfo *player, const Jupiter::ReadableString &banner, const Jupiter::ReadableString &reason, std::chrono::seconds length, uint16_t flags = RenX::BanDatabase::Entry::FLAG_TYPE_GAME);
 
 		/**
 		* @brief Adds a ban entry for a set of player information and immediately writes it to the database.
@@ -156,7 +155,7 @@ namespace RenX
 		* @param reason Reason the player is getting banned
 		* @param length Duration of the ban
 		*/
-		void add(const Jupiter::ReadableString &name, uint32_t ip, uint8_t prefix_length, uint64_t steamid, const Jupiter::ReadableString &rdns, Jupiter::ReadableString &banner, Jupiter::ReadableString &reason, time_t length, uint16_t flags = RenX::BanDatabase::Entry::FLAG_TYPE_GAME);
+		void add(const Jupiter::ReadableString &name, uint32_t ip, uint8_t prefix_length, uint64_t steamid, const Jupiter::ReadableString &rdns, const Jupiter::ReadableString &banner, Jupiter::ReadableString &reason, std::chrono::seconds length, uint16_t flags = RenX::BanDatabase::Entry::FLAG_TYPE_GAME);
 
 		/**
 		* @brief Upgrades the ban database to the current write_version.

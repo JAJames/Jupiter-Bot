@@ -27,6 +27,7 @@
 #include "RenX_BuildingInfo.h"
 #include "RenX_Functions.h"
 #include "RenX_BanDatabase.h"
+#include "RenX_ExemptionDatabase.h"
 #include "RenX_Tags.h"
 
 using namespace Jupiter::literals;
@@ -65,7 +66,7 @@ void RenX_CommandsPlugin::RenX_OnDie(RenX::Server *server, const RenX::PlayerInf
 
 int RenX_CommandsPlugin::OnRehash()
 {
-	RenX_CommandsPlugin::_defaultTempBanTime = Jupiter::IRC::Client::Config->getLongLong(RenX_CommandsPlugin::getName(), STRING_LITERAL_AS_REFERENCE("TBanTime"), 86400);
+	RenX_CommandsPlugin::_defaultTempBanTime = std::chrono::seconds(Jupiter::IRC::Client::Config->getLongLong(RenX_CommandsPlugin::getName(), STRING_LITERAL_AS_REFERENCE("TBanTime"), 86400));
 	RenX_CommandsPlugin::playerInfoFormat = Jupiter::IRC::Client::Config->get(RenX_CommandsPlugin::getName(), STRING_LITERAL_AS_REFERENCE("PlayerInfoFormat"), STRING_LITERAL_AS_REFERENCE(IRCCOLOR "03[Player Info]" IRCCOLOR "{TCOLOR} Name: " IRCBOLD "{RNAME}" IRCBOLD " - ID: {ID} - Team: " IRCBOLD "{TEAML}" IRCBOLD " - Vehicle Kills: {VEHICLEKILLS} - Building Kills {BUILDINGKILLS} - Kills {KILLS} - Deaths: {DEATHS} - KDR: {KDR} - Access: {ACCESS}"));
 	RenX_CommandsPlugin::adminPlayerInfoFormat = Jupiter::IRC::Client::Config->get(RenX_CommandsPlugin::getName(), STRING_LITERAL_AS_REFERENCE("AdminPlayerInfoFormat"), Jupiter::StringS::Format("%.*s - IP: " IRCBOLD "{IP}" IRCBOLD " - RDNS: " IRCBOLD "{RDNS}" IRCBOLD " - Steam ID: " IRCBOLD "{STEAM}", RenX_CommandsPlugin::playerInfoFormat.size(), RenX_CommandsPlugin::playerInfoFormat.ptr()));
 	RenX_CommandsPlugin::buildingInfoFormat = Jupiter::IRC::Client::Config->get(RenX_CommandsPlugin::getName(), STRING_LITERAL_AS_REFERENCE("BuildingInfoFormat"), STRING_LITERAL_AS_REFERENCE(IRCCOLOR) + RenX::tags->buildingTeamColorTag + RenX::tags->buildingNameTag + STRING_LITERAL_AS_REFERENCE(IRCCOLOR " - " IRCCOLOR "07") + RenX::tags->buildingHealthPercentageTag + STRING_LITERAL_AS_REFERENCE("%"));
@@ -76,7 +77,7 @@ int RenX_CommandsPlugin::OnRehash()
 	return 0;
 }
 
-time_t RenX_CommandsPlugin::getTBanTime() const
+std::chrono::seconds RenX_CommandsPlugin::getTBanTime() const
 {
 	return RenX_CommandsPlugin::_defaultTempBanTime;
 }
@@ -1130,144 +1131,6 @@ const Jupiter::ReadableString &ModsIRCCommand::getHelp(const Jupiter::ReadableSt
 
 IRC_COMMAND_INIT(ModsIRCCommand)
 
-// BanSearch IRC Command
-
-void BanSearchIRCCommand::create()
-{
-	this->addTrigger(STRING_LITERAL_AS_REFERENCE("bansearch"));
-	this->addTrigger(STRING_LITERAL_AS_REFERENCE("bsearch"));
-	this->addTrigger(STRING_LITERAL_AS_REFERENCE("banfind"));
-	this->addTrigger(STRING_LITERAL_AS_REFERENCE("bfind"));
-	this->addTrigger(STRING_LITERAL_AS_REFERENCE("banlogs"));
-	this->addTrigger(STRING_LITERAL_AS_REFERENCE("blogs"));
-	this->setAccessLevel(2);
-}
-
-void BanSearchIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &channel, const Jupiter::ReadableString &nick, const Jupiter::ReadableString &parameters)
-{
-	auto entries = RenX::banDatabase->getEntries();
-	if (parameters.isNotEmpty())
-	{
-		if (entries.size() == 0)
-			source->sendNotice(nick, STRING_LITERAL_AS_REFERENCE("The ban database is empty!"));
-		else
-		{
-			RenX::BanDatabase::Entry *entry;
-			Jupiter::ReferenceString params = Jupiter::ReferenceString::gotoWord(parameters, 1, WHITESPACE);
-			std::function<bool(unsigned int)> isMatch = [&](unsigned int type_l) -> bool
-			{
-				switch (type_l)
-				{
-				default:
-				case 0:	// ANY
-					return isMatch(1) || isMatch(2) || isMatch(3) || isMatch(4);
-				case 1: // ALL
-					return true;
-				case 2:	// IP
-					return entry->ip == params.asUnsignedInt();
-				case 3: // RDNS
-					return entry->rdns.equals(params);
-				case 4:	// STEAM
-					return entry->steamid == params.asUnsignedLongLong();
-				case 5:	// NAME
-					return entry->name.equalsi(params);
-				case 6:	// BANNER
-					return entry->varData.get(pluginInstance.getName()).equalsi(params);
-				case 7:	// ACTIVE
-					return params.asBool() == entry->is_active();
-				}
-			};
-
-			unsigned int type;
-			Jupiter::ReferenceString type_str = Jupiter::ReferenceString::getWord(parameters, 0, WHITESPACE);
-			if (type_str.equalsi(STRING_LITERAL_AS_REFERENCE("all")) || type_str.equals('*'))
-				type = 1;
-			else if (type_str.equalsi(STRING_LITERAL_AS_REFERENCE("ip")))
-				type = 2;
-			else if (type_str.equalsi(STRING_LITERAL_AS_REFERENCE("rdns")))
-				type = 3;
-			else if (type_str.equalsi(STRING_LITERAL_AS_REFERENCE("steam")))
-				type = 4;
-			else if (type_str.equalsi(STRING_LITERAL_AS_REFERENCE("name")))
-				type = 5;
-			else if (type_str.equalsi(STRING_LITERAL_AS_REFERENCE("banner")))
-				type = 6;
-			else if (type_str.equalsi(STRING_LITERAL_AS_REFERENCE("active")))
-				type = 7;
-			else
-			{
-				type = 0;
-				params = parameters;
-			}
-
-			Jupiter::String out(256);
-			Jupiter::String types(64);
-			char timeStr[256];
-			for (size_t i = 0; i != entries.size(); i++)
-			{
-				entry = entries.get(i);
-				if (isMatch(type))
-				{
-					Jupiter::StringS &ip_str = Jupiter::Socket::ntop4(entry->ip);
-					strftime(timeStr, sizeof(timeStr), "%b %d %Y, %H:%M:%S", localtime(&(entry->timestamp)));
-
-					if ((entry->flags & 0x7FFF) == 0)
-						types = " NULL;"_jrs;
-					else
-					{
-						types.erase();
-						if (entry->is_rdns_ban())
-							types += " rdns"_jrs;
-						if (entry->is_type_game())
-							types += " game"_jrs;
-						if (entry->is_type_chat())
-							types += " chat"_jrs;
-						if (entry->is_type_bot())
-							types += " bot"_jrs;
-						if (entry->is_type_vote())
-							types += " vote"_jrs;
-						if (entry->is_type_mine())
-							types += " mine"_jrs;
-						if (entry->is_type_ladder())
-							types += " ladder"_jrs;
-						if (entry->is_type_alert())
-							types += " alert"_jrs;
-						types += ";"_jrs;
-					}
-					
-					out.format("ID: %lu (%sactive); Date: %s; IP: %.*s/%u; Steam: %llu; Types:%.*s Name: %.*s; Banner: %.*s",
-						i, entry->is_active() ? "" : "in", timeStr, ip_str.size(), ip_str.ptr(), entry->prefix_length, entry->steamid, types.size(), types.ptr(),
-						entry->name.size(), entry->name.ptr(), entry->banner.size(), entry->banner.ptr());
-
-					if (entry->rdns.isNotEmpty())
-					{
-						out.concat("; RDNS: "_jrs);
-						out.concat(entry->rdns);
-					}
-					if (entry->reason.isNotEmpty())
-					{
-						out.concat("; Reason: "_jrs);
-						out.concat(entry->reason);
-					}
-					source->sendNotice(nick, out);
-				}
-			}
-			if (out.isEmpty())
-				source->sendNotice(nick, STRING_LITERAL_AS_REFERENCE("No matches found."));
-		}
-	}
-	else
-		source->sendNotice(nick, Jupiter::StringS::Format("There are a total of %u entries in the ban database.", entries.size()));
-}
-
-const Jupiter::ReadableString &BanSearchIRCCommand::getHelp(const Jupiter::ReadableString &)
-{
-	static STRING_LITERAL_AS_NAMED_REFERENCE(defaultHelp, "Searches the ban database for an entry. Syntax: bsearch [ip/rdns/steam/name/banner/active/any/all = any] <player ip/steam/name/banner>");
-	return defaultHelp;
-}
-
-IRC_COMMAND_INIT(BanSearchIRCCommand)
-
 // ShowRules IRC Command
 
 void ShowRulesIRCCommand::create()
@@ -1914,6 +1777,146 @@ const Jupiter::ReadableString &KickIRCCommand::getHelp(const Jupiter::ReadableSt
 
 IRC_COMMAND_INIT(KickIRCCommand)
 
+/** Ban IRC Commands */
+
+// BanSearch IRC Command
+
+void BanSearchIRCCommand::create()
+{
+	this->addTrigger(STRING_LITERAL_AS_REFERENCE("bansearch"));
+	this->addTrigger(STRING_LITERAL_AS_REFERENCE("bsearch"));
+	this->addTrigger(STRING_LITERAL_AS_REFERENCE("banfind"));
+	this->addTrigger(STRING_LITERAL_AS_REFERENCE("bfind"));
+	this->addTrigger(STRING_LITERAL_AS_REFERENCE("banlogs"));
+	this->addTrigger(STRING_LITERAL_AS_REFERENCE("blogs"));
+	this->setAccessLevel(2);
+}
+
+void BanSearchIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &channel, const Jupiter::ReadableString &nick, const Jupiter::ReadableString &parameters)
+{
+	auto entries = RenX::banDatabase->getEntries();
+	if (parameters.isNotEmpty())
+	{
+		if (entries.size() == 0)
+			source->sendNotice(nick, STRING_LITERAL_AS_REFERENCE("The ban database is empty!"));
+		else
+		{
+			RenX::BanDatabase::Entry *entry;
+			Jupiter::ReferenceString params = Jupiter::ReferenceString::gotoWord(parameters, 1, WHITESPACE);
+			std::function<bool(unsigned int)> isMatch = [&](unsigned int type_l) -> bool
+			{
+				switch (type_l)
+				{
+				default:
+				case 0:	// ANY
+					return isMatch(1) || isMatch(2) || isMatch(3) || isMatch(4);
+				case 1: // ALL
+					return true;
+				case 2:	// IP
+					return entry->ip == params.asUnsignedInt();
+				case 3: // RDNS
+					return entry->rdns.equals(params);
+				case 4:	// STEAM
+					return entry->steamid == params.asUnsignedLongLong();
+				case 5:	// NAME
+					return entry->name.equalsi(params);
+				case 6:	// BANNER
+					return entry->banner.equalsi(params);
+				case 7:	// ACTIVE
+					return params.asBool() == entry->is_active();
+				}
+			};
+
+			unsigned int type;
+			Jupiter::ReferenceString type_str = Jupiter::ReferenceString::getWord(parameters, 0, WHITESPACE);
+			if (type_str.equalsi(STRING_LITERAL_AS_REFERENCE("all")) || type_str.equals('*'))
+				type = 1;
+			else if (type_str.equalsi(STRING_LITERAL_AS_REFERENCE("ip")))
+				type = 2;
+			else if (type_str.equalsi(STRING_LITERAL_AS_REFERENCE("rdns")))
+				type = 3;
+			else if (type_str.equalsi(STRING_LITERAL_AS_REFERENCE("steam")))
+				type = 4;
+			else if (type_str.equalsi(STRING_LITERAL_AS_REFERENCE("name")))
+				type = 5;
+			else if (type_str.equalsi(STRING_LITERAL_AS_REFERENCE("banner")))
+				type = 6;
+			else if (type_str.equalsi(STRING_LITERAL_AS_REFERENCE("active")))
+				type = 7;
+			else
+			{
+				type = 0;
+				params = parameters;
+			}
+
+			Jupiter::String out(256);
+			Jupiter::String types(64);
+			char timeStr[256];
+			for (size_t i = 0; i != entries.size(); i++)
+			{
+				entry = entries.get(i);
+				if (isMatch(type))
+				{
+					Jupiter::StringS &ip_str = Jupiter::Socket::ntop4(entry->ip);
+					strftime(timeStr, sizeof(timeStr), "%b %d %Y, %H:%M:%S", localtime(std::addressof<const time_t>(std::chrono::system_clock::to_time_t(entry->timestamp))));
+
+					if ((entry->flags & 0x7FFF) == 0)
+						types = " NULL;"_jrs;
+					else
+					{
+						types.erase();
+						if (entry->is_rdns_ban())
+							types += " rdns"_jrs;
+						if (entry->is_type_game())
+							types += " game"_jrs;
+						if (entry->is_type_chat())
+							types += " chat"_jrs;
+						if (entry->is_type_bot())
+							types += " bot"_jrs;
+						if (entry->is_type_vote())
+							types += " vote"_jrs;
+						if (entry->is_type_mine())
+							types += " mine"_jrs;
+						if (entry->is_type_ladder())
+							types += " ladder"_jrs;
+						if (entry->is_type_alert())
+							types += " alert"_jrs;
+						types += ";"_jrs;
+					}
+
+					out.format("ID: %lu (%sactive); Date: %s; IP: %.*s/%u; Steam: %llu; Types:%.*s Name: %.*s; Banner: %.*s",
+						i, entry->is_active() ? "" : "in", timeStr, ip_str.size(), ip_str.ptr(), entry->prefix_length, entry->steamid, types.size(), types.ptr(),
+						entry->name.size(), entry->name.ptr(), entry->banner.size(), entry->banner.ptr());
+
+					if (entry->rdns.isNotEmpty())
+					{
+						out.concat("; RDNS: "_jrs);
+						out.concat(entry->rdns);
+					}
+					if (entry->reason.isNotEmpty())
+					{
+						out.concat("; Reason: "_jrs);
+						out.concat(entry->reason);
+					}
+					source->sendNotice(nick, out);
+				}
+			}
+			if (out.isEmpty())
+				source->sendNotice(nick, STRING_LITERAL_AS_REFERENCE("No matches found."));
+		}
+	}
+	else
+		source->sendNotice(nick, Jupiter::StringS::Format("There are a total of %u entries in the ban database.", entries.size()));
+}
+
+const Jupiter::ReadableString &BanSearchIRCCommand::getHelp(const Jupiter::ReadableString &)
+{
+	static STRING_LITERAL_AS_NAMED_REFERENCE(defaultHelp, "Searches the ban database for an entry. Syntax: bsearch [ip/rdns/steam/name/banner/active/any/all = any] <player ip/steam/name/banner>");
+	return defaultHelp;
+}
+
+IRC_COMMAND_INIT(BanSearchIRCCommand)
+
 // TempBan IRC Command
 
 void TempBanIRCCommand::create()
@@ -2068,7 +2071,7 @@ void AddBanIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &c
 				Jupiter::StringS rdns;
 				Jupiter::String banner = nick + "@IRC"_jrs;
 				Jupiter::ReferenceString reason = "No reason"_jrs;
-				time_t duration = 0;
+				std::chrono::seconds duration(0);
 				uint16_t flags = 0;
 
 				Jupiter::ReferenceString word;
@@ -2135,7 +2138,7 @@ void AddBanIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &c
 							return;
 						}
 
-						duration = Jupiter::ReferenceString::getWord(parameters, index++, ADDBAN_WHITESPACE).asUnsignedLongLong();
+						duration = std::chrono::seconds(Jupiter::ReferenceString::getWord(parameters, index++, ADDBAN_WHITESPACE).asUnsignedLongLong());
 					}
 					else if (word.equalsi("Game"_jrs))
 						flags |= RenX::BanDatabase::Entry::FLAG_TYPE_GAME;
@@ -2233,6 +2236,406 @@ const Jupiter::ReadableString &UnBanIRCCommand::getHelp(const Jupiter::ReadableS
 }
 
 IRC_COMMAND_INIT(UnBanIRCCommand)
+
+/** Exemption IRC Commands */
+
+// ExemptionSearch IRC Command
+
+void ExemptionSearchIRCCommand::create()
+{
+	this->addTrigger(STRING_LITERAL_AS_REFERENCE("exemptionsearch"));
+	this->addTrigger(STRING_LITERAL_AS_REFERENCE("esearch"));
+	this->addTrigger(STRING_LITERAL_AS_REFERENCE("exemptionfind"));
+	this->addTrigger(STRING_LITERAL_AS_REFERENCE("efind"));
+	this->addTrigger(STRING_LITERAL_AS_REFERENCE("exemptionlogs"));
+	this->addTrigger(STRING_LITERAL_AS_REFERENCE("elogs"));
+	this->setAccessLevel(2);
+}
+
+void ExemptionSearchIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &channel, const Jupiter::ReadableString &nick, const Jupiter::ReadableString &parameters)
+{
+	auto entries = RenX::exemptionDatabase->getEntries();
+	if (parameters.isNotEmpty())
+	{
+		if (entries.size() == 0)
+			source->sendNotice(nick, STRING_LITERAL_AS_REFERENCE("The exemption database is empty!"));
+		else
+		{
+			RenX::ExemptionDatabase::Entry *entry;
+			Jupiter::ReferenceString params = Jupiter::ReferenceString::gotoWord(parameters, 1, WHITESPACE);
+			std::function<bool(unsigned int)> isMatch = [&](unsigned int type_l) -> bool
+			{
+				switch (type_l)
+				{
+				default:
+				case 0:	// ANY
+					return isMatch(1) || isMatch(2) || isMatch(3) || isMatch(4);
+				case 1: // ALL
+					return true;
+				case 2:	// IP
+					return entry->ip == params.asUnsignedInt();
+				case 3:	// STEAM
+					return entry->steamid == params.asUnsignedLongLong();
+				case 4:	// SETTER
+					return entry->setter.equalsi(params);
+				case 5:	// ACTIVE
+					return params.asBool() == entry->is_active();
+				}
+			};
+
+			unsigned int type;
+			Jupiter::ReferenceString type_str = Jupiter::ReferenceString::getWord(parameters, 0, WHITESPACE);
+			if (type_str.equalsi(STRING_LITERAL_AS_REFERENCE("all")) || type_str.equals('*'))
+				type = 1;
+			else if (type_str.equalsi(STRING_LITERAL_AS_REFERENCE("ip")))
+				type = 2;
+			else if (type_str.equalsi(STRING_LITERAL_AS_REFERENCE("steam")))
+				type = 3;
+			else if (type_str.equalsi(STRING_LITERAL_AS_REFERENCE("setter")))
+				type = 4;
+			else if (type_str.equalsi(STRING_LITERAL_AS_REFERENCE("active")))
+				type = 5;
+			else
+			{
+				type = 0;
+				params = parameters;
+			}
+
+			Jupiter::String out(256);
+			Jupiter::String types(64);
+			char timeStr[256];
+			for (size_t i = 0; i != entries.size(); i++)
+			{
+				entry = entries.get(i);
+				if (isMatch(type))
+				{
+					Jupiter::StringS &ip_str = Jupiter::Socket::ntop4(entry->ip);
+					strftime(timeStr, sizeof(timeStr), "%b %d %Y, %H:%M:%S", localtime(std::addressof<const time_t>(std::chrono::system_clock::to_time_t(entry->timestamp))));
+
+					if ((entry->flags & 0xFF) == 0)
+						types = " NULL;"_jrs;
+					else
+					{
+						types.erase();
+						if (entry->is_type_kick())
+							types += " kick"_jrs;
+						if (entry->is_type_ban())
+							types += " ban"_jrs;
+						if (entry->is_ip_exemption())
+							types += " ip"_jrs;
+						types += ";"_jrs;
+					}
+
+					out.format("ID: %lu (%sactive); Date: %s; IP: %.*s/%u; Steam: %llu; Types:%.*s Setter: %.*s",
+						i, entry->is_active() ? "" : "in", timeStr, ip_str.size(), ip_str.ptr(), entry->prefix_length, entry->steamid,
+						types.size(), types.ptr(), entry->setter.size(), entry->setter.ptr());
+
+					source->sendNotice(nick, out);
+				}
+			}
+			if (out.isEmpty())
+				source->sendNotice(nick, STRING_LITERAL_AS_REFERENCE("No matches found."));
+		}
+	}
+	else
+		source->sendNotice(nick, Jupiter::StringS::Format("There are a total of %u entries in the exemption database.", entries.size()));
+}
+
+const Jupiter::ReadableString &ExemptionSearchIRCCommand::getHelp(const Jupiter::ReadableString &)
+{
+	static STRING_LITERAL_AS_NAMED_REFERENCE(defaultHelp, "Searches the exemption database for an entry. Syntax: esearch [ip/steam/setter/active/any/all = any] <player ip/steam/setter>");
+	return defaultHelp;
+}
+
+IRC_COMMAND_INIT(ExemptionSearchIRCCommand)
+
+// BanExempt IRC Command
+
+void BanExemptIRCCommand::create()
+{
+	this->addTrigger(STRING_LITERAL_AS_REFERENCE("banexempt"));
+	this->addTrigger(STRING_LITERAL_AS_REFERENCE("bexempt"));
+	this->setAccessLevel(4);
+}
+
+void BanExemptIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &channel, const Jupiter::ReadableString &nick, const Jupiter::ReadableString &parameters)
+{
+	if (parameters.isNotEmpty())
+	{
+		Jupiter::IRC::Client::Channel *chan = source->getChannel(channel);
+		if (chan != nullptr)
+		{
+			Jupiter::ArrayList<RenX::Server> servers = RenX::getCore()->getServers(chan->getType());
+			if (servers.size() != 0)
+			{
+				RenX::PlayerInfo *player;
+				RenX::Server *server;
+				unsigned int exemptions = 0;
+				Jupiter::StringS name = Jupiter::StringS::getWord(parameters, 0, WHITESPACE);
+				Jupiter::String setter(nick.size() + 4);
+				setter += nick;
+				setter += "@IRC";
+				for (size_t i = 0; i != servers.size(); i++)
+				{
+					server = servers.get(i);
+					if (server != nullptr)
+					{
+						player = server->getPlayerByPartName(name);
+						if (player != nullptr)
+						{
+							if (player->steamid != 0LL)
+								RenX::exemptionDatabase->add(server, player, setter, std::chrono::seconds::zero(), RenX::ExemptionDatabase::Entry::FLAG_TYPE_BAN);
+							else
+								RenX::exemptionDatabase->add(server, player, setter, std::chrono::seconds::zero(), RenX::ExemptionDatabase::Entry::FLAG_TYPE_BAN | RenX::ExemptionDatabase::Entry::FLAG_USE_IP);
+							++exemptions;
+						}
+					}
+				}
+				if (exemptions == 0)
+					source->sendMessage(channel, "Player \""_jrs + name + "\" not found."_jrs);
+				else
+				{
+					source->sendMessage(channel, Jupiter::StringS::Format("%u players added.", exemptions));
+				}
+			}
+			else source->sendMessage(channel, STRING_LITERAL_AS_REFERENCE("Error: Channel not attached to any connected Renegade X servers."));
+		}
+	}
+	else source->sendNotice(nick, STRING_LITERAL_AS_REFERENCE("Error: Too Few Parameters. Syntax: BanExempt <Player> [Reason]"));
+}
+
+const Jupiter::ReadableString &BanExemptIRCCommand::getHelp(const Jupiter::ReadableString &)
+{
+	static STRING_LITERAL_AS_NAMED_REFERENCE(defaultHelp, "Exempts a player from bans using their SteamID, or their IP address if they have none. Syntax: BanExempt <Player> [Reason]");
+	return defaultHelp;
+}
+
+IRC_COMMAND_INIT(BanExemptIRCCommand)
+
+// KickExempt IRC Command
+
+void KickExemptIRCCommand::create()
+{
+	this->addTrigger(STRING_LITERAL_AS_REFERENCE("kickexempt"));
+	this->addTrigger(STRING_LITERAL_AS_REFERENCE("kexempt"));
+	this->setAccessLevel(4);
+}
+
+void KickExemptIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &channel, const Jupiter::ReadableString &nick, const Jupiter::ReadableString &parameters)
+{
+	if (parameters.isNotEmpty())
+	{
+		Jupiter::IRC::Client::Channel *chan = source->getChannel(channel);
+		if (chan != nullptr)
+		{
+			Jupiter::ArrayList<RenX::Server> servers = RenX::getCore()->getServers(chan->getType());
+			if (servers.size() != 0)
+			{
+				RenX::PlayerInfo *player;
+				RenX::Server *server;
+				unsigned int exemptions = 0;
+				Jupiter::StringS name = Jupiter::StringS::getWord(parameters, 0, WHITESPACE);
+				Jupiter::String setter(nick.size() + 4);
+				setter += nick;
+				setter += "@IRC";
+				for (size_t i = 0; i != servers.size(); i++)
+				{
+					server = servers.get(i);
+					if (server != nullptr)
+					{
+						player = server->getPlayerByPartName(name);
+						if (player != nullptr)
+						{
+							if (player->steamid != 0LL)
+								RenX::exemptionDatabase->add(server, player, setter, std::chrono::seconds::zero(), RenX::ExemptionDatabase::Entry::FLAG_TYPE_BAN | RenX::ExemptionDatabase::Entry::FLAG_TYPE_KICK);
+							else
+								RenX::exemptionDatabase->add(server, player, setter, std::chrono::seconds::zero(), RenX::ExemptionDatabase::Entry::FLAG_TYPE_BAN | RenX::ExemptionDatabase::Entry::FLAG_TYPE_KICK | RenX::ExemptionDatabase::Entry::FLAG_USE_IP);
+							++exemptions;
+						}
+					}
+				}
+				if (exemptions == 0)
+					source->sendMessage(channel, "Player \""_jrs + name + "\" not found."_jrs);
+				else
+				{
+					source->sendMessage(channel, Jupiter::StringS::Format("%u players added.", exemptions));
+				}
+			}
+			else source->sendMessage(channel, STRING_LITERAL_AS_REFERENCE("Error: Channel not attached to any connected Renegade X servers."));
+		}
+	}
+	else source->sendNotice(nick, STRING_LITERAL_AS_REFERENCE("Error: Too Few Parameters. Syntax: KickExempt <Player> [Reason]"));
+}
+
+const Jupiter::ReadableString &KickExemptIRCCommand::getHelp(const Jupiter::ReadableString &)
+{
+	static STRING_LITERAL_AS_NAMED_REFERENCE(defaultHelp, "Exempts a player from kicks and bans using their SteamID, or their IP address if they have none. Syntax: KickExempt <Player> [Reason]");
+	return defaultHelp;
+}
+
+IRC_COMMAND_INIT(KickExemptIRCCommand)
+
+// AddExemption IRC Command
+
+#define ADDEXEMPTION_WHITESPACE " \t="
+
+void AddExemptionIRCCommand::create()
+{
+	this->addTrigger("addexemption"_jrs);
+	this->addTrigger("exemptionadd"_jrs);
+	this->addTrigger("exempt"_jrs);
+	this->setAccessLevel(4);
+}
+
+void AddExemptionIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &channel, const Jupiter::ReadableString &nick, const Jupiter::ReadableString &parameters)
+{
+	if (parameters.isNotEmpty())
+	{
+		Jupiter::IRC::Client::Channel *chan = source->getChannel(channel);
+		if (chan != nullptr)
+		{
+			size_t words = parameters.wordCount(ADDEXEMPTION_WHITESPACE);
+			if (words == 0)
+				source->sendNotice(nick, STRING_LITERAL_AS_REFERENCE("Error: Too Few Parameters. Syntax: BanExempt <Player> [Reason]"));
+			else if (words == 1)
+				BanExemptIRCCommand_instance.trigger(source, channel, nick, parameters);
+			else
+			{
+				size_t index = 0;
+				Jupiter::CStringS ip_str;
+				uint32_t ip = 0U;
+				uint8_t prefix_length = 32U;
+				uint64_t steamid = 0U;
+				Jupiter::String setter = nick + "@IRC"_jrs;
+				std::chrono::seconds duration = std::chrono::seconds::zero();
+				uint8_t flags = 0;
+
+				Jupiter::ReferenceString word;
+				while (index != words)
+				{
+					word = Jupiter::ReferenceString::getWord(parameters, index++, ADDEXEMPTION_WHITESPACE);
+
+					if (word.equalsi("IP"_jrs) || word.equalsi("IPAddress"_jrs) || word.equalsi("Address"_jrs))
+					{
+						if (index == words)
+						{
+							source->sendNotice(nick, "ERROR: No value specified for token: "_jrs + word);
+							return;
+						}
+
+						ip_str = Jupiter::ReferenceString::getWord(parameters, index++, ADDEXEMPTION_WHITESPACE);
+					}
+					else if (word.equalsi("Steam"_jrs) || word.equalsi("SteamID"_jrs))
+					{
+						if (index == words)
+						{
+							source->sendNotice(nick, "ERROR: No value specified for token: "_jrs + word);
+							return;
+						}
+
+						steamid = Jupiter::ReferenceString::getWord(parameters, index++, ADDEXEMPTION_WHITESPACE).asUnsignedLongLong();
+					}
+					else if (word.equalsi("Duration"_jrs) || word.equalsi("Length"_jrs) || word.equalsi("Time"_jrs))
+					{
+						if (index == words)
+						{
+							source->sendNotice(nick, "ERROR: No value specified for token: "_jrs + word);
+							return;
+						}
+
+						duration = std::chrono::seconds(Jupiter::ReferenceString::getWord(parameters, index++, ADDEXEMPTION_WHITESPACE).asUnsignedLongLong());
+					}
+					else if (word.equalsi("Ban"_jrs))
+						flags |= RenX::ExemptionDatabase::Entry::FLAG_TYPE_BAN;
+					else if (word.equalsi("Kick"_jrs))
+						flags |= RenX::ExemptionDatabase::Entry::FLAG_TYPE_KICK;
+					else
+					{
+						source->sendNotice(nick, "ERROR: Unknown token: "_jrs + word);
+						return;
+					}
+				}
+
+				// Default to Ban type
+				if (flags == 0)
+					flags = RenX::ExemptionDatabase::Entry::FLAG_TYPE_BAN;
+
+				if (ip_str.isNotEmpty())
+				{
+					index = ip_str.find('/');
+					if (index != JUPITER_INVALID_INDEX)
+					{
+						prefix_length = Jupiter::ReferenceString::substring(ip_str, index + 1).asUnsignedInt();
+						if (prefix_length == 0)
+							prefix_length = 32U;
+						ip_str.set(ip_str.ptr(), index);
+					}
+					ip = Jupiter::Socket::pton4(ip_str.c_str());
+
+					if (ip != 0)
+						flags |= RenX::ExemptionDatabase::Entry::FLAG_USE_IP;
+				}
+
+				if ((flags & RenX::ExemptionDatabase::Entry::FLAG_USE_IP) == 0 && steamid == 0ULL)
+					source->sendNotice(nick, "Pointless exemption detected -- no IP or SteamID specified"_jrs);
+				else
+				{
+					RenX::exemptionDatabase->add(ip, prefix_length, steamid, setter, duration, flags);
+					source->sendMessage(channel, Jupiter::StringS::Format("Exemption added to the database with ID #%u", RenX::exemptionDatabase->getEntries().size() - 1));
+				}
+			}
+		}
+	}
+	else source->sendNotice(nick, STRING_LITERAL_AS_REFERENCE("Error: Too Few Parameters. Syntax: AddExemption <Key> <Value> [...]"));
+}
+
+const Jupiter::ReadableString &AddExemptionIRCCommand::getHelp(const Jupiter::ReadableString &parameters)
+{
+	static STRING_LITERAL_AS_NAMED_REFERENCE(defaultHelp, "Adds an exemption entry to the exemption list. Use \"help addexemption keys\" for a list of input keys. Syntax: AddExemption <Key> <Value> [<Key> <Value> ...]");
+	static STRING_LITERAL_AS_NAMED_REFERENCE(keyHelp, "Valueless keys (flags): Ban, Kick; Value-paired keys: IP, Steam, Duration");
+	if (parameters.isNotEmpty() && parameters.equalsi("keys"_jrs))
+		return keyHelp;
+	return defaultHelp;
+}
+
+IRC_COMMAND_INIT(AddExemptionIRCCommand)
+
+// UnExempt IRC Command
+
+void UnExemptIRCCommand::create()
+{
+	this->addTrigger(STRING_LITERAL_AS_REFERENCE("unexempt"));
+	this->addTrigger(STRING_LITERAL_AS_REFERENCE("deexempt"));
+	this->addTrigger(STRING_LITERAL_AS_REFERENCE("uexempt"));
+	this->addTrigger(STRING_LITERAL_AS_REFERENCE("dexempt"));
+	this->setAccessLevel(4);
+}
+
+void UnExemptIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &channel, const Jupiter::ReadableString &nick, const Jupiter::ReadableString &parameters)
+{
+	if (parameters.isNotEmpty())
+	{
+		size_t index = static_cast<size_t>(parameters.asUnsignedLongLong());
+		if (index < RenX::exemptionDatabase->getEntries().size())
+		{
+			if (RenX::exemptionDatabase->deactivate(index))
+				source->sendNotice(nick, STRING_LITERAL_AS_REFERENCE("Exemption deactivated."));
+			else
+				source->sendNotice(nick, STRING_LITERAL_AS_REFERENCE("Error: Exemption not active."));
+		}
+		else
+			source->sendNotice(nick, STRING_LITERAL_AS_REFERENCE("Error: Invalid exemption ID; please find the exemption ID using \"esearch\"."));
+	}
+	else source->sendNotice(nick, STRING_LITERAL_AS_REFERENCE("Error: Too Few Parameters. Syntax: unexempt <Exemption ID>"));
+}
+
+const Jupiter::ReadableString &UnExemptIRCCommand::getHelp(const Jupiter::ReadableString &)
+{
+	static STRING_LITERAL_AS_NAMED_REFERENCE(defaultHelp, "Deactivates an exemption. Syntax: unexempt <Exemption ID>");
+	return defaultHelp;
+}
+
+IRC_COMMAND_INIT(UnExemptIRCCommand)
 
 // AddBots IRC Command
 

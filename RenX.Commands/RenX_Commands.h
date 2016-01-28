@@ -19,6 +19,7 @@
 #if !defined _RENX_COMMANDS_H_HEADER
 #define _RENX_COMMANDS_H_HEADER
 
+#include <chrono>
 #include "Console_Command.h"
 #include "IRC_Command.h"
 #include "RenX_GameCommand.h"
@@ -36,7 +37,7 @@ public: // Jupiter::Plugin
 	int OnRehash() override;
 
 public:
-	time_t getTBanTime() const;
+	std::chrono::seconds getTBanTime() const;
 	const Jupiter::ReadableString &getPlayerInfoFormat() const;
 	const Jupiter::ReadableString &getAdminPlayerInfoFormat() const;
 	const Jupiter::ReadableString &getBuildingInfoFormat() const;
@@ -44,7 +45,7 @@ public:
 
 private:
 	STRING_LITERAL_AS_NAMED_REFERENCE(name, "RenX.Commands");
-	time_t _defaultTempBanTime;
+	std::chrono::seconds _defaultTempBanTime;
 	Jupiter::StringS playerInfoFormat;
 	Jupiter::StringS adminPlayerInfoFormat;
 	Jupiter::StringS buildingInfoFormat;
@@ -69,7 +70,6 @@ GENERIC_IRC_COMMAND(SteamIRCCommand)
 GENERIC_IRC_COMMAND(KillDeathRatioIRCCommand)
 GENERIC_IRC_COMMAND(ShowModsIRCCommand)
 GENERIC_IRC_COMMAND(ModsIRCCommand)
-GENERIC_IRC_COMMAND(BanSearchIRCCommand)
 GENERIC_IRC_COMMAND(ShowRulesIRCCommand)
 GENERIC_IRC_COMMAND(RulesIRCCommand)
 GENERIC_IRC_COMMAND(SetRulesIRCCommand)
@@ -84,10 +84,16 @@ GENERIC_IRC_COMMAND(DisarmC4IRCCommand)
 GENERIC_IRC_COMMAND(DisarmBeaconIRCCommand)
 GENERIC_IRC_COMMAND(MineBanIRCCommand)
 GENERIC_IRC_COMMAND(KickIRCCommand)
+GENERIC_IRC_COMMAND(BanSearchIRCCommand)
 GENERIC_IRC_COMMAND(TempBanIRCCommand)
 GENERIC_IRC_COMMAND(KickBanIRCCommand)
 GENERIC_IRC_COMMAND(AddBanIRCCommand)
 GENERIC_IRC_COMMAND(UnBanIRCCommand)
+GENERIC_IRC_COMMAND(ExemptionSearchIRCCommand)
+GENERIC_IRC_COMMAND(BanExemptIRCCommand)
+GENERIC_IRC_COMMAND(KickExemptIRCCommand)
+GENERIC_IRC_COMMAND(AddExemptionIRCCommand)
+GENERIC_IRC_COMMAND(UnExemptIRCCommand)
 GENERIC_IRC_COMMAND(AddBotsIRCCommand)
 GENERIC_IRC_COMMAND(KillBotsIRCCommand)
 GENERIC_IRC_COMMAND(PhaseBotsIRCCommand)

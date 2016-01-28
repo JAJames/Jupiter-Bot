@@ -74,6 +74,7 @@
     <ClInclude Include="RenX_BuildingInfo.h" />
     <ClInclude Include="RenX_Core.h" />
     <ClInclude Include="RenX.h" />
+    <ClInclude Include="RenX_ExemptionDatabase.h" />
     <ClInclude Include="RenX_Functions.h" />
     <ClInclude Include="RenX_GameCommand.h" />
     <ClInclude Include="RenX_Map.h" />
@@ -85,6 +86,7 @@
   <ItemGroup>
     <ClCompile Include="RenX_BanDatabase.cpp" />
     <ClCompile Include="RenX_Core.cpp" />
+    <ClCompile Include="RenX_ExemptionDatabase.cpp" />
     <ClCompile Include="RenX_Functions.cpp" />
     <ClCompile Include="RenX_GameCommand.cpp" />
     <ClCompile Include="RenX_Map.cpp" />
