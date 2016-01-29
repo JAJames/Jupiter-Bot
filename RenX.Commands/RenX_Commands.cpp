@@ -2168,10 +2168,11 @@ void AddBanIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &c
 				index = ip_str.find('/');
 				if (index != JUPITER_INVALID_INDEX)
 				{
-					prefix_length = Jupiter::ReferenceString::substring(ip_str, index + 1).asUnsignedInt();
+					Jupiter::ReferenceString prefix_length_str(ip_str.c_str() + index + 1);
+					prefix_length = prefix_length_str.asUnsignedInt();
 					if (prefix_length == 0)
 						prefix_length = 32U;
-					ip_str.set(ip_str.ptr(), index);
+					ip_str.truncate(prefix_length_str.size() + 1);
 				}
 				ip = Jupiter::Socket::pton4(ip_str.c_str());
 
@@ -2565,10 +2566,11 @@ void AddExemptionIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableStr
 					index = ip_str.find('/');
 					if (index != JUPITER_INVALID_INDEX)
 					{
-						prefix_length = Jupiter::ReferenceString::substring(ip_str, index + 1).asUnsignedInt();
+						Jupiter::ReferenceString prefix_length_str(ip_str.c_str() + index + 1);
+						prefix_length = prefix_length_str.asUnsignedInt();
 						if (prefix_length == 0)
 							prefix_length = 32U;
-						ip_str.set(ip_str.ptr(), index);
+						ip_str.truncate(prefix_length_str.size() + 1);
 					}
 					ip = Jupiter::Socket::pton4(ip_str.c_str());
 
