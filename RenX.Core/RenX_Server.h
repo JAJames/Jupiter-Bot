@@ -989,6 +989,7 @@ namespace RenX
 		Jupiter::StringS pass;
 		Jupiter::StringS configSection;
 		Jupiter::StringS rules;
+		Jupiter::StringS ban_from_str;
 		Jupiter::StringS IRCPrefix;
 		Jupiter::StringS CommandPrefix;
 		Jupiter::INIFile::Section *commandAccessLevels;

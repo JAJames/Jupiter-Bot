@@ -467,9 +467,9 @@ void RenX::Server::banCheck(RenX::PlayerInfo *player)
 	{
 		strftime(timeStr, sizeof(timeStr), "%b %d %Y at %H:%M:%S", localtime(std::addressof<const time_t>(std::chrono::system_clock::to_time_t(last_to_expire[0]->timestamp + last_to_expire[0]->length))));
 		if (last_to_expire[0]->length == std::chrono::seconds::zero())
-			this->forceKickPlayer(player, Jupiter::StringS::Format("You were permanently banned from the server on %s for: %.*s", timeStr, last_to_expire[0]->reason.size(), last_to_expire[0]->reason.ptr()));
+			this->forceKickPlayer(player, Jupiter::StringS::Format("You were permanently banned from %.*s on %s for: %.*s", RenX::Server::ban_from_str.size(), RenX::Server::ban_from_str.ptr(), timeStr, last_to_expire[0]->reason.size(), last_to_expire[0]->reason.ptr()));
 		else
-			this->forceKickPlayer(player, Jupiter::StringS::Format("You are banned from the server until %s for: %.*s", timeStr, last_to_expire[0]->reason.size(), last_to_expire[0]->reason.ptr()));
+			this->forceKickPlayer(player, Jupiter::StringS::Format("You are banned from %.*s until %s for: %.*s", RenX::Server::ban_from_str.size(), RenX::Server::ban_from_str.ptr(), timeStr, last_to_expire[0]->reason.size(), last_to_expire[0]->reason.ptr()));
 
 		player->ban_flags |= RenX::BanDatabase::Entry::FLAG_TYPE_BOT; // implies FLAG_TYPE_BOT
 	}
@@ -574,14 +574,14 @@ void RenX::Server::banPlayer(const RenX::PlayerInfo *player, const Jupiter::Read
 			if (RenX::Server::rconBan)
 				RenX::Server::sock.send(Jupiter::StringS::Format("ckickban pid%d %.*s\n", player->id, reason.size(), reason.ptr()));
 			else if (banner.isNotEmpty())
-				RenX::Server::forceKickPlayer(player, Jupiter::StringS::Format("You are permanently banned from the server by %.*s for: %.*s", banner.size(), banner.ptr(), reason.size(), reason.ptr()));
+				RenX::Server::forceKickPlayer(player, Jupiter::StringS::Format("You are permanently banned from %.*s by %.*s for: %.*s", RenX::Server::ban_from_str.size(), RenX::Server::ban_from_str.ptr(), banner.size(), banner.ptr(), reason.size(), reason.ptr()));
 			else
-				RenX::Server::forceKickPlayer(player, Jupiter::StringS::Format("You are permanently banned from the server for: %.*s", reason.size(), reason.ptr()));
+				RenX::Server::forceKickPlayer(player, Jupiter::StringS::Format("You are permanently banned from %.*s for: %.*s", RenX::Server::ban_from_str.size(), RenX::Server::ban_from_str.ptr(), reason.size(), reason.ptr()));
 		}
 		else if (banner.isNotEmpty())
-			RenX::Server::forceKickPlayer(player, Jupiter::StringS::Format("You are banned from the server by %.*s for the next %lld days, %.2d:%.2d:%.2d for: %.*s", banner.size(), banner.ptr(), static_cast<long long>(length.count() / 86400), static_cast<int>(length.count() % 3600), static_cast<int>((length.count() % 3600) / 60), static_cast<int>(length.count() % 60), reason.size(), reason.ptr()));
+			RenX::Server::forceKickPlayer(player, Jupiter::StringS::Format("You are banned from %.*s by %.*s for the next %lld days, %.2d:%.2d:%.2d for: %.*s", RenX::Server::ban_from_str.size(), RenX::Server::ban_from_str.ptr(), banner.size(), banner.ptr(), static_cast<long long>(length.count() / 86400), static_cast<int>(length.count() % 3600), static_cast<int>((length.count() % 3600) / 60), static_cast<int>(length.count() % 60), reason.size(), reason.ptr()));
 		else
-			RenX::Server::forceKickPlayer(player, Jupiter::StringS::Format("You are banned from the server for the next %lld days, %.2d:%.2d:%.2d for: %.*s", static_cast<long long>(length.count() / 86400), static_cast<int>(length.count() % 3600), static_cast<int>((length.count() % 3600) / 60), static_cast<int>(length.count() % 60), reason.size(), reason.ptr()));
+			RenX::Server::forceKickPlayer(player, Jupiter::StringS::Format("You are banned from %.*s for the next %lld days, %.2d:%.2d:%.2d for: %.*s", RenX::Server::ban_from_str.size(), RenX::Server::ban_from_str.ptr(), static_cast<long long>(length.count() / 86400), static_cast<int>(length.count() % 3600), static_cast<int>((length.count() % 3600) / 60), static_cast<int>(length.count() % 60), reason.size(), reason.ptr()));
 	}
 }
 
@@ -2856,6 +2856,7 @@ void RenX::Server::init()
 	RenX::Server::setCommandPrefix(Jupiter::IRC::Client::Config->get(RenX::Server::configSection, "CommandPrefix"_jrs));
 	RenX::Server::setPrefix(Jupiter::IRC::Client::Config->get(RenX::Server::configSection, "IRCPrefix"_jrs));
 
+	RenX::Server::ban_from_str = Jupiter::IRC::Client::Config->get(RenX::Server::configSection, "BanFromStr"_jrs, "the server"_jrs);
 	RenX::Server::rules = Jupiter::IRC::Client::Config->get(RenX::Server::configSection, "Rules"_jrs, "Anarchy!"_jrs);
 	RenX::Server::delay = std::chrono::milliseconds(Jupiter::IRC::Client::Config->getInt(RenX::Server::configSection, "ReconnectDelay"_jrs, 10000));
 	RenX::Server::maxAttempts = Jupiter::IRC::Client::Config->getInt(RenX::Server::configSection, "MaxReconnectAttempts"_jrs, -1);
