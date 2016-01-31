@@ -188,6 +188,7 @@ Jupiter::String RenX_Ladder_WebPlugin::generate_entry_table(size_t index, size_t
 		row = RenX_Ladder_WebPlugin::entry_table_row;
 		RenX::processTags(row, *node);
 		result += row;
+		node = node->next;
 		--count;
 	}
 

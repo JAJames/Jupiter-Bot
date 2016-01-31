@@ -155,6 +155,7 @@ TagsImp::TagsImp()
 	this->INTERNAL_VICTIM_TEAM_LONG_TAG = this->getUniqueInternalTag();
 	this->INTERNAL_VICTIM_PING_TAG = this->getUniqueInternalTag();
 	this->INTERNAL_VICTIM_SCORE_TAG = this->getUniqueInternalTag();
+	this->INTERNAL_VICTIM_SCORE_PER_MINUTE_TAG = this->getUniqueInternalTag();
 	this->INTERNAL_VICTIM_CREDITS_TAG = this->getUniqueInternalTag();
 	this->INTERNAL_VICTIM_KILLS_TAG = this->getUniqueInternalTag();
 	this->INTERNAL_VICTIM_DEATHS_TAG = this->getUniqueInternalTag();
@@ -348,7 +349,7 @@ TagsImp::TagsImp()
 	this->newNameTag = Jupiter::IRC::Client::Config->get(configSection, "NewNameTag"_jrs, "{NNAME}"_jrs);
 	this->winScoreTag = Jupiter::IRC::Client::Config->get(configSection, "WinScoreTag"_jrs, "{WINSCORE}"_jrs);
 	this->loseScoreTag = Jupiter::IRC::Client::Config->get(configSection, "LoseScoreTag"_jrs, "{LOSESCORE}"_jrs);
-	this->lastGameTag = Jupiter::IRC::Client::Config->get(configSection, "LastScoreTag"_jrs, "{LOSESCORE}"_jrs);
+	this->lastGameTag = Jupiter::IRC::Client::Config->get(configSection, "LastGameTag"_jrs, "{LASTGAME}"_jrs);
 	this->rankTag = Jupiter::IRC::Client::Config->get(configSection, "RankTag"_jrs, "{RANK}"_jrs);
 }
 
@@ -443,7 +444,7 @@ void TagsImp::processTags(Jupiter::StringType &msg, const RenX::Server *server, 
 		PROCESS_TAG(this->INTERNAL_CREDITS_TAG, Jupiter::StringS::Format("%.0f", player->credits));
 		PROCESS_TAG(this->INTERNAL_KILLS_TAG, Jupiter::StringS::Format("%u", player->kills));
 		PROCESS_TAG(this->INTERNAL_DEATHS_TAG, Jupiter::StringS::Format("%u", player->deaths));
-		PROCESS_TAG(this->INTERNAL_KDR_TAG, Jupiter::StringS::Format("%.2f", static_cast<double>(player->kills) / (player->deaths == 0 ? 1.0f : static_cast<double>(player->deaths))));
+		PROCESS_TAG(this->INTERNAL_KDR_TAG, Jupiter::StringS::Format("%.2f", get_ratio(static_cast<double>(player->kills), static_cast<double>(player->deaths))));
 		PROCESS_TAG(this->INTERNAL_SUICIDES_TAG, Jupiter::StringS::Format("%u", player->suicides));
 		PROCESS_TAG(this->INTERNAL_HEADSHOTS_TAG, Jupiter::StringS::Format("%u", player->headshots));
 		PROCESS_TAG(this->INTERNAL_VEHICLE_KILLS_TAG, Jupiter::StringS::Format("%u", player->vehicleKills));
@@ -480,7 +481,7 @@ void TagsImp::processTags(Jupiter::StringType &msg, const RenX::Server *server, 
 		PROCESS_TAG(this->INTERNAL_VICTIM_CREDITS_TAG, Jupiter::StringS::Format("%.0f", victim->credits));
 		PROCESS_TAG(this->INTERNAL_VICTIM_KILLS_TAG, Jupiter::StringS::Format("%u", victim->kills));
 		PROCESS_TAG(this->INTERNAL_VICTIM_DEATHS_TAG, Jupiter::StringS::Format("%u", victim->deaths));
-		PROCESS_TAG(this->INTERNAL_VICTIM_KDR_TAG, Jupiter::StringS::Format("%.2f", static_cast<double>(victim->kills) / (victim->deaths == 0 ? 1.0f : static_cast<double>(victim->deaths))));
+		PROCESS_TAG(this->INTERNAL_VICTIM_KDR_TAG, Jupiter::StringS::Format("%.2f", get_ratio(static_cast<double>(victim->kills), static_cast<double>(victim->deaths))));
 		PROCESS_TAG(this->INTERNAL_VICTIM_SUICIDES_TAG, Jupiter::StringS::Format("%u", victim->suicides));
 		PROCESS_TAG(this->INTERNAL_VICTIM_HEADSHOTS_TAG, Jupiter::StringS::Format("%u", victim->headshots));
 		PROCESS_TAG(this->INTERNAL_VICTIM_VEHICLE_KILLS_TAG, Jupiter::StringS::Format("%u", victim->vehicleKills));
@@ -660,7 +661,7 @@ void TagsImp::sanitizeTags(Jupiter::StringType &fmt)
 	fmt.replace(this->victimTeamLongTag, this->INTERNAL_VICTIM_TEAM_LONG_TAG);
 	fmt.replace(this->victimPingTag, this->INTERNAL_VICTIM_PING_TAG);
 	fmt.replace(this->victimScoreTag, this->INTERNAL_VICTIM_SCORE_TAG);
-	fmt.replace(this->victimScorePerMinuteTag, this->INTERNAL_SCORE_PER_MINUTE_TAG);
+	fmt.replace(this->victimScorePerMinuteTag, this->INTERNAL_VICTIM_SCORE_PER_MINUTE_TAG);
 	fmt.replace(this->victimCreditsTag, this->INTERNAL_VICTIM_CREDITS_TAG);
 	fmt.replace(this->victimKillsTag, this->INTERNAL_VICTIM_KILLS_TAG);
 	fmt.replace(this->victimDeathsTag, this->INTERNAL_VICTIM_DEATHS_TAG);
