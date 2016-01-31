@@ -38,6 +38,7 @@ int RenX::Server::think()
 {
 	if (RenX::Server::connected == false)
 	{
+		// Not connected; attempt retry if needed
 		if (RenX::Server::maxAttempts < 0 || RenX::Server::attempts < RenX::Server::maxAttempts)
 		{
 			if (std::chrono::steady_clock::now() >= RenX::Server::lastAttempt + RenX::Server::delay)
@@ -52,11 +53,13 @@ int RenX::Server::think()
 	}
 	else if (RenX::Server::awaitingPong && std::chrono::steady_clock::now() - RenX::Server::lastActivity >= RenX::Server::pingTimeoutThreshold) // ping timeout
 	{
+		// Ping timeout; disconnect immediately
 		RenX::Server::sendLogChan(STRING_LITERAL_AS_REFERENCE(IRCCOLOR "04[Error]" IRCCOLOR " Disconnected from Renegade-X server (ping timeout)."));
 		RenX::Server::disconnect(RenX::DisconnectReason::PingTimeout);
 	}
 	else
 	{
+		// Connected and fine
 		if (RenX::Server::sock.recv() > 0)
 		{
 			Jupiter::ReadableString::TokenizeResult<Jupiter::Reference_String> result = Jupiter::ReferenceString::tokenize(RenX::Server::sock.getBuffer(), '\n');
@@ -109,6 +112,12 @@ int RenX::Server::think()
 
 			if (RenX::Server::buildingUpdateRate != std::chrono::milliseconds::zero() && std::chrono::steady_clock::now() > RenX::Server::lastBuildingListUpdate + RenX::Server::buildingUpdateRate)
 				RenX::Server::updateBuildingList();
+		}
+
+		if (RenX::Server::gameover_pending && RenX::Server::gameover_time < std::chrono::steady_clock::now())
+		{
+			this->gameover();
+			RenX::Server::gameover_pending = false;
 		}
 	}
 	return 0;
@@ -279,18 +288,27 @@ std::chrono::milliseconds RenX::Server::getGameTime(const RenX::PlayerInfo *play
 	return std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - player->joinTime);
 }
 
+size_t RenX::Server::getBotCount() const
+{
+	return RenX::Server::bot_count;
+}
+
 RenX::PlayerInfo *RenX::Server::getPlayer(int id) const
 {
-	if (RenX::Server::players.size() == 0) return nullptr;
+	if (RenX::Server::players.size() == 0)
+		return nullptr;
+
 	for (Jupiter::DLList<RenX::PlayerInfo>::Node *node = RenX::Server::players.getNode(0); node != nullptr; node = node->next)
 		if (node->data->id == id)
 			return node->data;
+
 	return nullptr;
 }
 
 RenX::PlayerInfo *RenX::Server::getPlayerByName(const Jupiter::ReadableString &name) const
 {
-	if (RenX::Server::players.size() == 0) return nullptr;
+	if (RenX::Server::players.size() == 0)
+		return nullptr;
 
 	for (Jupiter::DLList<RenX::PlayerInfo>::Node *node = RenX::Server::players.getNode(0); node != nullptr; node = node->next)
 		if (node->data->name == name)
@@ -314,18 +332,25 @@ RenX::PlayerInfo *RenX::Server::getPlayerByName(const Jupiter::ReadableString &n
 
 RenX::PlayerInfo *RenX::Server::getPlayerByPartName(const Jupiter::ReadableString &partName) const
 {
-	if (RenX::Server::players.size() == 0) return nullptr;
+	if (RenX::Server::players.size() == 0)
+		return nullptr;
+
 	RenX::PlayerInfo *r = RenX::Server::getPlayerByName(partName);
-	if (r != nullptr) return r;
+	if (r != nullptr)
+		return r;
+
 	return RenX::Server::getPlayerByPartNameFast(partName);
 }
 
 RenX::PlayerInfo *RenX::Server::getPlayerByPartNameFast(const Jupiter::ReadableString &partName) const
 {
-	if (RenX::Server::players.size() == 0) return nullptr;
+	if (RenX::Server::players.size() == 0)
+		return nullptr;
+
 	for (Jupiter::DLList<RenX::PlayerInfo>::Node *node = RenX::Server::players.getNode(0); node != nullptr; node = node->next)
 		if (node->data->name.findi(partName) != Jupiter::INVALID_INDEX)
 			return node->data;
+
 	return nullptr;
 }
 
@@ -587,7 +612,9 @@ void RenX::Server::banPlayer(const RenX::PlayerInfo *player, const Jupiter::Read
 
 bool RenX::Server::removePlayer(int id)
 {
-	if (RenX::Server::players.size() == 0) return false;
+	if (RenX::Server::players.size() == 0)
+		return false;
+
 	for (Jupiter::DLList<RenX::PlayerInfo>::Node *node = RenX::Server::players.getNode(0); node != nullptr; node = node->next)
 	{
 		if (node->data->id == id)
@@ -596,6 +623,8 @@ bool RenX::Server::removePlayer(int id)
 			Jupiter::ArrayList<RenX::Plugin> &xPlugins = *RenX::getCore()->getPlugins();
 			for (size_t i = 0; i < xPlugins.size(); i++)
 				xPlugins.get(i)->RenX_OnPlayerDelete(this, p);
+			if (p->isBot)
+				--this->bot_count;
 			delete p;
 			return true;
 		}
@@ -619,16 +648,11 @@ bool RenX::Server::updateClientList()
 {
 	RenX::Server::lastClientListUpdate = std::chrono::steady_clock::now();
 
-	size_t botCount = 0;
-	for (size_t i = 0; i != RenX::Server::players.size(); i++)
-		if (RenX::Server::players.get(i)->isBot)
-			botCount++;
-
 	int r = 0;
-	if (RenX::Server::players.size() != botCount)
+	if (RenX::Server::players.size() != RenX::Server::bot_count)
 		r = RenX::Server::sock.send(STRING_LITERAL_AS_REFERENCE("cclientvarlist ID\xA0""SCORE\xA0""CREDITS\xA0""PING\n")) > 0;
 
-	if (botCount != 0)
+	if (RenX::Server::bot_count != 0)
 		r |= RenX::Server::sock.send(STRING_LITERAL_AS_REFERENCE("cbotvarlist ID\xA0""SCORE\xA0""CREDITS\n")) > 0;
 
 	return r != 0;
@@ -642,7 +666,27 @@ bool RenX::Server::updateBuildingList()
 
 bool RenX::Server::gameover()
 {
+	RenX::Server::gameover_when_empty = false;
 	return RenX::Server::send("endmap"_jrs) > 0;
+}
+
+void RenX::Server::gameover(std::chrono::seconds delay)
+{
+	if (delay == std::chrono::seconds::zero())
+		this->gameover();
+	else
+	{
+		this->gameover_time = std::chrono::steady_clock::now() + delay;
+		this->gameover_pending = true;
+	}
+}
+
+void RenX::Server::gameoverWhenEmpty()
+{
+	if (this->players.size() != this->bot_count)
+		this->gameover();
+	else
+		this->gameover_when_empty = true;
 }
 
 bool RenX::Server::setMap(const Jupiter::ReadableString &map)
@@ -1239,6 +1283,8 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 				RenX::exemptionDatabase->exemption_check(r);
 				this->banCheck(r);
 			}
+			else
+				++bot_count;
 
 			for (size_t i = 0; i < xPlugins.size(); i++)
 				xPlugins.get(i)->RenX_OnPlayerCreate(this, r);
@@ -2185,6 +2231,7 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 							for (size_t i = 0; i < xPlugins.size(); i++)
 								xPlugins.get(i)->RenX_OnGameOver(this, RenX::WinType::Tie, RenX::TeamType::None, gScore, nScore);
 						}
+						this->gameover_pending = false;
 					}
 					else
 					{
@@ -2278,6 +2325,9 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 							for (size_t i = 0; i < xPlugins.size(); i++)
 								xPlugins.get(i)->RenX_OnPart(this, player);
 						this->removePlayer(player);
+
+						if (this->gameover_when_empty && this->players.size() == this->bot_count)
+							this->gameover();
 					}
 					else if (subHeader.equals("Kick;"))
 					{
@@ -2801,6 +2851,7 @@ void RenX::Server::wipeData()
 			xPlugins.get(index)->RenX_OnPlayerDelete(this, player);
 		delete player;
 	}
+	RenX::Server::bot_count = 0;
 	RenX::Server::buildings.emptyAndDelete();
 	RenX::Server::mutators.emptyAndDelete();
 	RenX::Server::maps.emptyAndDelete();

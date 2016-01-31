@@ -266,6 +266,13 @@ namespace RenX
 		std::chrono::milliseconds getGameTime(const RenX::PlayerInfo *player) const;
 
 		/**
+		* @brief Fetches the number of bots in the server.
+		*
+		* @return Number of bots in the server.
+		*/
+		size_t getBotCount() const;
+
+		/**
 		* @brief Fetches a player's data based on their ID number.
 		*
 		* @param id ID of the player
@@ -410,11 +417,23 @@ namespace RenX
 		bool updateBuildingList();
 
 		/**
-		* @brief Forces the current game to end.
+		* @brief Forces the current game to end immediately.
 		*
 		* @return True on success, false otherwise.
 		*/
 		bool gameover();
+
+		/**
+		* @brief Forces the game to end, after a given delay.
+		*
+		* @param delay The number of seconds from now that the gameover should trigger.
+		*/
+		void gameover(std::chrono::seconds delay);
+
+		/**
+		* @brief Forces the game to end when the server is empty
+		*/
+		void gameoverWhenEmpty();
 
 		/**
 		* @brief Forces the current game to end and changes the map.
@@ -922,6 +941,8 @@ namespace RenX
 		void init();
 
 		/** Tracking variables */
+		bool gameover_when_empty = false;
+		bool gameover_pending = false;
 		bool pure = false;
 		bool connected = false;
 		bool seamless = false;
@@ -946,6 +967,7 @@ namespace RenX
 		int vehicleLimit = 0;
 		int mineLimit = 0;
 		int timeLimit = 0;
+		size_t bot_count = 0;
 		unsigned int rconVersion = 0;
 		double crateRespawnAfterPickup = 0.0;
 		uuid_func calc_uuid;
@@ -954,6 +976,7 @@ namespace RenX
 		std::chrono::steady_clock::time_point lastClientListUpdate = std::chrono::steady_clock::now();
 		std::chrono::steady_clock::time_point lastBuildingListUpdate = std::chrono::steady_clock::now();
 		std::chrono::steady_clock::time_point lastActivity = std::chrono::steady_clock::now();
+		std::chrono::steady_clock::time_point gameover_time;
 		Jupiter::String lastLine;
 		Jupiter::StringS rconUser;
 		Jupiter::StringS gameVersion;

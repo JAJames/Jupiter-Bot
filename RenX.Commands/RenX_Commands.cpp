@@ -1300,7 +1300,7 @@ void GameOverIRCCommand::create()
 	this->setAccessLevel(3);
 }
 
-void GameOverIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &channel, const Jupiter::ReadableString &nick, const Jupiter::ReadableString &)
+void GameOverIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &channel, const Jupiter::ReadableString &nick, const Jupiter::ReadableString &parameters)
 {
 	Jupiter::IRC::Client::Channel *chan = source->getChannel(channel);
 	if (chan != nullptr)
@@ -1313,8 +1313,19 @@ void GameOverIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString 
 			if (server->isLogChanType(type))
 			{
 				match = true;
-				if (server->gameover() == false)
-					source->sendMessage(channel, STRING_LITERAL_AS_REFERENCE("Error: Server does not support gameover."));
+				if (parameters.equalsi("empty"_jrs))
+					server->gameoverWhenEmpty();
+				if (parameters.equalsi("if empty"_jrs))
+				{
+					if (server->players.size() == 0)
+						server->gameover();
+				}
+				else if (parameters.equalsi("now"_jrs))
+					server->gameover();
+				else if (parameters.isEmpty())
+					server->gameover(std::chrono::seconds(10));
+				else
+					server->gameover(std::chrono::seconds(parameters.asInt()));
 			}
 		}
 		if (match == false)
@@ -1324,7 +1335,7 @@ void GameOverIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString 
 
 const Jupiter::ReadableString &GameOverIRCCommand::getHelp(const Jupiter::ReadableString &)
 {
-	static STRING_LITERAL_AS_NAMED_REFERENCE(defaultHelp, "Ends the game immediately. Syntax: Gameover");
+	static STRING_LITERAL_AS_NAMED_REFERENCE(defaultHelp, "Ends the game immediately. Syntax: Gameover [NOW | Empty | Seconds = 10]");
 	return defaultHelp;
 }
 
