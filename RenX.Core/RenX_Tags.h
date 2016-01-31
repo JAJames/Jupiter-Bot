@@ -27,6 +27,7 @@
 #include "Jupiter/String.h"
 #include "Jupiter/CString.h"
 #include "RenX.h"
+#include "RenX_LadderDatabase.h"
 
 /** DLL Linkage Nagging */
 #if defined _MSC_VER
@@ -39,8 +40,10 @@ namespace RenX
 	/** Forward declarations */
 	struct PlayerInfo;
 	class Server;
+	struct BuildingInfo;
 
 	RENX_API void processTags(Jupiter::StringType &msg, const RenX::Server *server = nullptr, const RenX::PlayerInfo *player = nullptr, const RenX::PlayerInfo *victim = nullptr, const RenX::BuildingInfo *building = nullptr);
+	RENX_API void processTags(Jupiter::StringType &msg, const RenX::LadderDatabase::Entry &entry);
 	RENX_API void sanitizeTags(Jupiter::StringType &fmt);
 	RENX_API const Jupiter::ReadableString &getUniqueInternalTag();
 
@@ -86,6 +89,7 @@ namespace RenX
 		Jupiter::StringS INTERNAL_TEAM_LONG_TAG;
 		Jupiter::StringS INTERNAL_PING_TAG;
 		Jupiter::StringS INTERNAL_SCORE_TAG;
+		Jupiter::StringS INTERNAL_SCORE_PER_MINUTE_TAG;
 		Jupiter::StringS INTERNAL_CREDITS_TAG;
 		Jupiter::StringS INTERNAL_KILLS_TAG;
 		Jupiter::StringS INTERNAL_DEATHS_TAG;
@@ -95,10 +99,24 @@ namespace RenX
 		Jupiter::StringS INTERNAL_VEHICLE_KILLS_TAG;
 		Jupiter::StringS INTERNAL_BUILDING_KILLS_TAG;
 		Jupiter::StringS INTERNAL_DEFENCE_KILLS_TAG;
+		Jupiter::StringS INTERNAL_GAME_TIME_TAG;
+		Jupiter::StringS INTERNAL_GAMES_TAG;
+		Jupiter::StringS INTERNAL_GDI_GAMES_TAG;
+		Jupiter::StringS INTERNAL_NOD_GAMES_TAG;
 		Jupiter::StringS INTERNAL_WINS_TAG;
-		Jupiter::StringS INTERNAL_LOSES_TAG;
+		Jupiter::StringS INTERNAL_GDI_WINS_TAG;
+		Jupiter::StringS INTERNAL_NOD_WINS_TAG;
+		Jupiter::StringS INTERNAL_TIES_TAG;
+		Jupiter::StringS INTERNAL_LOSSES_TAG;
+		Jupiter::StringS INTERNAL_GDI_LOSSES_TAG;
+		Jupiter::StringS INTERNAL_NOD_LOSSES_TAG;
+		Jupiter::StringS INTERNAL_WIN_LOSS_RATIO_TAG;
+		Jupiter::StringS INTERNAL_GDI_WIN_LOSS_RATIO_TAG;
+		Jupiter::StringS INTERNAL_NOD_WIN_LOSS_RATIO_TAG;
 		Jupiter::StringS INTERNAL_BEACON_PLACEMENTS_TAG;
 		Jupiter::StringS INTERNAL_BEACON_DISARMS_TAG;
+		Jupiter::StringS INTERNAL_PROXY_PLACEMENTS_TAG;
+		Jupiter::StringS INTERNAL_PROXY_DISARMS_TAG;
 		Jupiter::StringS INTERNAL_CAPTURES_TAG;
 		Jupiter::StringS INTERNAL_STEALS_TAG;
 		Jupiter::StringS INTERNAL_STOLEN_TAG;
@@ -122,6 +140,7 @@ namespace RenX
 		Jupiter::StringS INTERNAL_VICTIM_TEAM_LONG_TAG;
 		Jupiter::StringS INTERNAL_VICTIM_PING_TAG;
 		Jupiter::StringS INTERNAL_VICTIM_SCORE_TAG;
+		Jupiter::StringS INTERNAL_VICTIM_SCORE_PER_MINUTE_TAG;
 		Jupiter::StringS INTERNAL_VICTIM_CREDITS_TAG;
 		Jupiter::StringS INTERNAL_VICTIM_KILLS_TAG;
 		Jupiter::StringS INTERNAL_VICTIM_DEATHS_TAG;
@@ -131,10 +150,24 @@ namespace RenX
 		Jupiter::StringS INTERNAL_VICTIM_VEHICLE_KILLS_TAG;
 		Jupiter::StringS INTERNAL_VICTIM_BUILDING_KILLS_TAG;
 		Jupiter::StringS INTERNAL_VICTIM_DEFENCE_KILLS_TAG;
+		Jupiter::StringS INTERNAL_VICTIM_GAME_TIME_TAG;
+		Jupiter::StringS INTERNAL_VICTIM_GAMES_TAG;
+		Jupiter::StringS INTERNAL_VICTIM_GDI_GAMES_TAG;
+		Jupiter::StringS INTERNAL_VICTIM_NOD_GAMES_TAG;
 		Jupiter::StringS INTERNAL_VICTIM_WINS_TAG;
-		Jupiter::StringS INTERNAL_VICTIM_LOSES_TAG;
+		Jupiter::StringS INTERNAL_VICTIM_GDI_WINS_TAG;
+		Jupiter::StringS INTERNAL_VICTIM_NOD_WINS_TAG;
+		Jupiter::StringS INTERNAL_VICTIM_TIES_TAG;
+		Jupiter::StringS INTERNAL_VICTIM_LOSSES_TAG;
+		Jupiter::StringS INTERNAL_VICTIM_GDI_LOSSES_TAG;
+		Jupiter::StringS INTERNAL_VICTIM_NOD_LOSSES_TAG;
+		Jupiter::StringS INTERNAL_VICTIM_WIN_LOSS_RATIO_TAG;
+		Jupiter::StringS INTERNAL_VICTIM_GDI_WIN_LOSS_RATIO_TAG;
+		Jupiter::StringS INTERNAL_VICTIM_NOD_WIN_LOSS_RATIO_TAG;
 		Jupiter::StringS INTERNAL_VICTIM_BEACON_PLACEMENTS_TAG;
 		Jupiter::StringS INTERNAL_VICTIM_BEACON_DISARMS_TAG;
+		Jupiter::StringS INTERNAL_VICTIM_PROXY_PLACEMENTS_TAG;
+		Jupiter::StringS INTERNAL_VICTIM_PROXY_DISARMS_TAG;
 		Jupiter::StringS INTERNAL_VICTIM_CAPTURES_TAG;
 		Jupiter::StringS INTERNAL_VICTIM_STEALS_TAG;
 		Jupiter::StringS INTERNAL_VICTIM_STOLEN_TAG;
@@ -158,6 +191,8 @@ namespace RenX
 		Jupiter::StringS INTERNAL_NEW_NAME_TAG;
 		Jupiter::StringS INTERNAL_WIN_SCORE_TAG;
 		Jupiter::StringS INTERNAL_LOSE_SCORE_TAG;
+		Jupiter::StringS INTERNAL_LAST_GAME_TAG;
+		Jupiter::StringS INTERNAL_RANK_TAG;
 
 		/** External message tags */
 
@@ -197,6 +232,7 @@ namespace RenX
 		Jupiter::StringS teamLongTag;
 		Jupiter::StringS pingTag;
 		Jupiter::StringS scoreTag;
+		Jupiter::StringS scorePerMinuteTag;
 		Jupiter::StringS creditsTag;
 		Jupiter::StringS killsTag;
 		Jupiter::StringS deathsTag;
@@ -206,10 +242,24 @@ namespace RenX
 		Jupiter::StringS vehicleKillsTag;
 		Jupiter::StringS buildingKillsTag;
 		Jupiter::StringS defenceKillsTag;
+		Jupiter::StringS gameTimeTag;
+		Jupiter::StringS gamesTag;
+		Jupiter::StringS GDIGamesTag;
+		Jupiter::StringS NodGamesTag;
 		Jupiter::StringS winsTag;
-		Jupiter::StringS losesTag;
+		Jupiter::StringS GDIWinsTag;
+		Jupiter::StringS NodWinsTag;
+		Jupiter::StringS tiesTag;
+		Jupiter::StringS lossesTag;
+		Jupiter::StringS GDILossesTag;
+		Jupiter::StringS NodLossesTag;
+		Jupiter::StringS winLossRatioTag;
+		Jupiter::StringS GDIWinLossRatioTag;
+		Jupiter::StringS NodWinLossRatioTag;
 		Jupiter::StringS beaconPlacementsTag;
 		Jupiter::StringS beaconDisarmsTag;
+		Jupiter::StringS proxyPlacementsTag;
+		Jupiter::StringS proxyDisarmsTag;
 		Jupiter::StringS capturesTag;
 		Jupiter::StringS stealsTag;
 		Jupiter::StringS stolenTag;
@@ -233,6 +283,7 @@ namespace RenX
 		Jupiter::StringS victimTeamLongTag;
 		Jupiter::StringS victimPingTag;
 		Jupiter::StringS victimScoreTag;
+		Jupiter::StringS victimScorePerMinuteTag;
 		Jupiter::StringS victimCreditsTag;
 		Jupiter::StringS victimKillsTag;
 		Jupiter::StringS victimDeathsTag;
@@ -242,10 +293,24 @@ namespace RenX
 		Jupiter::StringS victimVehicleKillsTag;
 		Jupiter::StringS victimBuildingKillsTag;
 		Jupiter::StringS victimDefenceKillsTag;
+		Jupiter::StringS victimGameTimeTag;
+		Jupiter::StringS victimGamesTag;
+		Jupiter::StringS victimGDIGamesTag;
+		Jupiter::StringS victimNodGamesTag;
 		Jupiter::StringS victimWinsTag;
-		Jupiter::StringS victimLosesTag;
+		Jupiter::StringS victimGDIWinsTag;
+		Jupiter::StringS victimNodWinsTag;
+		Jupiter::StringS victimTiesTag;
+		Jupiter::StringS victimLossesTag;
+		Jupiter::StringS victimGDILossesTag;
+		Jupiter::StringS victimNodLossesTag;
+		Jupiter::StringS victimWinLossRatioTag;
+		Jupiter::StringS victimGDIWinLossRatioTag;
+		Jupiter::StringS victimNodWinLossRatioTag;
 		Jupiter::StringS victimBeaconPlacementsTag;
 		Jupiter::StringS victimBeaconDisarmsTag;
+		Jupiter::StringS victimProxyPlacementsTag;
+		Jupiter::StringS victimProxyDisarmsTag;
 		Jupiter::StringS victimCapturesTag;
 		Jupiter::StringS victimStealsTag;
 		Jupiter::StringS victimStolenTag;
@@ -269,10 +334,19 @@ namespace RenX
 		Jupiter::StringS newNameTag;
 		Jupiter::StringS winScoreTag;
 		Jupiter::StringS loseScoreTag;
+		Jupiter::StringS lastGameTag;
+		Jupiter::StringS rankTag;
 	};
 
 	RENX_API extern Tags *tags;
 }
+
+/** Helper macro for processing tags */
+#define PROCESS_TAG(tag, value) \
+while(true) { \
+index = msg.find(tag); \
+if (index == Jupiter::INVALID_INDEX) break; \
+msg.replace(index, tag.size(), value); }
 
 /** Re-enable warnings */
 #if defined _MSC_VER

@@ -60,7 +60,7 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
       <AdditionalIncludeDirectories>../Bot;../Jupiter;../RenX.Core</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;RENX_LADDER_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -69,12 +69,10 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="RenX_LadderDatabase.h" />
     <ClInclude Include="RenX_Ladder.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="RenX_Ladder.cpp" />
-    <ClCompile Include="RenX_LadderDatabase.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Library Include="..\Jupiter\Release\Jupiter.lib" />

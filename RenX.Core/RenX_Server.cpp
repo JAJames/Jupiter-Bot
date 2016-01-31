@@ -2762,7 +2762,7 @@ void RenX::Server::disconnect(RenX::DisconnectReason reason)
 	for (size_t i = 0; i < xPlugins.size(); i++)
 		xPlugins.get(i)->RenX_OnServerDisconnect(this, reason);
 
-	RenX::Server::sock.closeSocket();
+	RenX::Server::sock.close();
 	RenX::Server::wipeData();
 	RenX::Server::connected = false;
 }
@@ -2916,7 +2916,7 @@ void RenX::Server::init()
 
 RenX::Server::~Server()
 {
-	sock.closeSocket();
+	sock.close();
 	RenX::Server::wipeData();
 	RenX::Server::commands.emptyAndDelete();
 }

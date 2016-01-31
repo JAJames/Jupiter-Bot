@@ -11,9 +11,8 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{9103DF3D-8B4A-48E5-A6B3-CBE2554630E2}</ProjectGuid>
-    <RootNamespace>PluginExample</RootNamespace>
-    <ProjectName>RenX.Core</ProjectName>
+    <ProjectGuid>{BB048D6F-F001-4E9B-95F4-886081E0807A}</ProjectGuid>
+    <RootNamespace>HTTPServer</RootNamespace>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -61,7 +60,7 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
       <AdditionalIncludeDirectories>../Bot;../Jupiter</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;RENX_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;HTTPSERVER_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -70,31 +69,10 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="RenX_BanDatabase.h" />
-    <ClInclude Include="RenX_BuildingInfo.h" />
-    <ClInclude Include="RenX_Core.h" />
-    <ClInclude Include="RenX.h" />
-    <ClInclude Include="RenX_ExemptionDatabase.h" />
-    <ClInclude Include="RenX_Functions.h" />
-    <ClInclude Include="RenX_GameCommand.h" />
-    <ClInclude Include="RenX_LadderDatabase.h" />
-    <ClInclude Include="RenX_Map.h" />
-    <ClInclude Include="RenX_PlayerInfo.h" />
-    <ClInclude Include="RenX_Plugin.h" />
-    <ClInclude Include="RenX_Server.h" />
-    <ClInclude Include="RenX_Tags.h" />
+    <ClInclude Include="HTTPServer.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="RenX_BanDatabase.cpp" />
-    <ClCompile Include="RenX_Core.cpp" />
-    <ClCompile Include="RenX_ExemptionDatabase.cpp" />
-    <ClCompile Include="RenX_Functions.cpp" />
-    <ClCompile Include="RenX_GameCommand.cpp" />
-    <ClCompile Include="RenX_LadderDatabase.cpp" />
-    <ClCompile Include="RenX_Map.cpp" />
-    <ClCompile Include="RenX_Plugin.cpp" />
-    <ClCompile Include="RenX_Server.cpp" />
-    <ClCompile Include="RenX_Tags.cpp" />
+    <ClCompile Include="HTTPServer.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Library Include="..\Jupiter\Release\Jupiter.lib" />

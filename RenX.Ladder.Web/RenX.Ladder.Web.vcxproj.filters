@@ -15,6 +15,16 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="RenX_Ladder_Web.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="RenX_Ladder_Web.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
     <Library Include="..\Release\Plugins\RenX.Core.lib">
       <Filter>Resource Files</Filter>
     </Library>
@@ -24,15 +34,8 @@
     <Library Include="..\Jupiter\Release\Jupiter.lib">
       <Filter>Resource Files</Filter>
     </Library>
-  </ItemGroup>
-  <ItemGroup>
-    <ClCompile Include="RenX_Ladder.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="RenX_Ladder.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
+    <Library Include="..\Release\Plugins\HTTPServer.lib">
+      <Filter>Resource Files</Filter>
+    </Library>
   </ItemGroup>
 </Project>

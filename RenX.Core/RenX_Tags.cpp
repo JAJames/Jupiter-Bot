@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2015 Jessica James.
+ * Copyright (C) 2015-2016 Jessica James.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -27,10 +27,13 @@
 #include "RenX_Plugin.h"
 #include "RenX_Tags.h"
 
+using namespace Jupiter::literals;
+
 struct TagsImp : RenX::Tags
 {
 	TagsImp();
 	void processTags(Jupiter::StringType &msg, const RenX::Server *server, const RenX::PlayerInfo *player, const RenX::PlayerInfo *victim, const RenX::BuildingInfo *building);
+	void processTags(Jupiter::StringType &msg, const RenX::LadderDatabase::Entry &entry);
 	void sanitizeTags(Jupiter::StringType &fmt);
 	const Jupiter::ReadableString &getUniqueInternalTag();
 	Jupiter::StringS get_building_health_bar(const RenX::BuildingInfo *building);
@@ -54,14 +57,14 @@ RenX::Tags *RenX::tags = &_tags;
 TagsImp::TagsImp()
 {
 	this->tagItr = 0;
-	this->uniqueTag = STRING_LITERAL_AS_REFERENCE("\0\0\0\0\0\0");
+	this->uniqueTag = "\0\0\0\0\0\0"_jrs;
 
-	const Jupiter::ReadableString &configSection = Jupiter::IRC::Client::Config->get(STRING_LITERAL_AS_REFERENCE("RenX"), STRING_LITERAL_AS_REFERENCE("TagDefinitions"), STRING_LITERAL_AS_REFERENCE("RenX.Tags"));
-	TagsImp::bar_width = Jupiter::IRC::Client::Config->getInt(configSection, STRING_LITERAL_AS_REFERENCE("BarWidth"), 19);
+	const Jupiter::ReadableString &configSection = Jupiter::IRC::Client::Config->get("RenX"_jrs, "TagDefinitions"_jrs, "RenX.Tags"_jrs);
+	TagsImp::bar_width = Jupiter::IRC::Client::Config->getInt(configSection, "BarWidth"_jrs, 19);
 
 	/** Global formats */
-	this->dateFmt = Jupiter::IRC::Client::Config->get(configSection, STRING_LITERAL_AS_REFERENCE("DateFormat"), STRING_LITERAL_AS_REFERENCE("%A, %B %d, %Y"));
-	this->timeFmt = Jupiter::IRC::Client::Config->get(configSection, STRING_LITERAL_AS_REFERENCE("TimeFormat"), STRING_LITERAL_AS_REFERENCE("%H:%M:%S"));;
+	this->dateFmt = Jupiter::IRC::Client::Config->get(configSection, "DateFormat"_jrs, "%A, %B %d, %Y"_jrs);
+	this->timeFmt = Jupiter::IRC::Client::Config->get(configSection, "TimeFormat"_jrs, "%H:%M:%S"_jrs);;
 
 	/** Internal message tags */
 
@@ -101,6 +104,7 @@ TagsImp::TagsImp()
 	this->INTERNAL_TEAM_LONG_TAG = this->getUniqueInternalTag();
 	this->INTERNAL_PING_TAG = this->getUniqueInternalTag();
 	this->INTERNAL_SCORE_TAG = this->getUniqueInternalTag();
+	this->INTERNAL_SCORE_PER_MINUTE_TAG = this->getUniqueInternalTag();
 	this->INTERNAL_CREDITS_TAG = this->getUniqueInternalTag();
 	this->INTERNAL_KILLS_TAG = this->getUniqueInternalTag();
 	this->INTERNAL_DEATHS_TAG = this->getUniqueInternalTag();
@@ -110,10 +114,24 @@ TagsImp::TagsImp()
 	this->INTERNAL_VEHICLE_KILLS_TAG = this->getUniqueInternalTag();
 	this->INTERNAL_BUILDING_KILLS_TAG = this->getUniqueInternalTag();
 	this->INTERNAL_DEFENCE_KILLS_TAG = this->getUniqueInternalTag();
+	this->INTERNAL_GAME_TIME_TAG = this->getUniqueInternalTag();
+	this->INTERNAL_GAMES_TAG = this->getUniqueInternalTag();
+	this->INTERNAL_GDI_GAMES_TAG = this->getUniqueInternalTag();
+	this->INTERNAL_NOD_GAMES_TAG = this->getUniqueInternalTag();
 	this->INTERNAL_WINS_TAG = this->getUniqueInternalTag();
-	this->INTERNAL_LOSES_TAG = this->getUniqueInternalTag();
+	this->INTERNAL_GDI_WINS_TAG = this->getUniqueInternalTag();
+	this->INTERNAL_NOD_WINS_TAG = this->getUniqueInternalTag();
+	this->INTERNAL_TIES_TAG = this->getUniqueInternalTag();
+	this->INTERNAL_LOSSES_TAG = this->getUniqueInternalTag();
+	this->INTERNAL_GDI_LOSSES_TAG = this->getUniqueInternalTag();
+	this->INTERNAL_NOD_LOSSES_TAG = this->getUniqueInternalTag();
+	this->INTERNAL_WIN_LOSS_RATIO_TAG = this->getUniqueInternalTag();
+	this->INTERNAL_GDI_WIN_LOSS_RATIO_TAG = this->getUniqueInternalTag();
+	this->INTERNAL_NOD_WIN_LOSS_RATIO_TAG = this->getUniqueInternalTag();
 	this->INTERNAL_BEACON_PLACEMENTS_TAG = this->getUniqueInternalTag();
 	this->INTERNAL_BEACON_DISARMS_TAG = this->getUniqueInternalTag();
+	this->INTERNAL_PROXY_PLACEMENTS_TAG = this->getUniqueInternalTag();
+	this->INTERNAL_PROXY_DISARMS_TAG = this->getUniqueInternalTag();
 	this->INTERNAL_CAPTURES_TAG = this->getUniqueInternalTag();
 	this->INTERNAL_STEALS_TAG = this->getUniqueInternalTag();
 	this->INTERNAL_STOLEN_TAG = this->getUniqueInternalTag();
@@ -146,10 +164,24 @@ TagsImp::TagsImp()
 	this->INTERNAL_VICTIM_VEHICLE_KILLS_TAG = this->getUniqueInternalTag();
 	this->INTERNAL_VICTIM_BUILDING_KILLS_TAG = this->getUniqueInternalTag();
 	this->INTERNAL_VICTIM_DEFENCE_KILLS_TAG = this->getUniqueInternalTag();
+	this->INTERNAL_VICTIM_GAME_TIME_TAG = this->getUniqueInternalTag();
+	this->INTERNAL_VICTIM_GAMES_TAG = this->getUniqueInternalTag();
+	this->INTERNAL_VICTIM_GDI_GAMES_TAG = this->getUniqueInternalTag();
+	this->INTERNAL_VICTIM_NOD_GAMES_TAG = this->getUniqueInternalTag();
 	this->INTERNAL_VICTIM_WINS_TAG = this->getUniqueInternalTag();
-	this->INTERNAL_VICTIM_LOSES_TAG = this->getUniqueInternalTag();
+	this->INTERNAL_VICTIM_GDI_WINS_TAG = this->getUniqueInternalTag();
+	this->INTERNAL_VICTIM_NOD_WINS_TAG = this->getUniqueInternalTag();
+	this->INTERNAL_VICTIM_TIES_TAG = this->getUniqueInternalTag();
+	this->INTERNAL_VICTIM_LOSSES_TAG = this->getUniqueInternalTag();
+	this->INTERNAL_VICTIM_GDI_LOSSES_TAG = this->getUniqueInternalTag();
+	this->INTERNAL_VICTIM_NOD_LOSSES_TAG = this->getUniqueInternalTag();
+	this->INTERNAL_VICTIM_WIN_LOSS_RATIO_TAG = this->getUniqueInternalTag();
+	this->INTERNAL_VICTIM_GDI_WIN_LOSS_RATIO_TAG = this->getUniqueInternalTag();
+	this->INTERNAL_VICTIM_NOD_WIN_LOSS_RATIO_TAG = this->getUniqueInternalTag();
 	this->INTERNAL_VICTIM_BEACON_PLACEMENTS_TAG = this->getUniqueInternalTag();
 	this->INTERNAL_VICTIM_BEACON_DISARMS_TAG = this->getUniqueInternalTag();
+	this->INTERNAL_VICTIM_PROXY_PLACEMENTS_TAG = this->getUniqueInternalTag();
+	this->INTERNAL_VICTIM_PROXY_DISARMS_TAG = this->getUniqueInternalTag();
 	this->INTERNAL_VICTIM_CAPTURES_TAG = this->getUniqueInternalTag();
 	this->INTERNAL_VICTIM_STEALS_TAG = this->getUniqueInternalTag();
 	this->INTERNAL_VICTIM_STOLEN_TAG = this->getUniqueInternalTag();
@@ -173,117 +205,151 @@ TagsImp::TagsImp()
 	this->INTERNAL_NEW_NAME_TAG = this->getUniqueInternalTag();
 	this->INTERNAL_WIN_SCORE_TAG = this->getUniqueInternalTag();
 	this->INTERNAL_LOSE_SCORE_TAG = this->getUniqueInternalTag();
+	this->INTERNAL_LAST_GAME_TAG = this->getUniqueInternalTag();
+	this->INTERNAL_RANK_TAG = this->getUniqueInternalTag();
 
 	/** External (config) tags */
 
 	/** Global tags */
-	this->dateTag = Jupiter::IRC::Client::Config->get(configSection, STRING_LITERAL_AS_REFERENCE("DateTag"), STRING_LITERAL_AS_REFERENCE("{DATE}"));
-	this->timeTag = Jupiter::IRC::Client::Config->get(configSection, STRING_LITERAL_AS_REFERENCE("TimeTag"), STRING_LITERAL_AS_REFERENCE("{TIME}"));
+	this->dateTag = Jupiter::IRC::Client::Config->get(configSection, "DateTag"_jrs, "{DATE}"_jrs);
+	this->timeTag = Jupiter::IRC::Client::Config->get(configSection, "TimeTag"_jrs, "{TIME}"_jrs);
 
 	/** Server tags */
-	this->rconVersionTag = Jupiter::IRC::Client::Config->get(configSection, STRING_LITERAL_AS_REFERENCE("RCONVersionTag"), STRING_LITERAL_AS_REFERENCE("{RVER}"));
-	this->gameVersionTag = Jupiter::IRC::Client::Config->get(configSection, STRING_LITERAL_AS_REFERENCE("GameVersionTag"), STRING_LITERAL_AS_REFERENCE("{GVER}"));
-	this->rulesTag = Jupiter::IRC::Client::Config->get(configSection, STRING_LITERAL_AS_REFERENCE("RulesTag"), STRING_LITERAL_AS_REFERENCE("{RULES}"));
-	this->userTag = Jupiter::IRC::Client::Config->get(configSection, STRING_LITERAL_AS_REFERENCE("UserTag"), STRING_LITERAL_AS_REFERENCE("{USER}"));
-	this->serverNameTag = Jupiter::IRC::Client::Config->get(configSection, STRING_LITERAL_AS_REFERENCE("ServerNameTag"), STRING_LITERAL_AS_REFERENCE("{SERVERNAME}"));
-	this->mapTag = Jupiter::IRC::Client::Config->get(configSection, STRING_LITERAL_AS_REFERENCE("MapTag"), STRING_LITERAL_AS_REFERENCE("{MAP}"));
-	this->mapGUIDTag = Jupiter::IRC::Client::Config->get(configSection, STRING_LITERAL_AS_REFERENCE("MapGUIDTag"), STRING_LITERAL_AS_REFERENCE("{MGUID}"));
-	this->serverHostnameTag = Jupiter::IRC::Client::Config->get(configSection, STRING_LITERAL_AS_REFERENCE("ServerHostnameTag"), STRING_LITERAL_AS_REFERENCE("{SERVERHOST}"));
-	this->serverPortTag = Jupiter::IRC::Client::Config->get(configSection, STRING_LITERAL_AS_REFERENCE("ServerPortTag"), STRING_LITERAL_AS_REFERENCE("{SERVERPORT}"));
-	this->socketHostnameTag = Jupiter::IRC::Client::Config->get(configSection, STRING_LITERAL_AS_REFERENCE("SocketHostnameTag"), STRING_LITERAL_AS_REFERENCE("{SOCKHOST}"));
-	this->socketPortTag = Jupiter::IRC::Client::Config->get(configSection, STRING_LITERAL_AS_REFERENCE("SocketPortTag"), STRING_LITERAL_AS_REFERENCE("{SOCKPORT}"));
-	this->serverPrefixTag = Jupiter::IRC::Client::Config->get(configSection, STRING_LITERAL_AS_REFERENCE("ServerPrefixTag"), STRING_LITERAL_AS_REFERENCE("{SERVERPREFIX}"));
+	this->rconVersionTag = Jupiter::IRC::Client::Config->get(configSection, "RCONVersionTag"_jrs, "{RVER}"_jrs);
+	this->gameVersionTag = Jupiter::IRC::Client::Config->get(configSection, "GameVersionTag"_jrs, "{GVER}"_jrs);
+	this->rulesTag = Jupiter::IRC::Client::Config->get(configSection, "RulesTag"_jrs, "{RULES}"_jrs);
+	this->userTag = Jupiter::IRC::Client::Config->get(configSection, "UserTag"_jrs, "{USER}"_jrs);
+	this->serverNameTag = Jupiter::IRC::Client::Config->get(configSection, "ServerNameTag"_jrs, "{SERVERNAME}"_jrs);
+	this->mapTag = Jupiter::IRC::Client::Config->get(configSection, "MapTag"_jrs, "{MAP}"_jrs);
+	this->mapGUIDTag = Jupiter::IRC::Client::Config->get(configSection, "MapGUIDTag"_jrs, "{MGUID}"_jrs);
+	this->serverHostnameTag = Jupiter::IRC::Client::Config->get(configSection, "ServerHostnameTag"_jrs, "{SERVERHOST}"_jrs);
+	this->serverPortTag = Jupiter::IRC::Client::Config->get(configSection, "ServerPortTag"_jrs, "{SERVERPORT}"_jrs);
+	this->socketHostnameTag = Jupiter::IRC::Client::Config->get(configSection, "SocketHostnameTag"_jrs, "{SOCKHOST}"_jrs);
+	this->socketPortTag = Jupiter::IRC::Client::Config->get(configSection, "SocketPortTag"_jrs, "{SOCKPORT}"_jrs);
+	this->serverPrefixTag = Jupiter::IRC::Client::Config->get(configSection, "ServerPrefixTag"_jrs, "{SERVERPREFIX}"_jrs);
 
 	/** Player tags */
-	this->nameTag = Jupiter::IRC::Client::Config->get(configSection, STRING_LITERAL_AS_REFERENCE("NameTag"), STRING_LITERAL_AS_REFERENCE("{NAME}"));
-	this->rawNameTag = Jupiter::IRC::Client::Config->get(configSection, STRING_LITERAL_AS_REFERENCE("RawNameTag"), STRING_LITERAL_AS_REFERENCE("{RNAME}"));
-	this->ipTag = Jupiter::IRC::Client::Config->get(configSection, STRING_LITERAL_AS_REFERENCE("IPTag"), STRING_LITERAL_AS_REFERENCE("{IP}"));
-	this->rdnsTag = Jupiter::IRC::Client::Config->get(configSection, STRING_LITERAL_AS_REFERENCE("RDNSTag"), STRING_LITERAL_AS_REFERENCE("{RDNS}"));
-	this->steamTag = Jupiter::IRC::Client::Config->get(configSection, STRING_LITERAL_AS_REFERENCE("SteamTag"), STRING_LITERAL_AS_REFERENCE("{STEAM}"));
-	this->uuidTag = Jupiter::IRC::Client::Config->get(configSection, STRING_LITERAL_AS_REFERENCE("UUIDTag"), STRING_LITERAL_AS_REFERENCE("{UUID}"));
-	this->idTag = Jupiter::IRC::Client::Config->get(configSection, STRING_LITERAL_AS_REFERENCE("IDTag"), STRING_LITERAL_AS_REFERENCE("{ID}"));
-	this->characterTag = Jupiter::IRC::Client::Config->get(configSection, STRING_LITERAL_AS_REFERENCE("CharacterTag"), STRING_LITERAL_AS_REFERENCE("{CHAR}"));
-	this->vehicleTag = Jupiter::IRC::Client::Config->get(configSection, STRING_LITERAL_AS_REFERENCE("VehicleTag"), STRING_LITERAL_AS_REFERENCE("{VEH}"));
-	this->adminTag = Jupiter::IRC::Client::Config->get(configSection, STRING_LITERAL_AS_REFERENCE("AdminTag"), STRING_LITERAL_AS_REFERENCE("{ADMIN}"));
-	this->prefixTag = Jupiter::IRC::Client::Config->get(configSection, STRING_LITERAL_AS_REFERENCE("PrefixTag"), STRING_LITERAL_AS_REFERENCE("{PREFIX}"));
-	this->gamePrefixTag = Jupiter::IRC::Client::Config->get(configSection, STRING_LITERAL_AS_REFERENCE("GamePrefixTag"), STRING_LITERAL_AS_REFERENCE("{GPREFIX}"));
-	this->teamColorTag = Jupiter::IRC::Client::Config->get(configSection, STRING_LITERAL_AS_REFERENCE("TeamColorTag"), STRING_LITERAL_AS_REFERENCE("{TCOLOR}"));
-	this->teamShortTag = Jupiter::IRC::Client::Config->get(configSection, STRING_LITERAL_AS_REFERENCE("ShortTeamTag"), STRING_LITERAL_AS_REFERENCE("{TEAMS}"));
-	this->teamLongTag = Jupiter::IRC::Client::Config->get(configSection, STRING_LITERAL_AS_REFERENCE("LongTeamTag"), STRING_LITERAL_AS_REFERENCE("{TEAML}"));
-	this->pingTag = Jupiter::IRC::Client::Config->get(configSection, STRING_LITERAL_AS_REFERENCE("PingTag"), STRING_LITERAL_AS_REFERENCE("{PING}"));
-	this->scoreTag = Jupiter::IRC::Client::Config->get(configSection, STRING_LITERAL_AS_REFERENCE("ScoreTag"), STRING_LITERAL_AS_REFERENCE("{SCORE}"));
-	this->creditsTag = Jupiter::IRC::Client::Config->get(configSection, STRING_LITERAL_AS_REFERENCE("CreditsTag"), STRING_LITERAL_AS_REFERENCE("{CREDITS}"));
-	this->killsTag = Jupiter::IRC::Client::Config->get(configSection, STRING_LITERAL_AS_REFERENCE("KillsTag"), STRING_LITERAL_AS_REFERENCE("{KILLS}"));
-	this->deathsTag = Jupiter::IRC::Client::Config->get(configSection, STRING_LITERAL_AS_REFERENCE("DeathsTag"), STRING_LITERAL_AS_REFERENCE("{DEATHS}"));
-	this->kdrTag = Jupiter::IRC::Client::Config->get(configSection, STRING_LITERAL_AS_REFERENCE("KDRTag"), STRING_LITERAL_AS_REFERENCE("{KDR}"));
-	this->suicidesTag = Jupiter::IRC::Client::Config->get(configSection, STRING_LITERAL_AS_REFERENCE("SuicidesTag"), STRING_LITERAL_AS_REFERENCE("{SUICIDES}"));
-	this->headshotsTag = Jupiter::IRC::Client::Config->get(configSection, STRING_LITERAL_AS_REFERENCE("HeadshotsTag"), STRING_LITERAL_AS_REFERENCE("{HEADSHOTS}"));
-	this->vehicleKillsTag = Jupiter::IRC::Client::Config->get(configSection, STRING_LITERAL_AS_REFERENCE("VehicleKillsTag"), STRING_LITERAL_AS_REFERENCE("{VEHICLEKILLS}"));
-	this->buildingKillsTag = Jupiter::IRC::Client::Config->get(configSection, STRING_LITERAL_AS_REFERENCE("BuildingKillsTag"), STRING_LITERAL_AS_REFERENCE("{BUILDINGKILLS}"));
-	this->defenceKillsTag = Jupiter::IRC::Client::Config->get(configSection, STRING_LITERAL_AS_REFERENCE("DefenceKillsTag"), STRING_LITERAL_AS_REFERENCE("{DEFENCEKILLS}"));
-	this->winsTag = Jupiter::IRC::Client::Config->get(configSection, STRING_LITERAL_AS_REFERENCE("WinsTag"), STRING_LITERAL_AS_REFERENCE("{WINS}"));
-	this->losesTag = Jupiter::IRC::Client::Config->get(configSection, STRING_LITERAL_AS_REFERENCE("LosesTag"), STRING_LITERAL_AS_REFERENCE("{LOSES}"));
-	this->beaconPlacementsTag = Jupiter::IRC::Client::Config->get(configSection, STRING_LITERAL_AS_REFERENCE("BeaconPlacementsTag"), STRING_LITERAL_AS_REFERENCE("{BEACONPLACEMENTS}"));
-	this->beaconDisarmsTag = Jupiter::IRC::Client::Config->get(configSection, STRING_LITERAL_AS_REFERENCE("BeaconDisarmsTag"), STRING_LITERAL_AS_REFERENCE("{BEACONDISARMS}"));
-	this->capturesTag = Jupiter::IRC::Client::Config->get(configSection, STRING_LITERAL_AS_REFERENCE("CapturesTag"), STRING_LITERAL_AS_REFERENCE("{CAPTURES}"));
-	this->stealsTag = Jupiter::IRC::Client::Config->get(configSection, STRING_LITERAL_AS_REFERENCE("StealsTag"), STRING_LITERAL_AS_REFERENCE("{STEALS}"));
-	this->stolenTag = Jupiter::IRC::Client::Config->get(configSection, STRING_LITERAL_AS_REFERENCE("StolenTag"), STRING_LITERAL_AS_REFERENCE("{STOLEN}"));
-	this->accessTag = Jupiter::IRC::Client::Config->get(configSection, STRING_LITERAL_AS_REFERENCE("AccessTag"), STRING_LITERAL_AS_REFERENCE("{ACCESS}"));
+	this->nameTag = Jupiter::IRC::Client::Config->get(configSection, "NameTag"_jrs, "{NAME}"_jrs);
+	this->rawNameTag = Jupiter::IRC::Client::Config->get(configSection, "RawNameTag"_jrs, "{RNAME}"_jrs);
+	this->ipTag = Jupiter::IRC::Client::Config->get(configSection, "IPTag"_jrs, "{IP}"_jrs);
+	this->rdnsTag = Jupiter::IRC::Client::Config->get(configSection, "RDNSTag"_jrs, "{RDNS}"_jrs);
+	this->steamTag = Jupiter::IRC::Client::Config->get(configSection, "SteamTag"_jrs, "{STEAM}"_jrs);
+	this->uuidTag = Jupiter::IRC::Client::Config->get(configSection, "UUIDTag"_jrs, "{UUID}"_jrs);
+	this->idTag = Jupiter::IRC::Client::Config->get(configSection, "IDTag"_jrs, "{ID}"_jrs);
+	this->characterTag = Jupiter::IRC::Client::Config->get(configSection, "CharacterTag"_jrs, "{CHAR}"_jrs);
+	this->vehicleTag = Jupiter::IRC::Client::Config->get(configSection, "VehicleTag"_jrs, "{VEH}"_jrs);
+	this->adminTag = Jupiter::IRC::Client::Config->get(configSection, "AdminTag"_jrs, "{ADMIN}"_jrs);
+	this->prefixTag = Jupiter::IRC::Client::Config->get(configSection, "PrefixTag"_jrs, "{PREFIX}"_jrs);
+	this->gamePrefixTag = Jupiter::IRC::Client::Config->get(configSection, "GamePrefixTag"_jrs, "{GPREFIX}"_jrs);
+	this->teamColorTag = Jupiter::IRC::Client::Config->get(configSection, "TeamColorTag"_jrs, "{TCOLOR}"_jrs);
+	this->teamShortTag = Jupiter::IRC::Client::Config->get(configSection, "ShortTeamTag"_jrs, "{TEAMS}"_jrs);
+	this->teamLongTag = Jupiter::IRC::Client::Config->get(configSection, "LongTeamTag"_jrs, "{TEAML}"_jrs);
+	this->pingTag = Jupiter::IRC::Client::Config->get(configSection, "PingTag"_jrs, "{PING}"_jrs);
+	this->scoreTag = Jupiter::IRC::Client::Config->get(configSection, "ScoreTag"_jrs, "{SCORE}"_jrs);
+	this->scorePerMinuteTag = Jupiter::IRC::Client::Config->get(configSection, "ScorePerMinuteTag"_jrs, "{SPM}"_jrs);
+	this->creditsTag = Jupiter::IRC::Client::Config->get(configSection, "CreditsTag"_jrs, "{CREDITS}"_jrs);
+	this->killsTag = Jupiter::IRC::Client::Config->get(configSection, "KillsTag"_jrs, "{KILLS}"_jrs);
+	this->deathsTag = Jupiter::IRC::Client::Config->get(configSection, "DeathsTag"_jrs, "{DEATHS}"_jrs);
+	this->kdrTag = Jupiter::IRC::Client::Config->get(configSection, "KDRTag"_jrs, "{KDR}"_jrs);
+	this->suicidesTag = Jupiter::IRC::Client::Config->get(configSection, "SuicidesTag"_jrs, "{SUICIDES}"_jrs);
+	this->headshotsTag = Jupiter::IRC::Client::Config->get(configSection, "HeadshotsTag"_jrs, "{HEADSHOTS}"_jrs);
+	this->vehicleKillsTag = Jupiter::IRC::Client::Config->get(configSection, "VehicleKillsTag"_jrs, "{VEHICLEKILLS}"_jrs);
+	this->buildingKillsTag = Jupiter::IRC::Client::Config->get(configSection, "BuildingKillsTag"_jrs, "{BUILDINGKILLS}"_jrs);
+	this->defenceKillsTag = Jupiter::IRC::Client::Config->get(configSection, "DefenceKillsTag"_jrs, "{DEFENCEKILLS}"_jrs);
+	this->gameTimeTag = Jupiter::IRC::Client::Config->get(configSection, "GameTimeTag"_jrs, "{GAMETIME}"_jrs);
+	this->gamesTag = Jupiter::IRC::Client::Config->get(configSection, "GamesTag"_jrs, "{GAMES}"_jrs);
+	this->GDIGamesTag = Jupiter::IRC::Client::Config->get(configSection, "GDIGamesTag"_jrs, "{GDIGAMES}"_jrs);
+	this->NodGamesTag = Jupiter::IRC::Client::Config->get(configSection, "NodGamesTag"_jrs, "{NODGAMES}"_jrs);
+	this->winsTag = Jupiter::IRC::Client::Config->get(configSection, "WinsTag"_jrs, "{WINS}"_jrs);
+	this->GDIWinsTag = Jupiter::IRC::Client::Config->get(configSection, "GDIWinsTag"_jrs, "{GDIWINS}"_jrs);
+	this->NodWinsTag = Jupiter::IRC::Client::Config->get(configSection, "NodWinsTag"_jrs, "{NODWINS}"_jrs);
+	this->tiesTag = Jupiter::IRC::Client::Config->get(configSection, "TiesTag"_jrs, "{TIES}"_jrs);
+	this->lossesTag = Jupiter::IRC::Client::Config->get(configSection, "LossesTag"_jrs, "{LOSSES}"_jrs);
+	this->GDILossesTag = Jupiter::IRC::Client::Config->get(configSection, "GDILossesTag"_jrs, "{GDILOSSES}"_jrs);
+	this->NodLossesTag = Jupiter::IRC::Client::Config->get(configSection, "NodLossesTag"_jrs, "{NODLOSSES}"_jrs);
+	this->winLossRatioTag = Jupiter::IRC::Client::Config->get(configSection, "WinLossRatioTag"_jrs, "{WLR}"_jrs);
+	this->GDIWinLossRatioTag = Jupiter::IRC::Client::Config->get(configSection, "GDIWinLossRatioTag"_jrs, "{GWLR}"_jrs);
+	this->NodWinLossRatioTag = Jupiter::IRC::Client::Config->get(configSection, "NodWinLossRatioTag"_jrs, "{NWLR}"_jrs);
+	this->beaconPlacementsTag = Jupiter::IRC::Client::Config->get(configSection, "BeaconPlacementsTag"_jrs, "{BEACONPLACEMENTS}"_jrs);
+	this->beaconDisarmsTag = Jupiter::IRC::Client::Config->get(configSection, "BeaconDisarmsTag"_jrs, "{BEACONDISARMS}"_jrs);
+	this->proxyPlacementsTag = Jupiter::IRC::Client::Config->get(configSection, "ProxyPlacementsTag"_jrs, "{PROXYPLACEMENTS}"_jrs);
+	this->proxyDisarmsTag = Jupiter::IRC::Client::Config->get(configSection, "ProxyDisarmsTag"_jrs, "{PROXYDISARMS}"_jrs);
+	this->capturesTag = Jupiter::IRC::Client::Config->get(configSection, "CapturesTag"_jrs, "{CAPTURES}"_jrs);
+	this->stealsTag = Jupiter::IRC::Client::Config->get(configSection, "StealsTag"_jrs, "{STEALS}"_jrs);
+	this->stolenTag = Jupiter::IRC::Client::Config->get(configSection, "StolenTag"_jrs, "{STOLEN}"_jrs);
+	this->accessTag = Jupiter::IRC::Client::Config->get(configSection, "AccessTag"_jrs, "{ACCESS}"_jrs);
 
 	/** Victim player tags */
-	this->victimNameTag = Jupiter::IRC::Client::Config->get(configSection, STRING_LITERAL_AS_REFERENCE("VictimNameTag"), STRING_LITERAL_AS_REFERENCE("{VNAME}"));
-	this->victimRawNameTag = Jupiter::IRC::Client::Config->get(configSection, STRING_LITERAL_AS_REFERENCE("VictimRawNameTag"), STRING_LITERAL_AS_REFERENCE("{VRNAME}"));
-	this->victimIPTag = Jupiter::IRC::Client::Config->get(configSection, STRING_LITERAL_AS_REFERENCE("VictimIPTag"), STRING_LITERAL_AS_REFERENCE("{VIP}"));
-	this->victimRDNSTag = Jupiter::IRC::Client::Config->get(configSection, STRING_LITERAL_AS_REFERENCE("VictimRDNSTag"), STRING_LITERAL_AS_REFERENCE("{VRDNS}"));
-	this->victimSteamTag = Jupiter::IRC::Client::Config->get(configSection, STRING_LITERAL_AS_REFERENCE("VictimSteamTag"), STRING_LITERAL_AS_REFERENCE("{VSTEAM}"));
-	this->victimUUIDTag = Jupiter::IRC::Client::Config->get(configSection, STRING_LITERAL_AS_REFERENCE("VictimUUIDTag"), STRING_LITERAL_AS_REFERENCE("{VUUID}"));
-	this->victimIDTag = Jupiter::IRC::Client::Config->get(configSection, STRING_LITERAL_AS_REFERENCE("VictimIDTag"), STRING_LITERAL_AS_REFERENCE("{VID}"));
-	this->victimCharacterTag = Jupiter::IRC::Client::Config->get(configSection, STRING_LITERAL_AS_REFERENCE("VictimCharacterTag"), STRING_LITERAL_AS_REFERENCE("{VCHAR}"));
-	this->victimVehicleTag = Jupiter::IRC::Client::Config->get(configSection, STRING_LITERAL_AS_REFERENCE("VictimVehicleTag"), STRING_LITERAL_AS_REFERENCE("{VVEH}"));
-	this->victimAdminTag = Jupiter::IRC::Client::Config->get(configSection, STRING_LITERAL_AS_REFERENCE("VictimAdminTag"), STRING_LITERAL_AS_REFERENCE("{VADMIN}"));
-	this->victimPrefixTag = Jupiter::IRC::Client::Config->get(configSection, STRING_LITERAL_AS_REFERENCE("VictimPrefixTag"), STRING_LITERAL_AS_REFERENCE("{VPREFIX}"));
-	this->victimGamePrefixTag = Jupiter::IRC::Client::Config->get(configSection, STRING_LITERAL_AS_REFERENCE("VictimGamePrefixTag"), STRING_LITERAL_AS_REFERENCE("{VGPREFIX}"));
-	this->victimTeamColorTag = Jupiter::IRC::Client::Config->get(configSection, STRING_LITERAL_AS_REFERENCE("VictimTeamColorTag"), STRING_LITERAL_AS_REFERENCE("{VTCOLOR}"));
-	this->victimTeamShortTag = Jupiter::IRC::Client::Config->get(configSection, STRING_LITERAL_AS_REFERENCE("VictimShortTeamTag"), STRING_LITERAL_AS_REFERENCE("{VTEAMS}"));
-	this->victimTeamLongTag = Jupiter::IRC::Client::Config->get(configSection, STRING_LITERAL_AS_REFERENCE("VictimLongTeamTag"), STRING_LITERAL_AS_REFERENCE("{VTEAML}"));
-	this->victimPingTag = Jupiter::IRC::Client::Config->get(configSection, STRING_LITERAL_AS_REFERENCE("VictimPingTag"), STRING_LITERAL_AS_REFERENCE("{VPING}"));
-	this->victimScoreTag = Jupiter::IRC::Client::Config->get(configSection, STRING_LITERAL_AS_REFERENCE("VictimScoreTag"), STRING_LITERAL_AS_REFERENCE("{VSCORE}"));
-	this->victimCreditsTag = Jupiter::IRC::Client::Config->get(configSection, STRING_LITERAL_AS_REFERENCE("VictimCreditsTag"), STRING_LITERAL_AS_REFERENCE("{VCREDITS}"));
-	this->victimKillsTag = Jupiter::IRC::Client::Config->get(configSection, STRING_LITERAL_AS_REFERENCE("VictimKillsTag"), STRING_LITERAL_AS_REFERENCE("{VKILLS}"));
-	this->victimDeathsTag = Jupiter::IRC::Client::Config->get(configSection, STRING_LITERAL_AS_REFERENCE("VictimDeathsTag"), STRING_LITERAL_AS_REFERENCE("{VDEATHS}"));
-	this->victimKDRTag = Jupiter::IRC::Client::Config->get(configSection, STRING_LITERAL_AS_REFERENCE("VictimKDRTag"), STRING_LITERAL_AS_REFERENCE("{VKDR}"));
-	this->victimSuicidesTag = Jupiter::IRC::Client::Config->get(configSection, STRING_LITERAL_AS_REFERENCE("VictimSuicidesTag"), STRING_LITERAL_AS_REFERENCE("{VSUICIDES}"));
-	this->victimHeadshotsTag = Jupiter::IRC::Client::Config->get(configSection, STRING_LITERAL_AS_REFERENCE("VictimHeadshotsTag"), STRING_LITERAL_AS_REFERENCE("{VHEADSHOTS}"));
-	this->victimVehicleKillsTag = Jupiter::IRC::Client::Config->get(configSection, STRING_LITERAL_AS_REFERENCE("VictimVehicleKillsTag"), STRING_LITERAL_AS_REFERENCE("{VVEHICLEKILLS}"));
-	this->victimBuildingKillsTag = Jupiter::IRC::Client::Config->get(configSection, STRING_LITERAL_AS_REFERENCE("VictimBuildingKillsTag"), STRING_LITERAL_AS_REFERENCE("{VBUILDINGKILLS}"));
-	this->victimDefenceKillsTag = Jupiter::IRC::Client::Config->get(configSection, STRING_LITERAL_AS_REFERENCE("VictimDefenceKillsTag"), STRING_LITERAL_AS_REFERENCE("{VDEFENCEKILLS}"));
-	this->victimWinsTag = Jupiter::IRC::Client::Config->get(configSection, STRING_LITERAL_AS_REFERENCE("VictimWinsTag"), STRING_LITERAL_AS_REFERENCE("{VWINS}"));
-	this->victimLosesTag = Jupiter::IRC::Client::Config->get(configSection, STRING_LITERAL_AS_REFERENCE("VictimLosesTag"), STRING_LITERAL_AS_REFERENCE("{VLOSES}"));
-	this->victimBeaconPlacementsTag = Jupiter::IRC::Client::Config->get(configSection, STRING_LITERAL_AS_REFERENCE("VictimBeaconPlacementsTag"), STRING_LITERAL_AS_REFERENCE("{VBEACONPLACEMENTS}"));
-	this->victimBeaconDisarmsTag = Jupiter::IRC::Client::Config->get(configSection, STRING_LITERAL_AS_REFERENCE("VictimBeaconDisarmsTag"), STRING_LITERAL_AS_REFERENCE("{VBEACONDISARMS}"));
-	this->victimCapturesTag = Jupiter::IRC::Client::Config->get(configSection, STRING_LITERAL_AS_REFERENCE("VictimCapturesTag"), STRING_LITERAL_AS_REFERENCE("{VCAPTURES}"));
-	this->victimStealsTag = Jupiter::IRC::Client::Config->get(configSection, STRING_LITERAL_AS_REFERENCE("VictimStealsTag"), STRING_LITERAL_AS_REFERENCE("{VSTEALS}"));
-	this->victimStolenTag = Jupiter::IRC::Client::Config->get(configSection, STRING_LITERAL_AS_REFERENCE("VictimStolenTag"), STRING_LITERAL_AS_REFERENCE("{VSTOLEN}"));
-	this->victimAccessTag = Jupiter::IRC::Client::Config->get(configSection, STRING_LITERAL_AS_REFERENCE("VictimAccessTag"), STRING_LITERAL_AS_REFERENCE("{VACCESS}"));
+	this->victimNameTag = Jupiter::IRC::Client::Config->get(configSection, "VictimNameTag"_jrs, "{VNAME}"_jrs);
+	this->victimRawNameTag = Jupiter::IRC::Client::Config->get(configSection, "VictimRawNameTag"_jrs, "{VRNAME}"_jrs);
+	this->victimIPTag = Jupiter::IRC::Client::Config->get(configSection, "VictimIPTag"_jrs, "{VIP}"_jrs);
+	this->victimRDNSTag = Jupiter::IRC::Client::Config->get(configSection, "VictimRDNSTag"_jrs, "{VRDNS}"_jrs);
+	this->victimSteamTag = Jupiter::IRC::Client::Config->get(configSection, "VictimSteamTag"_jrs, "{VSTEAM}"_jrs);
+	this->victimUUIDTag = Jupiter::IRC::Client::Config->get(configSection, "VictimUUIDTag"_jrs, "{VUUID}"_jrs);
+	this->victimIDTag = Jupiter::IRC::Client::Config->get(configSection, "VictimIDTag"_jrs, "{VID}"_jrs);
+	this->victimCharacterTag = Jupiter::IRC::Client::Config->get(configSection, "VictimCharacterTag"_jrs, "{VCHAR}"_jrs);
+	this->victimVehicleTag = Jupiter::IRC::Client::Config->get(configSection, "VictimVehicleTag"_jrs, "{VVEH}"_jrs);
+	this->victimAdminTag = Jupiter::IRC::Client::Config->get(configSection, "VictimAdminTag"_jrs, "{VADMIN}"_jrs);
+	this->victimPrefixTag = Jupiter::IRC::Client::Config->get(configSection, "VictimPrefixTag"_jrs, "{VPREFIX}"_jrs);
+	this->victimGamePrefixTag = Jupiter::IRC::Client::Config->get(configSection, "VictimGamePrefixTag"_jrs, "{VGPREFIX}"_jrs);
+	this->victimTeamColorTag = Jupiter::IRC::Client::Config->get(configSection, "VictimTeamColorTag"_jrs, "{VTCOLOR}"_jrs);
+	this->victimTeamShortTag = Jupiter::IRC::Client::Config->get(configSection, "VictimShortTeamTag"_jrs, "{VTEAMS}"_jrs);
+	this->victimTeamLongTag = Jupiter::IRC::Client::Config->get(configSection, "VictimLongTeamTag"_jrs, "{VTEAML}"_jrs);
+	this->victimPingTag = Jupiter::IRC::Client::Config->get(configSection, "VictimPingTag"_jrs, "{VPING}"_jrs);
+	this->victimScoreTag = Jupiter::IRC::Client::Config->get(configSection, "VictimScoreTag"_jrs, "{VSCORE}"_jrs);
+	this->victimScorePerMinuteTag = Jupiter::IRC::Client::Config->get(configSection, "VictimScorePerMinuteTag"_jrs, "{VSPM}"_jrs);
+	this->victimCreditsTag = Jupiter::IRC::Client::Config->get(configSection, "VictimCreditsTag"_jrs, "{VCREDITS}"_jrs);
+	this->victimKillsTag = Jupiter::IRC::Client::Config->get(configSection, "VictimKillsTag"_jrs, "{VKILLS}"_jrs);
+	this->victimDeathsTag = Jupiter::IRC::Client::Config->get(configSection, "VictimDeathsTag"_jrs, "{VDEATHS}"_jrs);
+	this->victimKDRTag = Jupiter::IRC::Client::Config->get(configSection, "VictimKDRTag"_jrs, "{VKDR}"_jrs);
+	this->victimSuicidesTag = Jupiter::IRC::Client::Config->get(configSection, "VictimSuicidesTag"_jrs, "{VSUICIDES}"_jrs);
+	this->victimHeadshotsTag = Jupiter::IRC::Client::Config->get(configSection, "VictimHeadshotsTag"_jrs, "{VHEADSHOTS}"_jrs);
+	this->victimVehicleKillsTag = Jupiter::IRC::Client::Config->get(configSection, "VictimVehicleKillsTag"_jrs, "{VVEHICLEKILLS}"_jrs);
+	this->victimBuildingKillsTag = Jupiter::IRC::Client::Config->get(configSection, "VictimBuildingKillsTag"_jrs, "{VBUILDINGKILLS}"_jrs);
+	this->victimDefenceKillsTag = Jupiter::IRC::Client::Config->get(configSection, "VictimDefenceKillsTag"_jrs, "{VDEFENCEKILLS}"_jrs);
+	this->victimGameTimeTag = Jupiter::IRC::Client::Config->get(configSection, "VictimGameTimeTag"_jrs, "{VGAMETIME}"_jrs);
+	this->victimGamesTag = Jupiter::IRC::Client::Config->get(configSection, "VictimGamesTag"_jrs, "{VGAMES}"_jrs);
+	this->victimGDIGamesTag = Jupiter::IRC::Client::Config->get(configSection, "VictimGDIGamesTag"_jrs, "{VGDIGAMES}"_jrs);
+	this->victimNodGamesTag = Jupiter::IRC::Client::Config->get(configSection, "VictimNodGamesTag"_jrs, "{VNODGAMES}"_jrs);
+	this->victimWinsTag = Jupiter::IRC::Client::Config->get(configSection, "VictimWinsTag"_jrs, "{VWINS}"_jrs);
+	this->victimGDIWinsTag = Jupiter::IRC::Client::Config->get(configSection, "VictimGDIWinsTag"_jrs, "{VGDIWINS}"_jrs);
+	this->victimNodWinsTag = Jupiter::IRC::Client::Config->get(configSection, "VictimNodWinsTag"_jrs, "{VNODWINS}"_jrs);
+	this->victimTiesTag = Jupiter::IRC::Client::Config->get(configSection, "VictimTiesTag"_jrs, "{VTIES}"_jrs);
+	this->victimLossesTag = Jupiter::IRC::Client::Config->get(configSection, "VictimLossesTag"_jrs, "{VLOSSES}"_jrs);
+	this->victimGDILossesTag = Jupiter::IRC::Client::Config->get(configSection, "VictimGDILossesTag"_jrs, "{VGDILOSSES}"_jrs);
+	this->victimNodLossesTag = Jupiter::IRC::Client::Config->get(configSection, "VictimNodLossesTag"_jrs, "{VNODLOSSES}"_jrs);
+	this->victimWinLossRatioTag = Jupiter::IRC::Client::Config->get(configSection, "WinLossRatioTag"_jrs, "{WLR}"_jrs);
+	this->victimGDIWinLossRatioTag = Jupiter::IRC::Client::Config->get(configSection, "GDIWinLossRatioTag"_jrs, "{VGWLR}"_jrs);
+	this->victimNodWinLossRatioTag = Jupiter::IRC::Client::Config->get(configSection, "NodWinLossRatioTag"_jrs, "{VNWLR}"_jrs);
+	this->victimBeaconPlacementsTag = Jupiter::IRC::Client::Config->get(configSection, "VictimBeaconPlacementsTag"_jrs, "{VBEACONPLACEMENTS}"_jrs);
+	this->victimBeaconDisarmsTag = Jupiter::IRC::Client::Config->get(configSection, "VictimBeaconDisarmsTag"_jrs, "{VBEACONDISARMS}"_jrs);
+	this->victimProxyPlacementsTag = Jupiter::IRC::Client::Config->get(configSection, "VictimProxyPlacementsTag"_jrs, "{VPROXYPLACEMENTS}"_jrs);
+	this->victimProxyDisarmsTag = Jupiter::IRC::Client::Config->get(configSection, "VictimProxyDisarmsTag"_jrs, "{VPROXYDISARMS}"_jrs);
+	this->victimCapturesTag = Jupiter::IRC::Client::Config->get(configSection, "VictimCapturesTag"_jrs, "{VCAPTURES}"_jrs);
+	this->victimStealsTag = Jupiter::IRC::Client::Config->get(configSection, "VictimStealsTag"_jrs, "{VSTEALS}"_jrs);
+	this->victimStolenTag = Jupiter::IRC::Client::Config->get(configSection, "VictimStolenTag"_jrs, "{VSTOLEN}"_jrs);
+	this->victimAccessTag = Jupiter::IRC::Client::Config->get(configSection, "VictimAccessTag"_jrs, "{VACCESS}"_jrs);
 
 	/** Building tags */
-	this->buildingNameTag = Jupiter::IRC::Client::Config->get(configSection, STRING_LITERAL_AS_REFERENCE("BuildingNameTag"), STRING_LITERAL_AS_REFERENCE("{BNAME}"));
-	this->buildingRawNameTag = Jupiter::IRC::Client::Config->get(configSection, STRING_LITERAL_AS_REFERENCE("BuildingRawNameTag"), STRING_LITERAL_AS_REFERENCE("{BRNAME}"));
-	this->buildingHealthTag = Jupiter::IRC::Client::Config->get(configSection, STRING_LITERAL_AS_REFERENCE("BuildingHealthTag"), STRING_LITERAL_AS_REFERENCE("{BHEALTH}"));
-	this->buildingMaxHealthTag = Jupiter::IRC::Client::Config->get(configSection, STRING_LITERAL_AS_REFERENCE("BuildingMaxHealthTag"), STRING_LITERAL_AS_REFERENCE("{BMHEALTH}"));
-	this->buildingHealthPercentageTag = Jupiter::IRC::Client::Config->get(configSection, STRING_LITERAL_AS_REFERENCE("BuildingHealthPercentageTag"), STRING_LITERAL_AS_REFERENCE("{BHP}"));
-	this->buildingHealthBarTag = Jupiter::IRC::Client::Config->get(configSection, STRING_LITERAL_AS_REFERENCE("BuildingHealthBarTag"), STRING_LITERAL_AS_REFERENCE("{BHBAR}"));
-	this->buildingTeamColorTag = Jupiter::IRC::Client::Config->get(configSection, STRING_LITERAL_AS_REFERENCE("BuildingTeamColorTag"), STRING_LITERAL_AS_REFERENCE("{BCOLOR}"));
-	this->buildingTeamShortTag = Jupiter::IRC::Client::Config->get(configSection, STRING_LITERAL_AS_REFERENCE("BuildingShortTeamTag"), STRING_LITERAL_AS_REFERENCE("{BTEAMS}"));
-	this->buildingTeamLongTag = Jupiter::IRC::Client::Config->get(configSection, STRING_LITERAL_AS_REFERENCE("BuildingLongTeamTag"), STRING_LITERAL_AS_REFERENCE("{BTEAML}"));
+	this->buildingNameTag = Jupiter::IRC::Client::Config->get(configSection, "BuildingNameTag"_jrs, "{BNAME}"_jrs);
+	this->buildingRawNameTag = Jupiter::IRC::Client::Config->get(configSection, "BuildingRawNameTag"_jrs, "{BRNAME}"_jrs);
+	this->buildingHealthTag = Jupiter::IRC::Client::Config->get(configSection, "BuildingHealthTag"_jrs, "{BHEALTH}"_jrs);
+	this->buildingMaxHealthTag = Jupiter::IRC::Client::Config->get(configSection, "BuildingMaxHealthTag"_jrs, "{BMHEALTH}"_jrs);
+	this->buildingHealthPercentageTag = Jupiter::IRC::Client::Config->get(configSection, "BuildingHealthPercentageTag"_jrs, "{BHP}"_jrs);
+	this->buildingHealthBarTag = Jupiter::IRC::Client::Config->get(configSection, "BuildingHealthBarTag"_jrs, "{BHBAR}"_jrs);
+	this->buildingTeamColorTag = Jupiter::IRC::Client::Config->get(configSection, "BuildingTeamColorTag"_jrs, "{BCOLOR}"_jrs);
+	this->buildingTeamShortTag = Jupiter::IRC::Client::Config->get(configSection, "BuildingShortTeamTag"_jrs, "{BTEAMS}"_jrs);
+	this->buildingTeamLongTag = Jupiter::IRC::Client::Config->get(configSection, "BuildingLongTeamTag"_jrs, "{BTEAML}"_jrs);
 
 	/** Other tags */
-	this->weaponTag = Jupiter::IRC::Client::Config->get(configSection, STRING_LITERAL_AS_REFERENCE("WeaponTag"), STRING_LITERAL_AS_REFERENCE("{WEAPON}"));
-	this->objectTag = Jupiter::IRC::Client::Config->get(configSection, STRING_LITERAL_AS_REFERENCE("ObjectTag"), STRING_LITERAL_AS_REFERENCE("{OBJECT}"));
-	this->messageTag = Jupiter::IRC::Client::Config->get(configSection, STRING_LITERAL_AS_REFERENCE("MessageTag"), STRING_LITERAL_AS_REFERENCE("{MESSAGE}"));
-	this->newNameTag = Jupiter::IRC::Client::Config->get(configSection, STRING_LITERAL_AS_REFERENCE("NewNameTag"), STRING_LITERAL_AS_REFERENCE("{NNAME}"));
-	this->winScoreTag = Jupiter::IRC::Client::Config->get(configSection, STRING_LITERAL_AS_REFERENCE("WinScoreTag"), STRING_LITERAL_AS_REFERENCE("{WINSCORE}"));
-	this->loseScoreTag = Jupiter::IRC::Client::Config->get(configSection, STRING_LITERAL_AS_REFERENCE("LoseScoreTag"), STRING_LITERAL_AS_REFERENCE("{LOSESCORE}"));
+	this->weaponTag = Jupiter::IRC::Client::Config->get(configSection, "WeaponTag"_jrs, "{WEAPON}"_jrs);
+	this->objectTag = Jupiter::IRC::Client::Config->get(configSection, "ObjectTag"_jrs, "{OBJECT}"_jrs);
+	this->messageTag = Jupiter::IRC::Client::Config->get(configSection, "MessageTag"_jrs, "{MESSAGE}"_jrs);
+	this->newNameTag = Jupiter::IRC::Client::Config->get(configSection, "NewNameTag"_jrs, "{NNAME}"_jrs);
+	this->winScoreTag = Jupiter::IRC::Client::Config->get(configSection, "WinScoreTag"_jrs, "{WINSCORE}"_jrs);
+	this->loseScoreTag = Jupiter::IRC::Client::Config->get(configSection, "LoseScoreTag"_jrs, "{LOSESCORE}"_jrs);
+	this->lastGameTag = Jupiter::IRC::Client::Config->get(configSection, "LastScoreTag"_jrs, "{LOSESCORE}"_jrs);
+	this->rankTag = Jupiter::IRC::Client::Config->get(configSection, "RankTag"_jrs, "{RANK}"_jrs);
 }
 
 Jupiter::StringS TagsImp::get_building_health_bar(const RenX::BuildingInfo *building)
@@ -320,11 +386,12 @@ Jupiter::StringS TagsImp::get_building_health_bar(const RenX::BuildingInfo *buil
 	return r += IRCNORMAL;
 }
 
-#define PROCESS_TAG(tag, value) \
-while(true) { \
-index = msg.find(tag); \
-if (index == Jupiter::INVALID_INDEX) break; \
-msg.replace(index, tag.size(), value); }
+double get_ratio(double num, double denom)
+{
+	if (denom == 0.0f)
+		return num;
+	return num / denom;
+}
 
 void TagsImp::processTags(Jupiter::StringType &msg, const RenX::Server *server, const RenX::PlayerInfo *player, const RenX::PlayerInfo *victim, const RenX::BuildingInfo *building)
 {
@@ -372,6 +439,7 @@ void TagsImp::processTags(Jupiter::StringType &msg, const RenX::Server *server, 
 		PROCESS_TAG(this->INTERNAL_TEAM_LONG_TAG, RenX::getFullTeamName(player->team));
 		PROCESS_TAG(this->INTERNAL_PING_TAG, Jupiter::StringS::Format("%hu", player->ping));
 		PROCESS_TAG(this->INTERNAL_SCORE_TAG, Jupiter::StringS::Format("%.0f", player->score));
+		PROCESS_TAG(this->INTERNAL_SCORE_PER_MINUTE_TAG, Jupiter::StringS::Format("%.2f", get_ratio(static_cast<double>(player->score), static_cast<double>((std::chrono::steady_clock::now() - player->joinTime).count()) / 60.0)));
 		PROCESS_TAG(this->INTERNAL_CREDITS_TAG, Jupiter::StringS::Format("%.0f", player->credits));
 		PROCESS_TAG(this->INTERNAL_KILLS_TAG, Jupiter::StringS::Format("%u", player->kills));
 		PROCESS_TAG(this->INTERNAL_DEATHS_TAG, Jupiter::StringS::Format("%u", player->deaths));
@@ -382,7 +450,7 @@ void TagsImp::processTags(Jupiter::StringType &msg, const RenX::Server *server, 
 		PROCESS_TAG(this->INTERNAL_BUILDING_KILLS_TAG, Jupiter::StringS::Format("%u", player->buildingKills));
 		PROCESS_TAG(this->INTERNAL_DEFENCE_KILLS_TAG, Jupiter::StringS::Format("%u", player->defenceKills));
 		PROCESS_TAG(this->INTERNAL_WINS_TAG, Jupiter::StringS::Format("%u", player->wins));
-		PROCESS_TAG(this->INTERNAL_LOSES_TAG, Jupiter::StringS::Format("%u", player->loses));
+		PROCESS_TAG(this->INTERNAL_LOSSES_TAG, Jupiter::StringS::Format("%u", player->loses));
 		PROCESS_TAG(this->INTERNAL_BEACON_PLACEMENTS_TAG, Jupiter::StringS::Format("%u", player->beaconPlacements));
 		PROCESS_TAG(this->INTERNAL_BEACON_DISARMS_TAG, Jupiter::StringS::Format("%u", player->beaconDisarms));
 		PROCESS_TAG(this->INTERNAL_CAPTURES_TAG, Jupiter::StringS::Format("%u", player->captures));
@@ -408,6 +476,7 @@ void TagsImp::processTags(Jupiter::StringType &msg, const RenX::Server *server, 
 		PROCESS_TAG(this->INTERNAL_VICTIM_TEAM_LONG_TAG, RenX::getFullTeamName(victim->team));
 		PROCESS_TAG(this->INTERNAL_VICTIM_PING_TAG, Jupiter::StringS::Format("%hu", victim->ping));
 		PROCESS_TAG(this->INTERNAL_VICTIM_SCORE_TAG, Jupiter::StringS::Format("%.0f", victim->score));
+		PROCESS_TAG(this->INTERNAL_VICTIM_SCORE_PER_MINUTE_TAG, Jupiter::StringS::Format("%.2f", get_ratio(static_cast<double>(victim->score), static_cast<double>((std::chrono::steady_clock::now() - victim->joinTime).count()) / 60.0)));
 		PROCESS_TAG(this->INTERNAL_VICTIM_CREDITS_TAG, Jupiter::StringS::Format("%.0f", victim->credits));
 		PROCESS_TAG(this->INTERNAL_VICTIM_KILLS_TAG, Jupiter::StringS::Format("%u", victim->kills));
 		PROCESS_TAG(this->INTERNAL_VICTIM_DEATHS_TAG, Jupiter::StringS::Format("%u", victim->deaths));
@@ -418,7 +487,7 @@ void TagsImp::processTags(Jupiter::StringType &msg, const RenX::Server *server, 
 		PROCESS_TAG(this->INTERNAL_VICTIM_BUILDING_KILLS_TAG, Jupiter::StringS::Format("%u", victim->buildingKills));
 		PROCESS_TAG(this->INTERNAL_VICTIM_DEFENCE_KILLS_TAG, Jupiter::StringS::Format("%u", victim->defenceKills));
 		PROCESS_TAG(this->INTERNAL_VICTIM_WINS_TAG, Jupiter::StringS::Format("%u", victim->wins));
-		PROCESS_TAG(this->INTERNAL_VICTIM_LOSES_TAG, Jupiter::StringS::Format("%u", victim->loses));
+		PROCESS_TAG(this->INTERNAL_VICTIM_LOSSES_TAG, Jupiter::StringS::Format("%u", victim->loses));
 		PROCESS_TAG(this->INTERNAL_VICTIM_BEACON_PLACEMENTS_TAG, Jupiter::StringS::Format("%u", victim->beaconPlacements));
 		PROCESS_TAG(this->INTERNAL_VICTIM_BEACON_DISARMS_TAG, Jupiter::StringS::Format("%u", victim->beaconDisarms));
 		PROCESS_TAG(this->INTERNAL_VICTIM_CAPTURES_TAG, Jupiter::StringS::Format("%u", victim->captures));
@@ -440,8 +509,66 @@ void TagsImp::processTags(Jupiter::StringType &msg, const RenX::Server *server, 
 	}
 
 	Jupiter::ArrayList<RenX::Plugin> &xPlugins = *RenX::getCore()->getPlugins();
-	for (size_t i = 0; i < xPlugins.size(); i++)
-		xPlugins.get(i)->RenX_ProcessTags(msg, server, player, victim, building);
+	for (index = 0; index < xPlugins.size(); ++index)
+		xPlugins.get(index)->RenX_ProcessTags(msg, server, player, victim, building);
+}
+
+void TagsImp::processTags(Jupiter::StringType &msg, const RenX::LadderDatabase::Entry &entry)
+{
+	size_t index;
+	uint32_t total_tied_games = entry.total_wins - entry.total_gdi_wins - entry.total_nod_wins;
+	uint32_t total_nontied_games = entry.total_games - total_tied_games;
+
+	PROCESS_TAG(this->INTERNAL_NAME_TAG, entry.most_recent_name);
+	PROCESS_TAG(this->INTERNAL_STEAM_TAG, Jupiter::StringS::Format("%llu", entry.steam_id));
+	PROCESS_TAG(this->INTERNAL_LAST_GAME_TAG, Jupiter::StringS::Format("XX Xuary 20XX at 00:00:00")); // TODO: format this!
+	PROCESS_TAG(this->INTERNAL_RANK_TAG, Jupiter::StringS::Format("%u", entry.rank));
+
+	/** Totals */
+	PROCESS_TAG(this->INTERNAL_SCORE_TAG, Jupiter::StringS::Format("%llu", entry.total_score));
+	PROCESS_TAG(this->INTERNAL_KILLS_TAG, Jupiter::StringS::Format("%u", entry.total_kills));
+	PROCESS_TAG(this->INTERNAL_DEATHS_TAG, Jupiter::StringS::Format("%u", entry.total_deaths));
+	PROCESS_TAG(this->INTERNAL_KDR_TAG, Jupiter::StringS::Format("%.2f", get_ratio(static_cast<double>(entry.total_kills), static_cast<double>(entry.total_deaths))));
+	PROCESS_TAG(this->INTERNAL_SCORE_PER_MINUTE_TAG, Jupiter::StringS::Format("%.2f", get_ratio(static_cast<double>(entry.total_score), static_cast<double>(entry.total_game_time) / 60.0)));
+	PROCESS_TAG(this->INTERNAL_HEADSHOTS_TAG, Jupiter::StringS::Format("%u", entry.total_headshot_kills));
+	PROCESS_TAG(this->INTERNAL_VEHICLE_KILLS_TAG, Jupiter::StringS::Format("%u", entry.total_vehicle_kills));
+	PROCESS_TAG(this->INTERNAL_BUILDING_KILLS_TAG, Jupiter::StringS::Format("%u", entry.total_building_kills));
+	PROCESS_TAG(this->INTERNAL_DEFENCE_KILLS_TAG, Jupiter::StringS::Format("%u", entry.total_defence_kills));
+	PROCESS_TAG(this->INTERNAL_CAPTURES_TAG, Jupiter::StringS::Format("%u", entry.total_captures));
+	PROCESS_TAG(this->INTERNAL_GAME_TIME_TAG, Jupiter::StringS::Format("%u", entry.total_game_time));
+	PROCESS_TAG(this->INTERNAL_GAMES_TAG, Jupiter::StringS::Format("%u", entry.total_games));
+	PROCESS_TAG(this->INTERNAL_GDI_GAMES_TAG, Jupiter::StringS::Format("%u", entry.total_gdi_games));
+	PROCESS_TAG(this->INTERNAL_NOD_GAMES_TAG, Jupiter::StringS::Format("%u", entry.total_nod_games));
+	PROCESS_TAG(this->INTERNAL_WINS_TAG, Jupiter::StringS::Format("%u", entry.total_wins));
+	PROCESS_TAG(this->INTERNAL_GDI_WINS_TAG, Jupiter::StringS::Format("%u", entry.total_gdi_wins));
+	PROCESS_TAG(this->INTERNAL_NOD_WINS_TAG, Jupiter::StringS::Format("%u", entry.total_nod_wins));
+	PROCESS_TAG(this->INTERNAL_TIES_TAG, Jupiter::StringS::Format("%u", total_tied_games));
+	PROCESS_TAG(this->INTERNAL_LOSSES_TAG, Jupiter::StringS::Format("%u", total_nontied_games - entry.total_wins));
+	PROCESS_TAG(this->INTERNAL_GDI_LOSSES_TAG, Jupiter::StringS::Format("%u", total_nontied_games - entry.total_gdi_wins));
+	PROCESS_TAG(this->INTERNAL_NOD_LOSSES_TAG, Jupiter::StringS::Format("%u", total_nontied_games - entry.total_nod_wins));
+
+	PROCESS_TAG(this->INTERNAL_WIN_LOSS_RATIO_TAG, Jupiter::StringS::Format("%.2f", get_ratio(static_cast<double>(entry.total_wins), static_cast<double>(total_nontied_games - entry.total_wins))));
+	PROCESS_TAG(this->INTERNAL_GDI_WIN_LOSS_RATIO_TAG, Jupiter::StringS::Format("%.2f", get_ratio(static_cast<double>(entry.total_gdi_wins), static_cast<double>(total_nontied_games - entry.total_gdi_wins))));
+	PROCESS_TAG(this->INTERNAL_NOD_WIN_LOSS_RATIO_TAG, Jupiter::StringS::Format("%.2f", get_ratio(static_cast<double>(entry.total_nod_wins), static_cast<double>(total_nontied_games - entry.total_nod_wins))));
+	PROCESS_TAG(this->INTERNAL_BEACON_PLACEMENTS_TAG, Jupiter::StringS::Format("%u", entry.total_beacon_placements));
+	PROCESS_TAG(this->INTERNAL_BEACON_DISARMS_TAG, Jupiter::StringS::Format("%u", entry.total_beacon_disarms));
+	PROCESS_TAG(this->INTERNAL_PROXY_PLACEMENTS_TAG, Jupiter::StringS::Format("%u", entry.total_proxy_placements));
+	PROCESS_TAG(this->INTERNAL_PROXY_DISARMS_TAG, Jupiter::StringS::Format("%u", entry.total_proxy_disarms));
+
+	/** Tops */
+	PROCESS_TAG(this->INTERNAL_VICTIM_SCORE_TAG, Jupiter::StringS::Format("%llu", entry.top_score));
+	PROCESS_TAG(this->INTERNAL_VICTIM_KILLS_TAG, Jupiter::StringS::Format("%u", entry.top_kills));
+	PROCESS_TAG(this->INTERNAL_VICTIM_DEATHS_TAG, Jupiter::StringS::Format("%u", entry.most_deaths));
+	PROCESS_TAG(this->INTERNAL_VICTIM_HEADSHOTS_TAG, Jupiter::StringS::Format("%u", entry.top_headshot_kills));
+	PROCESS_TAG(this->INTERNAL_VICTIM_VEHICLE_KILLS_TAG, Jupiter::StringS::Format("%u", entry.top_vehicle_kills));
+	PROCESS_TAG(this->INTERNAL_VICTIM_BUILDING_KILLS_TAG, Jupiter::StringS::Format("%u", entry.top_building_kills));
+	PROCESS_TAG(this->INTERNAL_VICTIM_DEFENCE_KILLS_TAG, Jupiter::StringS::Format("%u", entry.top_defence_kills));
+	PROCESS_TAG(this->INTERNAL_VICTIM_CAPTURES_TAG, Jupiter::StringS::Format("%u", entry.top_captures));
+	PROCESS_TAG(this->INTERNAL_VICTIM_GAME_TIME_TAG, Jupiter::StringS::Format("%u", entry.top_game_time));
+	PROCESS_TAG(this->INTERNAL_VICTIM_BEACON_PLACEMENTS_TAG, Jupiter::StringS::Format("%u", entry.top_beacon_placements));
+	PROCESS_TAG(this->INTERNAL_VICTIM_BEACON_DISARMS_TAG, Jupiter::StringS::Format("%u", entry.top_beacon_disarms));
+	PROCESS_TAG(this->INTERNAL_VICTIM_PROXY_PLACEMENTS_TAG, Jupiter::StringS::Format("%u", entry.top_proxy_placements));
+	PROCESS_TAG(this->INTERNAL_VICTIM_PROXY_DISARMS_TAG, Jupiter::StringS::Format("%u", entry.top_proxy_disarms));
 }
 
 void TagsImp::sanitizeTags(Jupiter::StringType &fmt)
@@ -482,6 +609,7 @@ void TagsImp::sanitizeTags(Jupiter::StringType &fmt)
 	fmt.replace(this->teamLongTag, this->INTERNAL_TEAM_LONG_TAG);
 	fmt.replace(this->pingTag, this->INTERNAL_PING_TAG);
 	fmt.replace(this->scoreTag, this->INTERNAL_SCORE_TAG);
+	fmt.replace(this->scorePerMinuteTag, this->INTERNAL_SCORE_PER_MINUTE_TAG);
 	fmt.replace(this->creditsTag, this->INTERNAL_CREDITS_TAG);
 	fmt.replace(this->killsTag, this->INTERNAL_KILLS_TAG);
 	fmt.replace(this->deathsTag, this->INTERNAL_DEATHS_TAG);
@@ -491,10 +619,24 @@ void TagsImp::sanitizeTags(Jupiter::StringType &fmt)
 	fmt.replace(this->vehicleKillsTag, this->INTERNAL_VEHICLE_KILLS_TAG);
 	fmt.replace(this->buildingKillsTag, this->INTERNAL_BUILDING_KILLS_TAG);
 	fmt.replace(this->defenceKillsTag, this->INTERNAL_DEFENCE_KILLS_TAG);
+	fmt.replace(this->gameTimeTag, this->INTERNAL_GAME_TIME_TAG);
+	fmt.replace(this->gamesTag, this->INTERNAL_GAMES_TAG);
+	fmt.replace(this->GDIGamesTag, this->INTERNAL_GDI_GAMES_TAG);
+	fmt.replace(this->NodGamesTag, this->INTERNAL_NOD_GAMES_TAG);
 	fmt.replace(this->winsTag, this->INTERNAL_WINS_TAG);
-	fmt.replace(this->losesTag, this->INTERNAL_LOSES_TAG);
+	fmt.replace(this->GDIWinsTag, this->INTERNAL_GDI_WINS_TAG);
+	fmt.replace(this->NodWinsTag, this->INTERNAL_NOD_WINS_TAG);
+	fmt.replace(this->tiesTag, this->INTERNAL_TIES_TAG);
+	fmt.replace(this->lossesTag, this->INTERNAL_LOSSES_TAG);
+	fmt.replace(this->GDILossesTag, this->INTERNAL_GDI_LOSSES_TAG);
+	fmt.replace(this->NodLossesTag, this->INTERNAL_NOD_LOSSES_TAG);
+	fmt.replace(this->winLossRatioTag, this->INTERNAL_WIN_LOSS_RATIO_TAG);
+	fmt.replace(this->GDIWinLossRatioTag, this->INTERNAL_GDI_WIN_LOSS_RATIO_TAG);
+	fmt.replace(this->NodWinLossRatioTag, this->INTERNAL_NOD_WIN_LOSS_RATIO_TAG);
 	fmt.replace(this->beaconPlacementsTag, this->INTERNAL_BEACON_PLACEMENTS_TAG);
 	fmt.replace(this->beaconDisarmsTag, this->INTERNAL_BEACON_DISARMS_TAG);
+	fmt.replace(this->proxyPlacementsTag, this->INTERNAL_PROXY_PLACEMENTS_TAG);
+	fmt.replace(this->proxyDisarmsTag, this->INTERNAL_PROXY_DISARMS_TAG);
 	fmt.replace(this->capturesTag, this->INTERNAL_CAPTURES_TAG);
 	fmt.replace(this->stealsTag, this->INTERNAL_STEALS_TAG);
 	fmt.replace(this->stolenTag, this->INTERNAL_STOLEN_TAG);
@@ -518,6 +660,7 @@ void TagsImp::sanitizeTags(Jupiter::StringType &fmt)
 	fmt.replace(this->victimTeamLongTag, this->INTERNAL_VICTIM_TEAM_LONG_TAG);
 	fmt.replace(this->victimPingTag, this->INTERNAL_VICTIM_PING_TAG);
 	fmt.replace(this->victimScoreTag, this->INTERNAL_VICTIM_SCORE_TAG);
+	fmt.replace(this->victimScorePerMinuteTag, this->INTERNAL_SCORE_PER_MINUTE_TAG);
 	fmt.replace(this->victimCreditsTag, this->INTERNAL_VICTIM_CREDITS_TAG);
 	fmt.replace(this->victimKillsTag, this->INTERNAL_VICTIM_KILLS_TAG);
 	fmt.replace(this->victimDeathsTag, this->INTERNAL_VICTIM_DEATHS_TAG);
@@ -527,10 +670,24 @@ void TagsImp::sanitizeTags(Jupiter::StringType &fmt)
 	fmt.replace(this->victimVehicleKillsTag, this->INTERNAL_VICTIM_VEHICLE_KILLS_TAG);
 	fmt.replace(this->victimBuildingKillsTag, this->INTERNAL_VICTIM_BUILDING_KILLS_TAG);
 	fmt.replace(this->victimDefenceKillsTag, this->INTERNAL_VICTIM_DEFENCE_KILLS_TAG);
+	fmt.replace(this->victimGameTimeTag, this->INTERNAL_VICTIM_GAME_TIME_TAG);
+	fmt.replace(this->victimGamesTag, this->INTERNAL_VICTIM_GAMES_TAG);
+	fmt.replace(this->victimGDIGamesTag, this->INTERNAL_VICTIM_GDI_GAMES_TAG);
+	fmt.replace(this->victimNodGamesTag, this->INTERNAL_VICTIM_NOD_GAMES_TAG);
 	fmt.replace(this->victimWinsTag, this->INTERNAL_VICTIM_WINS_TAG);
-	fmt.replace(this->victimLosesTag, this->INTERNAL_VICTIM_LOSES_TAG);
+	fmt.replace(this->victimGDIWinsTag, this->INTERNAL_VICTIM_GDI_WINS_TAG);
+	fmt.replace(this->victimNodWinsTag, this->INTERNAL_VICTIM_NOD_WINS_TAG);
+	fmt.replace(this->victimTiesTag, this->INTERNAL_VICTIM_TIES_TAG);
+	fmt.replace(this->victimLossesTag, this->INTERNAL_VICTIM_LOSSES_TAG);
+	fmt.replace(this->victimGDILossesTag, this->INTERNAL_VICTIM_GDI_LOSSES_TAG);
+	fmt.replace(this->victimNodLossesTag, this->INTERNAL_VICTIM_NOD_LOSSES_TAG);
+	fmt.replace(this->victimWinLossRatioTag, this->INTERNAL_VICTIM_WIN_LOSS_RATIO_TAG);
+	fmt.replace(this->victimGDIWinLossRatioTag, this->INTERNAL_VICTIM_GDI_WIN_LOSS_RATIO_TAG);
+	fmt.replace(this->victimNodWinLossRatioTag, this->INTERNAL_VICTIM_NOD_WIN_LOSS_RATIO_TAG);
 	fmt.replace(this->victimBeaconPlacementsTag, this->INTERNAL_VICTIM_BEACON_PLACEMENTS_TAG);
 	fmt.replace(this->victimBeaconDisarmsTag, this->INTERNAL_VICTIM_BEACON_DISARMS_TAG);
+	fmt.replace(this->victimProxyPlacementsTag, this->INTERNAL_VICTIM_PROXY_PLACEMENTS_TAG);
+	fmt.replace(this->victimProxyDisarmsTag, this->INTERNAL_VICTIM_PROXY_DISARMS_TAG);
 	fmt.replace(this->victimCapturesTag, this->INTERNAL_VICTIM_CAPTURES_TAG);
 	fmt.replace(this->victimStealsTag, this->INTERNAL_VICTIM_STEALS_TAG);
 	fmt.replace(this->victimStolenTag, this->INTERNAL_VICTIM_STOLEN_TAG);
@@ -554,6 +711,8 @@ void TagsImp::sanitizeTags(Jupiter::StringType &fmt)
 	fmt.replace(this->newNameTag, this->INTERNAL_NEW_NAME_TAG);
 	fmt.replace(this->winScoreTag, this->INTERNAL_WIN_SCORE_TAG);
 	fmt.replace(this->loseScoreTag, this->INTERNAL_LOSE_SCORE_TAG);
+	fmt.replace(this->lastGameTag, this->INTERNAL_LAST_GAME_TAG);
+	fmt.replace(this->rankTag, this->INTERNAL_RANK_TAG);
 
 	Jupiter::ArrayList<RenX::Plugin> &xPlugins = *RenX::getCore()->getPlugins();
 	for (size_t i = 0; i < xPlugins.size(); i++)
@@ -580,6 +739,11 @@ const Jupiter::ReadableString &RenX::getUniqueInternalTag()
 void RenX::processTags(Jupiter::StringType &msg, const RenX::Server *server, const RenX::PlayerInfo *player, const RenX::PlayerInfo *victim, const RenX::BuildingInfo *building)
 {
 	_tags.processTags(msg, server, player, victim, building);
+}
+
+void RenX::processTags(Jupiter::StringType &msg, const RenX::LadderDatabase::Entry &entry)
+{
+	_tags.processTags(msg, entry);
 }
 
 void RenX::sanitizeTags(Jupiter::StringType &fmt)

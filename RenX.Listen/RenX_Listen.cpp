@@ -25,7 +25,7 @@
 
 RenX_ListenPlugin::~RenX_ListenPlugin()
 {
-	RenX_ListenPlugin::socket.closeSocket();
+	RenX_ListenPlugin::socket.close();
 }
 
 bool RenX_ListenPlugin::init()
@@ -59,7 +59,7 @@ int RenX_ListenPlugin::OnRehash()
 	if (port != RenX_ListenPlugin::socket.getRemotePort() || address.equals(RenX_ListenPlugin::socket.getRemoteHostname()) == false)
 	{
 		puts("Notice: The Renegade-X listening socket has been changed!");
-		RenX_ListenPlugin::socket.closeSocket();
+		RenX_ListenPlugin::socket.close();
 		return RenX_ListenPlugin::socket.bind(Jupiter::CStringS(address).c_str(), port, true) == false || RenX_ListenPlugin::socket.setBlocking(false) == false;
 	}
 	return 0;

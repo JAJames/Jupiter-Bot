@@ -16,15 +16,30 @@
  * Written by Jessica James <jessica.aj@outlook.com>
  */
 
-#if !defined _RENX_LADDER_H_HEADER
-#define _RENX_LADDER_H_HEADER
+#if !defined _HTTPSERVER_H_HEADER
+#define _HTTPSERVER_H_HEADER
+
+ /**
+ * @file HTTPServer.h
+ * @brief Provides an interface to push HTTP data to HTTP clients.
+ */
+
+#if defined _WIN32
 
 #include "Jupiter/Plugin.h"
 #include "Jupiter/Reference_String.h"
-#include "IRC_Command.h"
-#include "RenX_Plugin.h"
-#include "RenX_LadderDatabase.h"
-#include "RenX_GameCommand.h"
+#include "Jupiter/String.h"
+#include "Jupiter/HTTP_Server.h"
+
+#if defined HTTPSERVER_EXPORTS
+#define HTTPSERVER_API __declspec(dllexport) 
+#else // HTTPSERVER_EXPORTS
+#define HTTPSERVER_API __declspec(dllimport) 
+#endif // HTTPSERVER_EXPORTS
+
+#else // _WIN32
+#define HTTPSERVER_API
+#endif // _WIN32
 
 /** DLL Linkage Nagging */
 #if defined _MSC_VER
@@ -32,31 +47,29 @@
 #pragma warning(disable: 4251)
 #endif
 
-class RenX_LadderPlugin : public RenX::Plugin
+/**
+* @brief Instantiates an instance of Jupiter::HTTP::Server to permit declaration of HTTP pages.
+*/
+class HTTPSERVER_API HTTPServerPlugin : public Jupiter::Plugin
 {
 public:
+	HTTPServerPlugin();
+	Jupiter::HTTP::Server server;
+
+public: // Jupiter::Plugin
 	const Jupiter::ReadableString &getName() override { return name; }
-	void RenX_OnGameOver(RenX::Server *server, RenX::WinType winType, const RenX::TeamType &team, int gScore, int nScore) override;
-	void RenX_OnCommand(RenX::Server *server, const Jupiter::ReadableString &) override;
+	int think() override;
 
-	size_t getMaxLadderCommandPartNameOutput() const;
-	RenX_LadderPlugin();
-
-	RenX::LadderDatabase database;
 private:
-	/** Configuration variables */
-	bool only_pure, output_times;
-	size_t max_ladder_command_part_name_output;
-	Jupiter::CStringS db_filename;
-	STRING_LITERAL_AS_NAMED_REFERENCE(name, "RenX.Ladder");
+	STRING_LITERAL_AS_NAMED_REFERENCE(name, "HTTPServer");
 };
 
-GENERIC_GENERIC_COMMAND(LadderGenericCommand)
-GENERIC_GAME_COMMAND(LadderGameCommand)
+HTTPSERVER_API HTTPServerPlugin &getHTTPServerPlugin();
+HTTPSERVER_API Jupiter::HTTP::Server &getHTTPServer();
 
 /** Re-enable warnings */
 #if defined _MSC_VER
 #pragma warning(pop)
 #endif
 
-#endif // _RENX_LADDER_H_HEADER
+#endif // _HTTPSERVER_H_HEADER

@@ -15,9 +15,6 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <Library Include="..\Release\Plugins\RenX.Core.lib">
-      <Filter>Resource Files</Filter>
-    </Library>
     <Library Include="..\Release\Bot.lib">
       <Filter>Resource Files</Filter>
     </Library>
@@ -26,13 +23,13 @@
     </Library>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="RenX_Ladder.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="RenX_Ladder.h">
+    <ClInclude Include="HTTPServer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="HTTPServer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>
