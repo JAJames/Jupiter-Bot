@@ -58,7 +58,7 @@ void RenX_IRCJoinPlugin::OnJoin(Jupiter::IRC::Client *source, const Jupiter::Rea
 		for (unsigned int i = 0; i != RenX::getCore()->getServerCount(); i++)
 		{
 			server = RenX::getCore()->getServer(i);
-			if (checkType() && (RenX_IRCJoinPlugin::joinMsgAlways || server->players.size() != 0))
+			if (checkType() && (RenX_IRCJoinPlugin::joinMsgAlways || server->players.size() != server->getBotCount()))
 				server->sendMessage(msg);
 		}
 	}
@@ -94,7 +94,7 @@ void RenX_IRCJoinPlugin::OnPart(Jupiter::IRC::Client *source, const Jupiter::Rea
 			for (unsigned int i = 0; i != RenX::getCore()->getServerCount(); i++)
 			{
 				server = RenX::getCore()->getServer(i);
-				if (checkType() && (RenX_IRCJoinPlugin::partMsgAlways || server->players.size() != 0))
+				if (checkType() && (RenX_IRCJoinPlugin::partMsgAlways || server->players.size() != server->getBotCount()))
 					server->sendMessage(msg);
 			}
 		}

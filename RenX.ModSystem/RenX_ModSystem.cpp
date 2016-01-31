@@ -106,7 +106,7 @@ void RenX_ModSystemPlugin::init()
 	while (total != 0)
 	{
 		server = core->getServer(--total);
-		if (server->players.size() != 0)
+		if (server->players.size() != server->getBotCount())
 			for (Jupiter::DLList<RenX::PlayerInfo>::Node *n = server->players.getNode(0); n != nullptr; n = n->next)
 				RenX_ModSystemPlugin::auth(server, n->data, true);
 	}
@@ -314,7 +314,7 @@ RenX_ModSystemPlugin::~RenX_ModSystemPlugin()
 	while (total != 0)
 	{
 		server = core->getServer(--total);
-		if (server->players.size() != 0)
+		if (server->players.size() != server->getBotCount())
 			for (Jupiter::DLList<RenX::PlayerInfo>::Node *n = server->players.getNode(0); n != nullptr; n = n->next)
 			{
 				player = n->data;

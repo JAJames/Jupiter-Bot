@@ -168,7 +168,7 @@ void RenX_MedalsPlugin::RenX_OnJoin(RenX::Server *server, const RenX::PlayerInfo
 
 void RenX_MedalsPlugin::RenX_OnGameOver(RenX::Server *server, RenX::WinType winType, const RenX::TeamType &team, int gScore, int nScore)
 {
-	if (server->hasSeenStart() && server->players.size() != 0) // No unfair medals for the first game! :D
+	if (server->hasSeenStart() && server->players.size() != server->getBotCount()) // No unfair medals for the first game! :D
 	{
 		Jupiter::DLList<RenX::PlayerInfo>::Node *n = server->players.getNode(0);
 		RenX::PlayerInfo *pInfo = n->data;
@@ -290,7 +290,7 @@ void RenX_MedalsPlugin::init()
 	for (unsigned int i = 0; i < sCount; i++)
 	{
 		server = core->getServer(i);
-		if (server->players.size() != 0)
+		if (server->players.size() != server->getBotCount())
 		{
 			for (Jupiter::DLList<RenX::PlayerInfo>::Node *n = server->players.getNode(0); n != nullptr; n = n->next)
 			{

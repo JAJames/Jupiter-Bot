@@ -332,7 +332,7 @@ void PlayersIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &
 		if (server->isLogChanType(type))
 		{
 			noServers = false;
-			if (server->players.size() != 0)
+			if (server->players.size() != server->getBotCount())
 			{
 				// End string containers
 				Jupiter::DLList<Jupiter::String> gStrings;
@@ -488,7 +488,7 @@ void PlayerTableIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableStri
 		if (server->isLogChanType(type))
 		{
 			noServers = false;
-			if (server->players.size() != 0)
+			if (server->players.size() != server->getBotCount())
 			{
 				Jupiter::SLList<RenX::PlayerInfo> gPlayers;
 				Jupiter::SLList<RenX::PlayerInfo> nPlayers;

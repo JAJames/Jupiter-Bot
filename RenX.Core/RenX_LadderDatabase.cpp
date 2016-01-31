@@ -369,7 +369,7 @@ void RenX::LadderDatabase::sort_entries()
 
 void RenX::LadderDatabase::updateLadder(RenX::Server *server, const RenX::TeamType &team, bool output_times)
 {
-	if (server->players.size() != 0)
+	if (server->players.size() != server->getBotCount())
 	{
 		// update player stats in memory
 		RenX::PlayerInfo *player;

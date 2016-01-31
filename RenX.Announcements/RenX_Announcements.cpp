@@ -53,7 +53,7 @@ void RenX_AnnouncementsPlugin::announce(unsigned int)
 	for (unsigned int i = 0; i != RenX::getCore()->getServerCount(); i++)
 	{
 		server = core->getServer(i);
-		if (server->players.size() != 0)
+		if (server->players.size() != server->getBotCount())
 		{
 			msg = announcement;
 			RenX::processTags(msg, server);
