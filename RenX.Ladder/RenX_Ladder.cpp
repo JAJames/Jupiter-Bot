@@ -48,7 +48,7 @@ void RenX_LadderPlugin::RenX_OnGameOver(RenX::Server *server, RenX::WinType winT
 	if (server->hasSeenStart() && server->players.size() != server->getBotCount()) // the first game doesn't count!
 	{
 		char chr = static_cast<char>(team);
-		server->varData.set(this->name, "t"_jrs, Jupiter::ReferenceString(chr));
+		server->varData.set(this->name, "t"_jrs, Jupiter::ReferenceString(&chr, 1));
 		server->varData.set(this->name, "w"_jrs, "1"_jrs);
 		server->updateClientList();
 	}

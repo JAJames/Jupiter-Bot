@@ -518,7 +518,6 @@ void TagsImp::processTags(Jupiter::StringType &msg, const RenX::LadderDatabase::
 {
 	size_t index;
 	uint32_t total_tied_games = entry.total_wins - entry.total_gdi_wins - entry.total_nod_wins;
-	uint32_t total_nontied_games = entry.total_games - total_tied_games;
 
 	PROCESS_TAG(this->INTERNAL_NAME_TAG, entry.most_recent_name);
 	PROCESS_TAG(this->INTERNAL_STEAM_TAG, Jupiter::StringS::Format("%llu", entry.steam_id));
@@ -544,13 +543,13 @@ void TagsImp::processTags(Jupiter::StringType &msg, const RenX::LadderDatabase::
 	PROCESS_TAG(this->INTERNAL_GDI_WINS_TAG, Jupiter::StringS::Format("%u", entry.total_gdi_wins));
 	PROCESS_TAG(this->INTERNAL_NOD_WINS_TAG, Jupiter::StringS::Format("%u", entry.total_nod_wins));
 	PROCESS_TAG(this->INTERNAL_TIES_TAG, Jupiter::StringS::Format("%u", total_tied_games));
-	PROCESS_TAG(this->INTERNAL_LOSSES_TAG, Jupiter::StringS::Format("%u", total_nontied_games - entry.total_wins));
-	PROCESS_TAG(this->INTERNAL_GDI_LOSSES_TAG, Jupiter::StringS::Format("%u", total_nontied_games - entry.total_gdi_wins));
-	PROCESS_TAG(this->INTERNAL_NOD_LOSSES_TAG, Jupiter::StringS::Format("%u", total_nontied_games - entry.total_nod_wins));
+	PROCESS_TAG(this->INTERNAL_LOSSES_TAG, Jupiter::StringS::Format("%u", entry.total_games - entry.total_wins));
+	PROCESS_TAG(this->INTERNAL_GDI_LOSSES_TAG, Jupiter::StringS::Format("%u", entry.total_gdi_games - entry.total_gdi_wins));
+	PROCESS_TAG(this->INTERNAL_NOD_LOSSES_TAG, Jupiter::StringS::Format("%u", entry.total_nod_games - entry.total_nod_wins));
 
-	PROCESS_TAG(this->INTERNAL_WIN_LOSS_RATIO_TAG, Jupiter::StringS::Format("%.2f", get_ratio(static_cast<double>(entry.total_wins), static_cast<double>(total_nontied_games - entry.total_wins))));
-	PROCESS_TAG(this->INTERNAL_GDI_WIN_LOSS_RATIO_TAG, Jupiter::StringS::Format("%.2f", get_ratio(static_cast<double>(entry.total_gdi_wins), static_cast<double>(total_nontied_games - entry.total_gdi_wins))));
-	PROCESS_TAG(this->INTERNAL_NOD_WIN_LOSS_RATIO_TAG, Jupiter::StringS::Format("%.2f", get_ratio(static_cast<double>(entry.total_nod_wins), static_cast<double>(total_nontied_games - entry.total_nod_wins))));
+	PROCESS_TAG(this->INTERNAL_WIN_LOSS_RATIO_TAG, Jupiter::StringS::Format("%.2f", get_ratio(static_cast<double>(entry.total_wins), static_cast<double>(entry.total_games - entry.total_wins))));
+	PROCESS_TAG(this->INTERNAL_GDI_WIN_LOSS_RATIO_TAG, Jupiter::StringS::Format("%.2f", get_ratio(static_cast<double>(entry.total_gdi_wins), static_cast<double>(entry.total_gdi_games - entry.total_gdi_wins))));
+	PROCESS_TAG(this->INTERNAL_NOD_WIN_LOSS_RATIO_TAG, Jupiter::StringS::Format("%.2f", get_ratio(static_cast<double>(entry.total_nod_wins), static_cast<double>(entry.total_nod_games - entry.total_nod_wins))));
 	PROCESS_TAG(this->INTERNAL_BEACON_PLACEMENTS_TAG, Jupiter::StringS::Format("%u", entry.total_beacon_placements));
 	PROCESS_TAG(this->INTERNAL_BEACON_DISARMS_TAG, Jupiter::StringS::Format("%u", entry.total_beacon_disarms));
 	PROCESS_TAG(this->INTERNAL_PROXY_PLACEMENTS_TAG, Jupiter::StringS::Format("%u", entry.total_proxy_placements));

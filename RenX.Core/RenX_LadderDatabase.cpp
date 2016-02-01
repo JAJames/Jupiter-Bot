@@ -460,7 +460,7 @@ void RenX::LadderDatabase::updateLadder(RenX::Server *server, const RenX::TeamTy
 		{
 			Jupiter::StringS str = Jupiter::StringS::Format("Ladder: %u entries sorted in %f seconds; Database written in %f seconds." ENDL,
 				RenX::LadderDatabase::getEntries(),
-				static_cast<double>(sort_duration.count()) * (static_cast<double>(std::chrono::steady_clock::duration::period::num / static_cast<double>(std::chrono::steady_clock::duration::period::den) * static_cast<double>(std::chrono::seconds::duration::period::den / std::chrono::seconds::duration::period::num))),
+				static_cast<double>(sort_duration.count()) * (static_cast<double>(std::chrono::steady_clock::duration::period::num) / static_cast<double>(std::chrono::steady_clock::duration::period::den) * static_cast<double>(std::chrono::seconds::duration::period::den / std::chrono::seconds::duration::period::num)),
 				static_cast<double>(write_duration.count()) * (static_cast<double>(std::chrono::steady_clock::duration::period::num) / static_cast<double>(std::chrono::steady_clock::duration::period::den) * static_cast<double>(std::chrono::seconds::duration::period::den / std::chrono::seconds::duration::period::num)));
 			str.println(stdout);
 			server->sendLogChan(str);
