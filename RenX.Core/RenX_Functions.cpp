@@ -175,6 +175,7 @@ Jupiter::ReferenceString translated_DmgType_Suicided = STRING_LITERAL_AS_REFEREN
 Jupiter::ReferenceString translated_DmgType_Fell = STRING_LITERAL_AS_REFERENCE("Fall");
 Jupiter::ReferenceString translated_DmgType_Tiberium = STRING_LITERAL_AS_REFERENCE("Tiberium");
 Jupiter::ReferenceString translated_DmgType_TiberiumBleed = STRING_LITERAL_AS_REFERENCE("Tiberium Decay");
+Jupiter::ReferenceString translated_DmgType_TiberiumBleed_Blue = STRING_LITERAL_AS_REFERENCE("Blue Tiberium Decay");
 Jupiter::ReferenceString translated_DmgType_RanOver = STRING_LITERAL_AS_REFERENCE("Crushed");
 
 /** Infantry weapons */
@@ -612,6 +613,7 @@ const Jupiter::ReferenceString RenX::translateName(const Jupiter::ReadableString
 		if (object.equals(STRING_LITERAL_AS_REFERENCE("Fell"))) return translated_DmgType_Fell;
 		if (object.equals(STRING_LITERAL_AS_REFERENCE("Tiberium"))) return translated_DmgType_Tiberium;
 		if (object.equals(STRING_LITERAL_AS_REFERENCE("TiberiumBleed"))) return translated_DmgType_TiberiumBleed;
+		if (object.equals(STRING_LITERAL_AS_REFERENCE("TiberiumBleed_Blue"))) return translated_DmgType_TiberiumBleed_Blue;
 		if (object.equals(STRING_LITERAL_AS_REFERENCE("RanOver"))) return translated_DmgType_RanOver;
 
 		/** Infantry weapons */
