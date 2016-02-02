@@ -1,32 +1,41 @@
 /**
-* Copyright (C) 2015-2016 Jessica James.
-*
-* Permission to use, copy, modify, and/or distribute this software for any
-* purpose with or without fee is hereby granted, provided that the above
-* copyright notice and this permission notice appear in all copies.
-*
-* THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
-* WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
-* MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY
-* SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
-* WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION
-* OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
-* CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
-*
-* Written by Jessica James <jessica.aj@outlook.com>
-*/
+ * Copyright (C) 2015-2016 Jessica James.
+ *
+ * Permission to use, copy, modify, and/or distribute this software for any
+ * purpose with or without fee is hereby granted, provided that the above
+ * copyright notice and this permission notice appear in all copies.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+ * WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+ * MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY
+ * SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+ * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION
+ * OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
+ * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+ *
+ * Written by Jessica James <jessica.aj@outlook.com>
+ */
 
 #include "RenX_LadderDatabase.h"
 #include "RenX_Server.h"
 #include "RenX_PlayerInfo.h"
 #include "RenX_BanDatabase.h"
 
+RenX::LadderDatabase *RenX::default_ladder_database = nullptr;
 Jupiter::ArrayList<RenX::LadderDatabase> _ladder_databases;
 Jupiter::ArrayList<RenX::LadderDatabase> &RenX::ladder_databases = _ladder_databases;
 
 RenX::LadderDatabase::LadderDatabase()
 {
 	_ladder_databases.add(this);
+
+	if (RenX::default_ladder_database == nullptr)
+		RenX::default_ladder_database = this;
+}
+
+RenX::LadderDatabase::LadderDatabase(const Jupiter::ReadableString &in_name) : LadderDatabase()
+{
+	RenX::LadderDatabase::setName(in_name);
 }
 
 RenX::LadderDatabase::~LadderDatabase()
@@ -36,6 +45,21 @@ RenX::LadderDatabase::~LadderDatabase()
 		RenX::LadderDatabase::end = RenX::LadderDatabase::head;
 		RenX::LadderDatabase::head = RenX::LadderDatabase::head->next;
 		delete RenX::LadderDatabase::end;
+	}
+
+	for (size_t index = 0; index != _ladder_databases.size(); ++index)
+		if (_ladder_databases.get(index) == this)
+		{
+			_ladder_databases.remove(index);
+			break;
+		}
+
+	if (RenX::default_ladder_database == this)
+	{
+		if (_ladder_databases.size() == 0)
+			RenX::default_ladder_database = nullptr;
+		else
+			RenX::default_ladder_database = _ladder_databases.get(0);
 	}
 }
 
@@ -371,6 +395,10 @@ void RenX::LadderDatabase::updateLadder(RenX::Server *server, const RenX::TeamTy
 {
 	if (server->players.size() != server->getBotCount())
 	{
+		// call the PreUpdateLadder event
+		if (this->OnPreUpdateLadder != nullptr)
+			this->OnPreUpdateLadder(*this, server, team, output_times);
+
 		// update player stats in memory
 		RenX::PlayerInfo *player;
 		RenX::LadderDatabase::Entry *entry;
@@ -481,4 +509,14 @@ void RenX::LadderDatabase::erase()
 		RenX::LadderDatabase::head = nullptr;
 		RenX::LadderDatabase::end = nullptr;
 	}
+}
+
+const Jupiter::ReadableString &RenX::LadderDatabase::getName() const
+{
+	return RenX::LadderDatabase::name;
+}
+
+void RenX::LadderDatabase::setName(const Jupiter::ReadableString &in_name)
+{
+	RenX::LadderDatabase::name = in_name;
 }

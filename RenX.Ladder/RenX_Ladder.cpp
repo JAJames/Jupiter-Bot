@@ -35,10 +35,6 @@ RenX_LadderPlugin::RenX_LadderPlugin()
 		RenX_LadderPlugin::max_ladder_command_part_name_output = 0;
 	else
 		RenX_LadderPlugin::max_ladder_command_part_name_output = mlcpno;
-	RenX_LadderPlugin::db_filename = Jupiter::IRC::Client::Config->get(this->getName(), "LadderDatabase"_jrs, "Ladder.db"_jrs);
-
-	// load database
-	RenX_LadderPlugin::database.process_file(RenX_LadderPlugin::db_filename);
 }
 
 /** Wait until the client list has been updated to update the ladder */
@@ -62,7 +58,8 @@ void RenX_LadderPlugin::RenX_OnCommand(RenX::Server *server, const Jupiter::Read
 		{
 			server->varData.set(this->name, "w"_jrs, "0"_jrs);
 			RenX::TeamType team = static_cast<RenX::TeamType>(server->varData.get(this->name, "t"_jrs, "\0"_jrs).get(0));
-			RenX_LadderPlugin::database.updateLadder(server, team, RenX_LadderPlugin::output_times);
+			for (size_t index = 0; index != RenX::ladder_databases.size(); ++index)
+				RenX::ladder_databases.get(index)->updateLadder(server, team, RenX_LadderPlugin::output_times);
 		}
 	}
 }
@@ -103,14 +100,14 @@ GenericCommand::ResponseLine *LadderGenericCommand::trigger(const Jupiter::Reada
 		if (rank == 0)
 			return new GenericCommand::ResponseLine("Error: Invalid parameters"_jrs, GenericCommand::DisplayType::PrivateError);
 
-		entry = pluginInstance.database.getPlayerEntryByIndex(rank - 1);
+		entry = RenX::default_ladder_database->getPlayerEntryByIndex(rank - 1);
 		if (entry == nullptr)
 			return new GenericCommand::ResponseLine("Error: Player not found"_jrs, GenericCommand::DisplayType::PrivateError);
 
 		return new GenericCommand::ResponseLine(FormatLadderResponse(entry, rank), GenericCommand::DisplayType::PublicSuccess);
 	}
 	
-	Jupiter::SLList<std::pair<RenX::LadderDatabase::Entry, size_t>> list = pluginInstance.database.getPlayerEntriesAndIndexByPartName(parameters, pluginInstance.getMaxLadderCommandPartNameOutput());
+	Jupiter::SLList<std::pair<RenX::LadderDatabase::Entry, size_t>> list = RenX::default_ladder_database->getPlayerEntriesAndIndexByPartName(parameters, pluginInstance.getMaxLadderCommandPartNameOutput());
 	if (list.size() == 0)
 		return new GenericCommand::ResponseLine("Error: Player not found"_jrs, GenericCommand::DisplayType::PrivateError);
 
@@ -152,7 +149,7 @@ void LadderGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *player, 
 	{
 		if (player->steamid != 0)
 		{
-			std::pair<RenX::LadderDatabase::Entry *, size_t> pair = pluginInstance.database.getPlayerEntryAndIndex(player->steamid);
+			std::pair<RenX::LadderDatabase::Entry *, size_t> pair = RenX::default_ladder_database->getPlayerEntryAndIndex(player->steamid);
 			if (pair.first != nullptr)
 				source->sendMessage(FormatLadderResponse(pair.first, pair.second + 1));
 			else

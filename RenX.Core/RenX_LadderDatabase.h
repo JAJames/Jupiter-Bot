@@ -1,20 +1,20 @@
 /**
-* Copyright (C) 2015-2016 Jessica James.
-*
-* Permission to use, copy, modify, and/or distribute this software for any
-* purpose with or without fee is hereby granted, provided that the above
-* copyright notice and this permission notice appear in all copies.
-*
-* THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
-* WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
-* MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY
-* SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
-* WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION
-* OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
-* CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
-*
-* Written by Jessica James <jessica.aj@outlook.com>
-*/
+ * Copyright (C) 2015-2016 Jessica James.
+ *
+ * Permission to use, copy, modify, and/or distribute this software for any
+ * purpose with or without fee is hereby granted, provided that the above
+ * copyright notice and this permission notice appear in all copies.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+ * WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+ * MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY
+ * SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+ * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION
+ * OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
+ * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+ *
+ * Written by Jessica James <jessica.aj@outlook.com>
+ */
 
 #if !defined _RENX_LADDERDATABASE_H_HEADER
 #define _RENX_LADDERDATABASE_H_HEADER
@@ -39,13 +39,14 @@ namespace RenX
 	class RENX_API LadderDatabase : public Jupiter::Database
 	{
 	public: // Jupiter::Database
-			/**
-			* @brief Processes a chunk of data in a database.
-			*
-			* @param buffer Buffer to process
-			* @param file File being processed
-			* @param pos position that the buffer starts at in the file
-			*/
+
+		/**
+		* @brief Processes a chunk of data in a database.
+		*
+		* @param buffer Buffer to process
+		* @param file File being processed
+		* @param pos position that the buffer starts at in the file
+		*/
 		void process_data(Jupiter::DataBuffer &buffer, FILE *file, fpos_t pos) override;
 
 		/**
@@ -175,26 +176,46 @@ namespace RenX
 		void erase();
 
 		/**
+		* @brief Gets the name of this database.
+		*/
+		const Jupiter::ReadableString &getName() const;
+
+		/**
+		* @brief Sets the name of this database.
+		*/
+		void setName(const Jupiter::ReadableString &in_name);
+
+		/**
 		* @brief Constructor for the LadderDatabase class
 		*/
 		LadderDatabase();
 
 		/**
+		* @brief Named constructor for the LadderDatabase class
+		*/
+		LadderDatabase(const Jupiter::ReadableString &in_name);
+
+		/**
 		* @brief Deconstructor for the LadderDatabase class
 		*/
 		~LadderDatabase();
-	private:
 
+		typedef void PreUpdateLadderFunction(RenX::LadderDatabase &database, RenX::Server *server, const RenX::TeamType &team, bool output_times);
+		PreUpdateLadderFunction *OnPreUpdateLadder = nullptr;
+
+	private:
 		/** Database version */
 		const uint8_t write_version = 0;
 		uint8_t read_version = write_version;
 
+		Jupiter::StringS name;
 		std::chrono::steady_clock::time_point last_sort = std::chrono::steady_clock::now();
 		size_t entries = 0;
 		Entry *head = nullptr;
-		Entry *end;
+		Entry *end = nullptr;
 	};
 
+	RENX_API extern RenX::LadderDatabase *default_ladder_database;
 	RENX_API extern Jupiter::ArrayList<RenX::LadderDatabase> &ladder_databases;
 }
 

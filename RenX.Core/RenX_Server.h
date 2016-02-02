@@ -431,6 +431,13 @@ namespace RenX
 		void gameover(std::chrono::seconds delay);
 
 		/**
+		* @brief Prevents a delayed gameover from starting.
+		*
+		* @return True if a delayed gameover was stopped, false otherwise.
+		*/
+		bool gameoverStop();
+
+		/**
 		* @brief Forces the game to end when the server is empty
 		*/
 		void gameoverWhenEmpty();

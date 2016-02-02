@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2015-2016 Jessica James.
+ * Copyright (C) 2016 Jessica James.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -16,45 +16,27 @@
  * Written by Jessica James <jessica.aj@outlook.com>
  */
 
-#if !defined _RENX_LADDER_H_HEADER
-#define _RENX_LADDER_H_HEADER
+#if !defined _RENX_LADDER_ALL_TIME
+#define _RENX_LADDER_ALL_TIME
 
 #include "Jupiter/Plugin.h"
 #include "Jupiter/Reference_String.h"
-#include "IRC_Command.h"
 #include "RenX_Plugin.h"
 #include "RenX_LadderDatabase.h"
-#include "RenX_GameCommand.h"
 
-/** DLL Linkage Nagging */
-#if defined _MSC_VER
-#pragma warning(push)
-#pragma warning(disable: 4251)
-#endif
-
-class RenX_LadderPlugin : public RenX::Plugin
+class RenX_Ladder_Monthly_TimePlugin : public RenX::Plugin
 {
 public:
 	const Jupiter::ReadableString &getName() override { return name; }
-	void RenX_OnGameOver(RenX::Server *server, RenX::WinType winType, const RenX::TeamType &team, int gScore, int nScore) override;
-	void RenX_OnCommand(RenX::Server *server, const Jupiter::ReadableString &) override;
 
-	size_t getMaxLadderCommandPartNameOutput() const;
-	RenX_LadderPlugin();
+	RenX_Ladder_Monthly_TimePlugin();
 
+	int last_sorted_month = 0;
 private:
-	/** Configuration variables */
-	bool only_pure, output_times;
-	size_t max_ladder_command_part_name_output;
-	STRING_LITERAL_AS_NAMED_REFERENCE(name, "RenX.Ladder");
+	RenX::LadderDatabase database;
+	STRING_LITERAL_AS_NAMED_REFERENCE(name, "RenX.Ladder.Monthly");
 };
 
-GENERIC_GENERIC_COMMAND(LadderGenericCommand)
-GENERIC_GAME_COMMAND(LadderGameCommand)
+void OnPreUpdateLadder(RenX::LadderDatabase &database, RenX::Server *server, const RenX::TeamType &team, bool output_times);
 
-/** Re-enable warnings */
-#if defined _MSC_VER
-#pragma warning(pop)
-#endif
-
-#endif // _RENX_LADDER_H_HEADER
+#endif // _RENX_LADDER_ALL_TIME

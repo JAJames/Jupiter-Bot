@@ -1307,6 +1307,8 @@ void GameOverIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString 
 	{
 		int type = chan->getType();
 		bool match = false;
+		std::chrono::seconds delay;
+
 		for (unsigned int i = 0; i != RenX::getCore()->getServerCount(); i++)
 		{
 			RenX::Server *server = RenX::getCore()->getServer(i);
@@ -1317,15 +1319,28 @@ void GameOverIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString 
 					server->gameoverWhenEmpty();
 				if (parameters.equalsi("if empty"_jrs))
 				{
-					if (server->players.size() == 0)
+					if (server->players.size() == server->getBotCount())
 						server->gameover();
 				}
 				else if (parameters.equalsi("now"_jrs))
 					server->gameover();
-				else if (parameters.isEmpty())
-					server->gameover(std::chrono::seconds(10));
+				else if (parameters.equalsi("stop"_jrs) || parameters.equalsi("cancel"_jrs))
+				{
+					if (server->gameoverStop())
+						server->sendMessage("Notice: The scheduled gameover has been cancelled."_jrs);
+					else
+						source->sendNotice(nick, "Error: There is no gameover scheduled."_jrs);
+				}
 				else
-					server->gameover(std::chrono::seconds(parameters.asInt()));
+				{
+					if (parameters.isEmpty())
+						delay = std::chrono::seconds(10);
+					else
+						delay = std::chrono::seconds(parameters.asLongLong());
+
+					server->sendMessage(Jupiter::StringS::Format("Notice: This server will gameover in %lld seconds.", static_cast<long long>(delay.count())));
+					server->gameover(delay);
+				}
 			}
 		}
 		if (match == false)
@@ -1335,7 +1350,7 @@ void GameOverIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString 
 
 const Jupiter::ReadableString &GameOverIRCCommand::getHelp(const Jupiter::ReadableString &)
 {
-	static STRING_LITERAL_AS_NAMED_REFERENCE(defaultHelp, "Ends the game immediately. Syntax: Gameover [NOW | Empty | Seconds = 10]");
+	static STRING_LITERAL_AS_NAMED_REFERENCE(defaultHelp, "Forcefully ends the game in progress. Syntax: Gameover [NOW | STOP | Empty | Seconds = 10]");
 	return defaultHelp;
 }
 

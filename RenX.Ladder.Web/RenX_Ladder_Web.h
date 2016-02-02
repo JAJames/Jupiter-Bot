@@ -27,14 +27,14 @@
 class RenX_Ladder_WebPlugin : public RenX::Plugin
 {
 protected:
-	Jupiter::String generate_entry_table(size_t index, size_t count);
+	Jupiter::String generate_entry_table(RenX::LadderDatabase *db, size_t index, size_t count);
 
 public:
 	Jupiter::StringS header;
 	Jupiter::StringS footer;
-	Jupiter::String *generate_ladder_page(size_t start_index, size_t count);
-	Jupiter::String *generate_search_page(const Jupiter::ReadableString &name);
-	Jupiter::String *generate_profile_page(uint64_t steam_id);
+	Jupiter::String *generate_ladder_page(RenX::LadderDatabase *db, size_t start_index, size_t count);
+	Jupiter::String *generate_search_page(RenX::LadderDatabase *db, const Jupiter::ReadableString &name);
+	Jupiter::String *generate_profile_page(RenX::LadderDatabase *db, uint64_t steam_id);
 
 	RenX_Ladder_WebPlugin();
 	~RenX_Ladder_WebPlugin();

@@ -150,15 +150,62 @@ int RenX_Ladder_WebPlugin::OnRehash()
 	return 0;
 }
 
+/** Search bar */
+Jupiter::String generate_search(RenX::LadderDatabase *db)
+{
+	Jupiter::String result(256);
+
+	result = R"database-search(<form action="search" method="get" class="leaderboard-search"><input type="text" class="leaderboard-input" name="name" size="30" placeholder="Player name" value=""/>)database-search"_jrs;
+
+	if (db != nullptr && db != RenX::default_ladder_database)
+	{
+		result += R"database-search(<input type="hidden" name="database" value=")database-search"_jrs;
+		result += db->getName();
+		result += R"database-search("/>)database-search"_jrs;
+	}
+	result += R"database-search(<input type="submit"  class="leaderboard-input" value="Search"/></form>)database-search"_jrs;
+	return result;
+}
+
+/** Database selector */
+Jupiter::String generate_database_selector(RenX::LadderDatabase *db)
+{
+	RenX::LadderDatabase *db_ptr;
+	Jupiter::String result(256);
+
+	result = R"database-select(<form method="get" class="database-select-form"><select name="database" class="database-select">)database-select"_jrs;
+	if (db != nullptr)
+	{
+		result += "<option value=\""_jrs;
+		result += db->getName();
+		result += "\">"_jrs;
+		result += db->getName();
+		result += "</option>"_jrs;
+	}
+	else if (RenX::ladder_databases.size() == 0)
+		return Jupiter::String::empty;
+
+	for (size_t index = 0; index != RenX::ladder_databases.size(); ++index)
+	{
+		db_ptr = RenX::ladder_databases.get(index);
+		if (db_ptr != db)
+		{
+			db_ptr = RenX::ladder_databases.get(index);
+			result += "<option value=\""_jrs;
+			result += db_ptr->getName();
+			result += "\">"_jrs;
+			result += db_ptr->getName();
+			result += "</option>"_jrs;
+		}
+	}
+	result += R"database-select(</select><input type="submit" class="leaderboard-input" value="Go"/></form>)database-select"_jrs;
+	return result;
+}
+
 /** Ladder page */
 
-Jupiter::String RenX_Ladder_WebPlugin::generate_entry_table(size_t index, size_t count)
+Jupiter::String RenX_Ladder_WebPlugin::generate_entry_table(RenX::LadderDatabase *db, size_t index, size_t count)
 {
-	if (RenX::ladder_databases.size() == 0)
-		return Jupiter::String("Error: No ladder databases loaded"_jrs);
-
-	RenX::LadderDatabase *db = RenX::ladder_databases.get(0);
-
 	if (db->getEntries() == 0) // No ladder data
 		return Jupiter::String("Error: No ladder data"_jrs);
 
@@ -197,27 +244,22 @@ Jupiter::String RenX_Ladder_WebPlugin::generate_entry_table(size_t index, size_t
 	return result;
 }
 
-Jupiter::String *RenX_Ladder_WebPlugin::generate_ladder_page(size_t index, size_t count)
+Jupiter::String *RenX_Ladder_WebPlugin::generate_ladder_page(RenX::LadderDatabase *db, size_t index, size_t count)
 {
 	Jupiter::String *result = new Jupiter::String(RenX_Ladder_WebPlugin::header);
-	result->concat(this->generate_entry_table(index, count));
+	result->concat(generate_search(db));
+	result->concat(generate_database_selector(db));
+	result->concat(this->generate_entry_table(db, index, count));
 	result->concat(RenX_Ladder_WebPlugin::footer);
 	return result;
 }
 
 /** Search page */
-Jupiter::String *RenX_Ladder_WebPlugin::generate_search_page(const Jupiter::ReadableString &name)
+Jupiter::String *RenX_Ladder_WebPlugin::generate_search_page(RenX::LadderDatabase *db, const Jupiter::ReadableString &name)
 {
 	Jupiter::String *result = new Jupiter::String(RenX_Ladder_WebPlugin::header);
-
-	if (RenX::ladder_databases.size() == 0)
-	{
-		result->concat("Error: No ladder databases loaded"_jrs);
-		result->concat(RenX_Ladder_WebPlugin::footer);
-		return result;
-	}
-
-	RenX::LadderDatabase *db = RenX::ladder_databases.get(0);
+	result->concat(generate_search(db));
+	result->concat(generate_database_selector(db));
 
 	if (db->getEntries() == 0) // No ladder data
 	{
@@ -248,18 +290,11 @@ Jupiter::String *RenX_Ladder_WebPlugin::generate_search_page(const Jupiter::Read
 }
 
 /** Profile page */
-Jupiter::String *RenX_Ladder_WebPlugin::generate_profile_page(uint64_t steam_id)
+Jupiter::String *RenX_Ladder_WebPlugin::generate_profile_page(RenX::LadderDatabase *db, uint64_t steam_id)
 {
 	Jupiter::String *result = new Jupiter::String(RenX_Ladder_WebPlugin::header);
-
-	if (RenX::ladder_databases.size() == 0)
-	{
-		result->concat("Error: No ladder databases loaded"_jrs);
-		result->concat(RenX_Ladder_WebPlugin::footer);
-		return result;
-	}
-
-	RenX::LadderDatabase *db = RenX::ladder_databases.get(0);
+	result->concat(generate_search(db));
+	result->concat(generate_database_selector(db));
 
 	if (db->getEntries() == 0) // No ladder data
 	{
@@ -294,8 +329,24 @@ RenX_Ladder_WebPlugin pluginInstance;
 
 /** Content functions */
 
+Jupiter::ReadableString *generate_no_db_page()
+{
+	Jupiter::String *result = new Jupiter::String(pluginInstance.header);
+	if (RenX::ladder_databases.size() != 0)
+	{
+		result->concat(generate_search(nullptr));
+		result->concat(generate_database_selector(nullptr));
+		result->concat("Error: No such database exists"_jrs);
+	}
+	else
+		result->concat("Error: No ladder databases loaded"_jrs);
+	result->concat(pluginInstance.footer);
+	return result;
+}
+
 Jupiter::ReadableString *handle_ladder_page(const Jupiter::ReadableString &query_string)
 {
+	RenX::LadderDatabase *db = RenX::default_ladder_database;
 	size_t start_index = 0, count = 50;
 
 	if (query_string.isNotEmpty())
@@ -303,35 +354,85 @@ Jupiter::ReadableString *handle_ladder_page(const Jupiter::ReadableString &query
 		Jupiter::HTTP::HTMLFormResponse html_form_response(query_string);
 		start_index = static_cast<size_t>(html_form_response.table.getInt("start"_jrs, 0));
 		count = static_cast<size_t>(html_form_response.table.getInt("count"_jrs, 50));
+		
+		const Jupiter::ReadableString &db_name = html_form_response.table.get("database"_jrs);
+		if (db_name.isNotEmpty())
+		{
+			db = nullptr;
+			for (size_t index = 0; index != RenX::ladder_databases.size(); ++index)
+				if (RenX::ladder_databases.get(index)->getName().equalsi(db_name))
+				{
+					db = RenX::ladder_databases.get(index);
+					break;
+				}
+		}
 	}
-	return pluginInstance.generate_ladder_page(start_index, count);
+
+	if (db == nullptr)
+		return generate_no_db_page();
+
+	return pluginInstance.generate_ladder_page(db, start_index, count);
 }
 
 Jupiter::ReadableString *handle_search_page(const Jupiter::ReadableString &query_string)
 {
+	RenX::LadderDatabase *db = RenX::default_ladder_database;
 	Jupiter::ReferenceString name;
+
 	if (query_string.isNotEmpty())
 	{
 		Jupiter::HTTP::HTMLFormResponse html_form_response(query_string);
 		name = html_form_response.table.get("name"_jrs);
+
+		const Jupiter::ReadableString &db_name = html_form_response.table.get("database"_jrs);
+		if (db_name.isNotEmpty())
+		{
+			db = nullptr;
+			for (size_t index = 0; index != RenX::ladder_databases.size(); ++index)
+				if (RenX::ladder_databases.get(index)->getName().equalsi(db_name))
+				{
+					db = RenX::ladder_databases.get(index);
+					break;
+				}
+		}
 	}
+
+	if (db == nullptr)
+		return generate_no_db_page();
 
 	if (name.isEmpty()) // Generate ladder page when no name specified
 		return handle_ladder_page(query_string);
 
-	return pluginInstance.generate_search_page(name);
+	return pluginInstance.generate_search_page(db, name);
 }
 
 Jupiter::ReadableString *handle_profile_page(const Jupiter::ReadableString &query_string)
 {
+	RenX::LadderDatabase *db = RenX::default_ladder_database;
 	uint64_t steam_id = 0;
+
 	if (query_string.isNotEmpty())
 	{
 		Jupiter::HTTP::HTMLFormResponse html_form_response(query_string);
 		steam_id = html_form_response.table.getLongLong("id"_jrs);
+
+		const Jupiter::ReadableString &db_name = html_form_response.table.get("database"_jrs);
+		if (db_name.isNotEmpty())
+		{
+			db = nullptr;
+			for (size_t index = 0; index != RenX::ladder_databases.size(); ++index)
+				if (RenX::ladder_databases.get(index)->getName().equalsi(db_name))
+				{
+					db = RenX::ladder_databases.get(index);
+					break;
+				}
+		}
 	}
 
-	return pluginInstance.generate_profile_page(steam_id);
+	if (db == nullptr)
+		return generate_no_db_page();
+
+	return pluginInstance.generate_profile_page(db, steam_id);
 }
 
 extern "C" __declspec(dllexport) Jupiter::Plugin *getPlugin()
