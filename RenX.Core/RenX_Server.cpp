@@ -681,6 +681,15 @@ void RenX::Server::gameover(std::chrono::seconds delay)
 	}
 }
 
+bool RenX::Server::gameoverStop()
+{
+	if (this->gameover_pending == false)
+		return false;
+
+	this->gameover_pending = false;
+	return true;
+}
+
 void RenX::Server::gameoverWhenEmpty()
 {
 	if (this->players.size() != this->bot_count)
