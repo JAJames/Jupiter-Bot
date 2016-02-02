@@ -170,6 +170,11 @@ namespace RenX
 		void updateLadder(RenX::Server *server, const RenX::TeamType &team, bool output_times);
 
 		/**
+		* @brief Erases all entries in the database.
+		*/
+		void erase();
+
+		/**
 		* @brief Constructor for the LadderDatabase class
 		*/
 		LadderDatabase();

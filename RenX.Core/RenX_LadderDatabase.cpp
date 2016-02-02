@@ -467,3 +467,18 @@ void RenX::LadderDatabase::updateLadder(RenX::Server *server, const RenX::TeamTy
 		}
 	}
 }
+
+void RenX::LadderDatabase::erase()
+{
+	if (RenX::LadderDatabase::head != nullptr)
+	{
+		while (RenX::LadderDatabase::head->next != nullptr)
+		{
+			RenX::LadderDatabase::head = head->next;
+			delete head->prev;
+		}
+		delete RenX::LadderDatabase::head;
+		RenX::LadderDatabase::head = nullptr;
+		RenX::LadderDatabase::end = nullptr;
+	}
+}
