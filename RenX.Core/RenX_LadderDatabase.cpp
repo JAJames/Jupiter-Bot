@@ -391,13 +391,13 @@ void RenX::LadderDatabase::sort_entries()
 	RenX::LadderDatabase::last_sort = std::chrono::steady_clock::now();
 }
 
-void RenX::LadderDatabase::updateLadder(RenX::Server *server, const RenX::TeamType &team, bool output_times)
+void RenX::LadderDatabase::updateLadder(RenX::Server *server, const RenX::TeamType &team)
 {
 	if (server->players.size() != server->getBotCount())
 	{
 		// call the PreUpdateLadder event
 		if (this->OnPreUpdateLadder != nullptr)
-			this->OnPreUpdateLadder(*this, server, team, output_times);
+			this->OnPreUpdateLadder(*this, server, team);
 
 		// update player stats in memory
 		RenX::PlayerInfo *player;
@@ -484,7 +484,7 @@ void RenX::LadderDatabase::updateLadder(RenX::Server *server, const RenX::TeamTy
 		RenX::LadderDatabase::write(this->getFilename());
 		std::chrono::steady_clock::duration write_duration = std::chrono::steady_clock::now() - start_time;
 
-		if (output_times)
+		if (RenX::LadderDatabase::output_times)
 		{
 			Jupiter::StringS str = Jupiter::StringS::Format("Ladder: %u entries sorted in %f seconds; Database written in %f seconds." ENDL,
 				RenX::LadderDatabase::getEntries(),
@@ -519,4 +519,14 @@ const Jupiter::ReadableString &RenX::LadderDatabase::getName() const
 void RenX::LadderDatabase::setName(const Jupiter::ReadableString &in_name)
 {
 	RenX::LadderDatabase::name = in_name;
+}
+
+bool RenX::LadderDatabase::getOutputTimes() const
+{
+	return RenX::LadderDatabase::output_times;
+}
+
+void RenX::LadderDatabase::setOutputTimes(bool in_output_times)
+{
+	RenX::LadderDatabase::output_times = in_output_times;
 }

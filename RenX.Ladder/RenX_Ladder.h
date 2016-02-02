@@ -44,7 +44,7 @@ public:
 
 private:
 	/** Configuration variables */
-	bool only_pure, output_times;
+	bool only_pure;
 	size_t max_ladder_command_part_name_output;
 	STRING_LITERAL_AS_NAMED_REFERENCE(name, "RenX.Ladder");
 };

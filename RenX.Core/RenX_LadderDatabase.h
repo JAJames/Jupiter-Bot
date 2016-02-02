@@ -168,7 +168,7 @@ namespace RenX
 		* @param team Team which just won
 		* @param output_times True if the sort/write times should be output, false otherwise.
 		*/
-		void updateLadder(RenX::Server *server, const RenX::TeamType &team, bool output_times);
+		void updateLadder(RenX::Server *server, const RenX::TeamType &team);
 
 		/**
 		* @brief Erases all entries in the database.
@@ -186,6 +186,20 @@ namespace RenX
 		void setName(const Jupiter::ReadableString &in_name);
 
 		/**
+		* @brief Checks if this database outputs sort/write times when 'updateLadder' is called.
+		*
+		* @return True if output times get printed, false otherwise.
+		*/
+		bool getOutputTimes() const;
+
+		/**
+		* @brief Sets this database to output sort/write times, or to not output sort/write times.
+		*
+		* @param in_output_times True to output sort/write times, false otherwise.
+		*/
+		void setOutputTimes(bool in_output_times);
+
+		/**
 		* @brief Constructor for the LadderDatabase class
 		*/
 		LadderDatabase();
@@ -200,7 +214,7 @@ namespace RenX
 		*/
 		~LadderDatabase();
 
-		typedef void PreUpdateLadderFunction(RenX::LadderDatabase &database, RenX::Server *server, const RenX::TeamType &team, bool output_times);
+		typedef void PreUpdateLadderFunction(RenX::LadderDatabase &database, RenX::Server *server, const RenX::TeamType &team);
 		PreUpdateLadderFunction *OnPreUpdateLadder = nullptr;
 
 	private:
@@ -208,6 +222,7 @@ namespace RenX
 		const uint8_t write_version = 0;
 		uint8_t read_version = write_version;
 
+		bool output_times = false;
 		Jupiter::StringS name;
 		std::chrono::steady_clock::time_point last_sort = std::chrono::steady_clock::now();
 		size_t entries = 0;

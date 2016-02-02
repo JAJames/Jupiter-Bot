@@ -27,9 +27,10 @@ RenX_Ladder_All_TimePlugin::RenX_Ladder_All_TimePlugin()
 	// Load database
 	this->database.process_file(Jupiter::IRC::Client::Config->get(this->getName(), "LadderDatabase"_jrs, "Ladder.db"_jrs));
 	this->database.setName(Jupiter::IRC::Client::Config->get(this->getName(), "DatabaseName"_jrs, "All-Time"_jrs));
+	this->database.setOutputTimes(Jupiter::IRC::Client::Config->getBool(this->getName(), "OutputTimes"_jrs, true));
 
 	// Force database to default, if desired
-	if (Jupiter::IRC::Client::Config->getBool(this->getName(), "ForceDefault"_jrs, false))
+	if (Jupiter::IRC::Client::Config->getBool(this->getName(), "ForceDefault"_jrs, true))
 		RenX::default_ladder_database = &this->database;
 }
 

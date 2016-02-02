@@ -37,6 +37,6 @@ private:
 	STRING_LITERAL_AS_NAMED_REFERENCE(name, "RenX.Ladder.Yearly");
 };
 
-void OnPreUpdateLadder(RenX::LadderDatabase &database, RenX::Server *server, const RenX::TeamType &team, bool output_times);
+void OnPreUpdateLadder(RenX::LadderDatabase &database, RenX::Server *server, const RenX::TeamType &team);
 
 #endif // _RENX_LADDER_ALL_TIME

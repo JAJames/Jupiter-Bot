@@ -29,7 +29,6 @@ using namespace Jupiter::literals;
 RenX_LadderPlugin::RenX_LadderPlugin()
 {
 	RenX_LadderPlugin::only_pure = Jupiter::IRC::Client::Config->getBool(this->getName(), "OnlyPure"_jrs, false);
-	RenX_LadderPlugin::output_times = Jupiter::IRC::Client::Config->getBool(this->getName(), "OutputTimes"_jrs, true);
 	int mlcpno = Jupiter::IRC::Client::Config->getInt(this->getName(), "MaxLadderCommandPartNameOutput"_jrs, 5);
 	if (mlcpno < 0)
 		RenX_LadderPlugin::max_ladder_command_part_name_output = 0;
@@ -59,7 +58,7 @@ void RenX_LadderPlugin::RenX_OnCommand(RenX::Server *server, const Jupiter::Read
 			server->varData.set(this->name, "w"_jrs, "0"_jrs);
 			RenX::TeamType team = static_cast<RenX::TeamType>(server->varData.get(this->name, "t"_jrs, "\0"_jrs).get(0));
 			for (size_t index = 0; index != RenX::ladder_databases.size(); ++index)
-				RenX::ladder_databases.get(index)->updateLadder(server, team, RenX_LadderPlugin::output_times);
+				RenX::ladder_databases.get(index)->updateLadder(server, team);
 		}
 	}
 }

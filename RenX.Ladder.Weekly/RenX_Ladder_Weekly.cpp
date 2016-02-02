@@ -28,6 +28,7 @@ RenX_Ladder_Weekly_TimePlugin::RenX_Ladder_Weekly_TimePlugin()
 	// Load database
 	this->database.process_file(Jupiter::IRC::Client::Config->get(this->getName(), "LadderDatabase"_jrs, "Ladder.Weekly.db"_jrs));
 	this->database.setName(Jupiter::IRC::Client::Config->get(this->getName(), "DatabaseName"_jrs, "Weekly"_jrs));
+	this->database.setOutputTimes(Jupiter::IRC::Client::Config->getBool(this->getName(), "OutputTimes"_jrs, false));
 
 	this->last_sorted_day = gmtime(std::addressof<const time_t>(time(0)))->tm_wday;
 	this->reset_day = Jupiter::IRC::Client::Config->getInt(this->getName(), "ResetDay"_jrs);
@@ -41,7 +42,7 @@ RenX_Ladder_Weekly_TimePlugin::RenX_Ladder_Weekly_TimePlugin()
 // Plugin instantiation and entry point.
 RenX_Ladder_Weekly_TimePlugin pluginInstance;
 
-void OnPreUpdateLadder(RenX::LadderDatabase &database, RenX::Server *server, const RenX::TeamType &team, bool output_times)
+void OnPreUpdateLadder(RenX::LadderDatabase &database, RenX::Server *server, const RenX::TeamType &team)
 {
 	tm *tm_ptr = gmtime(std::addressof<const time_t>(time(0)));
 	if (pluginInstance.last_sorted_day != tm_ptr->tm_wday && tm_ptr->tm_wday == pluginInstance.reset_day)

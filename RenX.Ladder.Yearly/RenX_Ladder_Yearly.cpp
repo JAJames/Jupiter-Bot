@@ -28,6 +28,7 @@ RenX_Ladder_Yearly_TimePlugin::RenX_Ladder_Yearly_TimePlugin()
 	// Load database
 	this->database.process_file(Jupiter::IRC::Client::Config->get(this->getName(), "LadderDatabase"_jrs, "Ladder.Yearly.db"_jrs));
 	this->database.setName(Jupiter::IRC::Client::Config->get(this->getName(), "DatabaseName"_jrs, "Yearly"_jrs));
+	this->database.setOutputTimes(Jupiter::IRC::Client::Config->getBool(this->getName(), "OutputTimes"_jrs, false));
 
 	this->last_sorted_year = gmtime(std::addressof<const time_t>(time(0)))->tm_year;
 	this->database.OnPreUpdateLadder = OnPreUpdateLadder;
@@ -40,7 +41,7 @@ RenX_Ladder_Yearly_TimePlugin::RenX_Ladder_Yearly_TimePlugin()
 // Plugin instantiation and entry point.
 RenX_Ladder_Yearly_TimePlugin pluginInstance;
 
-void OnPreUpdateLadder(RenX::LadderDatabase &database, RenX::Server *server, const RenX::TeamType &team, bool output_times)
+void OnPreUpdateLadder(RenX::LadderDatabase &database, RenX::Server *server, const RenX::TeamType &team)
 {
 	tm *tm_ptr = gmtime(std::addressof<const time_t>(time(0)));
 	if (pluginInstance.last_sorted_year != tm_ptr->tm_year)
