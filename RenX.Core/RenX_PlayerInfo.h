@@ -43,6 +43,8 @@ namespace RenX
 	*/
 	struct RENX_API PlayerInfo
 	{
+		std::chrono::steady_clock::time_point joinTime = std::chrono::steady_clock::now();
+
 		// TODO: Add backpack
 		Jupiter::StringS name;
 		Jupiter::StringS ip;
@@ -58,11 +60,12 @@ namespace RenX
 		TeamType team = TeamType::Other;
 		int id = 0;
 		bool isBot = false;
-		std::chrono::steady_clock::time_point joinTime = std::chrono::steady_clock::now();
-
+		bool is_dev = false;
 		unsigned short ping = 0;
 		double score = 0.0f;
 		double credits = 0.0f;
+		unsigned int global_rank = 0;
+		unsigned int local_rank = 0;
 		unsigned int kills = 0;
 		unsigned int deaths = 0;
 		unsigned int suicides = 0;

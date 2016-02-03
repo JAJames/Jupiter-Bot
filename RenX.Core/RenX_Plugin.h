@@ -59,6 +59,8 @@ namespace RenX
 		virtual void RenX_OnNameChange(Server *server, const PlayerInfo *player, const Jupiter::ReadableString &newPlayerName);
 		virtual void RenX_OnTeamChange(Server *server, const PlayerInfo *player, const TeamType &oldTeam);
 		virtual void RenX_OnIDChange(Server *server, const PlayerInfo *player, int oldID);
+		virtual void RenX_OnRank(Server *server, const PlayerInfo *player);
+		virtual void RenX_OnDev(Server *server, const PlayerInfo *player);
 		virtual void RenX_OnExecute(Server *server, const PlayerInfo *player, const Jupiter::ReadableString &command);
 		virtual void RenX_OnPlayer(Server *server, const Jupiter::ReadableString &raw);
 		

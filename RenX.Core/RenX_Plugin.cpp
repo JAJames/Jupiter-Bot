@@ -106,6 +106,16 @@ void RenX::Plugin::RenX_OnIDChange(Server *, const PlayerInfo *, int)
 	return;
 }
 
+void RenX::Plugin::RenX_OnDev(Server *, const PlayerInfo *)
+{
+	return;
+}
+
+void RenX::Plugin::RenX_OnRank(Server *, const PlayerInfo *)
+{
+	return;
+}
+
 void RenX::Plugin::RenX_OnExecute(Server *, const PlayerInfo *, const Jupiter::ReadableString &)
 {
 	return;

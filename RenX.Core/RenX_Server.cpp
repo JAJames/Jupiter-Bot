@@ -2308,7 +2308,27 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 						uint64_t steamid = 0;
 						if (tokens.getToken(5).equals("steamid"))
 							steamid = tokens.getToken(6).asUnsignedLongLong();
+
 						RenX::PlayerInfo *player = getPlayerOrAdd(name, id, team, isBot, steamid, tokens.getToken(4));
+						if (steamid != 0ULL && default_ladder_database != nullptr && (player->ban_flags & RenX::BanDatabase::Entry::FLAG_TYPE_LADDER) == 0)
+						{
+							RenX::LadderDatabase::Entry *itr = RenX::default_ladder_database->getHead();
+							while (itr != nullptr)
+							{
+								if (itr->steam_id == steamid)
+								{
+									player->local_rank = itr->rank;
+									if (this->devBot)
+									{
+										player->global_rank = itr->rank;
+										this->sendData(Jupiter::StringS::Format("xcset_rank %d\n", player->id));
+									}
+									break;
+								}
+
+								itr = itr->next;
+							}
+						}
 						for (size_t i = 0; i < xPlugins.size(); i++)
 							xPlugins.get(i)->RenX_OnJoin(this, player);
 					}
@@ -2366,9 +2386,28 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 							player->id = tokens.getToken(3).asInt();
 							if (player->isBot == false)
 								this->banCheck(player);
+							if (this->devBot && player->global_rank != 0U)
+								this->sendData(Jupiter::StringS::Format("xcset_rank %d\n", player->id));
 							for (size_t i = 0; i < xPlugins.size(); i++)
 								xPlugins.get(i)->RenX_OnIDChange(this, player, oldID);
 						}
+					}
+					else if (subHeader.equals("Rank;"))
+					{
+						// Player | Rank
+						if (this->devBot == false)
+						{
+							RenX::PlayerInfo *player = parseGetPlayerOrAdd(tokens.getToken(1));
+							if (player != nullptr)
+								player->global_rank = tokens.getToken(2).asUnsignedInt();
+						}
+					}
+					else if (subHeader.equals("Dev;"))
+					{
+						// Player | true/false
+						RenX::PlayerInfo *player = parseGetPlayerOrAdd(tokens.getToken(1));
+						if (player != nullptr)
+							player->is_dev = tokens.getToken(2).asBool();
 					}
 					else
 					{
