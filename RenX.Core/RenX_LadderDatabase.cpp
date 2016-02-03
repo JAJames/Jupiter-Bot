@@ -500,6 +500,7 @@ void RenX::LadderDatabase::erase()
 {
 	if (RenX::LadderDatabase::head != nullptr)
 	{
+		RenX::LadderDatabase::entries = 0;
 		while (RenX::LadderDatabase::head->next != nullptr)
 		{
 			RenX::LadderDatabase::head = head->next;
