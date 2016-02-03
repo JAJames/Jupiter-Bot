@@ -2207,7 +2207,7 @@ void AddBanIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &c
 				else
 					flags |= RenX::BanDatabase::Entry::FLAG_USE_RDNS;
 
-				RenX::banDatabase->add(name, ip, prefix_length, steamid, rdns, banner, reason, duration);
+				RenX::banDatabase->add(name, ip, prefix_length, steamid, rdns, banner, reason, duration, flags);
 				RenX::getCore()->banCheck();
 				source->sendMessage(channel, Jupiter::StringS::Format("Ban added to the database with ID #%u", RenX::banDatabase->getEntries().size() - 1));
 			}

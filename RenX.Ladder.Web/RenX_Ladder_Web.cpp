@@ -76,7 +76,8 @@ int RenX_Ladder_WebPlugin::OnRehash()
 	RenX_Ladder_WebPlugin::web_profile_filename = Jupiter::IRC::Client::Config->get(RenX_Ladder_WebPlugin::name, "ProfileFilename"_jrs, "RenX.Ladder.Web.Profile.html"_jrs);
 	RenX_Ladder_WebPlugin::web_ladder_table_header_filename = Jupiter::IRC::Client::Config->get(RenX_Ladder_WebPlugin::name, "LadderTableHeaderFilename"_jrs, "RenX.Ladder.Web.Ladder.Table.Header.html"_jrs);
 	RenX_Ladder_WebPlugin::web_ladder_table_footer_filename = Jupiter::IRC::Client::Config->get(RenX_Ladder_WebPlugin::name, "LadderTableFooterFilename"_jrs, "RenX.Ladder.Web.Ladder.Table.Footer.html"_jrs);
-	
+	RenX_Ladder_WebPlugin::entries_per_page = Jupiter::IRC::Client::Config->getInt(RenX_Ladder_WebPlugin::name, "EntriesPerPage"_jrs, 50);
+
 	RenX_Ladder_WebPlugin::entry_table_row = Jupiter::IRC::Client::Config->get(RenX_Ladder_WebPlugin::name, "EntryTableRow"_jrs, "<tr><td>{RANK}</td><td><a href=\"profile?id={STEAM}\">{NAME}</a></td><td>{SCORE}</td><td>{SPM}</td><td>{KILLS}</td><td>{DEATHS}</td><td>{KDR}</td><td>{NODGAMES}</td><td>{NODWINS}</td><td>{NODLOSSES}</td><td>{NWLR}</td><td>{GDIGAMES}</td><td>{GDIWINS}</td><td>{GDILOSSES}</td><td>{GWLR}</td></tr>"_jrs);
 	RenX::sanitizeTags(RenX_Ladder_WebPlugin::entry_table_row);
 
@@ -150,12 +151,15 @@ int RenX_Ladder_WebPlugin::OnRehash()
 	return 0;
 }
 
+// Plugin instantiation and entry point.
+RenX_Ladder_WebPlugin pluginInstance;
+
 /** Search bar */
 Jupiter::String generate_search(RenX::LadderDatabase *db)
 {
 	Jupiter::String result(256);
 
-	result = R"database-search(<form action="search" method="get" class="leaderboard-search"><input type="text" class="leaderboard-input" name="name" size="30" placeholder="Player name" value=""/>)database-search"_jrs;
+	result = R"database-search(<form action="search" method="get" class="leaderboard-search"><input type="text" class="leaderboard-search-input" name="name" size="30" placeholder="Player name" value=""/>)database-search"_jrs;
 
 	if (db != nullptr && db != RenX::default_ladder_database)
 	{
@@ -163,7 +167,7 @@ Jupiter::String generate_search(RenX::LadderDatabase *db)
 		result += db->getName();
 		result += R"database-search("/>)database-search"_jrs;
 	}
-	result += R"database-search(<input type="submit"  class="leaderboard-input" value="Search"/></form>)database-search"_jrs;
+	result += R"database-search(<input type="submit"  class="leaderboard-button" value="Search"/></form>)database-search"_jrs;
 	return result;
 }
 
@@ -211,7 +215,40 @@ Jupiter::String generate_database_selector(RenX::LadderDatabase *db, const Jupit
 		}
 	}
 
-	result += R"database-select(</select><input type="submit" class="leaderboard-input" value="Go"/></form>)database-select"_jrs;
+	result += R"database-select(</select><input type="submit" class="leaderboard-button" value="Go"/></form>)database-select"_jrs;
+	return result;
+}
+
+/** Page buttons */
+Jupiter::String generate_page_buttons(RenX::LadderDatabase *db)
+{
+	Jupiter::String result(256);
+	size_t entry_count = db->getEntries();
+	size_t entries_per_page = pluginInstance.getEntriesPerPage();
+
+	result = R"html(<div id="leaderboard-paging">)html"_jrs;
+
+	size_t entry_index = 0, page_index = 1;
+	while (entry_index < entry_count)
+	{
+		// Add page
+		result += R"html(<span class="leaderboard-page"><a href="?start=)html"_jrs;
+		result += Jupiter::StringS::Format("%u", entry_index);
+		if (db != RenX::default_ladder_database)
+		{
+			result += "&database="_jrs;
+			result += db->getName();
+		}
+		result += R"html(">)html"_jrs;
+		result += Jupiter::StringS::Format("%u", page_index);
+		result += R"html(</a></span>)html"_jrs;
+
+		// Increment indexes
+		entry_index += entries_per_page;
+		++page_index;
+	}
+
+	result += R"html(</div>)html"_jrs;
 	return result;
 }
 
@@ -254,6 +291,10 @@ Jupiter::String RenX_Ladder_WebPlugin::generate_entry_table(RenX::LadderDatabase
 
 	// table footer
 	result += RenX_Ladder_WebPlugin::ladder_table_footer;
+
+	// search buttons
+	result += generate_page_buttons(db);
+
 	return result;
 }
 
@@ -337,9 +378,6 @@ Jupiter::String *RenX_Ladder_WebPlugin::generate_profile_page(RenX::LadderDataba
 	return result;
 }
 
-// Plugin instantiation and entry point.
-RenX_Ladder_WebPlugin pluginInstance;
-
 /** Content functions */
 
 Jupiter::ReadableString *generate_no_db_page(const Jupiter::INIFile::Section &query_params)
@@ -361,12 +399,12 @@ Jupiter::ReadableString *handle_ladder_page(const Jupiter::ReadableString &query
 {
 	Jupiter::HTTP::HTMLFormResponse html_form_response(query_string);
 	RenX::LadderDatabase *db = RenX::default_ladder_database;
-	size_t start_index = 0, count = 50;
+	size_t start_index = 0, count = pluginInstance.getEntriesPerPage();
 
 	if (html_form_response.table.size() != 0)
 	{
-		start_index = static_cast<size_t>(html_form_response.table.getInt("start"_jrs, 0));
-		count = static_cast<size_t>(html_form_response.table.getInt("count"_jrs, 50));
+		start_index = static_cast<size_t>(html_form_response.table.getInt("start"_jrs, start_index));
+		count = static_cast<size_t>(html_form_response.table.getInt("count"_jrs, count));
 		
 		const Jupiter::ReadableString &db_name = html_form_response.table.get("database"_jrs);
 		if (db_name.isNotEmpty())

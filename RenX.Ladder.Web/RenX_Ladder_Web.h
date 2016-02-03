@@ -36,6 +36,7 @@ public:
 	Jupiter::String *generate_ladder_page(RenX::LadderDatabase *db, size_t start_index, size_t count, const Jupiter::INIFile::Section &query_params);
 	Jupiter::String *generate_search_page(RenX::LadderDatabase *db, const Jupiter::ReadableString &name, const Jupiter::INIFile::Section &query_params);
 	Jupiter::String *generate_profile_page(RenX::LadderDatabase *db, uint64_t steam_id, const Jupiter::INIFile::Section &query_params);
+	inline size_t getEntriesPerPage() const { return this->entries_per_page; }
 
 	RenX_Ladder_WebPlugin();
 	~RenX_Ladder_WebPlugin();
@@ -48,6 +49,7 @@ private:
 	STRING_LITERAL_AS_NAMED_REFERENCE(name, "RenX.Ladder.Web");
 
 	/** Configuration variables */
+	size_t entries_per_page;
 	Jupiter::StringS ladder_page_name, search_page_name, profile_page_name, ladder_table_header, ladder_table_footer;
 	Jupiter::StringS web_hostname;
 	Jupiter::StringS web_path;
