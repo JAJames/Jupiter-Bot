@@ -283,6 +283,7 @@ Jupiter::String RenX_Ladder_WebPlugin::generate_entry_table(RenX::LadderDatabase
 	while (count != 0)
 	{
 		row = RenX_Ladder_WebPlugin::entry_table_row;
+		row.replace(RenX::tags->INTERNAL_OBJECT_TAG, db->getName());
 		RenX::processTags(row, *node);
 		result += row;
 		node = node->next;
@@ -332,6 +333,7 @@ Jupiter::String *RenX_Ladder_WebPlugin::generate_search_page(RenX::LadderDatabas
 		if (node->most_recent_name.findi(name) != Jupiter::INVALID_INDEX) // match found
 		{
 			row = RenX_Ladder_WebPlugin::entry_table_row;
+			row.replace(RenX::tags->INTERNAL_OBJECT_TAG, db->getName());
 			RenX::processTags(row, *node);
 			result->concat(row);
 		}
