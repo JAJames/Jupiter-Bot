@@ -80,15 +80,55 @@ void RenX::LadderDatabase::process_data(Jupiter::DataBuffer &buffer, FILE *file,
 	entry->total_captures = buffer.pop<uint32_t>();
 	entry->total_game_time = buffer.pop<uint32_t>();
 	entry->total_games = buffer.pop<uint32_t>();
-	entry->total_gdi_games = buffer.pop<uint32_t>();
-	entry->total_nod_games = buffer.pop<uint32_t>();
+	if (this->read_version == 0)
+	{
+		entry->total_gdi_games = buffer.pop<uint32_t>();
+		entry->total_nod_games = buffer.pop<uint32_t>();
+	}
 	entry->total_wins = buffer.pop<uint32_t>();
-	entry->total_gdi_wins = buffer.pop<uint32_t>();
-	entry->total_nod_wins = buffer.pop<uint32_t>();
+	if (this->read_version == 0)
+	{
+		entry->total_gdi_wins = buffer.pop<uint32_t>();
+		entry->total_nod_wins = buffer.pop<uint32_t>();
+	}
 	entry->total_beacon_placements = buffer.pop<uint32_t>();
 	entry->total_beacon_disarms = buffer.pop<uint32_t>();
 	entry->total_proxy_placements = buffer.pop<uint32_t>();
 	entry->total_proxy_disarms = buffer.pop<uint32_t>();
+
+	if (this->read_version > 0)
+	{
+		entry->total_gdi_games = buffer.pop<uint32_t>();
+		entry->total_gdi_wins = buffer.pop<uint32_t>();
+		entry->total_gdi_ties = buffer.pop<uint32_t>();
+		entry->total_gdi_game_time = buffer.pop<uint32_t>();
+		entry->total_gdi_score = buffer.pop<uint64_t>();
+		entry->total_gdi_beacon_placements = buffer.pop<uint32_t>();
+		entry->total_gdi_beacon_disarms = buffer.pop<uint32_t>();
+		entry->total_gdi_proxy_placements = buffer.pop<uint32_t>();
+		entry->total_gdi_proxy_disarms = buffer.pop<uint32_t>();
+		entry->total_gdi_kills = buffer.pop<uint32_t>();
+		entry->total_gdi_deaths = buffer.pop<uint32_t>();
+		entry->total_gdi_vehicle_kills = buffer.pop<uint32_t>();
+		entry->total_gdi_defence_kills = buffer.pop<uint32_t>();
+		entry->total_gdi_building_kills = buffer.pop<uint32_t>();
+		entry->total_gdi_headshots = buffer.pop<uint32_t>();
+
+		entry->total_nod_games = buffer.pop<uint32_t>();
+		entry->total_nod_wins = buffer.pop<uint32_t>();
+		entry->total_nod_game_time = buffer.pop<uint32_t>();
+		entry->total_nod_score = buffer.pop<uint64_t>();
+		entry->total_nod_beacon_placements = buffer.pop<uint32_t>();
+		entry->total_nod_beacon_disarms = buffer.pop<uint32_t>();
+		entry->total_nod_proxy_placements = buffer.pop<uint32_t>();
+		entry->total_nod_proxy_disarms = buffer.pop<uint32_t>();
+		entry->total_nod_kills = buffer.pop<uint32_t>();
+		entry->total_nod_deaths = buffer.pop<uint32_t>();
+		entry->total_nod_vehicle_kills = buffer.pop<uint32_t>();
+		entry->total_nod_defence_kills = buffer.pop<uint32_t>();
+		entry->total_nod_building_kills = buffer.pop<uint32_t>();
+		entry->total_nod_headshots = buffer.pop<uint32_t>();
+	}
 
 	entry->top_score = buffer.pop<uint32_t>();
 	entry->top_kills = buffer.pop<uint32_t>();
@@ -134,6 +174,22 @@ void RenX::LadderDatabase::process_header(FILE *file)
 void RenX::LadderDatabase::create_header(FILE *file)
 {
 	fputc(RenX::LadderDatabase::write_version, file);
+}
+
+void RenX::LadderDatabase::process_file_finish(FILE *file)
+{
+	if (RenX::LadderDatabase::read_version != RenX::LadderDatabase::write_version)
+	{
+		puts("Notice: Ladder database is out of date; upgrading...");
+		std::chrono::steady_clock::duration write_duration;
+		std::chrono::steady_clock::time_point start_time = std::chrono::steady_clock::now();
+
+		RenX::LadderDatabase::write(this->getFilename());
+
+		write_duration = std::chrono::steady_clock::now() - start_time;
+		printf("Ladder database upgrade completed in %f seconds", static_cast<double>(write_duration.count()) * (static_cast<double>(std::chrono::steady_clock::duration::period::num) / static_cast<double>(std::chrono::steady_clock::duration::period::den) * static_cast<double>(std::chrono::seconds::duration::period::den / std::chrono::seconds::duration::period::num)));
+		RenX::LadderDatabase::read_version = RenX::LadderDatabase::write_version;
+	}
 }
 
 RenX::LadderDatabase::Entry *RenX::LadderDatabase::getHead() const
@@ -299,15 +355,42 @@ void RenX::LadderDatabase::write(const char *filename)
 				buffer.push(entry->total_captures);
 				buffer.push(entry->total_game_time);
 				buffer.push(entry->total_games);
-				buffer.push(entry->total_gdi_games);
-				buffer.push(entry->total_nod_games);
 				buffer.push(entry->total_wins);
-				buffer.push(entry->total_gdi_wins);
-				buffer.push(entry->total_nod_wins);
 				buffer.push(entry->total_beacon_placements);
 				buffer.push(entry->total_beacon_disarms);
 				buffer.push(entry->total_proxy_placements);
 				buffer.push(entry->total_proxy_disarms);
+
+				buffer.push(entry->total_gdi_games);
+				buffer.push(entry->total_gdi_wins);
+				buffer.push(entry->total_gdi_ties);
+				buffer.push(entry->total_gdi_game_time);
+				buffer.push(entry->total_gdi_score);
+				buffer.push(entry->total_gdi_beacon_placements);
+				buffer.push(entry->total_gdi_beacon_disarms);
+				buffer.push(entry->total_gdi_proxy_placements);
+				buffer.push(entry->total_gdi_proxy_disarms);
+				buffer.push(entry->total_gdi_kills);
+				buffer.push(entry->total_gdi_deaths);
+				buffer.push(entry->total_gdi_vehicle_kills);
+				buffer.push(entry->total_gdi_defence_kills);
+				buffer.push(entry->total_gdi_building_kills);
+				buffer.push(entry->total_gdi_headshots);
+
+				buffer.push(entry->total_nod_games);
+				buffer.push(entry->total_nod_wins);
+				buffer.push(entry->total_nod_game_time);
+				buffer.push(entry->total_nod_score);
+				buffer.push(entry->total_nod_beacon_placements);
+				buffer.push(entry->total_nod_beacon_disarms);
+				buffer.push(entry->total_nod_proxy_placements);
+				buffer.push(entry->total_nod_proxy_disarms);
+				buffer.push(entry->total_nod_kills);
+				buffer.push(entry->total_nod_deaths);
+				buffer.push(entry->total_nod_vehicle_kills);
+				buffer.push(entry->total_nod_defence_kills);
+				buffer.push(entry->total_nod_building_kills);
+				buffer.push(entry->total_nod_headshots);
 
 				buffer.push(entry->top_score);
 				buffer.push(entry->top_kills);
@@ -425,6 +508,11 @@ void RenX::LadderDatabase::updateLadder(RenX::Server *server, const RenX::TeamTy
 				entry->total_defence_kills += player->defenceKills;
 				entry->total_captures += player->captures;
 				entry->total_game_time += static_cast<uint32_t>(std::chrono::duration_cast<std::chrono::seconds>(server->getGameTime(player)).count());
+				entry->total_beacon_placements += player->beaconPlacements;
+				entry->total_beacon_disarms += player->beaconDisarms;
+				entry->total_proxy_placements += player->proxy_placements;
+				entry->total_proxy_disarms += player->proxy_disarms;
+
 				++entry->total_games;
 				switch (player->team)
 				{
@@ -432,21 +520,47 @@ void RenX::LadderDatabase::updateLadder(RenX::Server *server, const RenX::TeamTy
 					++entry->total_gdi_games;
 					if (player->team == team)
 						++entry->total_wins, ++entry->total_gdi_wins;
+					else if (team == RenX::TeamType::None)
+						++entry->total_gdi_ties;
+
+					entry->total_gdi_game_time += player->kills;
+					entry->total_gdi_score += static_cast<uint64_t>(player->score);
+					entry->total_gdi_beacon_placements += player->beaconPlacements;
+					entry->total_gdi_beacon_disarms += player->beaconDisarms;
+					entry->total_gdi_proxy_placements += player->proxy_placements;
+					entry->total_gdi_proxy_disarms += player->proxy_disarms;
+					entry->total_gdi_kills += player->kills;
+					entry->total_gdi_deaths += player->deaths;
+					entry->total_gdi_vehicle_kills += player->vehicleKills;
+					entry->total_gdi_defence_kills += player->defenceKills;
+					entry->total_gdi_building_kills += player->buildingKills;
+					entry->total_gdi_headshots += player->headshots;
 					break;
 				case RenX::TeamType::Nod:
 					++entry->total_nod_games;
 					if (player->team == team)
 						++entry->total_wins, ++entry->total_nod_wins;
+					else if (team == RenX::TeamType::None)
+						++entry->total_nod_ties;
+
+					entry->total_nod_game_time += player->kills;
+					entry->total_nod_score += static_cast<uint64_t>(player->score);
+					entry->total_nod_beacon_placements += player->beaconPlacements;
+					entry->total_nod_beacon_disarms += player->beaconDisarms;
+					entry->total_nod_proxy_placements += player->proxy_placements;
+					entry->total_nod_proxy_disarms += player->proxy_disarms;
+					entry->total_nod_kills += player->kills;
+					entry->total_nod_deaths += player->deaths;
+					entry->total_nod_vehicle_kills += player->vehicleKills;
+					entry->total_nod_defence_kills += player->defenceKills;
+					entry->total_nod_building_kills += player->buildingKills;
+					entry->total_nod_headshots += player->headshots;
 					break;
 				default:
 					if (player->team == team)
 						++entry->total_wins;
 					break;
 				}
-				entry->total_beacon_placements += player->beaconPlacements;
-				entry->total_beacon_disarms += player->beaconDisarms;
-				entry->total_proxy_placements += player->proxy_placements;
-				entry->total_proxy_disarms += player->proxy_disarms;
 
 				auto set_if_greater = [](uint32_t &src, const uint32_t &cmp)
 				{

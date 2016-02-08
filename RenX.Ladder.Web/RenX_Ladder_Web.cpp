@@ -78,7 +78,7 @@ int RenX_Ladder_WebPlugin::OnRehash()
 	RenX_Ladder_WebPlugin::web_ladder_table_footer_filename = Jupiter::IRC::Client::Config->get(RenX_Ladder_WebPlugin::name, "LadderTableFooterFilename"_jrs, "RenX.Ladder.Web.Ladder.Table.Footer.html"_jrs);
 	RenX_Ladder_WebPlugin::entries_per_page = Jupiter::IRC::Client::Config->getInt(RenX_Ladder_WebPlugin::name, "EntriesPerPage"_jrs, 50);
 
-	RenX_Ladder_WebPlugin::entry_table_row = Jupiter::IRC::Client::Config->get(RenX_Ladder_WebPlugin::name, "EntryTableRow"_jrs, "<tr><td>{RANK}</td><td><a href=\"profile?id={STEAM}\">{NAME}</a></td><td>{SCORE}</td><td>{SPM}</td><td>{KILLS}</td><td>{DEATHS}</td><td>{KDR}</td><td>{NODGAMES}</td><td>{NODWINS}</td><td>{NODLOSSES}</td><td>{NWLR}</td><td>{GDIGAMES}</td><td>{GDIWINS}</td><td>{GDILOSSES}</td><td>{GWLR}</td></tr>"_jrs);
+	RenX_Ladder_WebPlugin::entry_table_row = Jupiter::IRC::Client::Config->get(RenX_Ladder_WebPlugin::name, "EntryTableRow"_jrs, R"html(<tr><td class="data-col-a">{RANK}</td><td class="data-col-b"><a href="profile?id={STEAM}&database={OBJECT}">{NAME}</a></td><td class="data-col-a">{SCORE}</td><td class="data-col-b">{SPM}</td><td class="data-col-a">{GAMES}</td><td class="data-col-b">{WINS}</td><td class="data-col-a">{LOSSES}</td><td class="data-col-b">{WLR}</td><td class="data-col-a">{KILLS}</td><td class="data-col-b">{DEATHS}</td><td class="data-col-a">{KDR}</td></tr>)html"_jrs);
 	RenX::sanitizeTags(RenX_Ladder_WebPlugin::entry_table_row);
 
 	RenX_Ladder_WebPlugin::header.erase();

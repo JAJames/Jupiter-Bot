@@ -111,6 +111,7 @@ TagsImp::TagsImp()
 	this->INTERNAL_KDR_TAG = this->getUniqueInternalTag();
 	this->INTERNAL_SUICIDES_TAG = this->getUniqueInternalTag();
 	this->INTERNAL_HEADSHOTS_TAG = this->getUniqueInternalTag();
+	this->INTERNAL_HEADSHOT_KILL_RATIO_TAG = this->getUniqueInternalTag();
 	this->INTERNAL_VEHICLE_KILLS_TAG = this->getUniqueInternalTag();
 	this->INTERNAL_BUILDING_KILLS_TAG = this->getUniqueInternalTag();
 	this->INTERNAL_DEFENCE_KILLS_TAG = this->getUniqueInternalTag();
@@ -162,6 +163,7 @@ TagsImp::TagsImp()
 	this->INTERNAL_VICTIM_KDR_TAG = this->getUniqueInternalTag();
 	this->INTERNAL_VICTIM_SUICIDES_TAG = this->getUniqueInternalTag();
 	this->INTERNAL_VICTIM_HEADSHOTS_TAG = this->getUniqueInternalTag();
+	this->INTERNAL_VICTIM_HEADSHOT_KILL_RATIO_TAG = this->getUniqueInternalTag();
 	this->INTERNAL_VICTIM_VEHICLE_KILLS_TAG = this->getUniqueInternalTag();
 	this->INTERNAL_VICTIM_BUILDING_KILLS_TAG = this->getUniqueInternalTag();
 	this->INTERNAL_VICTIM_DEFENCE_KILLS_TAG = this->getUniqueInternalTag();
@@ -199,6 +201,42 @@ TagsImp::TagsImp()
 	this->INTERNAL_BUILDING_TEAM_SHORT_TAG = this->getUniqueInternalTag();
 	this->INTERNAL_BUILDING_TEAM_LONG_TAG = this->getUniqueInternalTag();
 
+	/** Ladder tags */
+	this->INTERNAL_RANK_TAG = this->getUniqueInternalTag();
+	this->INTERNAL_LAST_GAME_TAG = this->getUniqueInternalTag();
+	this->INTERNAL_GDI_SCORE_TAG = this->getUniqueInternalTag();
+	this->INTERNAL_GDI_SPM_TAG = this->getUniqueInternalTag();
+	this->INTERNAL_GDI_GAME_TIME_TAG = this->getUniqueInternalTag();
+	this->INTERNAL_GDI_TIES_TAG = this->getUniqueInternalTag();
+	this->INTERNAL_GDI_BEACON_PLACEMENTS_TAG = this->getUniqueInternalTag();
+	this->INTERNAL_GDI_BEACON_DISARMS_TAG = this->getUniqueInternalTag();
+	this->INTERNAL_GDI_PROXY_PLACEMENTS_TAG = this->getUniqueInternalTag();
+	this->INTERNAL_GDI_PROXY_DISARMS_TAG = this->getUniqueInternalTag();
+	this->INTERNAL_GDI_KILLS_TAG = this->getUniqueInternalTag();
+	this->INTERNAL_GDI_DEATHS_TAG = this->getUniqueInternalTag();
+	this->INTERNAL_GDI_VEHICLE_KILLS_TAG = this->getUniqueInternalTag();
+	this->INTERNAL_GDI_DEFENCE_KILLS_TAG = this->getUniqueInternalTag();
+	this->INTERNAL_GDI_BUILDING_KILLS_TAG = this->getUniqueInternalTag();
+	this->INTERNAL_GDI_KDR_TAG = this->getUniqueInternalTag();
+	this->INTERNAL_GDI_HEADSHOTS_TAG = this->getUniqueInternalTag();
+	this->INTERNAL_GDI_HEADSHOT_KILL_RATIO_TAG = this->getUniqueInternalTag();
+	this->INTERNAL_NOD_SCORE_TAG = this->getUniqueInternalTag();
+	this->INTERNAL_NOD_SPM_TAG = this->getUniqueInternalTag();
+	this->INTERNAL_NOD_GAME_TIME_TAG = this->getUniqueInternalTag();
+	this->INTERNAL_NOD_TIES_TAG = this->getUniqueInternalTag();
+	this->INTERNAL_NOD_BEACON_PLACEMENTS_TAG = this->getUniqueInternalTag();
+	this->INTERNAL_NOD_BEACON_DISARMS_TAG = this->getUniqueInternalTag();
+	this->INTERNAL_NOD_PROXY_PLACEMENTS_TAG = this->getUniqueInternalTag();
+	this->INTERNAL_NOD_PROXY_DISARMS_TAG = this->getUniqueInternalTag();
+	this->INTERNAL_NOD_KILLS_TAG = this->getUniqueInternalTag();
+	this->INTERNAL_NOD_DEATHS_TAG = this->getUniqueInternalTag();
+	this->INTERNAL_NOD_VEHICLE_KILLS_TAG = this->getUniqueInternalTag();
+	this->INTERNAL_NOD_DEFENCE_KILLS_TAG = this->getUniqueInternalTag();
+	this->INTERNAL_NOD_BUILDING_KILLS_TAG = this->getUniqueInternalTag();
+	this->INTERNAL_NOD_KDR_TAG = this->getUniqueInternalTag();
+	this->INTERNAL_NOD_HEADSHOTS_TAG = this->getUniqueInternalTag();
+	this->INTERNAL_NOD_HEADSHOT_KILL_RATIO_TAG = this->getUniqueInternalTag();
+
 	/** Other tags */
 	this->INTERNAL_WEAPON_TAG = this->getUniqueInternalTag();
 	this->INTERNAL_OBJECT_TAG = this->getUniqueInternalTag();
@@ -206,8 +244,6 @@ TagsImp::TagsImp()
 	this->INTERNAL_NEW_NAME_TAG = this->getUniqueInternalTag();
 	this->INTERNAL_WIN_SCORE_TAG = this->getUniqueInternalTag();
 	this->INTERNAL_LOSE_SCORE_TAG = this->getUniqueInternalTag();
-	this->INTERNAL_LAST_GAME_TAG = this->getUniqueInternalTag();
-	this->INTERNAL_RANK_TAG = this->getUniqueInternalTag();
 
 	/** External (config) tags */
 
@@ -254,6 +290,7 @@ TagsImp::TagsImp()
 	this->kdrTag = Jupiter::IRC::Client::Config->get(configSection, "KDRTag"_jrs, "{KDR}"_jrs);
 	this->suicidesTag = Jupiter::IRC::Client::Config->get(configSection, "SuicidesTag"_jrs, "{SUICIDES}"_jrs);
 	this->headshotsTag = Jupiter::IRC::Client::Config->get(configSection, "HeadshotsTag"_jrs, "{HEADSHOTS}"_jrs);
+	this->headshotKillRatioTag = Jupiter::IRC::Client::Config->get(configSection, "HeadshotKillRatioTag"_jrs, "{HSKR}"_jrs);
 	this->vehicleKillsTag = Jupiter::IRC::Client::Config->get(configSection, "VehicleKillsTag"_jrs, "{VEHICLEKILLS}"_jrs);
 	this->buildingKillsTag = Jupiter::IRC::Client::Config->get(configSection, "BuildingKillsTag"_jrs, "{BUILDINGKILLS}"_jrs);
 	this->defenceKillsTag = Jupiter::IRC::Client::Config->get(configSection, "DefenceKillsTag"_jrs, "{DEFENCEKILLS}"_jrs);
@@ -269,8 +306,8 @@ TagsImp::TagsImp()
 	this->GDILossesTag = Jupiter::IRC::Client::Config->get(configSection, "GDILossesTag"_jrs, "{GDILOSSES}"_jrs);
 	this->NodLossesTag = Jupiter::IRC::Client::Config->get(configSection, "NodLossesTag"_jrs, "{NODLOSSES}"_jrs);
 	this->winLossRatioTag = Jupiter::IRC::Client::Config->get(configSection, "WinLossRatioTag"_jrs, "{WLR}"_jrs);
-	this->GDIWinLossRatioTag = Jupiter::IRC::Client::Config->get(configSection, "GDIWinLossRatioTag"_jrs, "{GWLR}"_jrs);
-	this->NodWinLossRatioTag = Jupiter::IRC::Client::Config->get(configSection, "NodWinLossRatioTag"_jrs, "{NWLR}"_jrs);
+	this->GDIWinLossRatioTag = Jupiter::IRC::Client::Config->get(configSection, "GDIWinLossRatioTag"_jrs, "{GDIWLR}"_jrs);
+	this->NodWinLossRatioTag = Jupiter::IRC::Client::Config->get(configSection, "NodWinLossRatioTag"_jrs, "{NODWLR}"_jrs);
 	this->beaconPlacementsTag = Jupiter::IRC::Client::Config->get(configSection, "BeaconPlacementsTag"_jrs, "{BEACONPLACEMENTS}"_jrs);
 	this->beaconDisarmsTag = Jupiter::IRC::Client::Config->get(configSection, "BeaconDisarmsTag"_jrs, "{BEACONDISARMS}"_jrs);
 	this->proxyPlacementsTag = Jupiter::IRC::Client::Config->get(configSection, "ProxyPlacementsTag"_jrs, "{PROXYPLACEMENTS}"_jrs);
@@ -305,6 +342,7 @@ TagsImp::TagsImp()
 	this->victimKDRTag = Jupiter::IRC::Client::Config->get(configSection, "VictimKDRTag"_jrs, "{VKDR}"_jrs);
 	this->victimSuicidesTag = Jupiter::IRC::Client::Config->get(configSection, "VictimSuicidesTag"_jrs, "{VSUICIDES}"_jrs);
 	this->victimHeadshotsTag = Jupiter::IRC::Client::Config->get(configSection, "VictimHeadshotsTag"_jrs, "{VHEADSHOTS}"_jrs);
+	this->victimHeadshotKillRatioTag = Jupiter::IRC::Client::Config->get(configSection, "VictimHeadshotKillRatioTag"_jrs, "{VHSKR}"_jrs);
 	this->victimVehicleKillsTag = Jupiter::IRC::Client::Config->get(configSection, "VictimVehicleKillsTag"_jrs, "{VVEHICLEKILLS}"_jrs);
 	this->victimBuildingKillsTag = Jupiter::IRC::Client::Config->get(configSection, "VictimBuildingKillsTag"_jrs, "{VBUILDINGKILLS}"_jrs);
 	this->victimDefenceKillsTag = Jupiter::IRC::Client::Config->get(configSection, "VictimDefenceKillsTag"_jrs, "{VDEFENCEKILLS}"_jrs);
@@ -320,8 +358,8 @@ TagsImp::TagsImp()
 	this->victimGDILossesTag = Jupiter::IRC::Client::Config->get(configSection, "VictimGDILossesTag"_jrs, "{VGDILOSSES}"_jrs);
 	this->victimNodLossesTag = Jupiter::IRC::Client::Config->get(configSection, "VictimNodLossesTag"_jrs, "{VNODLOSSES}"_jrs);
 	this->victimWinLossRatioTag = Jupiter::IRC::Client::Config->get(configSection, "WinLossRatioTag"_jrs, "{WLR}"_jrs);
-	this->victimGDIWinLossRatioTag = Jupiter::IRC::Client::Config->get(configSection, "GDIWinLossRatioTag"_jrs, "{VGWLR}"_jrs);
-	this->victimNodWinLossRatioTag = Jupiter::IRC::Client::Config->get(configSection, "NodWinLossRatioTag"_jrs, "{VNWLR}"_jrs);
+	this->victimGDIWinLossRatioTag = Jupiter::IRC::Client::Config->get(configSection, "GDIWinLossRatioTag"_jrs, "{VGDIWLR}"_jrs);
+	this->victimNodWinLossRatioTag = Jupiter::IRC::Client::Config->get(configSection, "NodWinLossRatioTag"_jrs, "{VNODWLR}"_jrs);
 	this->victimBeaconPlacementsTag = Jupiter::IRC::Client::Config->get(configSection, "VictimBeaconPlacementsTag"_jrs, "{VBEACONPLACEMENTS}"_jrs);
 	this->victimBeaconDisarmsTag = Jupiter::IRC::Client::Config->get(configSection, "VictimBeaconDisarmsTag"_jrs, "{VBEACONDISARMS}"_jrs);
 	this->victimProxyPlacementsTag = Jupiter::IRC::Client::Config->get(configSection, "VictimProxyPlacementsTag"_jrs, "{VPROXYPLACEMENTS}"_jrs);
@@ -342,6 +380,42 @@ TagsImp::TagsImp()
 	this->buildingTeamShortTag = Jupiter::IRC::Client::Config->get(configSection, "BuildingShortTeamTag"_jrs, "{BTEAMS}"_jrs);
 	this->buildingTeamLongTag = Jupiter::IRC::Client::Config->get(configSection, "BuildingLongTeamTag"_jrs, "{BTEAML}"_jrs);
 
+	/** Ladder tags */
+	this->rankTag = Jupiter::IRC::Client::Config->get(configSection, "RankTag"_jrs, "{RANK}"_jrs);
+	this->lastGameTag = Jupiter::IRC::Client::Config->get(configSection, "LastGameTag"_jrs, "{LASTGAME}"_jrs);
+	this->GDIScoreTag = Jupiter::IRC::Client::Config->get(configSection, "GDIScoreTag"_jrs, "{GDISCORE}"_jrs);
+	this->GDISPMTag = Jupiter::IRC::Client::Config->get(configSection, "GDISPMTag"_jrs, "{GDISPM}"_jrs);
+	this->GDIGameTimeTag = Jupiter::IRC::Client::Config->get(configSection, "GDIGameTimeTag"_jrs, "{GDIGAMETIME}"_jrs);
+	this->GDITiesTag = Jupiter::IRC::Client::Config->get(configSection, "GDITiesTag"_jrs, "{GDITIES}"_jrs);
+	this->GDIBeaconPlacementsTag = Jupiter::IRC::Client::Config->get(configSection, "GDIBeaconPlacementsTag"_jrs, "{GDIBEACONPLACEMENTS}"_jrs);
+	this->GDIBeaconDisarmsTag = Jupiter::IRC::Client::Config->get(configSection, "GDIBeaconDisarmsTag"_jrs, "{GDIBEACONDISARMS}"_jrs);
+	this->GDIProxyPlacementsTag = Jupiter::IRC::Client::Config->get(configSection, "GDIProxyPlacementsTag"_jrs, "{GDIPROXYPLACEMENTS}"_jrs);
+	this->GDIProxyDisarmsTag = Jupiter::IRC::Client::Config->get(configSection, "GDIProxyDisarmsTag"_jrs, "{GDIPROXYDISARMS}"_jrs);
+	this->GDIKillsTag = Jupiter::IRC::Client::Config->get(configSection, "GDIKillsTag"_jrs, "{GDIKILLS}"_jrs);
+	this->GDIDeathsTag = Jupiter::IRC::Client::Config->get(configSection, "GDIDeathsTag"_jrs, "{GDIDEATHS}"_jrs);
+	this->GDIVehicleKillsTag = Jupiter::IRC::Client::Config->get(configSection, "GDIVehicleKillsTag"_jrs, "{GDIVEHICLEKILLS}"_jrs);
+	this->GDIDefenceKillsTag = Jupiter::IRC::Client::Config->get(configSection, "GDIDefenceKillsTag"_jrs, "{GDIDEFENCEKILLS}"_jrs);
+	this->GDIBuildingKillsTag = Jupiter::IRC::Client::Config->get(configSection, "GDIBuildingKillsTag"_jrs, "{GDIBUILDINGKILLS}"_jrs);
+	this->GDIKDRTag = Jupiter::IRC::Client::Config->get(configSection, "GDIKDRTag"_jrs, "{GDIKDR}"_jrs);
+	this->GDIHeadshotsTag = Jupiter::IRC::Client::Config->get(configSection, "GDIHeadshotsTag"_jrs, "{GDIHEADSHOTS}"_jrs);
+	this->GDIHeadshotKillRatioTag = Jupiter::IRC::Client::Config->get(configSection, "GDIHeadshotKillRatioTag"_jrs, "{GDIHSKR}"_jrs);
+	this->NodScoreTag = Jupiter::IRC::Client::Config->get(configSection, "NodScoreTag"_jrs, "{NODSCORE}"_jrs);
+	this->NodSPMTag = Jupiter::IRC::Client::Config->get(configSection, "NodSPMTag"_jrs, "{NODSPM}"_jrs);
+	this->NodGameTimeTag = Jupiter::IRC::Client::Config->get(configSection, "NodGameTimeTag"_jrs, "{NODGAMETIME}"_jrs);
+	this->NodTiesTag = Jupiter::IRC::Client::Config->get(configSection, "NodTiesTag"_jrs, "{NODTIES}"_jrs);
+	this->NodBeaconPlacementsTag = Jupiter::IRC::Client::Config->get(configSection, "NodBeaconPlacementsTag"_jrs, "{NODBEACONPLACEMENTS}"_jrs);
+	this->NodBeaconDisarmsTag = Jupiter::IRC::Client::Config->get(configSection, "NodBeaconDisarmsTag"_jrs, "{NODBEACONDISARMS}"_jrs);
+	this->NodProxyPlacementsTag = Jupiter::IRC::Client::Config->get(configSection, "NodProxyPlacementsTag"_jrs, "{NODPROXYPLACEMENTS}"_jrs);
+	this->NodProxyDisarmsTag = Jupiter::IRC::Client::Config->get(configSection, "NodProxyDisarmsTag"_jrs, "{NODPROXYDISARMS}"_jrs);
+	this->NodKillsTag = Jupiter::IRC::Client::Config->get(configSection, "NodKillsTag"_jrs, "{NODKILLS}"_jrs);
+	this->NodDeathsTag = Jupiter::IRC::Client::Config->get(configSection, "NodDeathsTag"_jrs, "{NODDEATHS}"_jrs);
+	this->NodVehicleKillsTag = Jupiter::IRC::Client::Config->get(configSection, "NodVehicleKillsTag"_jrs, "{NODVEHICLEKILLS}"_jrs);
+	this->NodDefenceKillsTag = Jupiter::IRC::Client::Config->get(configSection, "NodDefenceKillsTag"_jrs, "{NODDEFENCEKILLS}"_jrs);
+	this->NodBuildingKillsTag = Jupiter::IRC::Client::Config->get(configSection, "NodBuildingKillsTag"_jrs, "{NODBUILDINGKILLS}"_jrs);
+	this->NodKDRTag = Jupiter::IRC::Client::Config->get(configSection, "NodKDRTag"_jrs, "{NODKDR}"_jrs);
+	this->NodHeadshotsTag = Jupiter::IRC::Client::Config->get(configSection, "NodHeadshotsTag"_jrs, "{NODHEADSHOTS}"_jrs);
+	this->NodHeadshotKillRatioTag = Jupiter::IRC::Client::Config->get(configSection, "NodHeadshotKillRatioTag"_jrs, "{NODHSKR}"_jrs);
+
 	/** Other tags */
 	this->weaponTag = Jupiter::IRC::Client::Config->get(configSection, "WeaponTag"_jrs, "{WEAPON}"_jrs);
 	this->objectTag = Jupiter::IRC::Client::Config->get(configSection, "ObjectTag"_jrs, "{OBJECT}"_jrs);
@@ -349,8 +423,6 @@ TagsImp::TagsImp()
 	this->newNameTag = Jupiter::IRC::Client::Config->get(configSection, "NewNameTag"_jrs, "{NNAME}"_jrs);
 	this->winScoreTag = Jupiter::IRC::Client::Config->get(configSection, "WinScoreTag"_jrs, "{WINSCORE}"_jrs);
 	this->loseScoreTag = Jupiter::IRC::Client::Config->get(configSection, "LoseScoreTag"_jrs, "{LOSESCORE}"_jrs);
-	this->lastGameTag = Jupiter::IRC::Client::Config->get(configSection, "LastGameTag"_jrs, "{LASTGAME}"_jrs);
-	this->rankTag = Jupiter::IRC::Client::Config->get(configSection, "RankTag"_jrs, "{RANK}"_jrs);
 }
 
 Jupiter::StringS TagsImp::get_building_health_bar(const RenX::BuildingInfo *building)
@@ -447,6 +519,7 @@ void TagsImp::processTags(Jupiter::StringType &msg, const RenX::Server *server, 
 		PROCESS_TAG(this->INTERNAL_KDR_TAG, Jupiter::StringS::Format("%.2f", get_ratio(static_cast<double>(player->kills), static_cast<double>(player->deaths))));
 		PROCESS_TAG(this->INTERNAL_SUICIDES_TAG, Jupiter::StringS::Format("%u", player->suicides));
 		PROCESS_TAG(this->INTERNAL_HEADSHOTS_TAG, Jupiter::StringS::Format("%u", player->headshots));
+		PROCESS_TAG(this->INTERNAL_HEADSHOT_KILL_RATIO_TAG, Jupiter::StringS::Format("%.2f", get_ratio(player->headshots, player->kills)));
 		PROCESS_TAG(this->INTERNAL_VEHICLE_KILLS_TAG, Jupiter::StringS::Format("%u", player->vehicleKills));
 		PROCESS_TAG(this->INTERNAL_BUILDING_KILLS_TAG, Jupiter::StringS::Format("%u", player->buildingKills));
 		PROCESS_TAG(this->INTERNAL_DEFENCE_KILLS_TAG, Jupiter::StringS::Format("%u", player->defenceKills));
@@ -484,6 +557,7 @@ void TagsImp::processTags(Jupiter::StringType &msg, const RenX::Server *server, 
 		PROCESS_TAG(this->INTERNAL_VICTIM_KDR_TAG, Jupiter::StringS::Format("%.2f", get_ratio(static_cast<double>(victim->kills), static_cast<double>(victim->deaths))));
 		PROCESS_TAG(this->INTERNAL_VICTIM_SUICIDES_TAG, Jupiter::StringS::Format("%u", victim->suicides));
 		PROCESS_TAG(this->INTERNAL_VICTIM_HEADSHOTS_TAG, Jupiter::StringS::Format("%u", victim->headshots));
+		PROCESS_TAG(this->INTERNAL_VICTIM_HEADSHOT_KILL_RATIO_TAG, Jupiter::StringS::Format("%.2f", get_ratio(victim->headshots, victim->kills)));
 		PROCESS_TAG(this->INTERNAL_VICTIM_VEHICLE_KILLS_TAG, Jupiter::StringS::Format("%u", victim->vehicleKills));
 		PROCESS_TAG(this->INTERNAL_VICTIM_BUILDING_KILLS_TAG, Jupiter::StringS::Format("%u", victim->buildingKills));
 		PROCESS_TAG(this->INTERNAL_VICTIM_DEFENCE_KILLS_TAG, Jupiter::StringS::Format("%u", victim->defenceKills));
@@ -521,8 +595,8 @@ void TagsImp::processTags(Jupiter::StringType &msg, const RenX::LadderDatabase::
 
 	PROCESS_TAG(this->INTERNAL_NAME_TAG, entry.most_recent_name);
 	PROCESS_TAG(this->INTERNAL_STEAM_TAG, Jupiter::StringS::Format("%llu", entry.steam_id));
-	PROCESS_TAG(this->INTERNAL_LAST_GAME_TAG, Jupiter::StringS::Format("XX Xuary 20XX at 00:00:00")); // TODO: format this!
 	PROCESS_TAG(this->INTERNAL_RANK_TAG, Jupiter::StringS::Format("%u", entry.rank));
+	PROCESS_TAG(this->INTERNAL_LAST_GAME_TAG, Jupiter::StringS::Format("XX Xuary 20XX at 00:00:00")); // TODO: format this!
 
 	/** Totals */
 	PROCESS_TAG(this->INTERNAL_SCORE_TAG, Jupiter::StringS::Format("%llu", entry.total_score));
@@ -531,29 +605,67 @@ void TagsImp::processTags(Jupiter::StringType &msg, const RenX::LadderDatabase::
 	PROCESS_TAG(this->INTERNAL_KDR_TAG, Jupiter::StringS::Format("%.2f", get_ratio(static_cast<double>(entry.total_kills), static_cast<double>(entry.total_deaths))));
 	PROCESS_TAG(this->INTERNAL_SCORE_PER_MINUTE_TAG, Jupiter::StringS::Format("%.2f", get_ratio(static_cast<double>(entry.total_score), static_cast<double>(entry.total_game_time) / 60.0)));
 	PROCESS_TAG(this->INTERNAL_HEADSHOTS_TAG, Jupiter::StringS::Format("%u", entry.total_headshot_kills));
+	PROCESS_TAG(this->INTERNAL_HEADSHOT_KILL_RATIO_TAG, Jupiter::StringS::Format("%.2f", get_ratio(entry.total_headshot_kills, entry.total_kills)));
 	PROCESS_TAG(this->INTERNAL_VEHICLE_KILLS_TAG, Jupiter::StringS::Format("%u", entry.total_vehicle_kills));
 	PROCESS_TAG(this->INTERNAL_BUILDING_KILLS_TAG, Jupiter::StringS::Format("%u", entry.total_building_kills));
 	PROCESS_TAG(this->INTERNAL_DEFENCE_KILLS_TAG, Jupiter::StringS::Format("%u", entry.total_defence_kills));
 	PROCESS_TAG(this->INTERNAL_CAPTURES_TAG, Jupiter::StringS::Format("%u", entry.total_captures));
 	PROCESS_TAG(this->INTERNAL_GAME_TIME_TAG, Jupiter::StringS::Format("%u", entry.total_game_time));
 	PROCESS_TAG(this->INTERNAL_GAMES_TAG, Jupiter::StringS::Format("%u", entry.total_games));
-	PROCESS_TAG(this->INTERNAL_GDI_GAMES_TAG, Jupiter::StringS::Format("%u", entry.total_gdi_games));
-	PROCESS_TAG(this->INTERNAL_NOD_GAMES_TAG, Jupiter::StringS::Format("%u", entry.total_nod_games));
 	PROCESS_TAG(this->INTERNAL_WINS_TAG, Jupiter::StringS::Format("%u", entry.total_wins));
-	PROCESS_TAG(this->INTERNAL_GDI_WINS_TAG, Jupiter::StringS::Format("%u", entry.total_gdi_wins));
-	PROCESS_TAG(this->INTERNAL_NOD_WINS_TAG, Jupiter::StringS::Format("%u", entry.total_nod_wins));
 	PROCESS_TAG(this->INTERNAL_TIES_TAG, Jupiter::StringS::Format("%u", total_tied_games));
 	PROCESS_TAG(this->INTERNAL_LOSSES_TAG, Jupiter::StringS::Format("%u", entry.total_games - total_tied_games - entry.total_wins));
-	PROCESS_TAG(this->INTERNAL_GDI_LOSSES_TAG, Jupiter::StringS::Format("%u", entry.total_gdi_games - entry.total_gdi_wins));
-	PROCESS_TAG(this->INTERNAL_NOD_LOSSES_TAG, Jupiter::StringS::Format("%u", entry.total_nod_games - entry.total_nod_wins));
-
 	PROCESS_TAG(this->INTERNAL_WIN_LOSS_RATIO_TAG, Jupiter::StringS::Format("%.2f", get_ratio(static_cast<double>(entry.total_wins), static_cast<double>(entry.total_games - entry.total_wins))));
-	PROCESS_TAG(this->INTERNAL_GDI_WIN_LOSS_RATIO_TAG, Jupiter::StringS::Format("%.2f", get_ratio(static_cast<double>(entry.total_gdi_wins), static_cast<double>(entry.total_gdi_games - entry.total_gdi_wins))));
-	PROCESS_TAG(this->INTERNAL_NOD_WIN_LOSS_RATIO_TAG, Jupiter::StringS::Format("%.2f", get_ratio(static_cast<double>(entry.total_nod_wins), static_cast<double>(entry.total_nod_games - entry.total_nod_wins))));
 	PROCESS_TAG(this->INTERNAL_BEACON_PLACEMENTS_TAG, Jupiter::StringS::Format("%u", entry.total_beacon_placements));
 	PROCESS_TAG(this->INTERNAL_BEACON_DISARMS_TAG, Jupiter::StringS::Format("%u", entry.total_beacon_disarms));
 	PROCESS_TAG(this->INTERNAL_PROXY_PLACEMENTS_TAG, Jupiter::StringS::Format("%u", entry.total_proxy_placements));
 	PROCESS_TAG(this->INTERNAL_PROXY_DISARMS_TAG, Jupiter::StringS::Format("%u", entry.total_proxy_disarms));
+
+	/** GDI Totals */
+	PROCESS_TAG(this->INTERNAL_GDI_GAMES_TAG, Jupiter::StringS::Format("%u", entry.total_gdi_games));
+	PROCESS_TAG(this->INTERNAL_GDI_WINS_TAG, Jupiter::StringS::Format("%u", entry.total_gdi_wins));
+	PROCESS_TAG(this->INTERNAL_GDI_TIES_TAG, Jupiter::StringS::Format("%u", entry.total_gdi_ties));
+	PROCESS_TAG(this->INTERNAL_GDI_LOSSES_TAG, Jupiter::StringS::Format("%u", entry.total_gdi_games - entry.total_gdi_wins - entry.total_gdi_ties));
+	PROCESS_TAG(this->INTERNAL_GDI_WIN_LOSS_RATIO_TAG, Jupiter::StringS::Format("%.2f", get_ratio(static_cast<double>(entry.total_gdi_wins), static_cast<double>(entry.total_gdi_games - entry.total_gdi_wins - entry.total_gdi_ties))));
+	PROCESS_TAG(this->INTERNAL_GDI_SCORE_TAG, Jupiter::StringS::Format("%llu", entry.total_gdi_score));
+	PROCESS_TAG(this->INTERNAL_GDI_SPM_TAG, Jupiter::StringS::Format("%u", get_ratio(static_cast<double>(entry.total_gdi_score), static_cast<double>(entry.total_gdi_game_time))));
+	PROCESS_TAG(this->INTERNAL_GDI_GAME_TIME_TAG, Jupiter::StringS::Format("%u", entry.total_gdi_game_time));
+	PROCESS_TAG(this->INTERNAL_GDI_TIES_TAG, Jupiter::StringS::Format("%u", entry.total_gdi_ties));
+	PROCESS_TAG(this->INTERNAL_GDI_BEACON_PLACEMENTS_TAG, Jupiter::StringS::Format("%u", entry.total_gdi_beacon_placements));
+	PROCESS_TAG(this->INTERNAL_GDI_BEACON_DISARMS_TAG, Jupiter::StringS::Format("%u", entry.total_gdi_beacon_disarms));
+	PROCESS_TAG(this->INTERNAL_GDI_PROXY_PLACEMENTS_TAG, Jupiter::StringS::Format("%u", entry.total_gdi_proxy_placements));
+	PROCESS_TAG(this->INTERNAL_GDI_PROXY_DISARMS_TAG, Jupiter::StringS::Format("%u", entry.total_gdi_proxy_disarms));
+	PROCESS_TAG(this->INTERNAL_GDI_KILLS_TAG, Jupiter::StringS::Format("%u", entry.total_gdi_kills));
+	PROCESS_TAG(this->INTERNAL_GDI_DEATHS_TAG, Jupiter::StringS::Format("%u", entry.total_gdi_deaths));
+	PROCESS_TAG(this->INTERNAL_GDI_VEHICLE_KILLS_TAG, Jupiter::StringS::Format("%u", entry.total_gdi_vehicle_kills));
+	PROCESS_TAG(this->INTERNAL_GDI_DEFENCE_KILLS_TAG, Jupiter::StringS::Format("%u", entry.total_gdi_defence_kills));
+	PROCESS_TAG(this->INTERNAL_GDI_BUILDING_KILLS_TAG, Jupiter::StringS::Format("%u", entry.total_gdi_building_kills));
+	PROCESS_TAG(this->INTERNAL_GDI_KDR_TAG, Jupiter::StringS::Format("%.2f", get_ratio(static_cast<double>(entry.total_gdi_kills), static_cast<double>(entry.total_gdi_deaths))));
+	PROCESS_TAG(this->INTERNAL_GDI_HEADSHOTS_TAG, Jupiter::StringS::Format("%u", entry.total_gdi_headshots));
+	PROCESS_TAG(this->INTERNAL_GDI_HEADSHOT_KILL_RATIO_TAG, Jupiter::StringS::Format("%.2f", get_ratio(static_cast<double>(entry.total_gdi_headshots), static_cast<double>(entry.total_gdi_kills))));
+
+	/** Nod Totals */
+	PROCESS_TAG(this->INTERNAL_NOD_GAMES_TAG, Jupiter::StringS::Format("%u", entry.total_nod_games));
+	PROCESS_TAG(this->INTERNAL_NOD_WINS_TAG, Jupiter::StringS::Format("%u", entry.total_nod_wins));
+	PROCESS_TAG(this->INTERNAL_NOD_TIES_TAG, Jupiter::StringS::Format("%u", entry.total_nod_ties));
+	PROCESS_TAG(this->INTERNAL_NOD_LOSSES_TAG, Jupiter::StringS::Format("%u", entry.total_nod_games - entry.total_nod_wins - entry.total_nod_ties));
+	PROCESS_TAG(this->INTERNAL_NOD_WIN_LOSS_RATIO_TAG, Jupiter::StringS::Format("%.2f", get_ratio(static_cast<double>(entry.total_nod_wins), static_cast<double>(entry.total_nod_games - entry.total_nod_wins - entry.total_nod_ties))));
+	PROCESS_TAG(this->INTERNAL_NOD_SCORE_TAG, Jupiter::StringS::Format("%llu", entry.total_nod_score));
+	PROCESS_TAG(this->INTERNAL_NOD_SPM_TAG, Jupiter::StringS::Format("%u", get_ratio(static_cast<double>(entry.total_nod_score), static_cast<double>(entry.total_nod_game_time))));
+	PROCESS_TAG(this->INTERNAL_NOD_GAME_TIME_TAG, Jupiter::StringS::Format("%u", entry.total_nod_game_time));
+	PROCESS_TAG(this->INTERNAL_NOD_TIES_TAG, Jupiter::StringS::Format("%u", entry.total_nod_ties));
+	PROCESS_TAG(this->INTERNAL_NOD_BEACON_PLACEMENTS_TAG, Jupiter::StringS::Format("%u", entry.total_nod_beacon_placements));
+	PROCESS_TAG(this->INTERNAL_NOD_BEACON_DISARMS_TAG, Jupiter::StringS::Format("%u", entry.total_nod_beacon_disarms));
+	PROCESS_TAG(this->INTERNAL_NOD_PROXY_PLACEMENTS_TAG, Jupiter::StringS::Format("%u", entry.total_nod_proxy_placements));
+	PROCESS_TAG(this->INTERNAL_NOD_PROXY_DISARMS_TAG, Jupiter::StringS::Format("%u", entry.total_nod_proxy_disarms));
+	PROCESS_TAG(this->INTERNAL_NOD_KILLS_TAG, Jupiter::StringS::Format("%u", entry.total_nod_kills));
+	PROCESS_TAG(this->INTERNAL_NOD_DEATHS_TAG, Jupiter::StringS::Format("%u", entry.total_nod_deaths));
+	PROCESS_TAG(this->INTERNAL_NOD_VEHICLE_KILLS_TAG, Jupiter::StringS::Format("%u", entry.total_nod_vehicle_kills));
+	PROCESS_TAG(this->INTERNAL_NOD_DEFENCE_KILLS_TAG, Jupiter::StringS::Format("%u", entry.total_nod_defence_kills));
+	PROCESS_TAG(this->INTERNAL_NOD_BUILDING_KILLS_TAG, Jupiter::StringS::Format("%u", entry.total_nod_building_kills));
+	PROCESS_TAG(this->INTERNAL_NOD_KDR_TAG, Jupiter::StringS::Format("%.2f", get_ratio(static_cast<double>(entry.total_nod_kills), static_cast<double>(entry.total_nod_deaths))));
+	PROCESS_TAG(this->INTERNAL_NOD_HEADSHOTS_TAG, Jupiter::StringS::Format("%u", entry.total_nod_headshots));
+	PROCESS_TAG(this->INTERNAL_NOD_HEADSHOT_KILL_RATIO_TAG, Jupiter::StringS::Format("%.2f", get_ratio(static_cast<double>(entry.total_nod_headshots), static_cast<double>(entry.total_nod_kills))));
 
 	/** Tops */
 	PROCESS_TAG(this->INTERNAL_VICTIM_SCORE_TAG, Jupiter::StringS::Format("%u", entry.top_score));
@@ -616,6 +728,7 @@ void TagsImp::sanitizeTags(Jupiter::StringType &fmt)
 	fmt.replace(this->kdrTag, this->INTERNAL_KDR_TAG);
 	fmt.replace(this->suicidesTag, this->INTERNAL_SUICIDES_TAG);
 	fmt.replace(this->headshotsTag, this->INTERNAL_HEADSHOTS_TAG);
+	fmt.replace(this->headshotKillRatioTag, this->INTERNAL_HEADSHOT_KILL_RATIO_TAG);
 	fmt.replace(this->vehicleKillsTag, this->INTERNAL_VEHICLE_KILLS_TAG);
 	fmt.replace(this->buildingKillsTag, this->INTERNAL_BUILDING_KILLS_TAG);
 	fmt.replace(this->defenceKillsTag, this->INTERNAL_DEFENCE_KILLS_TAG);
@@ -667,6 +780,7 @@ void TagsImp::sanitizeTags(Jupiter::StringType &fmt)
 	fmt.replace(this->victimKDRTag, this->INTERNAL_VICTIM_KDR_TAG);
 	fmt.replace(this->victimSuicidesTag, this->INTERNAL_VICTIM_SUICIDES_TAG);
 	fmt.replace(this->victimHeadshotsTag, this->INTERNAL_VICTIM_HEADSHOTS_TAG);
+	fmt.replace(this->victimHeadshotKillRatioTag, this->INTERNAL_VICTIM_HEADSHOT_KILL_RATIO_TAG);
 	fmt.replace(this->victimVehicleKillsTag, this->INTERNAL_VICTIM_VEHICLE_KILLS_TAG);
 	fmt.replace(this->victimBuildingKillsTag, this->INTERNAL_VICTIM_BUILDING_KILLS_TAG);
 	fmt.replace(this->victimDefenceKillsTag, this->INTERNAL_VICTIM_DEFENCE_KILLS_TAG);
@@ -704,6 +818,42 @@ void TagsImp::sanitizeTags(Jupiter::StringType &fmt)
 	fmt.replace(this->buildingTeamShortTag, this->INTERNAL_BUILDING_TEAM_SHORT_TAG);
 	fmt.replace(this->buildingTeamLongTag, this->INTERNAL_BUILDING_TEAM_LONG_TAG);
 
+	/** Ladder tags */
+	fmt.replace(this->rankTag, this->INTERNAL_RANK_TAG);
+	fmt.replace(this->lastGameTag, this->INTERNAL_LAST_GAME_TAG);
+	fmt.replace(this->GDIScoreTag, this->INTERNAL_GDI_SCORE_TAG);
+	fmt.replace(this->GDISPMTag, this->INTERNAL_GDI_SPM_TAG);
+	fmt.replace(this->GDIGameTimeTag, this->INTERNAL_GDI_GAME_TIME_TAG);
+	fmt.replace(this->GDITiesTag, this->INTERNAL_GDI_TIES_TAG);
+	fmt.replace(this->GDIBeaconPlacementsTag, this->INTERNAL_GDI_BEACON_PLACEMENTS_TAG);
+	fmt.replace(this->GDIBeaconDisarmsTag, this->INTERNAL_GDI_BEACON_DISARMS_TAG);
+	fmt.replace(this->GDIProxyPlacementsTag, this->INTERNAL_GDI_PROXY_PLACEMENTS_TAG);
+	fmt.replace(this->GDIProxyDisarmsTag, this->INTERNAL_GDI_PROXY_DISARMS_TAG);
+	fmt.replace(this->GDIKillsTag, this->INTERNAL_GDI_KILLS_TAG);
+	fmt.replace(this->GDIDeathsTag, this->INTERNAL_GDI_DEATHS_TAG);
+	fmt.replace(this->GDIVehicleKillsTag, this->INTERNAL_GDI_VEHICLE_KILLS_TAG);
+	fmt.replace(this->GDIDefenceKillsTag, this->INTERNAL_GDI_DEFENCE_KILLS_TAG);
+	fmt.replace(this->GDIBuildingKillsTag, this->INTERNAL_GDI_BUILDING_KILLS_TAG);
+	fmt.replace(this->GDIKDRTag, this->INTERNAL_GDI_KDR_TAG);
+	fmt.replace(this->GDIHeadshotsTag, this->INTERNAL_GDI_HEADSHOTS_TAG);
+	fmt.replace(this->GDIHeadshotKillRatioTag, this->INTERNAL_GDI_HEADSHOT_KILL_RATIO_TAG);
+	fmt.replace(this->NodScoreTag, this->INTERNAL_NOD_SCORE_TAG);
+	fmt.replace(this->NodSPMTag, this->INTERNAL_NOD_SPM_TAG);
+	fmt.replace(this->NodGameTimeTag, this->INTERNAL_NOD_GAME_TIME_TAG);
+	fmt.replace(this->NodTiesTag, this->INTERNAL_NOD_TIES_TAG);
+	fmt.replace(this->NodBeaconPlacementsTag, this->INTERNAL_NOD_BEACON_PLACEMENTS_TAG);
+	fmt.replace(this->NodBeaconDisarmsTag, this->INTERNAL_NOD_BEACON_DISARMS_TAG);
+	fmt.replace(this->NodProxyPlacementsTag, this->INTERNAL_NOD_PROXY_PLACEMENTS_TAG);
+	fmt.replace(this->NodProxyDisarmsTag, this->INTERNAL_NOD_PROXY_DISARMS_TAG);
+	fmt.replace(this->NodKillsTag, this->INTERNAL_NOD_KILLS_TAG);
+	fmt.replace(this->NodDeathsTag, this->INTERNAL_NOD_DEATHS_TAG);
+	fmt.replace(this->NodVehicleKillsTag, this->INTERNAL_NOD_VEHICLE_KILLS_TAG);
+	fmt.replace(this->NodDefenceKillsTag, this->INTERNAL_NOD_DEFENCE_KILLS_TAG);
+	fmt.replace(this->NodBuildingKillsTag, this->INTERNAL_NOD_BUILDING_KILLS_TAG);
+	fmt.replace(this->NodKDRTag, this->INTERNAL_NOD_KDR_TAG);
+	fmt.replace(this->NodHeadshotsTag, this->INTERNAL_NOD_HEADSHOTS_TAG);
+	fmt.replace(this->NodHeadshotKillRatioTag, this->INTERNAL_NOD_HEADSHOT_KILL_RATIO_TAG);
+
 	/** Other tags */
 	fmt.replace(this->weaponTag, this->INTERNAL_WEAPON_TAG);
 	fmt.replace(this->objectTag, this->INTERNAL_OBJECT_TAG);
@@ -711,8 +861,6 @@ void TagsImp::sanitizeTags(Jupiter::StringType &fmt)
 	fmt.replace(this->newNameTag, this->INTERNAL_NEW_NAME_TAG);
 	fmt.replace(this->winScoreTag, this->INTERNAL_WIN_SCORE_TAG);
 	fmt.replace(this->loseScoreTag, this->INTERNAL_LOSE_SCORE_TAG);
-	fmt.replace(this->lastGameTag, this->INTERNAL_LAST_GAME_TAG);
-	fmt.replace(this->rankTag, this->INTERNAL_RANK_TAG);
 
 	Jupiter::ArrayList<RenX::Plugin> &xPlugins = *RenX::getCore()->getPlugins();
 	for (size_t i = 0; i < xPlugins.size(); i++)

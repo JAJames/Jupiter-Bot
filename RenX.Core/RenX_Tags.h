@@ -96,6 +96,7 @@ namespace RenX
 		Jupiter::StringS INTERNAL_KDR_TAG;
 		Jupiter::StringS INTERNAL_SUICIDES_TAG;
 		Jupiter::StringS INTERNAL_HEADSHOTS_TAG;
+		Jupiter::StringS INTERNAL_HEADSHOT_KILL_RATIO_TAG;
 		Jupiter::StringS INTERNAL_VEHICLE_KILLS_TAG;
 		Jupiter::StringS INTERNAL_BUILDING_KILLS_TAG;
 		Jupiter::StringS INTERNAL_DEFENCE_KILLS_TAG;
@@ -147,6 +148,7 @@ namespace RenX
 		Jupiter::StringS INTERNAL_VICTIM_KDR_TAG;
 		Jupiter::StringS INTERNAL_VICTIM_SUICIDES_TAG;
 		Jupiter::StringS INTERNAL_VICTIM_HEADSHOTS_TAG;
+		Jupiter::StringS INTERNAL_VICTIM_HEADSHOT_KILL_RATIO_TAG;
 		Jupiter::StringS INTERNAL_VICTIM_VEHICLE_KILLS_TAG;
 		Jupiter::StringS INTERNAL_VICTIM_BUILDING_KILLS_TAG;
 		Jupiter::StringS INTERNAL_VICTIM_DEFENCE_KILLS_TAG;
@@ -184,6 +186,42 @@ namespace RenX
 		Jupiter::StringS INTERNAL_BUILDING_TEAM_SHORT_TAG;
 		Jupiter::StringS INTERNAL_BUILDING_TEAM_LONG_TAG;
 
+		/** Ladder tags */
+		Jupiter::StringS INTERNAL_RANK_TAG;
+		Jupiter::StringS INTERNAL_LAST_GAME_TAG;
+		Jupiter::StringS INTERNAL_GDI_SCORE_TAG;
+		Jupiter::StringS INTERNAL_GDI_SPM_TAG;
+		Jupiter::StringS INTERNAL_GDI_GAME_TIME_TAG;
+		Jupiter::StringS INTERNAL_GDI_TIES_TAG;
+		Jupiter::StringS INTERNAL_GDI_BEACON_PLACEMENTS_TAG;
+		Jupiter::StringS INTERNAL_GDI_BEACON_DISARMS_TAG;
+		Jupiter::StringS INTERNAL_GDI_PROXY_PLACEMENTS_TAG;
+		Jupiter::StringS INTERNAL_GDI_PROXY_DISARMS_TAG;
+		Jupiter::StringS INTERNAL_GDI_KILLS_TAG;
+		Jupiter::StringS INTERNAL_GDI_DEATHS_TAG;
+		Jupiter::StringS INTERNAL_GDI_VEHICLE_KILLS_TAG;
+		Jupiter::StringS INTERNAL_GDI_DEFENCE_KILLS_TAG;
+		Jupiter::StringS INTERNAL_GDI_BUILDING_KILLS_TAG;
+		Jupiter::StringS INTERNAL_GDI_KDR_TAG;
+		Jupiter::StringS INTERNAL_GDI_HEADSHOTS_TAG;
+		Jupiter::StringS INTERNAL_GDI_HEADSHOT_KILL_RATIO_TAG;
+		Jupiter::StringS INTERNAL_NOD_SCORE_TAG;
+		Jupiter::StringS INTERNAL_NOD_SPM_TAG;
+		Jupiter::StringS INTERNAL_NOD_GAME_TIME_TAG;
+		Jupiter::StringS INTERNAL_NOD_TIES_TAG;
+		Jupiter::StringS INTERNAL_NOD_BEACON_PLACEMENTS_TAG;
+		Jupiter::StringS INTERNAL_NOD_BEACON_DISARMS_TAG;
+		Jupiter::StringS INTERNAL_NOD_PROXY_PLACEMENTS_TAG;
+		Jupiter::StringS INTERNAL_NOD_PROXY_DISARMS_TAG;
+		Jupiter::StringS INTERNAL_NOD_KILLS_TAG;
+		Jupiter::StringS INTERNAL_NOD_DEATHS_TAG;
+		Jupiter::StringS INTERNAL_NOD_VEHICLE_KILLS_TAG;
+		Jupiter::StringS INTERNAL_NOD_DEFENCE_KILLS_TAG;
+		Jupiter::StringS INTERNAL_NOD_BUILDING_KILLS_TAG;
+		Jupiter::StringS INTERNAL_NOD_KDR_TAG;
+		Jupiter::StringS INTERNAL_NOD_HEADSHOTS_TAG;
+		Jupiter::StringS INTERNAL_NOD_HEADSHOT_KILL_RATIO_TAG;
+
 		/** Other tags */
 		Jupiter::StringS INTERNAL_WEAPON_TAG;
 		Jupiter::StringS INTERNAL_OBJECT_TAG;
@@ -191,8 +229,6 @@ namespace RenX
 		Jupiter::StringS INTERNAL_NEW_NAME_TAG;
 		Jupiter::StringS INTERNAL_WIN_SCORE_TAG;
 		Jupiter::StringS INTERNAL_LOSE_SCORE_TAG;
-		Jupiter::StringS INTERNAL_LAST_GAME_TAG;
-		Jupiter::StringS INTERNAL_RANK_TAG;
 
 		/** External message tags */
 
@@ -239,6 +275,7 @@ namespace RenX
 		Jupiter::StringS kdrTag;
 		Jupiter::StringS suicidesTag;
 		Jupiter::StringS headshotsTag;
+		Jupiter::StringS headshotKillRatioTag;
 		Jupiter::StringS vehicleKillsTag;
 		Jupiter::StringS buildingKillsTag;
 		Jupiter::StringS defenceKillsTag;
@@ -290,6 +327,7 @@ namespace RenX
 		Jupiter::StringS victimKDRTag;
 		Jupiter::StringS victimSuicidesTag;
 		Jupiter::StringS victimHeadshotsTag;
+		Jupiter::StringS victimHeadshotKillRatioTag;
 		Jupiter::StringS victimVehicleKillsTag;
 		Jupiter::StringS victimBuildingKillsTag;
 		Jupiter::StringS victimDefenceKillsTag;
@@ -327,6 +365,42 @@ namespace RenX
 		Jupiter::StringS buildingTeamShortTag;
 		Jupiter::StringS buildingTeamLongTag;
 
+		/** Ladder tags */
+		Jupiter::StringS rankTag;
+		Jupiter::StringS lastGameTag;
+		Jupiter::StringS GDIScoreTag;
+		Jupiter::StringS GDISPMTag;
+		Jupiter::StringS GDIGameTimeTag;
+		Jupiter::StringS GDITiesTag;
+		Jupiter::StringS GDIBeaconPlacementsTag;
+		Jupiter::StringS GDIBeaconDisarmsTag;
+		Jupiter::StringS GDIProxyPlacementsTag;
+		Jupiter::StringS GDIProxyDisarmsTag;
+		Jupiter::StringS GDIKillsTag;
+		Jupiter::StringS GDIDeathsTag;
+		Jupiter::StringS GDIVehicleKillsTag;
+		Jupiter::StringS GDIDefenceKillsTag;
+		Jupiter::StringS GDIBuildingKillsTag;
+		Jupiter::StringS GDIKDRTag;
+		Jupiter::StringS GDIHeadshotsTag;
+		Jupiter::StringS GDIHeadshotKillRatioTag;
+		Jupiter::StringS NodScoreTag;
+		Jupiter::StringS NodSPMTag;
+		Jupiter::StringS NodGameTimeTag;
+		Jupiter::StringS NodTiesTag;
+		Jupiter::StringS NodBeaconPlacementsTag;
+		Jupiter::StringS NodBeaconDisarmsTag;
+		Jupiter::StringS NodProxyPlacementsTag;
+		Jupiter::StringS NodProxyDisarmsTag;
+		Jupiter::StringS NodKillsTag;
+		Jupiter::StringS NodDeathsTag;
+		Jupiter::StringS NodVehicleKillsTag;
+		Jupiter::StringS NodDefenceKillsTag;
+		Jupiter::StringS NodBuildingKillsTag;
+		Jupiter::StringS NodKDRTag;
+		Jupiter::StringS NodHeadshotsTag;
+		Jupiter::StringS NodHeadshotKillRatioTag;
+
 		/** Other tags */
 		Jupiter::StringS weaponTag;
 		Jupiter::StringS objectTag;
@@ -334,8 +408,6 @@ namespace RenX
 		Jupiter::StringS newNameTag;
 		Jupiter::StringS winScoreTag;
 		Jupiter::StringS loseScoreTag;
-		Jupiter::StringS lastGameTag;
-		Jupiter::StringS rankTag;
 	};
 
 	RENX_API extern Tags *tags;

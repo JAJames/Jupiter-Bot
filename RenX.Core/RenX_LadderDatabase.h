@@ -63,14 +63,23 @@ namespace RenX
 		*/
 		void create_header(FILE *file) override;
 
+		/**
+		* @brief Called when process_file() is successfully completed.
+		*
+		* @param file File being processed
+		*/
+		void process_file_finish(FILE *file) override;
+
 	public: // LadderDatabase
 		struct RENX_API Entry
 		{
 			size_t rank;
 
-			uint64_t steam_id, total_score;
-			uint32_t total_kills, total_deaths, total_headshot_kills, total_vehicle_kills, total_building_kills, total_defence_kills, total_captures, total_game_time, total_games, total_gdi_games, total_nod_games, total_wins, total_gdi_wins, total_nod_wins, total_beacon_placements, total_beacon_disarms, total_proxy_placements, total_proxy_disarms, // totals (15)
-				top_score, top_kills, most_deaths, top_headshot_kills, top_vehicle_kills, top_building_kills, top_defence_kills, top_captures, top_game_time, top_beacon_placements, top_beacon_disarms, top_proxy_placements, top_proxy_disarms, // tops (12)
+			uint64_t steam_id, total_score, total_gdi_score, total_nod_score; // 64-bit fields (4)
+			uint32_t total_kills, total_deaths, total_headshot_kills, total_vehicle_kills, total_building_kills, total_defence_kills, total_captures, total_game_time, total_games, total_wins, total_beacon_placements, total_beacon_disarms, total_proxy_placements, total_proxy_disarms, // totals (14)
+				total_gdi_games, total_gdi_wins, total_gdi_ties, total_gdi_game_time, total_gdi_beacon_placements, total_gdi_beacon_disarms, total_gdi_proxy_placements, total_gdi_proxy_disarms, total_gdi_kills, total_gdi_deaths, total_gdi_vehicle_kills, total_gdi_defence_kills, total_gdi_building_kills, total_gdi_headshots, // GDI totals (14)
+				total_nod_games, total_nod_wins, total_nod_ties, total_nod_game_time, total_nod_beacon_placements, total_nod_beacon_disarms, total_nod_proxy_placements, total_nod_proxy_disarms, total_nod_kills, total_nod_deaths, total_nod_vehicle_kills, total_nod_defence_kills, total_nod_building_kills, total_nod_headshots, // Nod totals (14)
+				top_score, top_kills, most_deaths, top_headshot_kills, top_vehicle_kills, top_building_kills, top_defence_kills, top_captures, top_game_time, top_beacon_placements, top_beacon_disarms, top_proxy_placements, top_proxy_disarms, // tops (13)
 				most_recent_ip; // other (1)
 			time_t last_game;
 			Jupiter::StringS most_recent_name;
@@ -219,7 +228,7 @@ namespace RenX
 
 	private:
 		/** Database version */
-		const uint8_t write_version = 0;
+		const uint8_t write_version = 1;
 		uint8_t read_version = write_version;
 
 		bool output_times = false;
