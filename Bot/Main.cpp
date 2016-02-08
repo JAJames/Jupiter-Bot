@@ -50,15 +50,13 @@ void onExit()
 
 void inputLoop()
 {
-	const size_t inputSize = 1024;
-	char *input = new char[inputSize];
+	char input[2048];
 	while (ftell(stdin) != -1) // This can be expanded later to check for EBADF specifically.
 	{
-		fgets(input, inputSize, stdin);
+		fgets(input, sizeof(input), stdin);
 		input[strcspn(input, "\r\n")] = 0;
 		inputQueue.enqueue(input);
 	}
-	delete[] input;
 }
 
 int main(int argc, const char **args)
@@ -149,7 +147,7 @@ int main(int argc, const char **args)
 		Jupiter_checkTimers();
 		serverManager->think();
 		Jupiter::ReferenceString input = (const char *)inputQueue.dequeue();
-		if (input != nullptr)
+		if (input.isNotEmpty())
 		{
 			Jupiter::ReferenceString command = input.getWord(0, WHITESPACE);
 

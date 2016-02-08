@@ -628,7 +628,7 @@ void TagsImp::processTags(Jupiter::StringType &msg, const RenX::LadderDatabase::
 	PROCESS_TAG(this->INTERNAL_GDI_LOSSES_TAG, Jupiter::StringS::Format("%u", entry.total_gdi_games - entry.total_gdi_wins - entry.total_gdi_ties));
 	PROCESS_TAG(this->INTERNAL_GDI_WIN_LOSS_RATIO_TAG, Jupiter::StringS::Format("%.2f", get_ratio(static_cast<double>(entry.total_gdi_wins), static_cast<double>(entry.total_gdi_games - entry.total_gdi_wins - entry.total_gdi_ties))));
 	PROCESS_TAG(this->INTERNAL_GDI_SCORE_TAG, Jupiter::StringS::Format("%llu", entry.total_gdi_score));
-	PROCESS_TAG(this->INTERNAL_GDI_SPM_TAG, Jupiter::StringS::Format("%u", get_ratio(static_cast<double>(entry.total_gdi_score), static_cast<double>(entry.total_gdi_game_time))));
+	PROCESS_TAG(this->INTERNAL_GDI_SPM_TAG, Jupiter::StringS::Format("%.2f", get_ratio(static_cast<double>(entry.total_gdi_score), static_cast<double>(entry.total_gdi_game_time) / 60.0)));
 	PROCESS_TAG(this->INTERNAL_GDI_GAME_TIME_TAG, Jupiter::StringS::Format("%u", entry.total_gdi_game_time));
 	PROCESS_TAG(this->INTERNAL_GDI_TIES_TAG, Jupiter::StringS::Format("%u", entry.total_gdi_ties));
 	PROCESS_TAG(this->INTERNAL_GDI_BEACON_PLACEMENTS_TAG, Jupiter::StringS::Format("%u", entry.total_gdi_beacon_placements));
@@ -651,7 +651,7 @@ void TagsImp::processTags(Jupiter::StringType &msg, const RenX::LadderDatabase::
 	PROCESS_TAG(this->INTERNAL_NOD_LOSSES_TAG, Jupiter::StringS::Format("%u", entry.total_nod_games - entry.total_nod_wins - entry.total_nod_ties));
 	PROCESS_TAG(this->INTERNAL_NOD_WIN_LOSS_RATIO_TAG, Jupiter::StringS::Format("%.2f", get_ratio(static_cast<double>(entry.total_nod_wins), static_cast<double>(entry.total_nod_games - entry.total_nod_wins - entry.total_nod_ties))));
 	PROCESS_TAG(this->INTERNAL_NOD_SCORE_TAG, Jupiter::StringS::Format("%llu", entry.total_nod_score));
-	PROCESS_TAG(this->INTERNAL_NOD_SPM_TAG, Jupiter::StringS::Format("%u", get_ratio(static_cast<double>(entry.total_nod_score), static_cast<double>(entry.total_nod_game_time))));
+	PROCESS_TAG(this->INTERNAL_NOD_SPM_TAG, Jupiter::StringS::Format("%.2f", get_ratio(static_cast<double>(entry.total_nod_score), static_cast<double>(entry.total_nod_game_time) / 60.0)));
 	PROCESS_TAG(this->INTERNAL_NOD_GAME_TIME_TAG, Jupiter::StringS::Format("%u", entry.total_nod_game_time));
 	PROCESS_TAG(this->INTERNAL_NOD_TIES_TAG, Jupiter::StringS::Format("%u", entry.total_nod_ties));
 	PROCESS_TAG(this->INTERNAL_NOD_BEACON_PLACEMENTS_TAG, Jupiter::StringS::Format("%u", entry.total_nod_beacon_placements));
