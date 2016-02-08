@@ -1350,7 +1350,7 @@ void GameOverIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString 
 
 const Jupiter::ReadableString &GameOverIRCCommand::getHelp(const Jupiter::ReadableString &)
 {
-	static STRING_LITERAL_AS_NAMED_REFERENCE(defaultHelp, "Forcefully ends the game in progress. Syntax: Gameover [NOW | STOP | Empty | Seconds = 10]");
+	static STRING_LITERAL_AS_NAMED_REFERENCE(defaultHelp, "Forcefully ends the game in progress. Syntax: Gameover [NOW | STOP | [If] Empty | Seconds = 10]");
 	return defaultHelp;
 }
 

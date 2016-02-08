@@ -1813,6 +1813,38 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 					}
 					else if (subHeader.equals("Exploded;"))
 					{
+						// Pre-5.15:
+						// Explosive | "at" | Location
+						// Explosive | "at" | Location | "by" | Owner
+						// 5.15+:
+						// Explosive | "near" | Spot Location | "at" | Location | "by" | Owner
+						// Explosive | "near" | Spot Location | "at" | Location
+						Jupiter::ReferenceString explosive = tokens.getToken(2);
+						if (tokens.getToken(5).equals("at")) // 5.15+
+						{
+							if (tokens.getToken(7).equals("by")) // Player information specified
+							{
+								RenX::PlayerInfo *player = parseGetPlayerOrAdd(tokens.getToken(8));
+								for (size_t i = 0; i < xPlugins.size(); i++)
+									xPlugins.get(i)->RenX_OnExplode(this, player, explosive);
+							}
+							else // No player information specified
+								for (size_t i = 0; i < xPlugins.size(); i++)
+									xPlugins.get(i)->RenX_OnExplode(this, explosive);
+						}
+						else if (tokens.getToken(5).equals("by")) // Pre-5.15 with player information specified
+						{
+							RenX::PlayerInfo *player = parseGetPlayerOrAdd(tokens.getToken(6));
+							for (size_t i = 0; i < xPlugins.size(); i++)
+								xPlugins.get(i)->RenX_OnExplode(this, player, explosive);
+						}
+						else // Pre-5.15 with no player information specified
+							for (size_t i = 0; i < xPlugins.size(); i++)
+								xPlugins.get(i)->RenX_OnExplode(this, explosive);
+						onAction();
+					}
+					else if (subHeader.equals("ProjectileExploded;"))
+					{
 						// Explosive | "at" | Location
 						// Explosive | "at" | Location | "by" | Owner
 						Jupiter::ReferenceString explosive = tokens.getToken(2);
