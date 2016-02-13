@@ -21,6 +21,7 @@
 #include <cstring>
 #include <exception>
 #include <thread>
+#include <mutex>
 #include "Jupiter/Functions.h"
 #include "Jupiter/INIFile.h"
 #include "Jupiter/Queue.h"
@@ -34,7 +35,16 @@
 
 using namespace Jupiter::literals;
 
-Jupiter::Queue inputQueue;
+#define INPUT_BUFFER_SIZE 2048
+
+struct ConsoleInput
+{
+	Jupiter::String input;
+	std::mutex input_mutex;
+	bool awaiting_processing = false;
+
+	ConsoleInput() : input(INPUT_BUFFER_SIZE) {}
+} console_input;
 
 void onTerminate()
 {
@@ -50,12 +60,27 @@ void onExit()
 
 void inputLoop()
 {
-	char input[2048];
+	char input[INPUT_BUFFER_SIZE];
+	size_t input_length;
 	while (ftell(stdin) != -1) // This can be expanded later to check for EBADF specifically.
 	{
 		fgets(input, sizeof(input), stdin);
-		input[strcspn(input, "\r\n")] = 0;
-		inputQueue.enqueue(input);
+		input_length = strcspn(input, "\r\n");
+
+	check_input_processing:
+
+		console_input.input_mutex.lock();
+		if (console_input.awaiting_processing == false)
+		{
+			console_input.input.set(input, input_length);
+			console_input.awaiting_processing = true;
+			console_input.input_mutex.unlock();
+		}
+		else // User input received before previous input was processed.
+		{
+			std::this_thread::sleep_for((std::chrono::seconds(1)));
+			goto check_input_processing;
+		}
 	}
 }
 
@@ -64,6 +89,7 @@ int main(int argc, const char **args)
 	atexit(onExit);
 	std::set_terminate(onTerminate);
 	std::thread inputThread(inputLoop);
+	Jupiter::ReferenceString command;
 
 	srand(static_cast<unsigned int>(std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count()));
 	puts(Jupiter::copyright);
@@ -146,16 +172,21 @@ int main(int argc, const char **args)
 				++index;
 		Jupiter_checkTimers();
 		serverManager->think();
-		Jupiter::ReferenceString input = (const char *)inputQueue.dequeue();
-		if (input.isNotEmpty())
+		
+		if (console_input.input_mutex.try_lock())
 		{
-			Jupiter::ReferenceString command = input.getWord(0, WHITESPACE);
+			if (console_input.awaiting_processing)
+			{
+				console_input.awaiting_processing = false;
+				command = console_input.input.getWord(0, WHITESPACE);
 
-			ConsoleCommand *cmd = getConsoleCommand(command);
-			if (cmd != nullptr)
-				cmd->trigger(input.gotoWord(1, WHITESPACE));
-			else
-				printf("Error: Command \"%.*s\" not found." ENDL, command.size(), command.ptr());
+				ConsoleCommand *cmd = getConsoleCommand(command);
+				if (cmd != nullptr)
+					cmd->trigger(console_input.input.gotoWord(1, WHITESPACE));
+				else
+					printf("Error: Command \"%.*s\" not found." ENDL, command.size(), command.ptr());
+			}
+			console_input.input_mutex.unlock();
 		}
 		std::this_thread::sleep_for((std::chrono::milliseconds(1)));
 	}
