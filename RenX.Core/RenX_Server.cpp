@@ -2910,6 +2910,12 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 			}
 			break;
 
+		case 'x':
+			{
+				// We don't actually need to use this output for anything atm; tend to this later.
+			}
+			break;
+
 		case 'c':
 			{
 				Jupiter::ReferenceString raw = Jupiter::ReferenceString::substring(line, 1);
