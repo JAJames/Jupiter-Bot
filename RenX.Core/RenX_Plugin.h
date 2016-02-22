@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2014-2015 Jessica James.
+ * Copyright (C) 2014-2016 Jessica James.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -138,7 +138,15 @@ namespace RenX
 		virtual void RenX_OnAdmin(Server *server, const Jupiter::ReadableString &raw);
 		
 		/** Vote Type Logs */
-		virtual void RenX_OnVoteCall(Server *server, const TeamType &team, const Jupiter::ReadableString &type, const PlayerInfo *player, const Jupiter::ReadableString &parameters);
+		virtual void RenX_OnVoteAddBots(Server *server, const TeamType &team, const PlayerInfo *player, const TeamType &victim, int amount, int skill);
+		virtual void RenX_OnVoteChangeMap(Server *server, const TeamType &team, const PlayerInfo *player);
+		virtual void RenX_OnVoteKick(Server *server, const TeamType &team, const PlayerInfo *player, const PlayerInfo *victim);
+		virtual void RenX_OnVoteMineBan(Server *server, const TeamType &team, const PlayerInfo *player, const PlayerInfo *victim);
+		virtual void RenX_OnVoteRemoveBots(Server *server, const TeamType &team, const PlayerInfo *player, const TeamType &victim, int amount);
+		virtual void RenX_OnVoteRestartMap(Server *server, const TeamType &team, const PlayerInfo *player);
+		virtual void RenX_OnVoteSurrender(Server *server, const TeamType &team, const PlayerInfo *player);
+		virtual void RenX_OnVoteSurvey(Server *server, const TeamType &team, const PlayerInfo *player, const Jupiter::ReadableString &text);
+		virtual void RenX_OnVoteOther(Server *server, const TeamType &team, const Jupiter::ReadableString &type, const PlayerInfo *player);
 		virtual void RenX_OnVoteOver(Server *server, const TeamType &team, const Jupiter::ReadableString &type, bool success, int yesVotes, int noVotes);
 		virtual void RenX_OnVoteCancel(Server *server, const TeamType &team, const Jupiter::ReadableString &type);
 		virtual void RenX_OnVote(Server *server, const Jupiter::ReadableString &raw);

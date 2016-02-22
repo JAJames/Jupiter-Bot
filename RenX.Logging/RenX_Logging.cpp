@@ -326,8 +326,32 @@ void RenX_LoggingPlugin::init()
 	RenX_LoggingPlugin::adminFmt = Jupiter::IRC::Client::Config->get(this->getName(), "AdminFormat"_jrs,
 		Jupiter::StringS::Format(IRCCOLOR "07[Admin]" IRCCOLOR " %.*s", RenX::tags->messageTag.size(), RenX::tags->messageTag.ptr()));
 
-	RenX_LoggingPlugin::voteCallFmt = Jupiter::IRC::Client::Config->get(this->getName(), "VoteCallFormat"_jrs,
-		Jupiter::StringS::Format(IRCCOLOR "%.*s[Vote] " IRCBOLD "%.*s" IRCBOLD " has called a \"%.*s\" vote.", RenX::tags->victimTeamColorTag.size(), RenX::tags->victimTeamColorTag.ptr(), RenX::tags->nameTag.size(), RenX::tags->nameTag.ptr(), RenX::tags->objectTag.size(), RenX::tags->objectTag.ptr(), RenX::tags->victimTeamColorTag.size(), RenX::tags->victimTeamColorTag.ptr()));
+	RenX_LoggingPlugin::voteAddBotsFmt = Jupiter::IRC::Client::Config->get(this->getName(), "VoteAddBotsFormat"_jrs,
+		Jupiter::StringS::Format(IRCCOLOR "[Vote] " IRCBOLD "%.*s" IRCNORMAL " has called for adding " IRCCOLOR "12%.*s" IRCCOLOR " bots to %.*s, with skill level " IRCCOLOR "07%.*s" IRCCOLOR ".", RenX::tags->nameTag.size(), RenX::tags->nameTag.ptr(), RenX::tags->objectTag.size(), RenX::tags->objectTag.ptr(), RenX::tags->victimTeamShortTag.size(), RenX::tags->victimTeamShortTag.ptr(), RenX::tags->weaponTag.size(), RenX::tags->weaponTag.ptr()));
+	
+	RenX_LoggingPlugin::voteChangeMapFmt = Jupiter::IRC::Client::Config->get(this->getName(), "VoteChangeMapFormat"_jrs,
+		Jupiter::StringS::Format(IRCCOLOR "[Vote] " IRCBOLD "%.*s" IRCNORMAL " has called for a Map Change.", RenX::tags->nameTag.size(), RenX::tags->nameTag.ptr()));
+	
+	RenX_LoggingPlugin::voteKickFmt = Jupiter::IRC::Client::Config->get(this->getName(), "VoteKickFormat"_jrs,
+		Jupiter::StringS::Format(IRCCOLOR "[Vote] " IRCBOLD "%.*s" IRCNORMAL " has called for a kick against %.*s" IRCNORMAL ".", RenX::tags->nameTag.size(), RenX::tags->nameTag.ptr(), RenX::tags->nameTag.size(), RenX::tags->nameTag.ptr()));
+	
+	RenX_LoggingPlugin::voteMineBanFmt = Jupiter::IRC::Client::Config->get(this->getName(), "VoteMineBanFormat"_jrs,
+		Jupiter::StringS::Format(IRCCOLOR "%.*s[Vote] " IRCBOLD "%.*s" IRCBOLD " has called for a Mine Ban against %.*s" IRCNORMAL ".", RenX::tags->victimTeamColorTag.size(), RenX::tags->victimTeamColorTag.ptr(), RenX::tags->nameTag.size(), RenX::tags->nameTag.ptr(), RenX::tags->nameTag.size(), RenX::tags->nameTag.ptr()));
+	
+	RenX_LoggingPlugin::voteRemoveBotsFmt = Jupiter::IRC::Client::Config->get(this->getName(), "VoteRemoveBotsFormat"_jrs,
+		Jupiter::StringS::Format(IRCCOLOR "[Vote] " IRCBOLD "%.*s" IRCNORMAL " has called a vote to remove " IRCCOLOR "12%.*s" IRCCOLOR " bots from " IRCCOLOR "%.*s%.*s" IRCNORMAL ".", RenX::tags->nameTag.size(), RenX::tags->nameTag.ptr(), RenX::tags->objectTag.size(), RenX::tags->objectTag.ptr(), RenX::tags->victimTeamColorTag.size(), RenX::tags->victimTeamColorTag.ptr(), RenX::tags->victimTeamShortTag.size(), RenX::tags->victimTeamShortTag.ptr()));
+	
+	RenX_LoggingPlugin::voteRestartMapFmt = Jupiter::IRC::Client::Config->get(this->getName(), "VoteRestartMapFormat"_jrs,
+		Jupiter::StringS::Format(IRCCOLOR "[Vote] " IRCBOLD "%.*s" IRCNORMAL " has called for a Map Restart.", RenX::tags->nameTag.size(), RenX::tags->nameTag.ptr()));
+	
+	RenX_LoggingPlugin::voteSurrenderFmt = Jupiter::IRC::Client::Config->get(this->getName(), "VoteSurrenderFormat"_jrs,
+		Jupiter::StringS::Format(IRCCOLOR "%.*s[Vote] " IRCBOLD "%.*s" IRCBOLD " has called for a Surrender.", RenX::tags->victimTeamColorTag.size(), RenX::tags->victimTeamColorTag.ptr(), RenX::tags->nameTag.size(), RenX::tags->nameTag.ptr()));
+	
+	RenX_LoggingPlugin::voteSurveyFmt = Jupiter::IRC::Client::Config->get(this->getName(), "VoteSurveyFormat"_jrs,
+		Jupiter::StringS::Format(IRCCOLOR "%.*s[Vote] " IRCBOLD "%.*s" IRCBOLD IRCCOLOR "%.*s has started a Survey: " IRCCOLOR "12%.*s", RenX::tags->victimTeamColorTag.size(), RenX::tags->victimTeamColorTag.ptr(), RenX::tags->nameTag.size(), RenX::tags->nameTag.ptr(), RenX::tags->victimTeamColorTag.size(), RenX::tags->victimTeamColorTag.ptr(), RenX::tags->messageTag.size(), RenX::tags->messageTag.ptr()));
+
+	RenX_LoggingPlugin::voteOtherFmt = Jupiter::IRC::Client::Config->get(this->getName(), "VoteOtherFormat"_jrs,
+		Jupiter::StringS::Format(IRCCOLOR "%.*s[Vote] " IRCBOLD "%.*s" IRCBOLD IRCCOLOR "%.*s has called a \"%.*s\" vote.", RenX::tags->victimTeamColorTag.size(), RenX::tags->victimTeamColorTag.ptr(), RenX::tags->nameTag.size(), RenX::tags->nameTag.ptr(), RenX::tags->victimTeamColorTag.size(), RenX::tags->victimTeamColorTag.ptr(), RenX::tags->objectTag.size(), RenX::tags->objectTag.ptr()));
 
 	RenX_LoggingPlugin::voteOverSuccessFmt = Jupiter::IRC::Client::Config->get(this->getName(), "VoteOverSuccessFormat"_jrs,
 		Jupiter::StringS::Format(IRCCOLOR "%.*s[Vote] A vote for \"%.*s\" " IRCBOLD IRCCOLOR "09passed" IRCBOLD IRCCOLOR "%.*s (Votes Yes: %.*s | Votes No: %.*s).", RenX::tags->victimTeamColorTag.size(), RenX::tags->victimTeamColorTag.ptr(), RenX::tags->objectTag.size(), RenX::tags->objectTag.ptr(), RenX::tags->victimTeamColorTag.size(), RenX::tags->victimTeamColorTag.ptr(), RenX::tags->winScoreTag.size(), RenX::tags->winScoreTag.ptr(), RenX::tags->loseScoreTag.size(), RenX::tags->loseScoreTag.ptr()));
@@ -458,7 +482,15 @@ void RenX_LoggingPlugin::init()
 	RenX::sanitizeTags(adminGrantFmt);
 	RenX::sanitizeTags(adminLogoutFmt);
 	RenX::sanitizeTags(adminFmt);
-	RenX::sanitizeTags(voteCallFmt);
+	RenX::sanitizeTags(voteAddBotsFmt);
+	RenX::sanitizeTags(voteChangeMapFmt);
+	RenX::sanitizeTags(voteKickFmt);
+	RenX::sanitizeTags(voteMineBanFmt);
+	RenX::sanitizeTags(voteRemoveBotsFmt);
+	RenX::sanitizeTags(voteRestartMapFmt);
+	RenX::sanitizeTags(voteSurrenderFmt);
+	RenX::sanitizeTags(voteSurveyFmt);
+	RenX::sanitizeTags(voteOtherFmt);
 	RenX::sanitizeTags(voteOverSuccessFmt);
 	RenX::sanitizeTags(voteOverFailFmt);
 	RenX::sanitizeTags(voteCancelFmt);
@@ -1684,7 +1716,7 @@ void RenX_LoggingPlugin::RenX_OnAdmin(RenX::Server *server, const Jupiter::Reada
 	}
 }
 
-void RenX_LoggingPlugin::RenX_OnVoteCall(RenX::Server *server, const RenX::TeamType &team, const Jupiter::ReadableString &type, const RenX::PlayerInfo *player, const Jupiter::ReadableString &parameters)
+void RenX_LoggingPlugin::RenX_OnVoteAddBots(RenX::Server *server, const RenX::TeamType &, const RenX::PlayerInfo *player, const RenX::TeamType &victim, int amount, int skill)
 {
 	logFuncType func;
 	if (RenX_LoggingPlugin::voteCallPublic)
@@ -1692,7 +1724,157 @@ void RenX_LoggingPlugin::RenX_OnVoteCall(RenX::Server *server, const RenX::TeamT
 	else
 		func = &RenX::Server::sendAdmChan;
 
-	Jupiter::String msg = this->voteCallFmt;
+	Jupiter::String msg = this->voteAddBotsFmt;
+	if (msg.isNotEmpty())
+	{
+		RenX::processTags(msg, server, player);
+		msg.replace(RenX::tags->INTERNAL_VICTIM_TEAM_COLOR_TAG, RenX::getTeamColor(victim));
+		msg.replace(RenX::tags->INTERNAL_VICTIM_TEAM_SHORT_TAG, RenX::getTeamName(victim));
+		msg.replace(RenX::tags->INTERNAL_VICTIM_TEAM_LONG_TAG, RenX::getFullTeamName(victim));
+		msg.replace(RenX::tags->INTERNAL_OBJECT_TAG, Jupiter::StringS::Format("%d", amount));
+		msg.replace(RenX::tags->INTERNAL_WEAPON_TAG, Jupiter::StringS::Format("%d", skill));
+		(server->*func)(msg);
+	}
+}
+
+void RenX_LoggingPlugin::RenX_OnVoteChangeMap(RenX::Server *server, const RenX::TeamType &team, const RenX::PlayerInfo *player)
+{
+	logFuncType func;
+	if (RenX_LoggingPlugin::voteCallPublic)
+		func = &RenX::Server::sendLogChan;
+	else
+		func = &RenX::Server::sendAdmChan;
+
+	Jupiter::String msg = this->voteChangeMapFmt;
+	if (msg.isNotEmpty())
+	{
+		RenX::processTags(msg, server, player);
+		msg.replace(RenX::tags->INTERNAL_VICTIM_TEAM_COLOR_TAG, RenX::getTeamColor(team));
+		msg.replace(RenX::tags->INTERNAL_VICTIM_TEAM_SHORT_TAG, RenX::getTeamName(team));
+		msg.replace(RenX::tags->INTERNAL_VICTIM_TEAM_LONG_TAG, RenX::getFullTeamName(team));
+		(server->*func)(msg);
+	}
+}
+
+void RenX_LoggingPlugin::RenX_OnVoteKick(RenX::Server *server, const RenX::TeamType &, const RenX::PlayerInfo *player, const RenX::PlayerInfo *victim)
+{
+	logFuncType func;
+	if (RenX_LoggingPlugin::voteCallPublic)
+		func = &RenX::Server::sendLogChan;
+	else
+		func = &RenX::Server::sendAdmChan;
+
+	Jupiter::String msg = this->voteKickFmt;
+	if (msg.isNotEmpty())
+	{
+		RenX::processTags(msg, server, player, victim);
+		(server->*func)(msg);
+	}
+}
+
+void RenX_LoggingPlugin::RenX_OnVoteMineBan(RenX::Server *server, const RenX::TeamType &, const RenX::PlayerInfo *player, const RenX::PlayerInfo *victim)
+{
+	logFuncType func;
+	if (RenX_LoggingPlugin::voteCallPublic)
+		func = &RenX::Server::sendLogChan;
+	else
+		func = &RenX::Server::sendAdmChan;
+
+	Jupiter::String msg = this->voteMineBanFmt;
+	if (msg.isNotEmpty())
+	{
+		RenX::processTags(msg, server, player, victim);
+		(server->*func)(msg);
+	}
+}
+
+void RenX_LoggingPlugin::RenX_OnVoteRemoveBots(RenX::Server *server, const RenX::TeamType &, const RenX::PlayerInfo *player, const RenX::TeamType &victim, int amount)
+{
+	logFuncType func;
+	if (RenX_LoggingPlugin::voteCallPublic)
+		func = &RenX::Server::sendLogChan;
+	else
+		func = &RenX::Server::sendAdmChan;
+
+	Jupiter::String msg = this->voteRemoveBotsFmt;
+	if (msg.isNotEmpty())
+	{
+		RenX::processTags(msg, server, player);
+		msg.replace(RenX::tags->INTERNAL_VICTIM_TEAM_COLOR_TAG, RenX::getTeamColor(victim));
+		msg.replace(RenX::tags->INTERNAL_VICTIM_TEAM_SHORT_TAG, RenX::getTeamName(victim));
+		msg.replace(RenX::tags->INTERNAL_VICTIM_TEAM_LONG_TAG, RenX::getFullTeamName(victim));
+		msg.replace(RenX::tags->INTERNAL_OBJECT_TAG, Jupiter::StringS::Format("%d", amount));
+		(server->*func)(msg);
+	}
+}
+
+void RenX_LoggingPlugin::RenX_OnVoteRestartMap(RenX::Server *server, const RenX::TeamType &team, const RenX::PlayerInfo *player)
+{
+	logFuncType func;
+	if (RenX_LoggingPlugin::voteCallPublic)
+		func = &RenX::Server::sendLogChan;
+	else
+		func = &RenX::Server::sendAdmChan;
+
+	Jupiter::String msg = this->voteRestartMapFmt;
+	if (msg.isNotEmpty())
+	{
+		RenX::processTags(msg, server, player);
+		msg.replace(RenX::tags->INTERNAL_VICTIM_TEAM_COLOR_TAG, RenX::getTeamColor(team));
+		msg.replace(RenX::tags->INTERNAL_VICTIM_TEAM_SHORT_TAG, RenX::getTeamName(team));
+		msg.replace(RenX::tags->INTERNAL_VICTIM_TEAM_LONG_TAG, RenX::getFullTeamName(team));
+		(server->*func)(msg);
+	}
+}
+
+void RenX_LoggingPlugin::RenX_OnVoteSurrender(RenX::Server *server, const RenX::TeamType &team, const RenX::PlayerInfo *player)
+{
+	logFuncType func;
+	if (RenX_LoggingPlugin::voteCallPublic)
+		func = &RenX::Server::sendLogChan;
+	else
+		func = &RenX::Server::sendAdmChan;
+
+	Jupiter::String msg = this->voteSurrenderFmt;
+	if (msg.isNotEmpty())
+	{
+		RenX::processTags(msg, server, player);
+		msg.replace(RenX::tags->INTERNAL_VICTIM_TEAM_COLOR_TAG, RenX::getTeamColor(team));
+		msg.replace(RenX::tags->INTERNAL_VICTIM_TEAM_SHORT_TAG, RenX::getTeamName(team));
+		msg.replace(RenX::tags->INTERNAL_VICTIM_TEAM_LONG_TAG, RenX::getFullTeamName(team));
+		(server->*func)(msg);
+	}
+}
+
+void RenX_LoggingPlugin::RenX_OnVoteSurvey(RenX::Server *server, const RenX::TeamType &team, const RenX::PlayerInfo *player, const Jupiter::ReadableString &text)
+{
+	logFuncType func;
+	if (RenX_LoggingPlugin::voteCallPublic)
+		func = &RenX::Server::sendLogChan;
+	else
+		func = &RenX::Server::sendAdmChan;
+
+	Jupiter::String msg = this->voteSurveyFmt;
+	if (msg.isNotEmpty())
+	{
+		RenX::processTags(msg, server, player);
+		msg.replace(RenX::tags->INTERNAL_VICTIM_TEAM_COLOR_TAG, RenX::getTeamColor(team));
+		msg.replace(RenX::tags->INTERNAL_VICTIM_TEAM_SHORT_TAG, RenX::getTeamName(team));
+		msg.replace(RenX::tags->INTERNAL_VICTIM_TEAM_LONG_TAG, RenX::getFullTeamName(team));
+		msg.replace(RenX::tags->INTERNAL_MESSAGE_TAG, text);
+		(server->*func)(msg);
+	}
+}
+
+void RenX_LoggingPlugin::RenX_OnVoteOther(RenX::Server *server, const RenX::TeamType &team, const Jupiter::ReadableString &type, const RenX::PlayerInfo *player)
+{
+	logFuncType func;
+	if (RenX_LoggingPlugin::voteCallPublic)
+		func = &RenX::Server::sendLogChan;
+	else
+		func = &RenX::Server::sendAdmChan;
+
+	Jupiter::String msg = this->voteOtherFmt;
 	if (msg.isNotEmpty())
 	{
 		RenX::processTags(msg, server, player);

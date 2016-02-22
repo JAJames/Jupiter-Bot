@@ -1317,7 +1317,7 @@ void GameOverIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString 
 				match = true;
 				if (parameters.equalsi("empty"_jrs))
 					server->gameoverWhenEmpty();
-				if (parameters.equalsi("if empty"_jrs))
+				else if (parameters.equalsi("if empty"_jrs))
 				{
 					if (server->players.size() == server->getBotCount())
 						server->gameover();

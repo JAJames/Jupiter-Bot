@@ -2624,8 +2624,20 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 				{
 					if (subHeader.equals("Called;"))
 					{
-						// TeamType="Global" / "GDI" / "Nod" / "" | VoteType="Rx_VoteMenuChoice_"... | "parameters" | Parameters(Empty) | "by" | Player
 						// TeamType="Global" / "GDI" / "Nod" / "" | VoteType="Rx_VoteMenuChoice_"... | "by" | Player
+						// Pre-5.15:
+						// TeamType="Global" / "GDI" / "Nod" / "" | VoteType="Rx_VoteMenuChoice_"... | "parameters" | Parameters(Empty) | "by" | Player
+						// 5.15+:
+						// TeamType="Global" / "GDI" / "Nod" / "" | VoteType="Rx_VoteMenuChoice_"... | "by" | Player | Parameters (Key | Value [ ... | Key | Value ] )
+						// TeamType="Global" / "GDI" / "Nod" / "" | "Rx_VoteMenuChoice_AddBots"  | "by" | Player | "team" | TargetTeam="GDI" / "Nod" / "Both" | "amount" | amount | "skill" | skill
+						// TeamType="Global" / "GDI" / "Nod" / "" | "Rx_VoteMenuChoice_ChangeMap" | "by" | Player
+						// TeamType="Global" / "GDI" / "Nod" / "" | "Rx_VoteMenuChoice_Kick" | "by" | Player | "player" | Target Player
+						// TeamType="Global" / "GDI" / "Nod" / "" | "Rx_VoteMenuChoice_MineBan"  | "by" | Player | "player" | Target Player
+						// TeamType="Global" / "GDI" / "Nod" / "" | "Rx_VoteMenuChoice_RemoveBots" | "by" | Player | "team" | TargetTeam="GDI" / "Nod" / "Both" | "amount" | amount
+						// TeamType="Global" / "GDI" / "Nod" / "" | "Rx_VoteMenuChoice_RestartMap" | "by" | Player
+						// TeamType="Global" / "GDI" / "Nod" / "" | "Rx_VoteMenuChoice_Surrender" | "by" | Player
+						// TeamType="Global" / "GDI" / "Nod" / "" | "Rx_VoteMenuChoice_Survey" | "by" | Player | "text" | Survey Text
+
 						Jupiter::ReferenceString voteType = tokens.getToken(3);
 						Jupiter::ReferenceString teamToken = tokens.getToken(2);
 						RenX::TeamType team;
@@ -2638,23 +2650,110 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 						else
 							team = TeamType::Other;
 
-						Jupiter::ReferenceString playerToken;
-						Jupiter::ReferenceString parameters;
-						if (tokens.getToken(4).equals("parameters"))
+						if (tokens.getToken(4).equals("parameters")) // Pre-5.15 style parameters; throw away parameters
 						{
-							playerToken = tokens.getToken(tokens.token_count - 1);
-							parameters = tokens.getToken(5);
+							RenX::PlayerInfo *player = parseGetPlayerOrAdd(tokens.getToken(tokens.token_count - 1));
+
+							if ((player->ban_flags & RenX::BanDatabase::Entry::FLAG_TYPE_VOTE) != 0)
+								RenX::Server::sendData(Jupiter::StringS::Format("ccancelvote %.*s\n", teamToken.size(), teamToken.ptr()));
+
+							for (size_t i = 0; i < xPlugins.size(); i++)
+								xPlugins.get(i)->RenX_OnVoteOther(this, team, voteType, player);
 						}
-						else
-							playerToken = tokens.getToken(5);
+						else // 5.15+ (or empty)
+						{
+							RenX::PlayerInfo *player = parseGetPlayerOrAdd(tokens.getToken(5));
 
-						RenX::PlayerInfo *player = parseGetPlayerOrAdd(playerToken);
+							if ((player->ban_flags & RenX::BanDatabase::Entry::FLAG_TYPE_VOTE) != 0)
+								RenX::Server::sendData(Jupiter::StringS::Format("ccancelvote %.*s\n", teamToken.size(), teamToken.ptr()));
 
-						if ((player->ban_flags & RenX::BanDatabase::Entry::FLAG_TYPE_VOTE) != 0)
-							RenX::Server::sendData(Jupiter::StringS::Format("ccancelvote %.*s\n", teamToken.size(), teamToken.ptr()));
+							// PARSE PARAMETERS HERE
 
-						for (size_t i = 0; i < xPlugins.size(); i++)
-							xPlugins.get(i)->RenX_OnVoteCall(this, team, voteType, player, parameters);
+							if (voteType.find("Rx_VoteMenuChoice_"_jrs) == 0)
+							{
+								voteType.shiftRight(18);
+
+								if (voteType.equals("AddBots"_jrs))
+								{
+									Jupiter::ReferenceString victimToken = tokens.getToken(7);
+									RenX::TeamType victim;
+									if (teamToken.equals("Global"))
+										victim = TeamType::None;
+									else if (teamToken.equals("GDI"))
+										victim = TeamType::GDI;
+									else if (teamToken.equals("Nod"))
+										victim = TeamType::Nod;
+									else
+										victim = TeamType::Other;
+
+									int amount = tokens.getToken(9).asInt(10);
+									int skill = tokens.getToken(11).asInt(10);
+
+									for (size_t i = 0; i < xPlugins.size(); i++)
+										xPlugins.get(i)->RenX_OnVoteAddBots(this, team, player, victim, amount, skill);
+								}
+								else if (voteType.equals("ChangeMap"_jrs))
+								{
+									for (size_t i = 0; i < xPlugins.size(); i++)
+										xPlugins.get(i)->RenX_OnVoteChangeMap(this, team, player);
+								}
+								else if (voteType.equals("Kick"_jrs))
+								{
+									RenX::PlayerInfo *victim = parseGetPlayerOrAdd(tokens.getToken(7));
+									for (size_t i = 0; i < xPlugins.size(); i++)
+										xPlugins.get(i)->RenX_OnVoteKick(this, team, player, victim);
+								}
+								else if (voteType.equals("MineBan"_jrs))
+								{
+									RenX::PlayerInfo *victim = parseGetPlayerOrAdd(tokens.getToken(7));
+									for (size_t i = 0; i < xPlugins.size(); i++)
+										xPlugins.get(i)->RenX_OnVoteMineBan(this, team, player, victim);
+								}
+								else if (voteType.equals("RemoveBots"_jrs))
+								{
+									Jupiter::ReferenceString victimToken = tokens.getToken(7);
+									RenX::TeamType victim;
+									if (teamToken.equals("Global"))
+										victim = TeamType::None;
+									else if (teamToken.equals("GDI"))
+										victim = TeamType::GDI;
+									else if (teamToken.equals("Nod"))
+										victim = TeamType::Nod;
+									else
+										victim = TeamType::Other;
+
+									int amount = tokens.getToken(9).asInt(10);
+
+									for (size_t i = 0; i < xPlugins.size(); i++)
+										xPlugins.get(i)->RenX_OnVoteRemoveBots(this, team, player, victim, amount);
+								}
+								else if (voteType.equals("RestartMap"_jrs))
+								{
+									for (size_t i = 0; i < xPlugins.size(); i++)
+										xPlugins.get(i)->RenX_OnVoteRestartMap(this, team, player);
+								}
+								else if (voteType.equals("Surrender"_jrs))
+								{
+									for (size_t i = 0; i < xPlugins.size(); i++)
+										xPlugins.get(i)->RenX_OnVoteSurrender(this, team, player);
+								}
+								else if (voteType.equals("Survey"_jrs))
+								{
+									const Jupiter::ReadableString &text = tokens.getToken(7);
+									for (size_t i = 0; i < xPlugins.size(); i++)
+										xPlugins.get(i)->RenX_OnVoteSurvey(this, team, player, text);
+								}
+								else
+								{
+									voteType.shiftLeft(18);
+									for (size_t i = 0; i < xPlugins.size(); i++)
+										xPlugins.get(i)->RenX_OnVoteOther(this, team, voteType, player);
+								}
+							}
+							else
+								for (size_t i = 0; i < xPlugins.size(); i++)
+									xPlugins.get(i)->RenX_OnVoteOther(this, team, voteType, player);
+						}
 						onAction();
 					}
 					else if (subHeader.equals("Results;"))

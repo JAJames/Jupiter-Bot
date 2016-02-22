@@ -91,7 +91,15 @@ public: // RenX::Plugin
 	void RenX_OnAdminLogout(RenX::Server *server, const RenX::PlayerInfo *player) override;
 	void RenX_OnAdmin(RenX::Server *server, const Jupiter::ReadableString &raw) override;
 
-	void RenX_OnVoteCall(RenX::Server *server, const RenX::TeamType &team, const Jupiter::ReadableString &type, const RenX::PlayerInfo *player, const Jupiter::ReadableString &parameters) override;
+	void RenX_OnVoteAddBots(RenX::Server *server, const RenX::TeamType &team, const RenX::PlayerInfo *player, const RenX::TeamType &victim, int amount, int skill) override;
+	void RenX_OnVoteChangeMap(RenX::Server *server, const RenX::TeamType &team, const RenX::PlayerInfo *player) override;
+	void RenX_OnVoteKick(RenX::Server *server, const RenX::TeamType &team, const RenX::PlayerInfo *player, const RenX::PlayerInfo *victim) override;
+	void RenX_OnVoteMineBan(RenX::Server *server, const RenX::TeamType &team, const RenX::PlayerInfo *player, const RenX::PlayerInfo *victim) override;
+	void RenX_OnVoteRemoveBots(RenX::Server *server, const RenX::TeamType &team, const RenX::PlayerInfo *player, const RenX::TeamType &victim, int amount) override;
+	void RenX_OnVoteRestartMap(RenX::Server *server, const RenX::TeamType &team, const RenX::PlayerInfo *player) override;
+	void RenX_OnVoteSurrender(RenX::Server *server, const RenX::TeamType &team, const RenX::PlayerInfo *player) override;
+	void RenX_OnVoteSurvey(RenX::Server *server, const RenX::TeamType &team, const RenX::PlayerInfo *player, const Jupiter::ReadableString &text) override;
+	void RenX_OnVoteOther(RenX::Server *server, const RenX::TeamType &team, const Jupiter::ReadableString &type, const RenX::PlayerInfo *player) override;
 	void RenX_OnVoteOver(RenX::Server *server, const RenX::TeamType &team, const Jupiter::ReadableString &type, bool success, int yesVotes, int noVotes) override;
 	void RenX_OnVoteCancel(RenX::Server *server, const RenX::TeamType &team, const Jupiter::ReadableString &type) override;
 	void RenX_OnVote(RenX::Server *server, const Jupiter::ReadableString &raw) override;
@@ -270,7 +278,15 @@ private:
 	Jupiter::StringS adminGrantFmt;
 	Jupiter::StringS adminLogoutFmt;
 	Jupiter::StringS adminFmt;
-	Jupiter::StringS voteCallFmt;
+	Jupiter::StringS voteAddBotsFmt;
+	Jupiter::StringS voteChangeMapFmt;
+	Jupiter::StringS voteKickFmt;
+	Jupiter::StringS voteMineBanFmt;
+	Jupiter::StringS voteRemoveBotsFmt;
+	Jupiter::StringS voteRestartMapFmt;
+	Jupiter::StringS voteSurrenderFmt;
+	Jupiter::StringS voteSurveyFmt;
+	Jupiter::StringS voteOtherFmt;
 	Jupiter::StringS voteOverSuccessFmt;
 	Jupiter::StringS voteOverFailFmt;
 	Jupiter::StringS voteCancelFmt;

@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2014-2015 Jessica James.
+ * Copyright (C) 2014-2016 Jessica James.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -451,7 +451,47 @@ void RenX::Plugin::RenX_OnAdmin(Server *, const Jupiter::ReadableString &)
 	return;
 }
 
-void RenX::Plugin::RenX_OnVoteCall(Server *, const TeamType &, const Jupiter::ReadableString &, const PlayerInfo *, const Jupiter::ReadableString &)
+void RenX::Plugin::RenX_OnVoteAddBots(Server *, const TeamType &, const PlayerInfo *, const TeamType &, int, int)
+{
+	return;
+}
+
+void RenX::Plugin::RenX_OnVoteChangeMap(Server *, const TeamType &, const PlayerInfo *)
+{
+	return;
+}
+
+void RenX::Plugin::RenX_OnVoteKick(Server *, const TeamType &, const PlayerInfo *, const PlayerInfo *)
+{
+	return;
+}
+
+void RenX::Plugin::RenX_OnVoteMineBan(Server *, const TeamType &, const PlayerInfo *, const PlayerInfo *)
+{
+	return;
+}
+
+void RenX::Plugin::RenX_OnVoteRemoveBots(Server *, const TeamType &, const PlayerInfo *, const TeamType &, int)
+{
+	return;
+}
+
+void RenX::Plugin::RenX_OnVoteRestartMap(Server *, const TeamType &, const PlayerInfo *)
+{
+	return;
+}
+
+void RenX::Plugin::RenX_OnVoteSurrender(Server *, const TeamType &, const PlayerInfo *)
+{
+	return;
+}
+
+void RenX::Plugin::RenX_OnVoteSurvey(Server *, const TeamType &, const PlayerInfo *, const Jupiter::ReadableString &text)
+{
+	return;
+}
+
+void RenX::Plugin::RenX_OnVoteOther(Server *, const TeamType &, const Jupiter::ReadableString &, const PlayerInfo *)
 {
 	return;
 }
