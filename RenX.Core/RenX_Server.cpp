@@ -2353,7 +2353,7 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 									if (this->devBot)
 									{
 										player->global_rank = itr->rank;
-										this->sendData(Jupiter::StringS::Format("xcset_rank %d\n", player->id));
+										this->sendData(Jupiter::StringS::Format("xset_rank %d\n", player->id));
 									}
 									break;
 								}
@@ -2419,7 +2419,7 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 							if (player->isBot == false)
 								this->banCheck(player);
 							if (this->devBot && player->global_rank != 0U)
-								this->sendData(Jupiter::StringS::Format("xcset_rank %d\n", player->id));
+								this->sendData(Jupiter::StringS::Format("xset_rank %d\n", player->id));
 							for (size_t i = 0; i < xPlugins.size(); i++)
 								xPlugins.get(i)->RenX_OnIDChange(this, player, oldID);
 						}
