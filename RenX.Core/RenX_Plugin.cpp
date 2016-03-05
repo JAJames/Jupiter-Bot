@@ -121,6 +121,11 @@ void RenX::Plugin::RenX_OnExecute(Server *, const PlayerInfo *, const Jupiter::R
 	return;
 }
 
+void RenX::Plugin::RenX_OnSpeedHack(Server *, const PlayerInfo *)
+{
+	return;
+}
+
 void RenX::Plugin::RenX_OnPlayer(Server *, const Jupiter::ReadableString &)
 {
 	return;
@@ -157,6 +162,11 @@ void RenX::Plugin::RenX_OnOtherChat(Server *, const Jupiter::ReadableString &)
 }
 
 void RenX::Plugin::RenX_OnDeploy(Server *, const RenX::PlayerInfo *, const Jupiter::ReadableString &)
+{
+	return;
+}
+
+void RenX::Plugin::RenX_OnOverMine(Server *, const RenX::PlayerInfo *, const Jupiter::ReadableString &)
 {
 	return;
 }

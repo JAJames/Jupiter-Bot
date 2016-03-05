@@ -2238,6 +2238,15 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 								xPlugins.get(i)->RenX_OnDonate(this, donor, player, amount);
 						}
 					}
+					else if (subHeader.equals("OverMine;"))
+					{
+						// Player | "near" | Location
+						RenX::PlayerInfo *player = parseGetPlayerOrAdd(tokens.getToken(1));
+						Jupiter::ReferenceString location = tokens.getToken(3);
+
+						for (size_t i = 0; i < xPlugins.size(); i++)
+							xPlugins.get(i)->RenX_OnOverMine(this, player, location);
+					}
 					else if (subHeader.equals("MatchEnd;"))
 					{
 						// "winner" | Winner | Reason("TimeLimit" etc) | "GDI=" GDI Score | "Nod=" Nod Score
@@ -2432,6 +2441,9 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 							RenX::PlayerInfo *player = parseGetPlayerOrAdd(tokens.getToken(1));
 							if (player != nullptr)
 								player->global_rank = tokens.getToken(2).asUnsignedInt();
+
+							for (size_t i = 0; i < xPlugins.size(); i++)
+								xPlugins.get(i)->RenX_OnRank(this, player);
 						}
 					}
 					else if (subHeader.equals("Dev;"))
@@ -2440,6 +2452,16 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 						RenX::PlayerInfo *player = parseGetPlayerOrAdd(tokens.getToken(1));
 						if (player != nullptr)
 							player->is_dev = tokens.getToken(2).asBool();
+
+						for (size_t i = 0; i < xPlugins.size(); i++)
+							xPlugins.get(i)->RenX_OnDev(this, player);
+					}
+					else if (subHeader.equals("SpeedHack;"))
+					{
+						// Player
+						RenX::PlayerInfo *player = parseGetPlayerOrAdd(tokens.getToken(1));
+						for (size_t i = 0; i < xPlugins.size(); i++)
+							xPlugins.get(i)->RenX_OnSpeedHack(this, player);
 					}
 					else
 					{

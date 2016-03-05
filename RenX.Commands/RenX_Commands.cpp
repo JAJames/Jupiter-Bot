@@ -1910,8 +1910,8 @@ void BanSearchIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString
 						types += ";"_jrs;
 					}
 
-					out.format("ID: %lu (%sactive); Date: %s; IP: %.*s/%u; Steam: %llu; Types:%.*s Name: %.*s; Banner: %.*s",
-						i, entry->is_active() ? "" : "in", timeStr, ip_str.size(), ip_str.ptr(), entry->prefix_length, entry->steamid, types.size(), types.ptr(),
+					out.format("ID: %lu (" IRCCOLOR "%sactive" IRCCOLOR "); Date: %s; IP: %.*s/%u; Steam: %llu; Types:%.*s Name: %.*s; Banner: %.*s",
+						i, entry->is_active() ? "12" : "04in", timeStr, ip_str.size(), ip_str.ptr(), entry->prefix_length, entry->steamid, types.size(), types.ptr(),
 						entry->name.size(), entry->name.ptr(), entry->banner.size(), entry->banner.ptr());
 
 					if (entry->rdns.isNotEmpty())

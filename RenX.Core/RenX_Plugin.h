@@ -62,6 +62,7 @@ namespace RenX
 		virtual void RenX_OnRank(Server *server, const PlayerInfo *player);
 		virtual void RenX_OnDev(Server *server, const PlayerInfo *player);
 		virtual void RenX_OnExecute(Server *server, const PlayerInfo *player, const Jupiter::ReadableString &command);
+		virtual void RenX_OnSpeedHack(Server *server, const PlayerInfo *player);
 		virtual void RenX_OnPlayer(Server *server, const Jupiter::ReadableString &raw);
 		
 		/** Chat type logs */
@@ -74,6 +75,7 @@ namespace RenX
 		
 		/** Game type logs */
 		virtual void RenX_OnDeploy(Server *server, const PlayerInfo *player, const Jupiter::ReadableString &object);
+		virtual void RenX_OnOverMine(Server *server, const PlayerInfo *player, const Jupiter::ReadableString &location);
 		virtual void RenX_OnDisarm(Server *server, const PlayerInfo *player, const Jupiter::ReadableString &object);
 		virtual void RenX_OnDisarm(Server *server, const PlayerInfo *player, const Jupiter::ReadableString &object, const PlayerInfo *victim);
 		virtual void RenX_OnExplode(Server *server, const PlayerInfo *player, const Jupiter::ReadableString &object);
