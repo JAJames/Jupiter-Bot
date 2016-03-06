@@ -35,6 +35,7 @@ void RenX_LoggingPlugin::init()
 	RenX_LoggingPlugin::kickPublic = Jupiter::IRC::Client::Config->getBool(RenX_LoggingPlugin::getName(), "KickPublic"_jrs, true);
 	RenX_LoggingPlugin::nameChangePublic = Jupiter::IRC::Client::Config->getBool(RenX_LoggingPlugin::getName(), "NameChangePublic"_jrs, true);
 	RenX_LoggingPlugin::teamChangePublic = Jupiter::IRC::Client::Config->getBool(RenX_LoggingPlugin::getName(), "TeamChangePublic"_jrs, true);
+	RenX_LoggingPlugin::speedHackPublic = Jupiter::IRC::Client::Config->getBool(RenX_LoggingPlugin::getName(), "SpeedHackPublic"_jrs, false);
 	RenX_LoggingPlugin::playerPublic = Jupiter::IRC::Client::Config->getBool(RenX_LoggingPlugin::getName(), "PlayerPublic"_jrs, false);
 	RenX_LoggingPlugin::chatPublic = Jupiter::IRC::Client::Config->getBool(RenX_LoggingPlugin::getName(), "ChatPublic"_jrs, true);
 	RenX_LoggingPlugin::teamChatPublic = Jupiter::IRC::Client::Config->getBool(RenX_LoggingPlugin::getName(), "TeamChatPublic"_jrs, false);
@@ -44,6 +45,7 @@ void RenX_LoggingPlugin::init()
 	RenX_LoggingPlugin::otherChatPublic = Jupiter::IRC::Client::Config->getBool(RenX_LoggingPlugin::getName(), "OtherChatPublic"_jrs, false);
 	RenX_LoggingPlugin::deployPublic = Jupiter::IRC::Client::Config->getBool(RenX_LoggingPlugin::getName(), "DeployPublic"_jrs, true);
 	RenX_LoggingPlugin::mineDeployPublic = Jupiter::IRC::Client::Config->getBool(RenX_LoggingPlugin::getName(), "MineDeployPublic"_jrs, false);
+	RenX_LoggingPlugin::overMinePublic = Jupiter::IRC::Client::Config->getBool(RenX_LoggingPlugin::getName(), "OverMinePublic"_jrs, false);
 	RenX_LoggingPlugin::disarmPublic = Jupiter::IRC::Client::Config->getBool(RenX_LoggingPlugin::getName(), "DisarmPublic"_jrs, true);
 	RenX_LoggingPlugin::mineDisarmPublic = Jupiter::IRC::Client::Config->getBool(RenX_LoggingPlugin::getName(), "MineDisarmPublic"_jrs, false);
 	RenX_LoggingPlugin::explodePublic = Jupiter::IRC::Client::Config->getBool(RenX_LoggingPlugin::getName(), "ExplodePublic"_jrs, false);
@@ -132,6 +134,9 @@ void RenX_LoggingPlugin::init()
 	RenX_LoggingPlugin::teamChangeFmt = Jupiter::IRC::Client::Config->get(this->getName(), "TeamChangeFormat"_jrs,
 		Jupiter::StringS::Format("%.*s" IRCCOLOR " switched teams!", RenX::tags->nameTag.size(), RenX::tags->nameTag.ptr()));
 
+	RenX_LoggingPlugin::speedHackFmt = Jupiter::IRC::Client::Config->get(this->getName(), "SpeedHackFormat"_jrs,
+		Jupiter::StringS::Format(IRCCOLOR "04[SpeedHack] " IRCBOLD "%.*s" IRCBOLD " has thrown a Speed Hack warning!", RenX::tags->nameTag.size(), RenX::tags->nameTag.ptr()));
+
 	RenX_LoggingPlugin::chatFmt = Jupiter::IRC::Client::Config->get(this->getName(), "ChatFormat"_jrs,
 		Jupiter::StringS::Format(IRCBOLD "%.*s" IRCCOLOR IRCBOLD ": %.*s", RenX::tags->nameTag.size(), RenX::tags->nameTag.ptr(), RenX::tags->messageTag.size(), RenX::tags->messageTag.ptr()));
 
@@ -155,6 +160,9 @@ void RenX_LoggingPlugin::init()
 
 	RenX_LoggingPlugin::mineDeployFmt = Jupiter::IRC::Client::Config->get(this->getName(), "MineDeployFormat"_jrs,
 		RenX_LoggingPlugin::deployFmt);
+
+	RenX_LoggingPlugin::overMineFmt = Jupiter::IRC::Client::Config->get(this->getName(), "OverMineFormat"_jrs,
+		Jupiter::StringS::Format(IRCCOLOR "04[OverMine]" IRCBOLD "%.*s" IRCCOLOR IRCBOLD " is " IRCCOLOR "04over-mining" IRCCOLOR " near " IRCBOLD IRCCOLOR "12%.*s" IRCBOLD, RenX::tags->nameTag.size(), RenX::tags->nameTag.ptr(), RenX::tags->objectTag.size(), RenX::tags->objectTag.ptr()));
 
 	RenX_LoggingPlugin::disarmFmt = Jupiter::IRC::Client::Config->get(this->getName(), "DisarmFormat"_jrs,
 		Jupiter::StringS::Format(IRCBOLD "%.*s" IRCCOLOR IRCBOLD " disarmed %.*s" IRCBOLD IRCCOLOR "'s " IRCCOLOR "12%.*s" IRCBOLD, RenX::tags->nameTag.size(), RenX::tags->nameTag.ptr(), RenX::tags->victimNameTag.size(), RenX::tags->victimNameTag.ptr(), RenX::tags->objectTag.size(), RenX::tags->objectTag.ptr()));
@@ -415,6 +423,7 @@ void RenX_LoggingPlugin::init()
 	RenX::sanitizeTags(kickFmt);
 	RenX::sanitizeTags(nameChangeFmt);
 	RenX::sanitizeTags(teamChangeFmt);
+	RenX::sanitizeTags(speedHackFmt);
 	RenX::sanitizeTags(playerFmt);
 	RenX::sanitizeTags(chatFmt);
 	RenX::sanitizeTags(teamChatFmt);
@@ -422,6 +431,7 @@ void RenX_LoggingPlugin::init()
 	RenX::sanitizeTags(otherChatFmt);
 	RenX::sanitizeTags(deployFmt);
 	RenX::sanitizeTags(mineDeployFmt);
+	RenX::sanitizeTags(overMineFmt);
 	RenX::sanitizeTags(disarmFmt);
 	RenX::sanitizeTags(mineDisarmFmt);
 	RenX::sanitizeTags(disarmNoOwnerFmt);
@@ -602,6 +612,22 @@ void RenX_LoggingPlugin::RenX_OnTeamChange(RenX::Server *server, const RenX::Pla
 	}
 }
 
+void RenX_LoggingPlugin::RenX_OnSpeedHack(RenX::Server *server, const RenX::PlayerInfo *player)
+{
+	logFuncType func;
+	if (RenX_LoggingPlugin::speedHackPublic)
+		func = &RenX::Server::sendLogChan;
+	else
+		func = &RenX::Server::sendAdmChan;
+
+	Jupiter::String msg = this->speedHackFmt;
+	if (msg.isNotEmpty())
+	{
+		RenX::processTags(msg, server, player);
+		(server->*func)(msg);
+	}
+}
+
 void RenX_LoggingPlugin::RenX_OnExecute(RenX::Server *server, const RenX::PlayerInfo *player, const Jupiter::ReadableString &command)
 {
 	logFuncType func;
@@ -764,6 +790,23 @@ void RenX_LoggingPlugin::RenX_OnDeploy(RenX::Server *server, const RenX::PlayerI
 	{
 		RenX::processTags(msg, server, player);
 		msg.replace(RenX::tags->INTERNAL_OBJECT_TAG, RenX::translateName(object));
+		(server->*func)(msg);
+	}
+}
+
+void RenX_LoggingPlugin::RenX_OnOverMine(RenX::Server *server, const RenX::PlayerInfo *player, const Jupiter::ReadableString &location)
+{
+	logFuncType func;
+	if (RenX_LoggingPlugin::overMinePublic)
+		func = &RenX::Server::sendLogChan;
+	else
+		func = &RenX::Server::sendAdmChan;
+
+	Jupiter::String msg = this->overMineFmt;
+	if (msg.isNotEmpty())
+	{
+		RenX::processTags(msg, server, player);
+		msg.replace(RenX::tags->INTERNAL_OBJECT_TAG, RenX::translateName(location));
 		(server->*func)(msg);
 	}
 }

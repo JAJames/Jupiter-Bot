@@ -31,6 +31,7 @@ public: // RenX::Plugin
 	void RenX_OnNameChange(RenX::Server *server, const RenX::PlayerInfo *player, const Jupiter::ReadableString &newPlayerName) override;
 	void RenX_OnTeamChange(RenX::Server *server, const RenX::PlayerInfo *player, const RenX::TeamType &oldTeam) override;
 	void RenX_OnExecute(RenX::Server *server, const RenX::PlayerInfo *player, const Jupiter::ReadableString &command) override;
+	void RenX_OnSpeedHack(RenX::Server *server, const RenX::PlayerInfo *player) override;
 	void RenX_OnPlayer(RenX::Server *server, const Jupiter::ReadableString &raw) override;
 	
 	void RenX_OnChat(RenX::Server *server, const RenX::PlayerInfo *player, const Jupiter::ReadableString &message) override;
@@ -41,6 +42,7 @@ public: // RenX::Plugin
 	void RenX_OnOtherChat(RenX::Server *server, const Jupiter::ReadableString &raw) override;
 	
 	void RenX_OnDeploy(RenX::Server *server, const RenX::PlayerInfo *player, const Jupiter::ReadableString &object) override;
+	void RenX_OnOverMine(RenX::Server *server, const RenX::PlayerInfo *player, const Jupiter::ReadableString &location) override;
 	void RenX_OnDisarm(RenX::Server *server, const RenX::PlayerInfo *player, const Jupiter::ReadableString &object, const RenX::PlayerInfo *victim) override;
 	void RenX_OnDisarm(RenX::Server *server, const RenX::PlayerInfo *player, const Jupiter::ReadableString &object) override;
 	void RenX_OnExplode(RenX::Server *server, const RenX::PlayerInfo *player, const Jupiter::ReadableString &object) override;
@@ -138,6 +140,7 @@ private:
 	unsigned int kickPublic : 1;
 	unsigned int nameChangePublic : 1;
 	unsigned int teamChangePublic : 1;
+	unsigned int speedHackPublic : 1;
 	unsigned int playerPublic : 1;
 	unsigned int chatPublic : 1;
 	unsigned int teamChatPublic : 1;
@@ -147,6 +150,7 @@ private:
 	unsigned int otherChatPublic : 1;
 	unsigned int deployPublic : 1;
 	unsigned int mineDeployPublic : 1;
+	unsigned int overMinePublic : 1;
 	unsigned int disarmPublic : 1;
 	unsigned int mineDisarmPublic : 1;
 	unsigned int explodePublic : 1;
@@ -213,6 +217,7 @@ private:
 	Jupiter::StringS kickFmt;
 	Jupiter::StringS nameChangeFmt;
 	Jupiter::StringS teamChangeFmt;
+	Jupiter::StringS speedHackFmt;
 	Jupiter::StringS playerFmt;
 	Jupiter::StringS chatFmt;
 	Jupiter::StringS teamChatFmt;
@@ -222,6 +227,7 @@ private:
 	Jupiter::StringS otherChatFmt;
 	Jupiter::StringS deployFmt;
 	Jupiter::StringS mineDeployFmt;
+	Jupiter::StringS overMineFmt;
 	Jupiter::StringS disarmFmt;
 	Jupiter::StringS mineDisarmFmt;
 	Jupiter::StringS disarmNoOwnerFmt;
