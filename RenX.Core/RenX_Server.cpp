@@ -732,7 +732,7 @@ bool RenX::Server::gameoverStop()
 
 void RenX::Server::gameoverWhenEmpty()
 {
-	if (this->players.size() != this->bot_count)
+	if (this->players.size() == this->bot_count)
 		this->gameover();
 	else
 		this->gameover_when_empty = true;
