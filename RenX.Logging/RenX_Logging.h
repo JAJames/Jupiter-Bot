@@ -25,6 +25,8 @@
 class RenX_LoggingPlugin : public RenX::Plugin
 {
 public: // RenX::Plugin
+	void RenX_OnPlayerRDNS(RenX::Server *server, const RenX::PlayerInfo *player) override;
+
 	void RenX_OnJoin(RenX::Server *server, const RenX::PlayerInfo *player) override;
 	void RenX_OnPart(RenX::Server *server, const RenX::PlayerInfo *player) override;
 	void RenX_OnKick(RenX::Server *server, const RenX::PlayerInfo *player, const Jupiter::ReadableString &reason) override;
@@ -135,6 +137,7 @@ private:
 
 	STRING_LITERAL_AS_NAMED_REFERENCE(name, "RenX.Logging");
 	unsigned int muteOwnExecute : 1;
+	unsigned int playerRDNSPublic : 1;
 	unsigned int joinPublic : 1;
 	unsigned int partPublic : 1;
 	unsigned int kickPublic : 1;
@@ -212,6 +215,7 @@ private:
 	unsigned int otherPublic : 1;
 
 	/** Event formats */
+	Jupiter::String playerRDNSFmt;
 	Jupiter::StringS joinPublicFmt, joinAdminFmt, joinNoSteamAdminFmt;
 	Jupiter::StringS partFmt;
 	Jupiter::StringS kickFmt;

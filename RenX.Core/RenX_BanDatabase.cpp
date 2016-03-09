@@ -165,6 +165,8 @@ void RenX::BanDatabase::add(RenX::Server *server, const RenX::PlayerInfo *player
 	entry->steamid = player->steamid;
 	entry->ip = player->ip32;
 	entry->prefix_length = 32U;
+	if (player->rdns_thread.joinable())
+		player->rdns_thread.join();
 	entry->rdns = player->rdns;
 	entry->name = player->name;
 	entry->banner = banner;

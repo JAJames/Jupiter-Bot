@@ -975,6 +975,7 @@ namespace RenX
 		int mineLimit = 0;
 		int timeLimit = 0;
 		size_t bot_count = 0;
+		size_t player_rdns_resolutions_pending = 0;
 		unsigned int rconVersion = 0;
 		double crateRespawnAfterPickup = 0.0;
 		uuid_func calc_uuid;

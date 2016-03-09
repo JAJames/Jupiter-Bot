@@ -25,6 +25,9 @@
  */
 
 #include <chrono>
+#include <mutex>
+#include <thread>
+#include "Jupiter/Reference_String.h"
 #include "Jupiter/String.h"
 #include "Jupiter/INIFile.h"
 #include "RenX.h"
@@ -48,11 +51,12 @@ namespace RenX
 		// TODO: Add backpack
 		Jupiter::StringS name;
 		Jupiter::StringS ip;
-		Jupiter::StringS rdns;
 		Jupiter::StringS adminType;
 		Jupiter::StringS uuid;
 		Jupiter::StringS character;
 		Jupiter::StringS vehicle;
+		Jupiter::StringS rdns;
+		std::mutex rdns_mutex;
 		uint64_t steamid = 0;
 		uint32_t ip32 = 0;
 		uint16_t ban_flags = 0;
@@ -61,6 +65,7 @@ namespace RenX
 		int id = 0;
 		bool isBot = false;
 		bool is_dev = false;
+		bool rdns_resolved = false;
 		unsigned short ping = 0;
 		double score = 0.0f;
 		double credits = 0.0f;
@@ -85,10 +90,12 @@ namespace RenX
 		
 		mutable Jupiter::StringS gamePrefix;
 		mutable Jupiter::StringS formatNamePrefix;
+		mutable std::thread rdns_thread;
 		mutable int access = 0;
 		mutable Jupiter::INIFile varData; // This will be replaced later with a more dedicated type.
 	};
 
+	static Jupiter::ReferenceString rdns_pending = STRING_LITERAL_AS_REFERENCE("RDNS_PENDING");
 }
 
 /** Re-enable warnings */

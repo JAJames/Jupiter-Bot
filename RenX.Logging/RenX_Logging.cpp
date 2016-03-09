@@ -30,6 +30,7 @@ using namespace Jupiter::literals;
 void RenX_LoggingPlugin::init()
 {
 	RenX_LoggingPlugin::muteOwnExecute = Jupiter::IRC::Client::Config->getBool(RenX_LoggingPlugin::getName(), "MuteOwnExecute"_jrs, true);
+	RenX_LoggingPlugin::playerRDNSPublic = Jupiter::IRC::Client::Config->getBool(RenX_LoggingPlugin::getName(), "PlayerRDNSPublic"_jrs, false);
 	RenX_LoggingPlugin::joinPublic = Jupiter::IRC::Client::Config->getBool(RenX_LoggingPlugin::getName(), "JoinPublic"_jrs, true);
 	RenX_LoggingPlugin::partPublic = Jupiter::IRC::Client::Config->getBool(RenX_LoggingPlugin::getName(), "PartPublic"_jrs, true);
 	RenX_LoggingPlugin::kickPublic = Jupiter::IRC::Client::Config->getBool(RenX_LoggingPlugin::getName(), "KickPublic"_jrs, true);
@@ -107,14 +108,17 @@ void RenX_LoggingPlugin::init()
 	RenX_LoggingPlugin::otherPublic = Jupiter::IRC::Client::Config->getBool(RenX_LoggingPlugin::getName(), "OtherPublic"_jrs, false);
 
 	/** Event formats */
+	RenX_LoggingPlugin::playerRDNSFmt = Jupiter::IRC::Client::Config->get(this->getName(), "PlayerRDNSFormat"_jrs,
+		Jupiter::StringS::Format(IRCCOLOR "05[RDNS] " IRCBOLD "%.*s" IRCNORMAL "'s hostname is " IRCBOLD "%.*s", RenX::tags->nameTag.size(), RenX::tags->nameTag.ptr(), RenX::tags->rdnsTag.size(), RenX::tags->rdnsTag.ptr()));
+
 	RenX_LoggingPlugin::joinPublicFmt = Jupiter::IRC::Client::Config->get(this->getName(), "JoinPublicFormat"_jrs,
 		Jupiter::StringS::Format(IRCCOLOR "12[Join] " IRCBOLD "%.*s" IRCBOLD " joined the game fighting for the %.*s!", RenX::tags->nameTag.size(), RenX::tags->nameTag.ptr(), RenX::tags->teamLongTag.size(), RenX::tags->teamLongTag.ptr()));
 
 	RenX_LoggingPlugin::joinAdminFmt = Jupiter::IRC::Client::Config->get(this->getName(), "JoinAdminFormat"_jrs,
-		Jupiter::StringS::Format(IRCCOLOR "12[Join] " IRCBOLD "%.*s" IRCBOLD " joined the game fighting for the %.*s from " IRCBOLD "%.*s" IRCBOLD " using Steam ID " IRCBOLD "%.*s" IRCBOLD ". Their hostname is: " IRCBOLD "%.*s", RenX::tags->nameTag.size(), RenX::tags->nameTag.ptr(), RenX::tags->teamLongTag.size(), RenX::tags->teamLongTag.ptr(), RenX::tags->ipTag.size(), RenX::tags->ipTag.ptr(), RenX::tags->steamTag.size(), RenX::tags->steamTag.ptr(), RenX::tags->rdnsTag.size(), RenX::tags->rdnsTag.ptr()));
+		Jupiter::StringS::Format(IRCCOLOR "12[Join] " IRCBOLD "%.*s" IRCBOLD " joined the game fighting for the %.*s from " IRCBOLD "%.*s" IRCBOLD " using Steam ID " IRCBOLD "%.*s" IRCBOLD ".", RenX::tags->nameTag.size(), RenX::tags->nameTag.ptr(), RenX::tags->teamLongTag.size(), RenX::tags->teamLongTag.ptr(), RenX::tags->ipTag.size(), RenX::tags->ipTag.ptr(), RenX::tags->steamTag.size(), RenX::tags->steamTag.ptr()));
 
 	RenX_LoggingPlugin::joinNoSteamAdminFmt = Jupiter::IRC::Client::Config->get(this->getName(), "JoinNoSteamAdminFormat"_jrs,
-		Jupiter::StringS::Format(IRCCOLOR "12[Join] " IRCBOLD "%.*s" IRCBOLD " joined the game fighting for the %.*s from " IRCBOLD "%.*s" IRCBOLD ", but is " IRCBOLD "not" IRCBOLD " using Steam. Their hostname is: " IRCBOLD "%.*s", RenX::tags->nameTag.size(), RenX::tags->nameTag.ptr(), RenX::tags->teamLongTag.size(), RenX::tags->teamLongTag.ptr(), RenX::tags->ipTag.size(), RenX::tags->ipTag.ptr(), RenX::tags->rdnsTag.size(), RenX::tags->rdnsTag.ptr()));
+		Jupiter::StringS::Format(IRCCOLOR "12[Join] " IRCBOLD "%.*s" IRCBOLD " joined the game fighting for the %.*s from " IRCBOLD "%.*s" IRCBOLD ", but is " IRCBOLD "not" IRCBOLD " using Steam.", RenX::tags->nameTag.size(), RenX::tags->nameTag.ptr(), RenX::tags->teamLongTag.size(), RenX::tags->teamLongTag.ptr(), RenX::tags->ipTag.size(), RenX::tags->ipTag.ptr()));
 
 	RenX_LoggingPlugin::partFmt = Jupiter::IRC::Client::Config->get(this->getName(), "PartFormat"_jrs,
 		Jupiter::StringS::Format(IRCCOLOR "12[Part] " IRCBOLD "%.*s" IRCBOLD " left the %.*s.", RenX::tags->nameTag.size(), RenX::tags->nameTag.ptr(), RenX::tags->teamLongTag.size(), RenX::tags->teamLongTag.ptr()));
@@ -416,6 +420,7 @@ void RenX_LoggingPlugin::init()
 		Jupiter::StringS::Format(IRCCOLOR "06[Other]" IRCCOLOR " %.*s", RenX::tags->messageTag.size(), RenX::tags->messageTag.ptr()));
 
 	/** Sanitize tags */
+	RenX::sanitizeTags(playerRDNSFmt);
 	RenX::sanitizeTags(joinPublicFmt);
 	RenX::sanitizeTags(joinAdminFmt);
 	RenX::sanitizeTags(joinNoSteamAdminFmt);
@@ -522,6 +527,22 @@ void RenX_LoggingPlugin::init()
 }
 
 typedef void(RenX::Server::*logFuncType)(const Jupiter::ReadableString &msg) const;
+
+void RenX_LoggingPlugin::RenX_OnPlayerRDNS(RenX::Server *server, const RenX::PlayerInfo *player)
+{
+	logFuncType func;
+	if (RenX_LoggingPlugin::playerRDNSPublic)
+		func = &RenX::Server::sendLogChan;
+	else
+		func = &RenX::Server::sendAdmChan;
+
+	Jupiter::String msg = this->playerRDNSFmt;
+	if (msg.isNotEmpty())
+	{
+		RenX::processTags(msg, server, player);
+		(server->*func)(msg);
+	}
+}
 
 void RenX_LoggingPlugin::RenX_OnJoin(RenX::Server *server, const RenX::PlayerInfo *player)
 {

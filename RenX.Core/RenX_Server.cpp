@@ -59,9 +59,40 @@ int RenX::Server::think()
 	}
 	else
 	{
-		// Connected and fine
-		if (RenX::Server::sock.recv() > 0)
+		auto cycle_player_rdns = [this]() // Cycles through any pending RDNS resolutions, and fires events as necessary.
 		{
+			if (this->player_rdns_resolutions_pending != 0)
+			{
+				RenX::PlayerInfo *player;
+				Jupiter::ArrayList<RenX::Plugin> &xPlugins = *RenX::getCore()->getPlugins();
+				for (Jupiter::DLList<RenX::PlayerInfo>::Node *node = this->players.getNode(0); node != nullptr; node = node->next)
+				{
+					player = node->data;
+					if (player->rdns_thread.joinable() && player->rdns_mutex.try_lock()) // RDNS event hasn't fired AND RDNS value has been resolved
+					{
+						player->rdns_mutex.unlock();
+						player->rdns_thread.join();
+						--this->player_rdns_resolutions_pending;
+
+						// Check for bans
+						this->banCheck(player);
+
+						// Fire RDNS resolved event
+						for (size_t index = 0; index < xPlugins.size(); ++index)
+							xPlugins.get(++index)->RenX_OnPlayerRDNS(this, player);
+
+						if (this->player_rdns_resolutions_pending == 0) // No more resolutions pending
+							return;
+					}
+				}
+			}
+		};
+
+		// Connected and fine
+		if (RenX::Server::sock.recv() > 0) // Data received
+		{
+			cycle_player_rdns();
+
 			Jupiter::ReadableString::TokenizeResult<Jupiter::Reference_String> result = Jupiter::ReferenceString::tokenize(RenX::Server::sock.getBuffer(), '\n');
 			if (result.token_count != 0)
 			{
@@ -77,8 +108,10 @@ int RenX::Server::think()
 				}
 			}
 		}
-		else if (Jupiter::Socket::getLastError() == 10035)
+		else if (Jupiter::Socket::getLastError() == 10035) // Operation would block (no new data)
 		{
+			cycle_player_rdns();
+
 			if (RenX::Server::awaitingPong == false && std::chrono::steady_clock::now() - RenX::Server::lastActivity >= RenX::Server::pingRate)
 			{
 				RenX::Server::lastActivity = std::chrono::steady_clock::now();
@@ -464,7 +497,7 @@ void RenX::Server::banCheck(RenX::PlayerInfo *player)
 
 				if ((this->localSteamBan && entry->steamid != 0 && entry->steamid == player->steamid)
 					|| (this->localIPBan && entry->ip != 0 && (entry->ip & netmask) == (player->ip32 & netmask))
-					|| (this->localRDNSBan && entry->rdns.isNotEmpty() && entry->is_rdns_ban() && player->rdns.match(entry->rdns))
+					|| (this->localRDNSBan && entry->rdns.isNotEmpty() && entry->is_rdns_ban() && player->rdns_thread.joinable() == false && player->rdns.match(entry->rdns))
 					|| (this->localNameBan && entry->name.isNotEmpty() && entry->name.equalsi(player->name)))
 				{
 					player->ban_flags |= entry->flags;
@@ -625,6 +658,13 @@ bool RenX::Server::removePlayer(int id)
 				xPlugins.get(i)->RenX_OnPlayerDelete(this, p);
 			if (p->isBot)
 				--this->bot_count;
+
+			if (p->rdns_thread.joinable()) // Close the RDNS thread, if one exists
+			{
+				--this->player_rdns_resolutions_pending;
+				p->rdns_thread.join();
+			}
+
 			delete p;
 			return true;
 		}
@@ -1151,6 +1191,14 @@ void RenX::Server::sendLogChan(const Jupiter::ReadableString &msg) const
 		}
 }
 
+void resolve_rdns(RenX::PlayerInfo *player)
+{
+	player->rdns_mutex.lock();
+	char *resolved = Jupiter::Socket::resolveHostname_alloc(Jupiter::CStringS(player->ip).c_str(), 0);
+	player->rdns.capture(resolved, strlen(resolved));
+	player->rdns_mutex.unlock();
+}
+
 #define PARSE_PLAYER_DATA_P(DATA) \
 	Jupiter::ReferenceString name; \
 	TeamType team; \
@@ -1277,7 +1325,10 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 			r->ip = ip;
 			r->ip32 = Jupiter::Socket::pton4(Jupiter::CStringS(r->ip).c_str());
 			if (this->resolvesRDNS() && r->ip32 != 0)
-				r->rdns = Jupiter::Socket::resolveHostname(Jupiter::CStringS(r->ip).c_str(), 0);
+			{
+				r->rdns_thread = std::thread(resolve_rdns, r);
+				++this->player_rdns_resolutions_pending;
+			}
 			r->steamid = steamid;
 			if (r->isBot = isBot)
 				r->formatNamePrefix = IRCCOLOR "05[B]";
@@ -1306,7 +1357,11 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 			{
 				r->ip = ip;
 				r->ip32 = Jupiter::Socket::pton4(Jupiter::CStringS(r->ip).c_str());
-				r->rdns = Jupiter::Socket::resolveHostname(Jupiter::CStringS(r->ip).c_str(), 0);
+				if (this->resolvesRDNS())
+				{
+					r->rdns_thread = std::thread(resolve_rdns, r);
+					++this->player_rdns_resolutions_pending;
+				}
 				recalcUUID = true;
 			}
 			if (r->steamid == 0U && steamid != 0U)
@@ -3056,9 +3111,17 @@ void RenX::Server::wipeData()
 		player = RenX::Server::players.remove(0U);
 		for (size_t index = 0; index < xPlugins.size(); ++index)
 			xPlugins.get(index)->RenX_OnPlayerDelete(this, player);
+
+		if (player->rdns_thread.joinable()) // Close the RDNS thread, if one exists
+		{
+			--this->player_rdns_resolutions_pending;
+			player->rdns_thread.join();
+		}
+
 		delete player;
 	}
 	RenX::Server::bot_count = 0;
+	RenX::Server::player_rdns_resolutions_pending = 0;
 	RenX::Server::buildings.emptyAndDelete();
 	RenX::Server::mutators.emptyAndDelete();
 	RenX::Server::maps.emptyAndDelete();

@@ -61,6 +61,11 @@ void RenX::Plugin::RenX_OnPlayerUUIDChange(Server *, const RenX::PlayerInfo *, c
 	return;
 }
 
+void RenX::Plugin::RenX_OnPlayerRDNS(Server *, const RenX::PlayerInfo *)
+{
+	return;
+}
+
 void RenX::Plugin::RenX_OnServerCreate(Server *)
 {
 	return;
