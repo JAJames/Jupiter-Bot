@@ -2241,8 +2241,8 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 					else if (subHeader.equals("OverMine;"))
 					{
 						// Player | "near" | Location
-						RenX::PlayerInfo *player = parseGetPlayerOrAdd(tokens.getToken(1));
-						Jupiter::ReferenceString location = tokens.getToken(3);
+						RenX::PlayerInfo *player = parseGetPlayerOrAdd(tokens.getToken(2));
+						Jupiter::ReferenceString location = tokens.getToken(4);
 
 						for (size_t i = 0; i < xPlugins.size(); i++)
 							xPlugins.get(i)->RenX_OnOverMine(this, player, location);
@@ -2438,9 +2438,9 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 						// Player | Rank
 						if (this->devBot == false)
 						{
-							RenX::PlayerInfo *player = parseGetPlayerOrAdd(tokens.getToken(1));
+							RenX::PlayerInfo *player = parseGetPlayerOrAdd(tokens.getToken(2));
 							if (player != nullptr)
-								player->global_rank = tokens.getToken(2).asUnsignedInt();
+								player->global_rank = tokens.getToken(3).asUnsignedInt();
 
 							for (size_t i = 0; i < xPlugins.size(); i++)
 								xPlugins.get(i)->RenX_OnRank(this, player);
@@ -2449,9 +2449,9 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 					else if (subHeader.equals("Dev;"))
 					{
 						// Player | true/false
-						RenX::PlayerInfo *player = parseGetPlayerOrAdd(tokens.getToken(1));
+						RenX::PlayerInfo *player = parseGetPlayerOrAdd(tokens.getToken(2));
 						if (player != nullptr)
-							player->is_dev = tokens.getToken(2).asBool();
+							player->is_dev = tokens.getToken(3).asBool();
 
 						for (size_t i = 0; i < xPlugins.size(); i++)
 							xPlugins.get(i)->RenX_OnDev(this, player);
@@ -2459,7 +2459,7 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 					else if (subHeader.equals("SpeedHack;"))
 					{
 						// Player
-						RenX::PlayerInfo *player = parseGetPlayerOrAdd(tokens.getToken(1));
+						RenX::PlayerInfo *player = parseGetPlayerOrAdd(tokens.getToken(2));
 						for (size_t i = 0; i < xPlugins.size(); i++)
 							xPlugins.get(i)->RenX_OnSpeedHack(this, player);
 					}
