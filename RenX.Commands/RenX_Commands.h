@@ -41,6 +41,7 @@ public:
 	const Jupiter::ReadableString &getPlayerInfoFormat() const;
 	const Jupiter::ReadableString &getAdminPlayerInfoFormat() const;
 	const Jupiter::ReadableString &getBuildingInfoFormat() const;
+	const Jupiter::ReadableString &getStaffTitle() const;
 	RenX_CommandsPlugin();
 
 private:
@@ -49,6 +50,7 @@ private:
 	Jupiter::StringS playerInfoFormat;
 	Jupiter::StringS adminPlayerInfoFormat;
 	Jupiter::StringS buildingInfoFormat;
+	Jupiter::StringS staffTitle;
 };
 
 GENERIC_CONSOLE_COMMAND(RawRCONConsoleCommand)

@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2015 Jessica James.
+ * Copyright (C) 2015-2016 Jessica James.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -26,7 +26,7 @@
 class RenX_AlwaysRecord : public RenX::Plugin
 {
 public: // RenX::Plugin
-	void RenX_OnMapStart(RenX::Server *server, const Jupiter::ReadableString &);
+	void RenX_OnMapStart(RenX::Server *server, const Jupiter::ReadableString &) override;
 
 public: // Jupiter::Plugin
 	const Jupiter::ReadableString &getName() override { return name; }

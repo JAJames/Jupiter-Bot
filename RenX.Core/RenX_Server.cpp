@@ -1690,8 +1690,8 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 				{
 					/*
 					lRCON Command; DevBot executed: binfo
-					rBuilding Health MaxHealth Team Capturable
-					rRx_Building_Refinery_GDI 4000 4000 GDI False
+					rBuilding Health MaxHealth Armor MaxArmor Team Capturable Destroyed
+					rRx_Building_Refinery_GDI 2000 2000 2000 2000 GDI False False
 					*/
 					Jupiter::INIFile::Section table;
 					size_t i = tokens.token_count;
@@ -1727,6 +1727,18 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 						pair = table.getPair("Capturable"_jrs);
 						if (pair != nullptr)
 							building->capturable = pair->getValue().asBool();
+
+						pair = table.getPair("Destroyed"_jrs);
+						if (pair != nullptr)
+							building->destroyed = pair->getValue().asBool();
+
+						pair = table.getPair("Armor"_jrs);
+						if (pair != nullptr)
+							building->armor = pair->getValue().asInt(10);
+
+						pair = table.getPair("MaxArmor"_jrs);
+						if (pair != nullptr)
+							building->max_armor = pair->getValue().asInt(10);
 					}
 				}
 			}
@@ -2264,7 +2276,12 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 												objectName.truncate(internalsStr.size());
 											building = RenX::Server::getBuildingByName(objectName);
 											if (building != nullptr)
-												building->health = 0.0;
+											{
+												building->health = 0;
+												building->armor = 0;
+												building->destroyed = true;
+												building->destruction_time = std::chrono::steady_clock::now();
+											}
 										}
 
 										break;

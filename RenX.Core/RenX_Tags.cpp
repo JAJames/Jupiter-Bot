@@ -36,7 +36,6 @@ struct TagsImp : RenX::Tags
 	void processTags(Jupiter::StringType &msg, const RenX::LadderDatabase::Entry &entry);
 	void sanitizeTags(Jupiter::StringType &fmt);
 	const Jupiter::ReadableString &getUniqueInternalTag();
-	Jupiter::StringS get_building_health_bar(const RenX::BuildingInfo *building);
 private:
 	Jupiter::StringS uniqueTag;
 	union
@@ -196,7 +195,12 @@ TagsImp::TagsImp()
 	this->INTERNAL_BUILDING_HEALTH_TAG = this->getUniqueInternalTag();
 	this->INTERNAL_BUILDING_MAX_HEALTH_TAG = this->getUniqueInternalTag();
 	this->INTERNAL_BUILDING_HEALTH_PERCENTAGE_TAG = this->getUniqueInternalTag();
-	this->INTERNAL_BUILDING_HEALTH_BAR_TAG = this->getUniqueInternalTag();
+	this->INTERNAL_BUILDING_ARMOR_TAG = this->getUniqueInternalTag();
+	this->INTERNAL_BUILDING_MAX_ARMOR_TAG = this->getUniqueInternalTag();
+	this->INTERNAL_BUILDING_ARMOR_PERCENTAGE_TAG = this->getUniqueInternalTag();
+	this->INTERNAL_BUILDING_DURABILITY_TAG = this->getUniqueInternalTag();
+	this->INTERNAL_BUILDING_MAX_DURABILITY_TAG = this->getUniqueInternalTag();
+	this->INTERNAL_BUILDING_DURABILITY_PERCENTAGE_TAG = this->getUniqueInternalTag();
 	this->INTERNAL_BUILDING_TEAM_COLOR_TAG = this->getUniqueInternalTag();
 	this->INTERNAL_BUILDING_TEAM_SHORT_TAG = this->getUniqueInternalTag();
 	this->INTERNAL_BUILDING_TEAM_LONG_TAG = this->getUniqueInternalTag();
@@ -375,7 +379,12 @@ TagsImp::TagsImp()
 	this->buildingHealthTag = Jupiter::IRC::Client::Config->get(configSection, "BuildingHealthTag"_jrs, "{BHEALTH}"_jrs);
 	this->buildingMaxHealthTag = Jupiter::IRC::Client::Config->get(configSection, "BuildingMaxHealthTag"_jrs, "{BMHEALTH}"_jrs);
 	this->buildingHealthPercentageTag = Jupiter::IRC::Client::Config->get(configSection, "BuildingHealthPercentageTag"_jrs, "{BHP}"_jrs);
-	this->buildingHealthBarTag = Jupiter::IRC::Client::Config->get(configSection, "BuildingHealthBarTag"_jrs, "{BHBAR}"_jrs);
+	this->buildingArmorTag = Jupiter::IRC::Client::Config->get(configSection, "BuildingArmorTag"_jrs, "{BARMOR}"_jrs);
+	this->buildingMaxArmorTag = Jupiter::IRC::Client::Config->get(configSection, "BuildingMaxArmorTag"_jrs, "{BMARMOR}"_jrs);
+	this->buildingArmorPercentageTag = Jupiter::IRC::Client::Config->get(configSection, "BuildingArmorPercentageTag"_jrs, "{BAP}"_jrs);
+	this->buildingDurabilityTag = Jupiter::IRC::Client::Config->get(configSection, "BuildingDurabilityTag"_jrs, "{BDURABILITY}"_jrs);
+	this->buildingMaxDurabilityTag = Jupiter::IRC::Client::Config->get(configSection, "BuildingMaxDurabilityTag"_jrs, "{BMDURABILITY}"_jrs);
+	this->buildingDurabilityPercentageTag = Jupiter::IRC::Client::Config->get(configSection, "BuildingDurabilityPercentageTag"_jrs, "{BDP}"_jrs);
 	this->buildingTeamColorTag = Jupiter::IRC::Client::Config->get(configSection, "BuildingTeamColorTag"_jrs, "{BCOLOR}"_jrs);
 	this->buildingTeamShortTag = Jupiter::IRC::Client::Config->get(configSection, "BuildingShortTeamTag"_jrs, "{BTEAMS}"_jrs);
 	this->buildingTeamLongTag = Jupiter::IRC::Client::Config->get(configSection, "BuildingLongTeamTag"_jrs, "{BTEAML}"_jrs);
@@ -423,40 +432,6 @@ TagsImp::TagsImp()
 	this->newNameTag = Jupiter::IRC::Client::Config->get(configSection, "NewNameTag"_jrs, "{NNAME}"_jrs);
 	this->winScoreTag = Jupiter::IRC::Client::Config->get(configSection, "WinScoreTag"_jrs, "{WINSCORE}"_jrs);
 	this->loseScoreTag = Jupiter::IRC::Client::Config->get(configSection, "LoseScoreTag"_jrs, "{LOSESCORE}"_jrs);
-}
-
-Jupiter::StringS TagsImp::get_building_health_bar(const RenX::BuildingInfo *building)
-{
-	if (TagsImp::bar_width == 0)
-		return Jupiter::StringS::empty;
-
-	size_t index = 0;
-	size_t greenBars = static_cast<size_t>((building->health / building->max_health) * TagsImp::bar_width);
-	Jupiter::String r(TagsImp::bar_width);
-	if (greenBars != 0)
-	{
-		r = IRCCOLOR "02,09";
-		do
-		{
-			if (index % 2 == 0)
-				r += '/';
-			else
-				r += ' ';
-		}
-		while (++index != greenBars);
-		if (index == TagsImp::bar_width)
-			return r += IRCNORMAL;
-	}
-	r += IRCCOLOR "02,04";
-	do
-	{
-		if (index % 2 == 0)
-			r += '\\';
-		else
-			r += ' ';
-	}
-	while (++index != TagsImp::bar_width);
-	return r += IRCNORMAL;
 }
 
 double get_ratio(double num, double denom)
@@ -588,10 +563,15 @@ void TagsImp::processTags(Jupiter::StringType &msg, const RenX::Server *server, 
 	{
 		PROCESS_TAG(this->INTERNAL_BUILDING_NAME_TAG, RenX::translateName(building->name));
 		PROCESS_TAG(this->INTERNAL_BUILDING_RAW_NAME_TAG, building->name);
-		PROCESS_TAG(this->INTERNAL_BUILDING_HEALTH_TAG, Jupiter::StringS::Format("%.0f", building->health));
-		PROCESS_TAG(this->INTERNAL_BUILDING_MAX_HEALTH_TAG, Jupiter::StringS::Format("%.0f", building->health));
+		PROCESS_TAG(this->INTERNAL_BUILDING_HEALTH_TAG, Jupiter::StringS::Format("%d", building->health));
+		PROCESS_TAG(this->INTERNAL_BUILDING_MAX_HEALTH_TAG, Jupiter::StringS::Format("%d", building->max_health));
 		PROCESS_TAG(this->INTERNAL_BUILDING_HEALTH_PERCENTAGE_TAG, Jupiter::StringS::Format("%.0f", (building->health / building->max_health) * 100.0));
-		PROCESS_TAG(this->INTERNAL_BUILDING_HEALTH_BAR_TAG, get_building_health_bar(building));
+		PROCESS_TAG(this->INTERNAL_BUILDING_ARMOR_TAG, Jupiter::StringS::Format("%d", building->armor));
+		PROCESS_TAG(this->INTERNAL_BUILDING_MAX_ARMOR_TAG, Jupiter::StringS::Format("%d", building->max_armor));
+		PROCESS_TAG(this->INTERNAL_BUILDING_ARMOR_PERCENTAGE_TAG, Jupiter::StringS::Format("%.0f", (static_cast<double>(building->armor) / static_cast<double>(building->max_armor)) * 100.0));
+		PROCESS_TAG(this->INTERNAL_BUILDING_DURABILITY_TAG, Jupiter::StringS::Format("%d", building->health + building->armor));
+		PROCESS_TAG(this->INTERNAL_BUILDING_MAX_DURABILITY_TAG, Jupiter::StringS::Format("%d", building->max_health + building->max_armor));
+		PROCESS_TAG(this->INTERNAL_BUILDING_DURABILITY_PERCENTAGE_TAG, Jupiter::StringS::Format("%.0f", (static_cast<double>(building->health + building->armor) / static_cast<double>(building->max_health + building->max_armor)) * 100.0));
 		PROCESS_TAG(this->INTERNAL_BUILDING_TEAM_COLOR_TAG, RenX::getTeamColor(building->team));
 		PROCESS_TAG(this->INTERNAL_BUILDING_TEAM_SHORT_TAG, RenX::getTeamName(building->team));
 		PROCESS_TAG(this->INTERNAL_BUILDING_TEAM_LONG_TAG, RenX::getFullTeamName(building->team));
@@ -827,7 +807,12 @@ void TagsImp::sanitizeTags(Jupiter::StringType &fmt)
 	fmt.replace(this->buildingHealthTag, this->INTERNAL_BUILDING_HEALTH_TAG);
 	fmt.replace(this->buildingMaxHealthTag, this->INTERNAL_BUILDING_MAX_HEALTH_TAG);
 	fmt.replace(this->buildingHealthPercentageTag, this->INTERNAL_BUILDING_HEALTH_PERCENTAGE_TAG);
-	fmt.replace(this->buildingHealthBarTag, this->INTERNAL_BUILDING_HEALTH_BAR_TAG);
+	fmt.replace(this->buildingArmorTag, this->INTERNAL_BUILDING_ARMOR_TAG);
+	fmt.replace(this->buildingMaxArmorTag, this->INTERNAL_BUILDING_MAX_ARMOR_TAG);
+	fmt.replace(this->buildingArmorPercentageTag, this->INTERNAL_BUILDING_ARMOR_PERCENTAGE_TAG);
+	fmt.replace(this->buildingDurabilityTag, this->INTERNAL_BUILDING_DURABILITY_TAG);
+	fmt.replace(this->buildingMaxDurabilityTag, this->INTERNAL_BUILDING_MAX_DURABILITY_TAG);
+	fmt.replace(this->buildingDurabilityPercentageTag, this->INTERNAL_BUILDING_DURABILITY_PERCENTAGE_TAG);
 	fmt.replace(this->buildingTeamColorTag, this->INTERNAL_BUILDING_TEAM_COLOR_TAG);
 	fmt.replace(this->buildingTeamShortTag, this->INTERNAL_BUILDING_TEAM_SHORT_TAG);
 	fmt.replace(this->buildingTeamLongTag, this->INTERNAL_BUILDING_TEAM_LONG_TAG);

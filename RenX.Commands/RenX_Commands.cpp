@@ -70,6 +70,7 @@ int RenX_CommandsPlugin::OnRehash()
 	RenX_CommandsPlugin::playerInfoFormat = Jupiter::IRC::Client::Config->get(RenX_CommandsPlugin::getName(), STRING_LITERAL_AS_REFERENCE("PlayerInfoFormat"), STRING_LITERAL_AS_REFERENCE(IRCCOLOR "03[Player Info]" IRCCOLOR "{TCOLOR} Name: " IRCBOLD "{RNAME}" IRCBOLD " - ID: {ID} - Team: " IRCBOLD "{TEAML}" IRCBOLD " - Vehicle Kills: {VEHICLEKILLS} - Building Kills {BUILDINGKILLS} - Kills {KILLS} - Deaths: {DEATHS} - KDR: {KDR} - Access: {ACCESS}"));
 	RenX_CommandsPlugin::adminPlayerInfoFormat = Jupiter::IRC::Client::Config->get(RenX_CommandsPlugin::getName(), STRING_LITERAL_AS_REFERENCE("AdminPlayerInfoFormat"), Jupiter::StringS::Format("%.*s - IP: " IRCBOLD "{IP}" IRCBOLD " - RDNS: " IRCBOLD "{RDNS}" IRCBOLD " - Steam ID: " IRCBOLD "{STEAM}", RenX_CommandsPlugin::playerInfoFormat.size(), RenX_CommandsPlugin::playerInfoFormat.ptr()));
 	RenX_CommandsPlugin::buildingInfoFormat = Jupiter::IRC::Client::Config->get(RenX_CommandsPlugin::getName(), STRING_LITERAL_AS_REFERENCE("BuildingInfoFormat"), STRING_LITERAL_AS_REFERENCE(IRCCOLOR) + RenX::tags->buildingTeamColorTag + RenX::tags->buildingNameTag + STRING_LITERAL_AS_REFERENCE(IRCCOLOR " - " IRCCOLOR "07") + RenX::tags->buildingHealthPercentageTag + STRING_LITERAL_AS_REFERENCE("%"));
+	RenX_CommandsPlugin::staffTitle = Jupiter::IRC::Client::Config->get(RenX_CommandsPlugin::getName(), STRING_LITERAL_AS_REFERENCE("StaffTitle"), STRING_LITERAL_AS_REFERENCE("Moderator"));
 
 	RenX::sanitizeTags(RenX_CommandsPlugin::playerInfoFormat);
 	RenX::sanitizeTags(RenX_CommandsPlugin::adminPlayerInfoFormat);
@@ -95,6 +96,11 @@ const Jupiter::ReadableString &RenX_CommandsPlugin::getAdminPlayerInfoFormat() c
 const Jupiter::ReadableString &RenX_CommandsPlugin::getBuildingInfoFormat() const
 {
 	return RenX_CommandsPlugin::buildingInfoFormat;
+}
+
+const Jupiter::ReadableString &RenX_CommandsPlugin::getStaffTitle() const
+{
+	return RenX_CommandsPlugin::staffTitle;
 }
 
 RenX_CommandsPlugin::RenX_CommandsPlugin()
@@ -1039,6 +1045,7 @@ IRC_COMMAND_INIT(KillDeathRatioIRCCommand)
 
 void ShowModsIRCCommand::create()
 {
+	this->addTrigger(STRING_LITERAL_AS_REFERENCE("showstaff"));
 	this->addTrigger(STRING_LITERAL_AS_REFERENCE("showmods"));
 }
 
@@ -1067,7 +1074,7 @@ void ShowModsIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString 
 
 const Jupiter::ReadableString &ShowModsIRCCommand::getHelp(const Jupiter::ReadableString &)
 {
-	static STRING_LITERAL_AS_NAMED_REFERENCE(defaultHelp, "Sends a message, displaying the in-game moderators. Syntax: showmods");
+	static STRING_LITERAL_AS_NAMED_REFERENCE(defaultHelp, "Sends a message, displaying in-game staff. Syntax: showstaff");
 	return defaultHelp;
 }
 
@@ -1077,6 +1084,7 @@ IRC_COMMAND_INIT(ShowModsIRCCommand)
 
 void ModsIRCCommand::create()
 {
+	this->addTrigger(STRING_LITERAL_AS_REFERENCE("staff"));
 	this->addTrigger(STRING_LITERAL_AS_REFERENCE("mods"));
 }
 
@@ -1091,6 +1099,7 @@ void ModsIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &cha
 			int type = chan->getType();
 			RenX::PlayerInfo *player;
 			Jupiter::StringL msg;
+			const Jupiter::ReadableString &staff_word = pluginInstance.getStaffTitle();
 			for (unsigned int i = 0; i != RenX::getCore()->getServerCount(); i++)
 			{
 				RenX::Server *server = RenX::getCore()->getServer(i);
@@ -1106,14 +1115,14 @@ void ModsIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &cha
 							{
 								if (msg.isNotEmpty())
 									msg += ", ";
-								else msg += "Moderators in-game: ";
+								else msg += staff_word + "s in-game: "_jrs;
 								msg += player->gamePrefix;
 								msg += player->name;
 							}
 						}
 					}
 					if (msg.isEmpty())
-						msg = "No moderators are in-game.";
+						msg = "No "_jrs + staff_word + "s are in-game."_jrs;
 					source->sendMessage(channel, msg);
 				}
 			}
@@ -1125,7 +1134,7 @@ void ModsIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &cha
 
 const Jupiter::ReadableString &ModsIRCCommand::getHelp(const Jupiter::ReadableString &)
 {
-	static STRING_LITERAL_AS_NAMED_REFERENCE(defaultHelp, "Sends a message, displaying the in-game moderators. Syntax: mods [show]");
+	static STRING_LITERAL_AS_NAMED_REFERENCE(defaultHelp, "Sends a message, displaying in-game staff. Syntax: staff [show]");
 	return defaultHelp;
 }
 
@@ -3099,6 +3108,7 @@ GAME_COMMAND_INIT(HelpGameCommand)
 
 void ModsGameCommand::create()
 {
+	this->addTrigger(STRING_LITERAL_AS_REFERENCE("staff"));
 	this->addTrigger(STRING_LITERAL_AS_REFERENCE("mods"));
 	this->addTrigger(STRING_LITERAL_AS_REFERENCE("showmods"));
 }
@@ -3107,13 +3117,14 @@ void ModsGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *, const Ju
 {
 	RenX::PlayerInfo *player;
 	Jupiter::StringL msg;
+	const Jupiter::ReadableString &staff_word = pluginInstance.getStaffTitle();
 	for (Jupiter::DLList<RenX::PlayerInfo>::Node *node = source->players.getNode(0); node != nullptr; node = node->next)
 	{
 		player = node->data;
 		if (player->isBot == false && (player->adminType.isNotEmpty() || (player->access != 0 && (player->gamePrefix.isNotEmpty() || player->formatNamePrefix.isNotEmpty()))))
 		{
 			if (msg.isEmpty())
-				msg = "Moderators in-game: "; 
+				msg = staff_word + "s in-game: "_jrs;
 			else
 				msg += ", ";
 			msg += player->gamePrefix;
@@ -3122,7 +3133,7 @@ void ModsGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *, const Ju
 	}
 	if (msg.isEmpty())
 	{
-		msg += "No moderators are in-game";
+		msg += "No "_jrs + staff_word + "s are in-game"_jrs;
 		RenX::GameCommand *cmd = source->getCommand(STRING_LITERAL_AS_REFERENCE("modrequest"));
 		if (cmd != nullptr)
 			msg.aformat("; please use \"%.*s%.*s\" if you require assistance.", source->getCommandPrefix().size(), source->getCommandPrefix().ptr(), cmd->getTrigger().size(), cmd->getTrigger().ptr());
@@ -3133,7 +3144,7 @@ void ModsGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *, const Ju
 
 const Jupiter::ReadableString &ModsGameCommand::getHelp(const Jupiter::ReadableString &)
 {
-	static STRING_LITERAL_AS_NAMED_REFERENCE(defaultHelp, "Displays the in-game moderators. Syntax: mods");
+	static STRING_LITERAL_AS_NAMED_REFERENCE(defaultHelp, "Displays in-game staff. Syntax: staff");
 	return defaultHelp;
 }
 
@@ -3173,14 +3184,15 @@ void ModRequestGameCommand::create()
 
 void ModRequestGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *player, const Jupiter::ReadableString &parameters)
 {
+	const Jupiter::ReadableString &staff_word = pluginInstance.getStaffTitle();
 	unsigned int serverCount = serverManager->size();
 	IRC_Bot *server;
 	Jupiter::IRC::Client::Channel *channel;
 	unsigned int channelCount;
 	unsigned int messageCount = 0;
 	Jupiter::String &fmtName = RenX::getFormattedPlayerName(player);
-	Jupiter::StringL msg = Jupiter::StringL::Format(IRCCOLOR "12[Moderator Request] " IRCCOLOR IRCBOLD "%.*s" IRCBOLD IRCCOLOR "07 has requested assistance in-game; please look in ", fmtName.size(), fmtName.ptr());
-	Jupiter::StringS msg2 = Jupiter::StringS::Format(IRCCOLOR "12[Moderator Request] " IRCCOLOR IRCBOLD "%.*s" IRCBOLD IRCCOLOR "07 has requested assistance in-game!" IRCCOLOR, fmtName.size(), fmtName.ptr());
+	Jupiter::StringL msg = Jupiter::StringL::Format(IRCCOLOR "12[%.*s Request] " IRCCOLOR IRCBOLD "%.*s" IRCBOLD IRCCOLOR "07 has requested assistance in-game; please look in ", staff_word.size(), staff_word.ptr(), fmtName.size(), fmtName.ptr());
+	Jupiter::StringS msg2 = Jupiter::StringS::Format(IRCCOLOR "12[%.*s Request] " IRCCOLOR IRCBOLD "%.*s" IRCBOLD IRCCOLOR "07 has requested assistance in-game!" IRCCOLOR, staff_word.size(), staff_word.ptr(), fmtName.size(), fmtName.ptr());
 	for (unsigned int a = 0; a < serverCount; a++)
 	{
 		server = serverManager->getServer(a);
@@ -3204,12 +3216,12 @@ void ModRequestGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *play
 			}
 		}
 	}
-	source->sendMessage(player, Jupiter::StringS::Format("A total of %u moderators have been notified of your assistance request.", messageCount));
+	source->sendMessage(player, Jupiter::StringS::Format("A total of %u %.*ss have been notified of your assistance request.", staff_word.size(), staff_word.ptr(), messageCount));
 }
 
 const Jupiter::ReadableString &ModRequestGameCommand::getHelp(const Jupiter::ReadableString &)
 {
-	static STRING_LITERAL_AS_NAMED_REFERENCE(defaultHelp, "Notifies the moderators on IRC that assistance is required. Syntax: modRequest");
+	static STRING_LITERAL_AS_NAMED_REFERENCE(defaultHelp, "Notifies staff on IRC that assistance is required. Syntax: modRequest");
 	return defaultHelp;
 }
 
@@ -3231,7 +3243,7 @@ void KillGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *player, co
 		if (target == nullptr)
 			source->sendMessage(player, STRING_LITERAL_AS_REFERENCE("Error: Player not found."));
 		else if (target->access >= player->access)
-			source->sendMessage(player, STRING_LITERAL_AS_REFERENCE("Error: You can not kill higher level moderators."));
+			source->sendMessage(player, "Error: You can not kill higher level "_jrs + pluginInstance.getStaffTitle() + "s."_jrs);
 		else
 		{
 			source->kill(target);
@@ -3266,7 +3278,7 @@ void DisarmGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *player, 
 		if (target == nullptr)
 			source->sendMessage(player, STRING_LITERAL_AS_REFERENCE("Error: Player not found."));
 		else if (target->access >= player->access)
-			source->sendMessage(player, STRING_LITERAL_AS_REFERENCE("Error: You can not disarm higher level moderators."));
+			source->sendMessage(player, "Error: You can not disarm higher level "_jrs + pluginInstance.getStaffTitle() + "s."_jrs);
 		else if (source->disarm(target) == false)
 			source->sendMessage(player, "Error: Server does not support disarms."_jrs);
 		else
@@ -3300,7 +3312,7 @@ void DisarmC4GameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *player
 		if (target == nullptr)
 			source->sendMessage(player, STRING_LITERAL_AS_REFERENCE("Error: Player not found."));
 		else if (target->access >= player->access)
-			source->sendMessage(player, STRING_LITERAL_AS_REFERENCE("Error: You can not disarm higher level moderators."));
+			source->sendMessage(player, "Error: You can not disarm higher level "_jrs + pluginInstance.getStaffTitle() + "s."_jrs);
 		else if (source->disarmC4(target) == false)
 			source->sendMessage(player, "Error: Server does not support disarms."_jrs);
 		else
@@ -3336,7 +3348,7 @@ void DisarmBeaconGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *pl
 		if (target == nullptr)
 			source->sendMessage(player, STRING_LITERAL_AS_REFERENCE("Error: Player not found."));
 		else if (target->access >= player->access)
-			source->sendMessage(player, STRING_LITERAL_AS_REFERENCE("Error: You can not disarm higher level moderators."));
+			source->sendMessage(player, "Error: You can not disarm higher level "_jrs + pluginInstance.getStaffTitle() + "s."_jrs);
 		else if (source->disarmBeacon(target) == false)
 			source->sendMessage(player, "Error: Server does not support disarms."_jrs);
 		else
@@ -3370,7 +3382,7 @@ void MineBanGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *player,
 		if (target == nullptr)
 			source->sendMessage(player, STRING_LITERAL_AS_REFERENCE("Error: Player not found."));
 		else if (target->access >= player->access)
-			source->sendMessage(player, STRING_LITERAL_AS_REFERENCE("Error: You can not mine-ban higher level moderators."));
+			source->sendMessage(player, "Error: You can not mine-ban higher level "_jrs + pluginInstance.getStaffTitle() + "s."_jrs);
 		else
 		{
 			source->mineBan(target);
@@ -3411,7 +3423,7 @@ void KickGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *player, co
 		else if (player == target)
 			source->sendMessage(player, STRING_LITERAL_AS_REFERENCE("Error: You can not kick yourself."));
 		else if (target->access >= player->access)
-			source->sendMessage(player, STRING_LITERAL_AS_REFERENCE("Error: You can not kick higher level moderators."));
+			source->sendMessage(player, "Error: You can not kick higher level "_jrs + pluginInstance.getStaffTitle() + "s."_jrs);
 		else
 		{
 			source->kickPlayer(target, reason);
@@ -3452,7 +3464,7 @@ void TempBanGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *player,
 		else if (player == target)
 			source->sendMessage(player, STRING_LITERAL_AS_REFERENCE("Error: You can not ban yourself."));
 		else if (target->access >= player->access)
-			source->sendMessage(player, STRING_LITERAL_AS_REFERENCE("Error: You can not ban higher level moderators."));
+			source->sendMessage(player, "Error: You can not ban higher level "_jrs + pluginInstance.getStaffTitle() + "s."_jrs);
 		else
 		{
 			source->banPlayer(target, player->name, reason, pluginInstance.getTBanTime());
@@ -3494,7 +3506,7 @@ void KickBanGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *player,
 		else if (player == target)
 			source->sendMessage(player, STRING_LITERAL_AS_REFERENCE("Error: You can not ban yourself."));
 		else if (target->access >= player->access)
-			source->sendMessage(player, STRING_LITERAL_AS_REFERENCE("Error: You can not ban higher level moderators."));
+			source->sendMessage(player, "Error: You can not ban higher level "_jrs + pluginInstance.getStaffTitle() + "s."_jrs);
 		else
 		{
 			source->banPlayer(target, player->name, reason);

@@ -181,7 +181,12 @@ namespace RenX
 		Jupiter::StringS INTERNAL_BUILDING_HEALTH_TAG;
 		Jupiter::StringS INTERNAL_BUILDING_MAX_HEALTH_TAG;
 		Jupiter::StringS INTERNAL_BUILDING_HEALTH_PERCENTAGE_TAG;
-		Jupiter::StringS INTERNAL_BUILDING_HEALTH_BAR_TAG;
+		Jupiter::StringS INTERNAL_BUILDING_ARMOR_TAG;
+		Jupiter::StringS INTERNAL_BUILDING_MAX_ARMOR_TAG;
+		Jupiter::StringS INTERNAL_BUILDING_ARMOR_PERCENTAGE_TAG;
+		Jupiter::StringS INTERNAL_BUILDING_DURABILITY_TAG;
+		Jupiter::StringS INTERNAL_BUILDING_MAX_DURABILITY_TAG;
+		Jupiter::StringS INTERNAL_BUILDING_DURABILITY_PERCENTAGE_TAG;
 		Jupiter::StringS INTERNAL_BUILDING_TEAM_COLOR_TAG;
 		Jupiter::StringS INTERNAL_BUILDING_TEAM_SHORT_TAG;
 		Jupiter::StringS INTERNAL_BUILDING_TEAM_LONG_TAG;
@@ -360,7 +365,12 @@ namespace RenX
 		Jupiter::StringS buildingHealthTag;
 		Jupiter::StringS buildingMaxHealthTag;
 		Jupiter::StringS buildingHealthPercentageTag;
-		Jupiter::StringS buildingHealthBarTag;
+		Jupiter::StringS buildingArmorTag;
+		Jupiter::StringS buildingMaxArmorTag;
+		Jupiter::StringS buildingArmorPercentageTag;
+		Jupiter::StringS buildingDurabilityTag;
+		Jupiter::StringS buildingMaxDurabilityTag;
+		Jupiter::StringS buildingDurabilityPercentageTag;
 		Jupiter::StringS buildingTeamColorTag;
 		Jupiter::StringS buildingTeamShortTag;
 		Jupiter::StringS buildingTeamLongTag;

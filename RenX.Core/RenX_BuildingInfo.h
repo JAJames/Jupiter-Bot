@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2015 Jessica James.
+ * Copyright (C) 2015-2016 Jessica James.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -44,9 +44,13 @@ namespace RenX
 	{
 		Jupiter::StringS name;
 		TeamType team = TeamType::Other;
-		double health = 0;
-		double max_health = 0;
+		int health = 0;
+		int max_health = 0;
+		int armor = 0;
+		int max_armor = 0;
 		bool capturable = false;
+		bool destroyed = false;
+		std::chrono::steady_clock::time_point destruction_time;
 		mutable Jupiter::INIFile varData;
 	};
 
