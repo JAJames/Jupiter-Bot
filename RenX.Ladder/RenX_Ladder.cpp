@@ -91,6 +91,9 @@ GenericCommand::ResponseLine *LadderGenericCommand::trigger(const Jupiter::Reada
 	if (parameters.isEmpty())
 		return new GenericCommand::ResponseLine("Error: Too few parameters. Syntax: ladder <name | rank>"_jrs, GenericCommand::DisplayType::PrivateError);
 
+	if (RenX::default_ladder_database == nullptr)
+		return new GenericCommand::ResponseLine("Error: No default ladder database specified."_jrs, GenericCommand::DisplayType::PrivateError);
+
 	RenX::LadderDatabase::Entry *entry;
 	size_t rank;
 	if (parameters.span("0123456789"_jrs) == parameters.size())
@@ -148,11 +151,16 @@ void LadderGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *player, 
 	{
 		if (player->steamid != 0)
 		{
-			std::pair<RenX::LadderDatabase::Entry *, size_t> pair = RenX::default_ladder_database->getPlayerEntryAndIndex(player->steamid);
-			if (pair.first != nullptr)
-				source->sendMessage(FormatLadderResponse(pair.first, pair.second + 1));
+			if (RenX::default_ladder_database != nullptr)
+			{
+				std::pair<RenX::LadderDatabase::Entry *, size_t> pair = RenX::default_ladder_database->getPlayerEntryAndIndex(player->steamid);
+				if (pair.first != nullptr)
+					source->sendMessage(FormatLadderResponse(pair.first, pair.second + 1));
+				else
+					source->sendMessage(player, "Error: You have no ladder data. Get started by sticking around until the end of the match!"_jrs);
+			}
 			else
-				source->sendMessage(player, "Error: You have no ladder data. Get started by sticking around until the end of the match!"_jrs);
+				source->sendMessage(player, "Error: No default ladder database specified."_jrs);
 		}
 		else
 			source->sendMessage(player, "Error: You have no ladder data, because you're not using Steam."_jrs);
