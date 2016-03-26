@@ -523,7 +523,7 @@ void RenX::LadderDatabase::updateLadder(RenX::Server *server, const RenX::TeamTy
 					else if (team == RenX::TeamType::None)
 						++entry->total_gdi_ties;
 
-					entry->total_gdi_game_time += player->kills;
+					entry->total_gdi_game_time += static_cast<uint32_t>(std::chrono::duration_cast<std::chrono::seconds>(server->getGameTime(player)).count());
 					entry->total_gdi_score += static_cast<uint64_t>(player->score);
 					entry->total_gdi_beacon_placements += player->beaconPlacements;
 					entry->total_gdi_beacon_disarms += player->beaconDisarms;
@@ -543,7 +543,7 @@ void RenX::LadderDatabase::updateLadder(RenX::Server *server, const RenX::TeamTy
 					else if (team == RenX::TeamType::None)
 						++entry->total_nod_ties;
 
-					entry->total_nod_game_time += player->kills;
+					entry->total_nod_game_time += static_cast<uint32_t>(std::chrono::duration_cast<std::chrono::seconds>(server->getGameTime(player)).count());
 					entry->total_nod_score += static_cast<uint64_t>(player->score);
 					entry->total_nod_beacon_placements += player->beaconPlacements;
 					entry->total_nod_beacon_disarms += player->beaconDisarms;

@@ -250,7 +250,7 @@ void RenX_LoggingPlugin::init()
 		Jupiter::StringS::Format(IRCBOLD "%.*s" IRCCOLOR IRCBOLD " online.", RenX::tags->nameTag.size(), RenX::tags->nameTag.ptr()));
 
 	RenX_LoggingPlugin::vehicleCrateFmt = Jupiter::IRC::Client::Config->get(this->getName(), "VehicleCrateFormat"_jrs,
-		Jupiter::StringS::Format(IRCBOLD "%.*s" IRCCOLOR IRCBOLD " picked up a %.*s vehicle crate.", RenX::tags->nameTag.size(), RenX::tags->nameTag.ptr(), RenX::tags->objectTag.size(), RenX::tags->objectTag.ptr()));
+		Jupiter::StringS::Format(IRCBOLD "%.*s" IRCCOLOR IRCBOLD " picked up a " IRCCOLOR "12%.*s" IRCCOLOR " vehicle crate.", RenX::tags->nameTag.size(), RenX::tags->nameTag.ptr(), RenX::tags->objectTag.size(), RenX::tags->objectTag.ptr()));
 
 	RenX_LoggingPlugin::TSVehicleCrateFmt = Jupiter::IRC::Client::Config->get(this->getName(), "TSVehicleCrateFormat"_jrs,
 		RenX_LoggingPlugin::vehicleCrateFmt);
