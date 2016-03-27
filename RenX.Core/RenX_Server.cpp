@@ -79,7 +79,7 @@ int RenX::Server::think()
 
 						// Fire RDNS resolved event
 						for (size_t index = 0; index < xPlugins.size(); ++index)
-							xPlugins.get(++index)->RenX_OnPlayerRDNS(this, player);
+							xPlugins.get(index)->RenX_OnPlayerRDNS(this, player);
 
 						if (this->player_rdns_resolutions_pending == 0) // No more resolutions pending
 							return;
