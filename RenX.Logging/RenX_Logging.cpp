@@ -345,7 +345,7 @@ void RenX_LoggingPlugin::init()
 		Jupiter::StringS::Format(IRCCOLOR "[Vote] " IRCBOLD "%.*s" IRCNORMAL " has called for a Map Change.", RenX::tags->nameTag.size(), RenX::tags->nameTag.ptr()));
 	
 	RenX_LoggingPlugin::voteKickFmt = Jupiter::IRC::Client::Config->get(this->getName(), "VoteKickFormat"_jrs,
-		Jupiter::StringS::Format(IRCCOLOR "[Vote] " IRCBOLD "%.*s" IRCNORMAL " has called for a kick against %.*s" IRCNORMAL ".", RenX::tags->nameTag.size(), RenX::tags->nameTag.ptr(), RenX::tags->nameTag.size(), RenX::tags->nameTag.ptr()));
+		Jupiter::StringS::Format(IRCCOLOR "[Vote] " IRCBOLD "%.*s" IRCNORMAL " has called for a kick against %.*s" IRCNORMAL ".", RenX::tags->nameTag.size(), RenX::tags->nameTag.ptr(), RenX::tags->victimNameTag.size(), RenX::tags->victimNameTag.ptr()));
 	
 	RenX_LoggingPlugin::voteMineBanFmt = Jupiter::IRC::Client::Config->get(this->getName(), "VoteMineBanFormat"_jrs,
 		Jupiter::StringS::Format(IRCCOLOR "%.*s[Vote] " IRCBOLD "%.*s" IRCBOLD " has called for a Mine Ban against %.*s" IRCNORMAL ".", RenX::tags->victimTeamColorTag.size(), RenX::tags->victimTeamColorTag.ptr(), RenX::tags->nameTag.size(), RenX::tags->nameTag.ptr(), RenX::tags->nameTag.size(), RenX::tags->nameTag.ptr()));
