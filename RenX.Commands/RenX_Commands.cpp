@@ -599,17 +599,36 @@ void PlayerInfoIRCCommand::create()
 
 void PlayerInfoIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &channel, const Jupiter::ReadableString &nick, const Jupiter::ReadableString &parameters)
 {
-	if (parameters.isNotEmpty())
+	Jupiter::IRC::Client::Channel *chan = source->getChannel(channel);
+	if (chan != nullptr)
 	{
-		Jupiter::IRC::Client::Channel *chan = source->getChannel(channel);
-		if (chan != nullptr)
-		{
-			int type = chan->getType();
-			RenX::PlayerInfo *player;
-			Jupiter::StringL msg;
-			for (unsigned int i = 0; i != RenX::getCore()->getServerCount(); i++)
+		int type = chan->getType();
+		RenX::PlayerInfo *player;
+		Jupiter::StringL msg;
+		RenX::Server *server;
+		const Jupiter::ReadableString &player_info_format = source->getAccessLevel(channel, nick) > 1 ? pluginInstance.getAdminPlayerInfoFormat() : pluginInstance.getPlayerInfoFormat();
+		size_t index = 0;
+		Jupiter::DLList<RenX::PlayerInfo>::Node *node;
+
+		if (parameters.isEmpty()) // List all players
+			while (index != RenX::getCore()->getServerCount())
 			{
-				RenX::Server *server = RenX::getCore()->getServer(i);
+				server = RenX::getCore()->getServer(index++);
+				if (server->isLogChanType(type) && server->players.size() != 0)
+				{
+					for (node = server->players.getNode(0); node != nullptr; node = node->next)
+					{
+						player = node->data;
+						msg = player_info_format;
+						RenX::processTags(msg, server, player);
+						source->sendMessage(channel, msg);
+					}
+				}
+			}
+		else // List all partial matches
+			while (index != RenX::getCore()->getServerCount())
+			{
+				server = RenX::getCore()->getServer(index++);
 				if (server->isLogChanType(type) && server->players.size() != 0)
 				{
 					for (Jupiter::DLList<RenX::PlayerInfo>::Node *node = server->players.getNode(0); node != nullptr; node = node->next)
@@ -617,25 +636,22 @@ void PlayerInfoIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableStrin
 						player = node->data;
 						if (player->name.findi(parameters) != Jupiter::INVALID_INDEX)
 						{
-							if (source->getAccessLevel(channel, nick) > 1)
-								msg = pluginInstance.getAdminPlayerInfoFormat();
-							else
-								msg = pluginInstance.getPlayerInfoFormat();
+							msg = player_info_format;
 							RenX::processTags(msg, server, player);
 							source->sendMessage(channel, msg);
 						}
 					}
 				}
 			}
-			if (msg.isEmpty()) source->sendNotice(nick, STRING_LITERAL_AS_REFERENCE("Error: Player not found."));
-		}
+
+		if (msg.isEmpty())
+			source->sendNotice(nick, STRING_LITERAL_AS_REFERENCE("Error: Player not found."));
 	}
-	else source->sendNotice(nick, STRING_LITERAL_AS_REFERENCE("Error: Too Few Parameters. Syntax: PlayerInfo <Player>"));
 }
 
 const Jupiter::ReadableString &PlayerInfoIRCCommand::getHelp(const Jupiter::ReadableString &)
 {
-	static STRING_LITERAL_AS_NAMED_REFERENCE(defaultHelp, "Gets information about a player. Syntax: PlayerInfo <Player>");
+	static STRING_LITERAL_AS_NAMED_REFERENCE(defaultHelp, "Gets information about a player. Syntax: PlayerInfo [Player]");
 	return defaultHelp;
 }
 
@@ -3185,7 +3201,7 @@ void ModRequestGameCommand::create()
 void ModRequestGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *player, const Jupiter::ReadableString &parameters)
 {
 	const Jupiter::ReadableString &staff_word = pluginInstance.getStaffTitle();
-	unsigned int serverCount = serverManager->size();
+	size_t serverCount = serverManager->size();
 	IRC_Bot *server;
 	Jupiter::IRC::Client::Channel *channel;
 	unsigned int channelCount;
@@ -3193,9 +3209,9 @@ void ModRequestGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *play
 	Jupiter::String &fmtName = RenX::getFormattedPlayerName(player);
 	Jupiter::StringL msg = Jupiter::StringL::Format(IRCCOLOR "12[%.*s Request] " IRCCOLOR IRCBOLD "%.*s" IRCBOLD IRCCOLOR "07 has requested assistance in-game; please look in ", staff_word.size(), staff_word.ptr(), fmtName.size(), fmtName.ptr());
 	Jupiter::StringS msg2 = Jupiter::StringS::Format(IRCCOLOR "12[%.*s Request] " IRCCOLOR IRCBOLD "%.*s" IRCBOLD IRCCOLOR "07 has requested assistance in-game!" IRCCOLOR, staff_word.size(), staff_word.ptr(), fmtName.size(), fmtName.ptr());
-	for (unsigned int a = 0; a < serverCount; a++)
+	for (size_t server_index = 0; server_index < serverCount; ++server_index)
 	{
-		server = serverManager->getServer(a);
+		server = serverManager->getServer(server_index);
 		channelCount = server->getChannelCount();
 		for (unsigned int b = 0; b < channelCount; b++)
 		{
@@ -3216,7 +3232,7 @@ void ModRequestGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *play
 			}
 		}
 	}
-	source->sendMessage(player, Jupiter::StringS::Format("A total of %u %.*ss have been notified of your assistance request.", staff_word.size(), staff_word.ptr(), messageCount));
+	source->sendMessage(player, Jupiter::StringS::Format("A total of %u %.*ss have been notified of your assistance request.", messageCount, staff_word.size(), staff_word.ptr()));
 }
 
 const Jupiter::ReadableString &ModRequestGameCommand::getHelp(const Jupiter::ReadableString &)
