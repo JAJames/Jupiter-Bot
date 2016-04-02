@@ -28,14 +28,21 @@
 class RenX_Ladder_WebPlugin : public RenX::Plugin
 {
 protected:
-	Jupiter::String generate_entry_table(RenX::LadderDatabase *db, size_t index, size_t count);
+	Jupiter::String generate_entry_table(RenX::LadderDatabase *db, uint8_t format, size_t index, size_t count);
 
 public:
+	const uint8_t FLAG_INCLUDE_PAGE_HEADER = 0x01;
+	const uint8_t FLAG_INCLUDE_PAGE_FOOTER = 0x02;
+	const uint8_t FLAG_INCLUDE_DATA_HEADER = 0x04;
+	const uint8_t FLAG_INCLUDE_DATA_FOOTER = 0x08;
+	const uint8_t FLAG_INCLUDE_SEARCH = 0x10;
+	const uint8_t FLAG_INCLUDE_SELECTOR = 0x20;
+
 	Jupiter::StringS header;
 	Jupiter::StringS footer;
-	Jupiter::String *generate_ladder_page(RenX::LadderDatabase *db, size_t start_index, size_t count, const Jupiter::INIFile::Section &query_params);
-	Jupiter::String *generate_search_page(RenX::LadderDatabase *db, const Jupiter::ReadableString &name, const Jupiter::INIFile::Section &query_params);
-	Jupiter::String *generate_profile_page(RenX::LadderDatabase *db, uint64_t steam_id, const Jupiter::INIFile::Section &query_params);
+	Jupiter::String *generate_ladder_page(RenX::LadderDatabase *db, uint8_t format, size_t start_index, size_t count, const Jupiter::INIFile::Section &query_params);
+	Jupiter::String *generate_search_page(RenX::LadderDatabase *db, uint8_t format, size_t start_index, size_t count, const Jupiter::ReadableString &name, const Jupiter::INIFile::Section &query_params);
+	Jupiter::String *generate_profile_page(RenX::LadderDatabase *db, uint8_t format, uint64_t steam_id, const Jupiter::INIFile::Section &query_params);
 	inline size_t getEntriesPerPage() const { return this->entries_per_page; }
 	inline size_t getMinSearchNameLength() const { return this->min_search_name_length; };
 
