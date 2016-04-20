@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2014-2015 Jessica James.
+ * Copyright (C) 2014-2016 Jessica James.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -20,12 +20,18 @@
 #define _RENX_SETJOIN_H_HEADER
 
 #include "Jupiter/Plugin.h"
+#include "Jupiter/INIFile.h"
 #include "RenX_Plugin.h"
 #include "RenX_GameCommand.h"
 
 class RenX_SetJoinPlugin : public RenX::Plugin
 {
 public:
+	Jupiter::INIFile setjoin_file;
+
+	RenX_SetJoinPlugin();
+
+public: // RenX::Plugin
 	void RenX_OnJoin(RenX::Server *server, const RenX::PlayerInfo *player) override;
 
 public: // Jupiter::Plugin

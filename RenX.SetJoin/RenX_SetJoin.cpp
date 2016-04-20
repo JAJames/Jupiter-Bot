@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2014-2015 Jessica James.
+ * Copyright (C) 2014-2016 Jessica James.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -18,40 +18,48 @@
 
 #include "Jupiter/IRC_Client.h"
 #include "Jupiter/INIFile.h"
-#include "RenX_SetJoin.h"
 #include "RenX_PlayerInfo.h"
 #include "RenX_Server.h"
+#include "RenX_SetJoin.h"
 
-const Jupiter::ReferenceString configSection(STRING_LITERAL_AS_REFERENCE("RenX.SetJoin"));
+using namespace Jupiter::literals;
+
+RenX_SetJoinPlugin::RenX_SetJoinPlugin()
+{
+	RenX_SetJoinPlugin::setjoin_file.readFile(Jupiter::IRC::Client::Config->get(this->getName(), "SetJoinFile"_jrs, "RenX.SetJoin.ini"_jrs));
+}
 
 void RenX_SetJoinPlugin::RenX_OnJoin(RenX::Server *server, const RenX::PlayerInfo *player)
 {
 	if (player->uuid.isNotEmpty())
 	{
-		const Jupiter::ReadableString &setjoin = Jupiter::IRC::Client::Config->get(configSection, player->uuid);
+		const Jupiter::ReadableString &setjoin = RenX_SetJoinPlugin::setjoin_file.get(Jupiter::ReferenceString::empty, player->uuid);
 		if (setjoin.isNotEmpty())
 			server->sendMessage(Jupiter::StringS::Format("[%.*s] %.*s", player->name.size(), player->name.ptr(), setjoin.size(), setjoin.ptr()));
 	}
 }
 
+// Plugin instantiation and entry point.
+RenX_SetJoinPlugin pluginInstance;
+
 // ViewJoin Game Command
 
 void ViewJoinGameCommand::create()
 {
-	this->addTrigger(STRING_LITERAL_AS_REFERENCE("viewjoin"));
-	this->addTrigger(STRING_LITERAL_AS_REFERENCE("vjoin"));
+	this->addTrigger("viewjoin"_jrs);
+	this->addTrigger("vjoin"_jrs);
 }
 
 void ViewJoinGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *player, const Jupiter::ReadableString &parameters)
 {
 	if (player->uuid.isNotEmpty())
 	{
-		const Jupiter::ReadableString &setjoin = Jupiter::IRC::Client::Config->get(configSection, player->uuid);
+		const Jupiter::ReadableString &setjoin = pluginInstance.setjoin_file.get(Jupiter::ReferenceString::empty, player->uuid);
 		if (setjoin.isNotEmpty())
 			source->sendMessage(player, Jupiter::StringS::Format("[%.*s] %.*s", player->name.size(), player->name.ptr(), setjoin.size(), setjoin.ptr()));
-		else source->sendMessage(player, STRING_LITERAL_AS_REFERENCE("Error: No setjoin found."));
+		else source->sendMessage(player, "Error: No setjoin found."_jrs);
 	}
-	else source->sendMessage(player, STRING_LITERAL_AS_REFERENCE("Error: A setjoin message requires steam."));
+	else source->sendMessage(player, "Error: A setjoin message requires steam."_jrs);
 }
 
 const Jupiter::ReadableString &ViewJoinGameCommand::getHelp(const Jupiter::ReadableString &)
@@ -66,20 +74,20 @@ GAME_COMMAND_INIT(ViewJoinGameCommand)
 
 void ShowJoinGameCommand::create()
 {
-	this->addTrigger(STRING_LITERAL_AS_REFERENCE("showjoin"));
-	this->addTrigger(STRING_LITERAL_AS_REFERENCE("shjoin"));
+	this->addTrigger("showjoin"_jrs);
+	this->addTrigger("shjoin"_jrs);
 }
 
 void ShowJoinGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *player, const Jupiter::ReadableString &parameters)
 {
 	if (player->uuid.isNotEmpty())
 	{
-		const Jupiter::ReadableString &setjoin = Jupiter::IRC::Client::Config->get(configSection, player->uuid);
+		const Jupiter::ReadableString &setjoin = pluginInstance.setjoin_file.get(Jupiter::ReferenceString::empty, player->uuid);
 		if (setjoin.isNotEmpty())
 			source->sendMessage(Jupiter::StringS::Format("[%.*s] %.*s", player->name.size(), player->name.ptr(), setjoin.size(), setjoin.ptr()));
-		else source->sendMessage(player, STRING_LITERAL_AS_REFERENCE("Error: No setjoin found."));
+		else source->sendMessage(player, "Error: No setjoin found."_jrs);
 	}
-	else source->sendMessage(player, STRING_LITERAL_AS_REFERENCE("Error: A setjoin message requires steam."));
+	else source->sendMessage(player, "Error: A setjoin message requires steam."_jrs);
 }
 
 const Jupiter::ReadableString &ShowJoinGameCommand::getHelp(const Jupiter::ReadableString &)
@@ -94,21 +102,21 @@ GAME_COMMAND_INIT(ShowJoinGameCommand)
 
 void DelJoinGameCommand::create()
 {
-	this->addTrigger(STRING_LITERAL_AS_REFERENCE("deljoin"));
-	this->addTrigger(STRING_LITERAL_AS_REFERENCE("remjoin"));
-	this->addTrigger(STRING_LITERAL_AS_REFERENCE("djoin"));
-	this->addTrigger(STRING_LITERAL_AS_REFERENCE("rjoin"));
+	this->addTrigger("deljoin"_jrs);
+	this->addTrigger("remjoin"_jrs);
+	this->addTrigger("djoin"_jrs);
+	this->addTrigger("rjoin"_jrs);
 }
 
 void DelJoinGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *player, const Jupiter::ReadableString &)
 {
 	if (player->uuid.isNotEmpty())
 	{
-		if (Jupiter::IRC::Client::Config->remove(configSection, player->uuid))
+		if (pluginInstance.setjoin_file.remove(Jupiter::ReferenceString::empty, player->uuid))
 			source->sendMessage(player, Jupiter::StringS::Format("%.*s, your join message has been removed.", player->name.size(), player->name.ptr()));
-		else source->sendMessage(player, STRING_LITERAL_AS_REFERENCE("Error: Setjoin not found."));
+		else source->sendMessage(player, "Error: Setjoin not found."_jrs);
 	}
-	else source->sendMessage(player, STRING_LITERAL_AS_REFERENCE("Error: A setjoin message requires steam."));
+	else source->sendMessage(player, "Error: A setjoin message requires steam."_jrs);
 }
 
 const Jupiter::ReadableString &DelJoinGameCommand::getHelp(const Jupiter::ReadableString &)
@@ -123,8 +131,8 @@ GAME_COMMAND_INIT(DelJoinGameCommand)
 
 void SetJoinGameCommand::create()
 {
-	this->addTrigger(STRING_LITERAL_AS_REFERENCE("setjoin"));
-	this->addTrigger(STRING_LITERAL_AS_REFERENCE("sjoin"));
+	this->addTrigger("setjoin"_jrs);
+	this->addTrigger("sjoin"_jrs);
 }
 
 void SetJoinGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *player, const Jupiter::ReadableString &parameters)
@@ -133,13 +141,13 @@ void SetJoinGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *player,
 	{
 		if (parameters.isNotEmpty())
 		{
-			Jupiter::IRC::Client::Config->set(configSection, player->uuid, parameters);
-			Jupiter::IRC::Client::Config->sync();
+			pluginInstance.setjoin_file.set(Jupiter::ReferenceString::empty, player->uuid, parameters);
+			pluginInstance.setjoin_file.sync();
 			source->sendMessage(player, Jupiter::StringS::Format("%.*s, your join message is now: %.*s", player->name.size(), player->name.ptr(), parameters.size(), parameters.ptr()));
 		}
 		else DelJoinGameCommand_instance.trigger(source, player, parameters);
 	}
-	else source->sendMessage(player, STRING_LITERAL_AS_REFERENCE("Error: A setjoin message requires steam."));
+	else source->sendMessage(player, "Error: A setjoin message requires steam."_jrs);
 }
 
 const Jupiter::ReadableString &SetJoinGameCommand::getHelp(const Jupiter::ReadableString &)
@@ -149,9 +157,6 @@ const Jupiter::ReadableString &SetJoinGameCommand::getHelp(const Jupiter::Readab
 }
 
 GAME_COMMAND_INIT(SetJoinGameCommand)
-
-// Plugin instantiation and entry point.
-RenX_SetJoinPlugin pluginInstance;
 
 extern "C" __declspec(dllexport) Jupiter::Plugin *getPlugin()
 {
