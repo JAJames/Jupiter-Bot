@@ -71,6 +71,11 @@ void RenX::Plugin::RenX_OnServerCreate(Server *)
 	return;
 }
 
+void RenX::Plugin::RenX_OnServerFullyConnected(Server *)
+{
+	return;
+}
+
 void RenX::Plugin::RenX_OnServerDisconnect(Server *, RenX::DisconnectReason)
 {
 	return;

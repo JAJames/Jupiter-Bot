@@ -56,6 +56,7 @@ namespace RenX
 		Jupiter::StringS character;
 		Jupiter::StringS vehicle;
 		Jupiter::StringS rdns;
+		Jupiter::StringS hwid;
 		std::mutex rdns_mutex;
 		uint64_t steamid = 0;
 		uint32_t ip32 = 0;

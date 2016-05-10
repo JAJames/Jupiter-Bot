@@ -62,6 +62,9 @@
     <ClInclude Include="RenX_LadderDatabase.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="RenX_TeamInfo.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="RenX_Plugin.cpp">

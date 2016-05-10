@@ -176,7 +176,12 @@ int RenX_ModSystemPlugin::auth(RenX::Server *server, const RenX::PlayerInfo *pla
 				{
 					server->sendMessage(player, Jupiter::StringS::Format("You are now authenticated with access level %d; group: %.*s.", player->access, group->name.size(), group->name.ptr()));
 					if (server->isDevBot())
-						server->sendData(Jupiter::StringS::Format("d%d\n", player->id));
+					{
+						if (server->getVersion() >= 4)
+							server->sendData(Jupiter::StringS::Format("xset_dev %d\n", player->id));
+						else
+							server->sendData(Jupiter::StringS::Format("xset_dev%c%d\n", RenX::DelimC, player->id));
+					}
 				}
 				Jupiter::String playerName = RenX::getFormattedPlayerName(player);
 				server->sendLogChan(IRCCOLOR "03[Authentication] " IRCBOLD "%.*s" IRCBOLD IRCCOLOR " is now authenticated with access level %d; group: %.*s.", playerName.size(), playerName.ptr(), player->access, group->name.size(), group->name.ptr());

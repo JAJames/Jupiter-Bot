@@ -146,15 +146,6 @@ namespace RenX
 	RENX_API Jupiter::StringS formatGUID(const RenX::Map &map);
 
 	/**
-	* @brief Sanitizes a string into a RCON-ready state by replacing special
-	* characters with HTML-style character codes.
-	* Note: This resolves the pipe character ('|') exploit.
-	*
-	* @brief str String to sanitize.
-	*/
-	RENX_API void sanitizeString(Jupiter::StringType &str);
-
-	/**
 	* @brief Calculates for how many seconds a player has been in the server.
 	*
 	* @param player A player's data.
@@ -190,8 +181,17 @@ namespace RenX
 	*/
 	RENX_API double getHeadshotKillRatio(const RenX::PlayerInfo *player);
 
+	/**
+	* @brief Escapifies a string so that it can be safely transmitted over RCON.
+	*
+	* @param str String to escapify
+	* @return Escapified version of str.
+	*/
+	RENX_API Jupiter::String escapifyRCON(const Jupiter::ReadableString &str);
+
 	/** Constant variables */
 	RENX_API extern const char DelimC; /** RCON message deliminator */
+	RENX_API extern const char DelimC3; /** RCON message deliminator for RCON version number 003 */
 	RENX_API extern const Jupiter::ReferenceString DevBotName;
 }
 

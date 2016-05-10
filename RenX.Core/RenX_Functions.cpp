@@ -44,7 +44,8 @@ Jupiter::ReferenceString GDILongName = "Global Defense Initiative";
 Jupiter::ReferenceString OtherLongName = "Unknown";
 
 /** RenegadeX RCON protocol message deliminator */
-const char RenX::DelimC = '\xA0';
+const char RenX::DelimC = '\x02';
+const char RenX::DelimC3 = '\xA0';
 const Jupiter::ReferenceString RenX::DevBotName = "DevBot"_jrs;
 
 /** WinType translations */
@@ -877,16 +878,6 @@ Jupiter::StringS RenX::formatGUID(const RenX::Map &map)
 	return Jupiter::StringS::Format("%.16llX%.16llX", map.guid[0], map.guid[1]);
 }
 
-void RenX::sanitizeString(Jupiter::StringType &str)
-{
-	if (str.isNotEmpty())
-	{
-		str.replace('|', '/');
-		if (str.get(str.size() - 1) == '\\')
-			str.set(str.size() - 1, '/');
-	}
-}
-
 std::chrono::milliseconds RenX::getServerTime(const RenX::PlayerInfo *player)
 {
 	return std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - player->joinTime);
@@ -911,4 +902,81 @@ double RenX::getHeadshotKillRatio(const RenX::PlayerInfo *player)
 {
 	if (player->kills == 0) return 0;
 	return ((double)player->headshots) / ((double)player->kills);
+}
+
+Jupiter::String RenX::escapifyRCON(const Jupiter::ReadableString &str)
+{
+	const char *ptr = str.ptr();
+	size_t length = str.size();
+	Jupiter::String result(str.size() + 32);
+	uint16_t value;
+
+	while (length != 0)
+	{
+		if ((*ptr & 0x80) != 0) // UTF-8 sequence
+		{
+			if (length < 2)
+				break;
+
+			if ((*ptr & 0x40) != 0) // validity check
+			{
+				// get codepoint value
+				if ((*ptr & 0x20) != 0)
+				{
+					if (length < 3)
+						break;
+
+					if ((*ptr & 0x10) != 0) // This is a 4 byte sequence, which we can not fit into a 16-bit codepoint. ignore it.
+					{
+						if (length < 4)
+							break;
+
+						ptr += 4;
+						length -= 4;
+						continue;
+					}
+					else
+					{
+						// this is a 3 byte sequence
+						value = (*ptr & 0x0F) << 12;
+						value += (*++ptr & 0x3F) << 6;
+						value += *++ptr & 0x3F;
+
+						length -= 3;
+					}
+				}
+				else
+				{
+					// This is a 2 byte sequence
+					value = (*ptr & 0x1F) << 6;
+					value += *++ptr & 0x3F;
+
+					length -= 2;
+				}
+
+				// write escape sequence
+				result += '\\';
+				result += 'u';
+				result += Jupiter_asHex_upper(value >> 8);
+				result += Jupiter_asHex_upper(value & 0x00FF);
+
+				printf(ENDL ENDL ENDL "\\u%x%x" ENDL ENDL ENDL ENDL, value >> 8, value & 0x00FF);
+			}
+			// else // This is an invalid 1 byte sequence
+		}
+		else if (*ptr == '\\') // backslash, which is used for escape sequencing
+		{
+			result += '\\';
+			result += '\\';
+			--length;
+		}
+		else // an ordinary character
+		{
+			result += *ptr;
+			--length;
+		}
+
+		++ptr;
+	}
+	return result;
 }

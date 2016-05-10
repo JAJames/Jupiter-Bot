@@ -98,6 +98,21 @@ namespace RenX
 		bool isConnected() const;
 
 		/**
+		* @brief Checks if the server is currently subscribed to.
+		*
+		* @return True if the server is subscribed, false otherwise.
+		*/
+		bool isSubscribed() const;
+
+		/**
+		* @brief Checks if the server has been fully connected to.
+		* Note: This is true after all of the initial commands have received a response, after isSubscribed() is true.
+		*
+		* @return True if the server is fully connected, false otherwise.
+		*/
+		bool isFullyConnected() const;
+
+		/**
 		* @brief Checks if a map start event has fired.
 		*
 		* @return True if a map start event has fired, false otherwise.
@@ -700,11 +715,37 @@ namespace RenX
 		std::chrono::milliseconds getDelay() const;
 
 		/**
+		server->getMineLimit(),
+		json_bool_as_cstring(server->isSteamRequired()),
+		json_bool_as_cstring(server->isPrivateMessageTeamOnly()),
+		json_bool_as_cstring(server->isPassworded()),
+		json_bool_as_cstring(server->isPrivateMessagingEnabled()),
+		server->getPlayerLimit(),
+		server->getVehicleLimit(),
+		json_bool_as_cstring(server->isAutoBalanceTeams()),
+		json_bool_as_cstring(server->isCratesEnabled()),
+		server->getCrateRespawnDelay(),
+		server->getTimeLimit(),
+		*/
+
+		int getMineLimit() const;
+		int getPlayerLimit() const;
+		int getVehicleLimit() const;
+		int getTimeLimit() const;
+		double getCrateRespawnDelay() const;
+		bool isSteamRequired() const;
+		bool isPrivateMessageTeamOnly() const;
+		bool isPrivateMessagingEnabled() const;
+
+		/**
 		* @brief Checks if the server has a game password.
 		*
 		* @return True if the game is passworded, false otherwise.
 		*/
 		bool isPassworded() const;
+		
+		bool isAutoBalanceEnabled() const;
+		bool isCratesEnabled() const;
 
 		/**
 		* @brief Fetches the RCON password of a server.
@@ -952,6 +993,8 @@ namespace RenX
 		bool gameover_pending = false;
 		bool pure = false;
 		bool connected = false;
+		bool subscribed = false;
+		bool fully_connected = false;
 		bool seamless = false;
 		bool needsCList = false;
 		bool silenceParts = false;
