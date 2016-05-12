@@ -89,6 +89,7 @@ TagsImp::TagsImp()
 	this->INTERNAL_NAME_TAG = this->getUniqueInternalTag();
 	this->INTERNAL_RAW_NAME_TAG = this->getUniqueInternalTag();
 	this->INTERNAL_IP_TAG = this->getUniqueInternalTag();
+	this->INTERNAL_HWID_TAG = this->getUniqueInternalTag();
 	this->INTERNAL_RDNS_TAG = this->getUniqueInternalTag();
 	this->INTERNAL_STEAM_TAG = this->getUniqueInternalTag();
 	this->INTERNAL_UUID_TAG = this->getUniqueInternalTag();
@@ -141,6 +142,7 @@ TagsImp::TagsImp()
 	this->INTERNAL_VICTIM_NAME_TAG = this->getUniqueInternalTag();
 	this->INTERNAL_VICTIM_RAW_NAME_TAG = this->getUniqueInternalTag();
 	this->INTERNAL_VICTIM_IP_TAG = this->getUniqueInternalTag();
+	this->INTERNAL_VICTIM_HWID_TAG = this->getUniqueInternalTag();
 	this->INTERNAL_VICTIM_RDNS_TAG = this->getUniqueInternalTag();
 	this->INTERNAL_VICTIM_STEAM_TAG = this->getUniqueInternalTag();
 	this->INTERNAL_VICTIM_UUID_TAG = this->getUniqueInternalTag();
@@ -273,6 +275,7 @@ TagsImp::TagsImp()
 	this->nameTag = Jupiter::IRC::Client::Config->get(configSection, "NameTag"_jrs, "{NAME}"_jrs);
 	this->rawNameTag = Jupiter::IRC::Client::Config->get(configSection, "RawNameTag"_jrs, "{RNAME}"_jrs);
 	this->ipTag = Jupiter::IRC::Client::Config->get(configSection, "IPTag"_jrs, "{IP}"_jrs);
+	this->hwidTag = Jupiter::IRC::Client::Config->get(configSection, "HWIDTag"_jrs, "{HWID}"_jrs);
 	this->rdnsTag = Jupiter::IRC::Client::Config->get(configSection, "RDNSTag"_jrs, "{RDNS}"_jrs);
 	this->steamTag = Jupiter::IRC::Client::Config->get(configSection, "SteamTag"_jrs, "{STEAM}"_jrs);
 	this->uuidTag = Jupiter::IRC::Client::Config->get(configSection, "UUIDTag"_jrs, "{UUID}"_jrs);
@@ -325,6 +328,7 @@ TagsImp::TagsImp()
 	this->victimNameTag = Jupiter::IRC::Client::Config->get(configSection, "VictimNameTag"_jrs, "{VNAME}"_jrs);
 	this->victimRawNameTag = Jupiter::IRC::Client::Config->get(configSection, "VictimRawNameTag"_jrs, "{VRNAME}"_jrs);
 	this->victimIPTag = Jupiter::IRC::Client::Config->get(configSection, "VictimIPTag"_jrs, "{VIP}"_jrs);
+	this->victimHWIDTag = Jupiter::IRC::Client::Config->get(configSection, "VictimHWIDTag"_jrs, "{VHWID}"_jrs);
 	this->victimRDNSTag = Jupiter::IRC::Client::Config->get(configSection, "VictimRDNSTag"_jrs, "{VRDNS}"_jrs);
 	this->victimSteamTag = Jupiter::IRC::Client::Config->get(configSection, "VictimSteamTag"_jrs, "{VSTEAM}"_jrs);
 	this->victimUUIDTag = Jupiter::IRC::Client::Config->get(configSection, "VictimUUIDTag"_jrs, "{VUUID}"_jrs);
@@ -474,6 +478,7 @@ void TagsImp::processTags(Jupiter::StringType &msg, const RenX::Server *server, 
 		PROCESS_TAG(this->INTERNAL_NAME_TAG, RenX::getFormattedPlayerName(player));
 		PROCESS_TAG(this->INTERNAL_RAW_NAME_TAG, player->name);
 		PROCESS_TAG(this->INTERNAL_IP_TAG, player->ip);
+		PROCESS_TAG(this->INTERNAL_HWID_TAG, player->hwid);
 		if (player->rdns_thread.joinable())
 		{
 			PROCESS_TAG(this->INTERNAL_RDNS_TAG, RenX::rdns_pending);
@@ -519,6 +524,7 @@ void TagsImp::processTags(Jupiter::StringType &msg, const RenX::Server *server, 
 		PROCESS_TAG(this->INTERNAL_VICTIM_NAME_TAG, RenX::getFormattedPlayerName(victim));
 		PROCESS_TAG(this->INTERNAL_VICTIM_RAW_NAME_TAG, victim->name);
 		PROCESS_TAG(this->INTERNAL_VICTIM_IP_TAG, victim->ip);
+		PROCESS_TAG(this->INTERNAL_VICTIM_HWID_TAG, victim->hwid);
 		if (victim->rdns_thread.joinable())
 		{
 			PROCESS_TAG(this->INTERNAL_VICTIM_RDNS_TAG, RenX::rdns_pending);
@@ -701,6 +707,7 @@ void TagsImp::sanitizeTags(Jupiter::StringType &fmt)
 	fmt.replace(this->nameTag, this->INTERNAL_NAME_TAG);
 	fmt.replace(this->rawNameTag, this->INTERNAL_RAW_NAME_TAG);
 	fmt.replace(this->ipTag, this->INTERNAL_IP_TAG);
+	fmt.replace(this->hwidTag, this->INTERNAL_HWID_TAG);
 	fmt.replace(this->rdnsTag, this->INTERNAL_RDNS_TAG);
 	fmt.replace(this->steamTag, this->INTERNAL_STEAM_TAG);
 	fmt.replace(this->uuidTag, this->INTERNAL_UUID_TAG);
@@ -753,6 +760,7 @@ void TagsImp::sanitizeTags(Jupiter::StringType &fmt)
 	fmt.replace(this->victimNameTag, this->INTERNAL_VICTIM_NAME_TAG);
 	fmt.replace(this->victimRawNameTag, this->INTERNAL_VICTIM_RAW_NAME_TAG);
 	fmt.replace(this->victimIPTag, this->INTERNAL_VICTIM_IP_TAG);
+	fmt.replace(this->victimHWIDTag, this->INTERNAL_VICTIM_HWID_TAG);
 	fmt.replace(this->victimRDNSTag, this->INTERNAL_VICTIM_RDNS_TAG);
 	fmt.replace(this->victimSteamTag, this->INTERNAL_VICTIM_STEAM_TAG);
 	fmt.replace(this->victimUUIDTag, this->INTERNAL_VICTIM_UUID_TAG);

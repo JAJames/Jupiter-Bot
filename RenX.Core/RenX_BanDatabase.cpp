@@ -54,6 +54,8 @@ void RenX::BanDatabase::process_data(Jupiter::DataBuffer &buffer, FILE *file, fp
 	entry->steamid = buffer.pop<uint64_t>();
 	entry->ip = buffer.pop<uint32_t>();
 	entry->prefix_length = buffer.pop<uint8_t>();
+	if (this->read_version >= 5U)
+		entry->hwid = buffer.pop<Jupiter::String_Strict, char>();
 	entry->rdns = buffer.pop<Jupiter::String_Strict, char>();
 	entry->name = buffer.pop<Jupiter::String_Strict, char>();
 	entry->banner = buffer.pop<Jupiter::String_Strict, char>();
@@ -93,6 +95,15 @@ void RenX::BanDatabase::process_file_finish(FILE *file)
 		}
 		return;
 	}
+	else if (RenX::BanDatabase::read_version < RenX::BanDatabase::write_version)
+	{
+		if (freopen(RenX::BanDatabase::filename.c_str(), "wb", file) != nullptr)
+		{
+			this->create_header(file);
+			for (size_t index = 0; index != RenX::BanDatabase::entries.size(); ++index)
+				RenX::BanDatabase::write(RenX::BanDatabase::entries.get(index), file);
+		}
+	}
 
 	fgetpos(file, std::addressof(RenX::BanDatabase::eof));
 }
@@ -103,7 +114,7 @@ void RenX::BanDatabase::upgrade_database()
 	if (file != nullptr)
 	{
 		this->create_header(file);
-		for (size_t index = 0; RenX::BanDatabase::entries.size(); ++index)
+		for (size_t index = 0; index != RenX::BanDatabase::entries.size(); ++index)
 			RenX::BanDatabase::write(RenX::BanDatabase::entries.get(index), file);
 		
 		fclose(file);
@@ -133,6 +144,7 @@ void RenX::BanDatabase::write(RenX::BanDatabase::Entry *entry, FILE *file)
 	buffer.push(entry->steamid);
 	buffer.push(entry->ip);
 	buffer.push(entry->prefix_length);
+	buffer.push(entry->hwid);
 	buffer.push(entry->rdns);
 	buffer.push(entry->name);
 	buffer.push(entry->banner);
@@ -165,6 +177,7 @@ void RenX::BanDatabase::add(RenX::Server *server, const RenX::PlayerInfo *player
 	entry->steamid = player->steamid;
 	entry->ip = player->ip32;
 	entry->prefix_length = 32U;
+	entry->hwid = player->hwid;
 	if (player->rdns_thread.joinable())
 		player->rdns_thread.join();
 	entry->rdns = player->rdns;
@@ -183,7 +196,7 @@ void RenX::BanDatabase::add(RenX::Server *server, const RenX::PlayerInfo *player
 	RenX::BanDatabase::write(entry);
 }
 
-void RenX::BanDatabase::add(const Jupiter::ReadableString &name, uint32_t ip, uint8_t prefix_length, uint64_t steamid, const Jupiter::ReadableString &rdns, const Jupiter::ReadableString &banner, Jupiter::ReadableString &reason, std::chrono::seconds length, uint16_t flags)
+void RenX::BanDatabase::add(const Jupiter::ReadableString &name, uint32_t ip, uint8_t prefix_length, uint64_t steamid, const Jupiter::ReadableString &hwid, const Jupiter::ReadableString &rdns, const Jupiter::ReadableString &banner, Jupiter::ReadableString &reason, std::chrono::seconds length, uint16_t flags)
 {
 	Entry *entry = new Entry();
 	entry->set_active();
@@ -193,6 +206,7 @@ void RenX::BanDatabase::add(const Jupiter::ReadableString &name, uint32_t ip, ui
 	entry->steamid = steamid;
 	entry->ip = ip;
 	entry->prefix_length = prefix_length;
+	entry->hwid = hwid;
 	entry->rdns = rdns;
 	entry->name = name;
 	entry->banner = banner;

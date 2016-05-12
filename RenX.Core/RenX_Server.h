@@ -1044,6 +1044,7 @@ namespace RenX
 		bool localBan;
 		bool localSteamBan;
 		bool localIPBan;
+		bool localHWIDBan;
 		bool localRDNSBan;
 		bool localNameBan;
 		bool neverSay;

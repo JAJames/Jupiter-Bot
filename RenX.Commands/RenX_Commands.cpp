@@ -68,7 +68,7 @@ int RenX_CommandsPlugin::OnRehash()
 {
 	RenX_CommandsPlugin::_defaultTempBanTime = std::chrono::seconds(Jupiter::IRC::Client::Config->getLongLong(RenX_CommandsPlugin::getName(), STRING_LITERAL_AS_REFERENCE("TBanTime"), 86400));
 	RenX_CommandsPlugin::playerInfoFormat = Jupiter::IRC::Client::Config->get(RenX_CommandsPlugin::getName(), STRING_LITERAL_AS_REFERENCE("PlayerInfoFormat"), STRING_LITERAL_AS_REFERENCE(IRCCOLOR "03[Player Info]" IRCCOLOR "{TCOLOR} Name: " IRCBOLD "{RNAME}" IRCBOLD " - ID: {ID} - Team: " IRCBOLD "{TEAML}" IRCBOLD " - Vehicle Kills: {VEHICLEKILLS} - Building Kills {BUILDINGKILLS} - Kills {KILLS} - Deaths: {DEATHS} - KDR: {KDR} - Access: {ACCESS}"));
-	RenX_CommandsPlugin::adminPlayerInfoFormat = Jupiter::IRC::Client::Config->get(RenX_CommandsPlugin::getName(), STRING_LITERAL_AS_REFERENCE("AdminPlayerInfoFormat"), Jupiter::StringS::Format("%.*s - IP: " IRCBOLD "{IP}" IRCBOLD " - RDNS: " IRCBOLD "{RDNS}" IRCBOLD " - Steam ID: " IRCBOLD "{STEAM}", RenX_CommandsPlugin::playerInfoFormat.size(), RenX_CommandsPlugin::playerInfoFormat.ptr()));
+	RenX_CommandsPlugin::adminPlayerInfoFormat = Jupiter::IRC::Client::Config->get(RenX_CommandsPlugin::getName(), STRING_LITERAL_AS_REFERENCE("AdminPlayerInfoFormat"), Jupiter::StringS::Format("%.*s - IP: " IRCBOLD "{IP}" IRCBOLD " - HWID: " IRCBOLD "{HWID}" IRCBOLD " - RDNS: " IRCBOLD "{RDNS}" IRCBOLD " - Steam ID: " IRCBOLD "{STEAM}", RenX_CommandsPlugin::playerInfoFormat.size(), RenX_CommandsPlugin::playerInfoFormat.ptr()));
 	RenX_CommandsPlugin::buildingInfoFormat = Jupiter::IRC::Client::Config->get(RenX_CommandsPlugin::getName(), STRING_LITERAL_AS_REFERENCE("BuildingInfoFormat"), STRING_LITERAL_AS_REFERENCE(IRCCOLOR) + RenX::tags->buildingTeamColorTag + RenX::tags->buildingNameTag + STRING_LITERAL_AS_REFERENCE(IRCCOLOR " - " IRCCOLOR "07") + RenX::tags->buildingHealthPercentageTag + STRING_LITERAL_AS_REFERENCE("%"));
 	RenX_CommandsPlugin::staffTitle = Jupiter::IRC::Client::Config->get(RenX_CommandsPlugin::getName(), STRING_LITERAL_AS_REFERENCE("StaffTitle"), STRING_LITERAL_AS_REFERENCE("Moderator"));
 
@@ -1865,15 +1865,17 @@ void BanSearchIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString
 					return true;
 				case 2:	// IP
 					return entry->ip == params.asUnsignedInt();
-				case 3: // RDNS
+				case 3: // HWID
+					return entry->hwid.equals(params);
+				case 4: // RDNS
 					return entry->rdns.equals(params);
-				case 4:	// STEAM
+				case 5:	// STEAM
 					return entry->steamid == params.asUnsignedLongLong();
-				case 5:	// NAME
+				case 6:	// NAME
 					return entry->name.equalsi(params);
-				case 6:	// BANNER
+				case 7:	// BANNER
 					return entry->banner.equalsi(params);
-				case 7:	// ACTIVE
+				case 8:	// ACTIVE
 					return params.asBool() == entry->is_active();
 				}
 			};
@@ -1884,16 +1886,18 @@ void BanSearchIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString
 				type = 1;
 			else if (type_str.equalsi(STRING_LITERAL_AS_REFERENCE("ip")))
 				type = 2;
-			else if (type_str.equalsi(STRING_LITERAL_AS_REFERENCE("rdns")))
+			else if (type_str.equalsi(STRING_LITERAL_AS_REFERENCE("hwid")))
 				type = 3;
-			else if (type_str.equalsi(STRING_LITERAL_AS_REFERENCE("steam")))
+			else if (type_str.equalsi(STRING_LITERAL_AS_REFERENCE("rdns")))
 				type = 4;
-			else if (type_str.equalsi(STRING_LITERAL_AS_REFERENCE("name")))
+			else if (type_str.equalsi(STRING_LITERAL_AS_REFERENCE("steam")))
 				type = 5;
-			else if (type_str.equalsi(STRING_LITERAL_AS_REFERENCE("banner")))
+			else if (type_str.equalsi(STRING_LITERAL_AS_REFERENCE("name")))
 				type = 6;
-			else if (type_str.equalsi(STRING_LITERAL_AS_REFERENCE("active")))
+			else if (type_str.equalsi(STRING_LITERAL_AS_REFERENCE("banner")))
 				type = 7;
+			else if (type_str.equalsi(STRING_LITERAL_AS_REFERENCE("active")))
+				type = 8;
 			else
 			{
 				type = 0;
@@ -1935,9 +1939,9 @@ void BanSearchIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString
 						types += ";"_jrs;
 					}
 
-					out.format("ID: %lu (" IRCCOLOR "%sactive" IRCCOLOR "); Date: %s; IP: %.*s/%u; Steam: %llu; Types:%.*s Name: %.*s; Banner: %.*s",
-						i, entry->is_active() ? "12" : "04in", timeStr, ip_str.size(), ip_str.ptr(), entry->prefix_length, entry->steamid, types.size(), types.ptr(),
-						entry->name.size(), entry->name.ptr(), entry->banner.size(), entry->banner.ptr());
+					out.format("ID: %lu (" IRCCOLOR "%sactive" IRCCOLOR "); Date: %s; IP: %.*s/%u; HWID: %.*s; Steam: %llu; Types:%.*s Name: %.*s; Banner: %.*s",
+						i, entry->is_active() ? "12" : "04in", timeStr, ip_str.size(), ip_str.ptr(), entry->prefix_length, entry->hwid.size(), entry->hwid.ptr(), entry->steamid,
+						types.size(), types.ptr(), entry->name.size(), entry->name.ptr(), entry->banner.size(), entry->banner.ptr());
 
 					if (entry->rdns.isNotEmpty())
 					{
@@ -2119,6 +2123,7 @@ void AddBanIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &c
 				uint32_t ip = 0U;
 				uint8_t prefix_length = 32U;
 				uint64_t steamid = 0U;
+				Jupiter::ReferenceString hwid;
 				Jupiter::StringS rdns;
 				Jupiter::String banner = nick + "@IRC"_jrs;
 				Jupiter::ReferenceString reason = "No reason"_jrs;
@@ -2159,6 +2164,16 @@ void AddBanIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &c
 						}
 
 						steamid = Jupiter::ReferenceString::getWord(parameters, index++, ADDBAN_WHITESPACE).asUnsignedLongLong();
+					}
+					else if (word.equalsi("HWID"_jrs) || word.equalsi("HardwareID"_jrs))
+					{
+						if (index == words)
+						{
+							source->sendNotice(nick, "ERROR: No value specified for token: "_jrs + word);
+							return;
+						}
+
+						hwid = Jupiter::ReferenceString::getWord(parameters, index++, ADDBAN_WHITESPACE);
 					}
 					else if (word.equalsi("RDNS"_jrs) || word.equalsi("DNS"_jrs))
 					{
@@ -2232,7 +2247,7 @@ void AddBanIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &c
 				else
 					flags |= RenX::BanDatabase::Entry::FLAG_USE_RDNS;
 
-				RenX::banDatabase->add(name, ip, prefix_length, steamid, rdns, banner, reason, duration, flags);
+				RenX::banDatabase->add(name, ip, prefix_length, steamid, hwid, rdns, banner, reason, duration, flags);
 				RenX::getCore()->banCheck();
 				source->sendMessage(channel, Jupiter::StringS::Format("Ban added to the database with ID #%u", RenX::banDatabase->getEntries().size() - 1));
 			}
