@@ -160,49 +160,6 @@ Jupiter::StringS server_as_json(const RenX::Server *server)
 		server->getPort(),
 		server->getSocketHostname().size(), server->getSocketHostname().ptr());
 
-
-	// Level Rotation
-	/*if (server->maps.size() != 0)
-	{
-		server_json_block += ",\"Levels\":["_jrs;
-
-		server_json_block += "{\"Name\":\""_jrs;
-		server_json_block += server->maps.get(0)->name;
-		server_json_block += "\",\"GUID\":\""_jrs;
-		server_json_block += RenX::formatGUID(*server->maps.get(0));
-		server_json_block += "\"}"_jrs;
-
-		for (size_t index = 1; index != server->maps.size(); ++index)
-		{
-			server_json_block += ",{\"Name\":\""_jrs;
-			server_json_block += server->maps.get(index)->name;
-			server_json_block += "\",\"GUID\":\""_jrs;
-			server_json_block += RenX::formatGUID(*server->maps.get(index));
-			server_json_block += "\"}"_jrs;
-		}
-
-		server_json_block += "]"_jrs;
-	}
-
-	// Mutators
-	if (server->mutators.size() != 0)
-	{
-		server_json_block += ",\"Mutators\": ["_jrs;
-
-		server_json_block += "{\"Name\":\""_jrs;
-		server_json_block += *server->mutators.get(0);
-		server_json_block += "\"}"_jrs;
-
-		for (size_t index = 1; index != server->mutators.size(); ++index)
-		{
-			server_json_block += ",{\"Name\":\""_jrs;
-			server_json_block += *server->mutators.get(index);
-			server_json_block += "\"}"_jrs;
-		}
-
-		server_json_block += "]"_jrs;
-	}*/
-
 	server_json_block += "}"_jrs;
 
 	return server_json_block;
@@ -373,7 +330,7 @@ void RenX_ServerListPlugin::RenX_OnServerFullyConnected(RenX::Server *server)
 
 	if (server->maps.size() != 0)
 	{
-		server_json_block += ",\"Levels\":["_jrs;
+		server_json_block += "\"Levels\":["_jrs;
 
 		server_json_block += "{\"Name\":\""_jrs;
 		server_json_block += jsonify(server->maps.get(0)->name);
