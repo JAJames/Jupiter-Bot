@@ -183,7 +183,7 @@ void RenX_LoggingPlugin::init()
 	RenX_LoggingPlugin::explodeFmt = Jupiter::IRC::Client::Config->get(this->getName(), "ExplodeFormat"_jrs,
 		Jupiter::StringS::Format("%.*s" IRCCOLOR " detonated a " IRCCOLOR "07%.*s" IRCCOLOR ".", RenX::tags->nameTag.size(), RenX::tags->nameTag.ptr(), RenX::tags->weaponTag.size(), RenX::tags->weaponTag.ptr()));
 
-	RenX_LoggingPlugin::explodeNoOwnerFmt = Jupiter::IRC::Client::Config->get(this->getName(), "ExplodeMoOwnerFormat"_jrs,
+	RenX_LoggingPlugin::explodeNoOwnerFmt = Jupiter::IRC::Client::Config->get(this->getName(), "ExplodeNoOwnerFormat"_jrs,
 		Jupiter::StringS::Format("A " IRCCOLOR "07%.*s" IRCCOLOR " detonated.", RenX::tags->weaponTag.size(), RenX::tags->weaponTag.ptr()));
 
 	RenX_LoggingPlugin::suicideFmt = Jupiter::IRC::Client::Config->get(this->getName(), "SuicideFormat"_jrs,
