@@ -2562,9 +2562,7 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 									{
 										player->global_rank = itr->rank;
 										if (this->rconVersion >= 4)
-											this->sendData(Jupiter::StringS::Format("xset_rank %d %d\n", player->id, player->global_rank));
-										else
-											this->sendData(Jupiter::StringS::Format("xset_rank%c%d%c%d\n", RenX::DelimC3, player->id, RenX::DelimC3, player->global_rank));
+											this->sendData(Jupiter::StringS::Format("dset_rank %d %d\n", player->id, player->global_rank));
 									}
 									break;
 								}
@@ -2632,9 +2630,7 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 							if (this->devBot && player->global_rank != 0U)
 							{
 								if (this->rconVersion >= 4)
-									this->sendData(Jupiter::StringS::Format("xset_rank %d %d\n", player->id, player->global_rank));
-								else
-									this->sendData(Jupiter::StringS::Format("xset_rank%c%d%c%d\n", RenX::DelimC, player->id, RenX::DelimC, player->global_rank));
+									this->sendData(Jupiter::StringS::Format("dset_rank %d %d\n", player->id, player->global_rank));
 							}
 							for (size_t i = 0; i < xPlugins.size(); i++)
 								xPlugins.get(i)->RenX_OnIDChange(this, player, oldID);
@@ -3148,7 +3144,7 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 			}
 			break;
 
-		case 'x':
+		case 'd':
 			{
 				// We don't actually need to use this output for anything atm; tend to this later.
 			}

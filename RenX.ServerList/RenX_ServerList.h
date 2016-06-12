@@ -28,7 +28,7 @@ class RenX_ServerListPlugin : public RenX::Plugin
 public: // RenX_ServerListPlugin
 	Jupiter::ReadableString *getServerListJSON();
 
-	void addServerToServerList(const RenX::Server *server);
+	void addServerToServerList(RenX::Server *server);
 	void updateServerList();
 
 	RenX_ServerListPlugin();
@@ -48,10 +48,11 @@ private:
 	STRING_LITERAL_AS_NAMED_REFERENCE(name, "RenX.ServerList");
 
 	Jupiter::StringS server_list_json;
-	Jupiter::StringS web_hostname, web_path, server_list_page_name, server_page_name;
+	Jupiter::StringS web_hostname, web_path, server_list_page_name, server_list_long_page_name, server_page_name;
 };
 
 Jupiter::ReadableString *handle_server_list_page(const Jupiter::ReadableString &);
+Jupiter::ReadableString *handle_server_list_long_page(const Jupiter::ReadableString &);
 Jupiter::ReadableString *handle_server_page(const Jupiter::ReadableString &query_string);
 
 #endif // _RENX_SERVERLIST_H_HEADER

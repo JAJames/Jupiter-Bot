@@ -959,8 +959,6 @@ Jupiter::String RenX::escapifyRCON(const Jupiter::ReadableString &str)
 				result += 'u';
 				result += Jupiter_asHex_upper(value >> 8);
 				result += Jupiter_asHex_upper(value & 0x00FF);
-
-				printf(ENDL ENDL ENDL "\\u%x%x" ENDL ENDL ENDL ENDL, value >> 8, value & 0x00FF);
 			}
 			// else // This is an invalid 1 byte sequence
 		}

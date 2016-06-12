@@ -178,9 +178,9 @@ int RenX_ModSystemPlugin::auth(RenX::Server *server, const RenX::PlayerInfo *pla
 					if (server->isDevBot())
 					{
 						if (server->getVersion() >= 4)
-							server->sendData(Jupiter::StringS::Format("xset_dev %d\n", player->id));
+							server->sendData(Jupiter::StringS::Format("dset_dev %d\n", player->id));
 						else
-							server->sendData(Jupiter::StringS::Format("xset_dev%c%d\n", RenX::DelimC, player->id));
+							server->sendData(Jupiter::StringS::Format("d%d\n", player->id));
 					}
 				}
 				Jupiter::String playerName = RenX::getFormattedPlayerName(player);
