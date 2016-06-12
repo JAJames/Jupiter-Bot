@@ -944,11 +944,18 @@ namespace RenX
 		void wipeData();
 
 		/**
-		* @brief Fetches the RCON version number, or 0 or none has been set.
+		* @brief Fetches the RCON version number, or 0 if none has been set.
 		*
 		* @return RCON version number
 		*/
 		unsigned int getVersion() const;
+
+		/**
+		* @brief Fetches the game version number, or 0 if none has been set.
+		*
+		* @return Game version number
+		*/
+		unsigned int getGameVersionNumber() const;
 
 		/**
 		* @brief Fetches the game version string, or an empty string if none has been set.
@@ -1020,6 +1027,7 @@ namespace RenX
 		size_t bot_count = 0;
 		size_t player_rdns_resolutions_pending = 0;
 		unsigned int rconVersion = 0;
+		unsigned int gameVersionNumber = 0;
 		double crateRespawnAfterPickup = 0.0;
 		uuid_func calc_uuid;
 		std::chrono::steady_clock::time_point lastAttempt = std::chrono::steady_clock::now();

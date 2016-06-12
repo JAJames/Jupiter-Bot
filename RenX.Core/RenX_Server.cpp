@@ -3173,10 +3173,24 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 			{
 				Jupiter::ReferenceString raw = Jupiter::ReferenceString::substring(line, 1);
 				this->rconVersion = raw.asInt(10);
-				this->gameVersion = raw.substring(3);
 				
 				if (this->rconVersion >= 3)
 				{
+					if (this->rconVersion == 3) // Old format: 003Open Beta 5.12
+						this->gameVersion = raw.substring(3);
+					else // New format: 004 | Game Version Number | Game Version
+					{
+						this->gameVersionNumber = tokens.getToken(1).asInt(10);
+						this->gameVersion = tokens.getToken(2);
+
+						if (this->gameVersion.isEmpty())
+						{
+							RenX::Server::sendLogChan(STRING_LITERAL_AS_REFERENCE(IRCCOLOR "04[Error]" IRCCOLOR " Disconnected from Renegade-X server (Protocol Error)."));
+							this->disconnect(RenX::DisconnectReason::ProtocolError);
+							break;
+						}
+					}
+
 					RenX::Server::sock.send("s\n"_jrs);
 					RenX::Server::send("serverinfo"_jrs);
 					RenX::Server::send("gameinfo"_jrs);
@@ -3186,11 +3200,11 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 					RenX::Server::fetchClientList();
 					RenX::Server::updateBuildingList();
 					RenX::Server::send("ping srv_init_done"_jrs);
-					
+
 					RenX::Server::gameStart = std::chrono::steady_clock::now();
 					this->seenStart = false;
 					this->seamless = true;
-					
+
 					for (size_t i = 0; i < xPlugins.size(); i++)
 						xPlugins.get(i)->RenX_OnVersion(this, raw);
 				}
@@ -3294,6 +3308,11 @@ void RenX::Server::wipeData()
 unsigned int RenX::Server::getVersion() const
 {
 	return RenX::Server::rconVersion;
+}
+
+unsigned int RenX::Server::getGameVersionNumber() const
+{
+	return RenX::Server::gameVersionNumber;
 }
 
 const Jupiter::ReadableString &RenX::Server::getGameVersion() const
