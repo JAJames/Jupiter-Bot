@@ -45,6 +45,7 @@ GOTO EOF
 
 :BinaryCopy:
 ROBOCOPY "Release\\" "..\Jupiter Bot Binaries\\" *.dll *.exe /S
+ROBOCOPY "Configs\\" "..\Jupiter Bot Binaries\Configs\\" *.ini
 ROBOCOPY ".\\" "..\Jupiter Bot Binaries\\" *.ini *.txt
 "C:\Program Files\WinRAR\WinRAR.exe" a -r "..\Jupiter Bot Binaries.zip" "..\Jupiter Bot Binaries"
 GOTO EOF
@@ -52,6 +53,7 @@ GOTO EOF
 :SourceCopy:
 ROBOCOPY ".\\" "..\Jupiter Bot Source\\" *.* /S /XD Release
 ROBOCOPY "Release\\" "..\Jupiter Bot Source\Release\\" *.dll *.exe /S
+ROBOCOPY "Configs\\" "..\Jupiter Bot Source\Configs\\" *.ini
 ROBOCOPY ".\\" "..\Jupiter Bot Source\\" *.ini *.txt
 "C:\Program Files\WinRAR\WinRAR.exe" a -r "..\Jupiter Bot.zip" "..\Jupiter Bot Source"
 GOTO EOF

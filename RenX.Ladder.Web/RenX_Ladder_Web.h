@@ -46,16 +46,13 @@ public:
 	inline size_t getEntriesPerPage() const { return this->entries_per_page; }
 	inline size_t getMinSearchNameLength() const { return this->min_search_name_length; };
 
-	RenX_Ladder_WebPlugin();
+	virtual bool initialize() override;
 	~RenX_Ladder_WebPlugin();
 
 public: // Jupiter::Plugin
-	const Jupiter::ReadableString &getName() override { return name; }
 	int OnRehash() override;
 
 private:
-	STRING_LITERAL_AS_NAMED_REFERENCE(name, "RenX.Ladder.Web");
-
 	/** Configuration variables */
 	size_t entries_per_page;
 	size_t min_search_name_length;

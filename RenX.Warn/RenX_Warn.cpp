@@ -21,16 +21,16 @@
 #include "RenX_PlayerInfo.h"
 #include "RenX_Warn.h"
 
-int RenX_WarnPlugin::OnRehash()
+bool RenX_WarnPlugin::initialize()
 {
-	RenX_WarnPlugin::maxWarns = Jupiter::IRC::Client::Config->getInt(RenX_WarnPlugin::getName(), STRING_LITERAL_AS_REFERENCE("MaxWarns"), 3);
-	RenX_WarnPlugin::warnAction = Jupiter::IRC::Client::Config->getInt(RenX_WarnPlugin::getName(), STRING_LITERAL_AS_REFERENCE("MaxAction"), -1);
-	return 0;
+	RenX_WarnPlugin::maxWarns = this->config.getInt(Jupiter::ReferenceString::empty, STRING_LITERAL_AS_REFERENCE("MaxWarns"), 3);
+	RenX_WarnPlugin::warnAction = this->config.getInt(Jupiter::ReferenceString::empty, STRING_LITERAL_AS_REFERENCE("MaxAction"), -1);
+	return true;
 }
 
-RenX_WarnPlugin::RenX_WarnPlugin()
+int RenX_WarnPlugin::OnRehash()
 {
-	this->OnRehash();
+	return this->initialize() ? 0 : -1;
 }
 
 // Plugin instantiation and entry point.

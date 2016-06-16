@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2014-2015 Jessica James.
+ * Copyright (C) 2014-2016 Jessica James.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -37,16 +37,16 @@ int RenX_ExtraLoggingPlugin::OnRehash()
 {
 	if (RenX_ExtraLoggingPlugin::file != nullptr)
 		fclose(RenX_ExtraLoggingPlugin::file);
-	return !RenX_ExtraLoggingPlugin::init();
+	return this->initialize() ? 0 : -1;
 }
 
-bool RenX_ExtraLoggingPlugin::init()
+bool RenX_ExtraLoggingPlugin::initialize()
 {
-	RenX_ExtraLoggingPlugin::filePrefix = Jupiter::IRC::Client::Config->get(this->getName(), STRING_LITERAL_AS_REFERENCE("FilePrefix"), Jupiter::StringS::Format("[%.*s] %.*s", RenX::tags->timeTag.size(), RenX::tags->timeTag.ptr(), RenX::tags->serverPrefixTag.size(), RenX::tags->serverPrefixTag.ptr()));
-	RenX_ExtraLoggingPlugin::consolePrefix = Jupiter::IRC::Client::Config->get(this->getName(), STRING_LITERAL_AS_REFERENCE("ConsolePrefix"), RenX_ExtraLoggingPlugin::filePrefix);
-	RenX_ExtraLoggingPlugin::newDayFmt = Jupiter::IRC::Client::Config->get(this->getName(), STRING_LITERAL_AS_REFERENCE("NewDayFormat"), Jupiter::StringS::Format("Time: %.*s %.*s", RenX::tags->timeTag.size(), RenX::tags->timeTag.ptr(), RenX::tags->dateTag.size(), RenX::tags->dateTag.ptr()));
-	RenX_ExtraLoggingPlugin::printToConsole = Jupiter::IRC::Client::Config->getBool(this->getName(), STRING_LITERAL_AS_REFERENCE("PrintToConsole"), true);
-	const Jupiter::CStringS logFile = Jupiter::IRC::Client::Config->get(this->getName(), STRING_LITERAL_AS_REFERENCE("LogFile"));
+	RenX_ExtraLoggingPlugin::filePrefix = this->config.get(Jupiter::ReferenceString::empty, STRING_LITERAL_AS_REFERENCE("FilePrefix"), Jupiter::StringS::Format("[%.*s] %.*s", RenX::tags->timeTag.size(), RenX::tags->timeTag.ptr(), RenX::tags->serverPrefixTag.size(), RenX::tags->serverPrefixTag.ptr()));
+	RenX_ExtraLoggingPlugin::consolePrefix = this->config.get(Jupiter::ReferenceString::empty, STRING_LITERAL_AS_REFERENCE("ConsolePrefix"), RenX_ExtraLoggingPlugin::filePrefix);
+	RenX_ExtraLoggingPlugin::newDayFmt = this->config.get(Jupiter::ReferenceString::empty, STRING_LITERAL_AS_REFERENCE("NewDayFormat"), Jupiter::StringS::Format("Time: %.*s %.*s", RenX::tags->timeTag.size(), RenX::tags->timeTag.ptr(), RenX::tags->dateTag.size(), RenX::tags->dateTag.ptr()));
+	RenX_ExtraLoggingPlugin::printToConsole = this->config.getBool(Jupiter::ReferenceString::empty, STRING_LITERAL_AS_REFERENCE("PrintToConsole"), true);
+	const Jupiter::CStringS logFile = this->config.get(Jupiter::ReferenceString::empty, STRING_LITERAL_AS_REFERENCE("LogFile"));
 
 	RenX::sanitizeTags(RenX_ExtraLoggingPlugin::filePrefix);
 	RenX::sanitizeTags(RenX_ExtraLoggingPlugin::consolePrefix);
@@ -114,11 +114,6 @@ void RenX_ExtraLoggingPlugin::RenX_OnRaw(RenX::Server *server, const Jupiter::Re
 
 // Plugin instantiation and entry point.
 RenX_ExtraLoggingPlugin pluginInstance;
-
-extern "C" __declspec(dllexport) bool load()
-{
-	return pluginInstance.init();
-}
 
 extern "C" __declspec(dllexport) Jupiter::Plugin *getPlugin()
 {

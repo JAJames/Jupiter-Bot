@@ -207,7 +207,7 @@ namespace RenX
 		*/
 		const Jupiter::ArrayList<RenX::BanDatabase::Entry> &getEntries() const;
 
-		BanDatabase();
+		virtual bool initialize();
 		~BanDatabase();
 
 	private:

@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2014-2015 Jessica James.
+ * Copyright (C) 2014-2016 Jessica James.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -28,13 +28,10 @@ class RenX_IRCJoinPlugin : public RenX::Plugin
 public: // Jupiter::Plugin
 	void OnJoin(Jupiter::IRC::Client *source, const Jupiter::ReadableString &chan, const Jupiter::ReadableString &nick) override;
 	void OnPart(Jupiter::IRC::Client *source, const Jupiter::ReadableString &chan, const Jupiter::ReadableString &nick, const Jupiter::ReadableString &reason) override;
-	int OnRehash();
-	RenX_IRCJoinPlugin();
-	const Jupiter::ReadableString &getName() override { return name; }
+	virtual bool initialize() override;
+	int OnRehash() override;
 
 private:
-	void init();
-
 	// Config Variables
 	bool publicOnly;
 	bool joinMsgAlways;
@@ -47,9 +44,6 @@ private:
 	Jupiter::StringS joinFmt;
 	Jupiter::StringS partFmt;
 	Jupiter::StringS partFmtNoReason;
-
-	// Internal Variables
-	STRING_LITERAL_AS_NAMED_REFERENCE(name, "RenX.IRCJoin");
 };
 
 #endif // _RENX_IRCJOIN_H_HEADER

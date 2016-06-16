@@ -185,10 +185,10 @@ const Jupiter::ArrayList<RenX::ExemptionDatabase::Entry> &RenX::ExemptionDatabas
 	return RenX::ExemptionDatabase::entries;
 }
 
-RenX::ExemptionDatabase::ExemptionDatabase()
+bool RenX::ExemptionDatabase::initialize()
 {
-	RenX::ExemptionDatabase::filename = Jupiter::IRC::Client::Config->get(STRING_LITERAL_AS_REFERENCE("RenX"), STRING_LITERAL_AS_REFERENCE("ExemptionDB"), STRING_LITERAL_AS_REFERENCE("Exemptions.db"));
-	this->process_file(filename);
+	RenX::ExemptionDatabase::filename = RenX::getCore()->getConfig().get(Jupiter::ReferenceString::empty, STRING_LITERAL_AS_REFERENCE("ExemptionDB"), STRING_LITERAL_AS_REFERENCE("Exemptions.db"));
+	return this->process_file(filename);
 }
 
 RenX::ExemptionDatabase::~ExemptionDatabase()

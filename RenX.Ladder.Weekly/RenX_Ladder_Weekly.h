@@ -27,15 +27,12 @@
 class RenX_Ladder_Weekly_TimePlugin : public RenX::Plugin
 {
 public:
-	const Jupiter::ReadableString &getName() override { return name; }
-
-	RenX_Ladder_Weekly_TimePlugin();
+	virtual bool initialize() override;
 
 	int last_sorted_day;
 	int reset_day;
 private:
 	RenX::LadderDatabase database;
-	STRING_LITERAL_AS_NAMED_REFERENCE(name, "RenX.Ladder.Weekly");
 };
 
 void OnPreUpdateLadder(RenX::LadderDatabase &database, RenX::Server *server, const RenX::TeamType &team);

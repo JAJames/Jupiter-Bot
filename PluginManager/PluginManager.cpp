@@ -47,7 +47,7 @@ GenericCommand::ResponseLine *PluginGenericCommand::trigger(const Jupiter::Reada
 
 	if (parameters.matchi("load *"))
 	{
-		if (Jupiter::loadPlugin(Jupiter::ReferenceString::gotoWord(parameters, 1, WHITESPACE)) == nullptr)
+		if (Jupiter::Plugin::load(Jupiter::ReferenceString::gotoWord(parameters, 1, WHITESPACE)) == nullptr)
 			return ret->set("Error: Failed to load plugin."_jrs, GenericCommand::DisplayType::PublicError);
 		else
 			return ret->set("Plugin successfully loaded."_jrs, GenericCommand::DisplayType::PublicSuccess);
@@ -55,9 +55,9 @@ GenericCommand::ResponseLine *PluginGenericCommand::trigger(const Jupiter::Reada
 	if (parameters.matchi("unload *"))
 	{
 		Jupiter::ReferenceString pluginName = Jupiter::ReferenceString::gotoWord(parameters, 1, WHITESPACE);
-		if (Jupiter::getPlugin(pluginName) == nullptr)
+		if (Jupiter::Plugin::get(pluginName) == nullptr)
 			return ret->set("Error: Plugin does not exist."_jrs, GenericCommand::DisplayType::PublicError);
-		if (Jupiter::freePlugin(pluginName) == false)
+		if (Jupiter::Plugin::free(pluginName) == false)
 			return ret->set("Error: Failed to unload plugin."_jrs, GenericCommand::DisplayType::PublicError);
 		return ret->set("Plugin successfully unloaded."_jrs, GenericCommand::DisplayType::PublicSuccess);
 	}

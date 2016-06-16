@@ -164,7 +164,7 @@ int RenX::Server::OnRehash()
 	unsigned short oldPort = RenX::Server::port;
 	int oldSteamFormat = RenX::Server::steamFormat;
 	RenX::Server::commands.emptyAndDelete();
-	RenX::Server::init();
+	RenX::Server::init(*RenX::getCore()->getConfig().getSection(RenX::Server::configSection));
 	if (RenX::Server::port == 0 || RenX::Server::hostname.isNotEmpty())
 	{
 		RenX::Server::hostname = oldHostname;
@@ -915,13 +915,6 @@ void RenX::Server::setCommandPrefix(const Jupiter::ReadableString &prefix)
 const Jupiter::ReadableString &RenX::Server::getRules() const
 {
 	return RenX::Server::rules;
-}
-
-void RenX::Server::setRules(const Jupiter::ReadableString &rules)
-{
-	RenX::Server::rules = rules;
-	Jupiter::IRC::Client::Config->set(RenX::Server::configSection, "Rules"_jrs, rules);
-	RenX::Server::sendMessage(Jupiter::StringS::Format("NOTICE: The rules have been modified! Rules: %.*s", rules.size(), rules.ptr()));
 }
 
 const Jupiter::ReadableString &RenX::Server::getHostname() const
@@ -3338,43 +3331,43 @@ RenX::Server::Server(const Jupiter::ReadableString &configurationSection)
 {
 	RenX::Server::configSection = configurationSection;
 	RenX::Server::calc_uuid = RenX::default_uuid_func;
-	init();
+	init(*RenX::getCore()->getConfig().getSection(RenX::Server::configSection));
 	Jupiter::ArrayList<RenX::Plugin> &xPlugins = *RenX::getCore()->getPlugins();
 	for (size_t i = 0; i < xPlugins.size(); i++)
 		xPlugins.get(i)->RenX_OnServerCreate(this);
 }
 
-void RenX::Server::init()
+void RenX::Server::init(const Jupiter::INIFile::Section &config)
 {
-	RenX::Server::hostname = Jupiter::IRC::Client::Config->get(RenX::Server::configSection, "Hostname"_jrs, "localhost"_jrs);
-	RenX::Server::port = static_cast<unsigned short>(Jupiter::IRC::Client::Config->getInt(RenX::Server::configSection, "Port"_jrs, 7777));
-	RenX::Server::clientHostname = Jupiter::IRC::Client::Config->get(RenX::Server::configSection, "ClientAddress"_jrs);
-	RenX::Server::pass = Jupiter::IRC::Client::Config->get(RenX::Server::configSection, "Password"_jrs, "renx"_jrs);
+	RenX::Server::hostname = config.get("Hostname"_jrs, "localhost"_jrs);
+	RenX::Server::port = static_cast<unsigned short>(config.getInt("Port"_jrs, 7777));
+	RenX::Server::clientHostname = config.get("ClientAddress"_jrs);
+	RenX::Server::pass = config.get("Password"_jrs, "renx"_jrs);
 
-	RenX::Server::logChanType = Jupiter::IRC::Client::Config->getShort(RenX::Server::configSection, "ChanType"_jrs);
-	RenX::Server::adminLogChanType = Jupiter::IRC::Client::Config->getShort(RenX::Server::configSection, "AdminChanType"_jrs);
+	RenX::Server::logChanType = config.getShort("ChanType"_jrs);
+	RenX::Server::adminLogChanType = config.getShort("AdminChanType"_jrs);
 
-	RenX::Server::setCommandPrefix(Jupiter::IRC::Client::Config->get(RenX::Server::configSection, "CommandPrefix"_jrs));
-	RenX::Server::setPrefix(Jupiter::IRC::Client::Config->get(RenX::Server::configSection, "IRCPrefix"_jrs));
+	RenX::Server::setCommandPrefix(config.get("CommandPrefix"_jrs));
+	RenX::Server::setPrefix(config.get("IRCPrefix"_jrs));
 
-	RenX::Server::ban_from_str = Jupiter::IRC::Client::Config->get(RenX::Server::configSection, "BanFromStr"_jrs, "the server"_jrs);
-	RenX::Server::rules = Jupiter::IRC::Client::Config->get(RenX::Server::configSection, "Rules"_jrs, "Anarchy!"_jrs);
-	RenX::Server::delay = std::chrono::milliseconds(Jupiter::IRC::Client::Config->getInt(RenX::Server::configSection, "ReconnectDelay"_jrs, 10000));
-	RenX::Server::maxAttempts = Jupiter::IRC::Client::Config->getInt(RenX::Server::configSection, "MaxReconnectAttempts"_jrs, -1);
-	RenX::Server::rconBan = Jupiter::IRC::Client::Config->getBool(RenX::Server::configSection, "RCONBan"_jrs, false);
-	RenX::Server::localSteamBan = Jupiter::IRC::Client::Config->getBool(RenX::Server::configSection, "LocalSteamBan"_jrs, true);
-	RenX::Server::localIPBan = Jupiter::IRC::Client::Config->getBool(RenX::Server::configSection, "LocalIPBan"_jrs, true);
-	RenX::Server::localHWIDBan = Jupiter::IRC::Client::Config->getBool(RenX::Server::configSection, "LocalHWIDBan"_jrs, true);
-	RenX::Server::localRDNSBan = Jupiter::IRC::Client::Config->getBool(RenX::Server::configSection, "LocalRDNSBan"_jrs, false);
-	RenX::Server::localNameBan = Jupiter::IRC::Client::Config->getBool(RenX::Server::configSection, "LocalNameBan"_jrs, false);
+	RenX::Server::ban_from_str = config.get("BanFromStr"_jrs, "the server"_jrs);
+	RenX::Server::rules = config.get("Rules"_jrs, "Anarchy!"_jrs);
+	RenX::Server::delay = std::chrono::milliseconds(config.getInt("ReconnectDelay"_jrs, 10000));
+	RenX::Server::maxAttempts = config.getInt("MaxReconnectAttempts"_jrs, -1);
+	RenX::Server::rconBan = config.getBool("RCONBan"_jrs, false);
+	RenX::Server::localSteamBan = config.getBool("LocalSteamBan"_jrs, true);
+	RenX::Server::localIPBan = config.getBool("LocalIPBan"_jrs, true);
+	RenX::Server::localHWIDBan = config.getBool("LocalHWIDBan"_jrs, true);
+	RenX::Server::localRDNSBan = config.getBool("LocalRDNSBan"_jrs, false);
+	RenX::Server::localNameBan = config.getBool("LocalNameBan"_jrs, false);
 	RenX::Server::localBan = RenX::Server::localIPBan || RenX::Server::localRDNSBan || RenX::Server::localSteamBan || RenX::Server::localNameBan;
-	RenX::Server::steamFormat = Jupiter::IRC::Client::Config->getInt(RenX::Server::configSection, "SteamFormat"_jrs, 16);
-	RenX::Server::neverSay = Jupiter::IRC::Client::Config->getBool(RenX::Server::configSection, "NeverSay"_jrs, false);
-	RenX::Server::resolve_player_rdns = Jupiter::IRC::Client::Config->getBool(RenX::Server::configSection, "ResolvePlayerRDNS"_jrs, true);
-	RenX::Server::clientUpdateRate = std::chrono::milliseconds(Jupiter::IRC::Client::Config->getInt(RenX::Server::configSection, "ClientUpdateRate"_jrs, 2500));
-	RenX::Server::buildingUpdateRate = std::chrono::milliseconds(Jupiter::IRC::Client::Config->getInt(RenX::Server::configSection, "BuildingUpdateRate"_jrs, 7500));
-	RenX::Server::pingRate = std::chrono::milliseconds(Jupiter::IRC::Client::Config->getInt(RenX::Server::configSection, "PingUpdateRate"_jrs, 60000));
-	RenX::Server::pingTimeoutThreshold = std::chrono::milliseconds(Jupiter::IRC::Client::Config->getInt(RenX::Server::configSection, "PingTimeoutThreshold"_jrs, 10000));
+	RenX::Server::steamFormat = config.getInt("SteamFormat"_jrs, 16);
+	RenX::Server::neverSay = config.getBool("NeverSay"_jrs, false);
+	RenX::Server::resolve_player_rdns = config.getBool("ResolvePlayerRDNS"_jrs, true);
+	RenX::Server::clientUpdateRate = std::chrono::milliseconds(config.getInt("ClientUpdateRate"_jrs, 2500));
+	RenX::Server::buildingUpdateRate = std::chrono::milliseconds(config.getInt("BuildingUpdateRate"_jrs, 7500));
+	RenX::Server::pingRate = std::chrono::milliseconds(config.getInt("PingUpdateRate"_jrs, 60000));
+	RenX::Server::pingTimeoutThreshold = std::chrono::milliseconds(config.getInt("PingTimeoutThreshold"_jrs, 10000));
 
 	Jupiter::INIFile &commandsFile = RenX::getCore()->getCommandsFile();
 	RenX::Server::commandAccessLevels = commandsFile.getSection(RenX::Server::configSection);
@@ -3412,8 +3405,6 @@ void RenX::Server::init()
 
 	load_basic_commands(RenX::Server::configSection);
 	load_basic_commands("Default"_jrs);
-
-	// ADD CHECKS FOR DEFAULT BASIC COMMANDS HERE
 }
 
 RenX::Server::~Server()

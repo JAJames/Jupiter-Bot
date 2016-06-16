@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2014-2015 Jessica James.
+ * Copyright (C) 2014-2016 Jessica James.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -50,12 +50,11 @@ public: // RenX::Plugin
 	void RenX_OnJoin(RenX::Server *server, const RenX::PlayerInfo *player) override;
 	void RenX_OnGameOver(RenX::Server *server, RenX::WinType winType, const RenX::TeamType &team, int gScore, int nScore) override;
 	void RenX_OnDestroy(RenX::Server *server, const RenX::PlayerInfo *player, const Jupiter::ReadableString &objectName, const RenX::TeamType &objectTeam, const Jupiter::ReadableString &damageType, RenX::ObjectType type) override;
-	RenX_MedalsPlugin();
 	~RenX_MedalsPlugin();
 
 public: // Jupiter::Plugin
+	virtual bool initialize() override;
 	int OnRehash() override;
-	const Jupiter::ReadableString &getName() override { return name; }
 
 public:
 	time_t killCongratDelay;
@@ -66,12 +65,9 @@ public:
 	Jupiter::StringS worthTag;
 	Jupiter::StringS firstSection;
 	Jupiter::StringS medalsFileName;
-	Jupiter::StringS joinMessageFileName;
 	Jupiter::INIFile medalsFile;
-	Jupiter::INIFile joinMessageFile;
 
 private:
-	STRING_LITERAL_AS_NAMED_REFERENCE(name, "RenX.Medals");
 	Jupiter::StringS INTERNAL_RECS_TAG;
 	Jupiter::StringS INTERNAL_NOOB_TAG;
 	Jupiter::StringS INTERNAL_WORTH_TAG;

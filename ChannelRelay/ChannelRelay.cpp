@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2015 Jessica James.
+ * Copyright (C) 2015-2016 Jessica James.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -25,23 +25,23 @@
 
 using namespace Jupiter::literals;
 
-int ChannelRelayPlugin::init()
+bool ChannelRelayPlugin::initialize()
 {
-	Jupiter::ReferenceString str = Jupiter::IRC::Client::Config->get(this->getName(), "Types"_jrs);
+	Jupiter::ReferenceString str = this->config.get(Jupiter::ReferenceString::empty, "Types"_jrs);
 	unsigned int words = str.wordCount(WHITESPACE);
 	if (words == 0)
-		return 1;
+		return false;
 
 	while (words != 0)
 		ChannelRelayPlugin::types.concat(str.getWord(--words, WHITESPACE).asInt());
 
-	return 0;
+	return true;
 }
 
 int ChannelRelayPlugin::OnRehash()
 {
 	ChannelRelayPlugin::types.erase();
-	return ChannelRelayPlugin::init();
+	return this->initialize() ? 0 : -1;
 }
 
 void ChannelRelayPlugin::OnChat(Jupiter::IRC::Client *server, const Jupiter::ReadableString &channel, const Jupiter::ReadableString &nick, const Jupiter::ReadableString &message)
@@ -85,11 +85,6 @@ void ChannelRelayPlugin::OnChat(Jupiter::IRC::Client *server, const Jupiter::Rea
 
 // Plugin instantiation and entry point.
 ChannelRelayPlugin pluginInstance;
-
-extern "C" __declspec(dllexport) bool load()
-{
-	return pluginInstance.init() == 0;
-}
 
 extern "C" __declspec(dllexport) Jupiter::Plugin *getPlugin()
 {

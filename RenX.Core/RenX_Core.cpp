@@ -26,6 +26,9 @@
 #include "RenX_Functions.h"
 #include "RenX_GameCommand.h"
 #include "RenX_Plugin.h"
+#include "RenX_BanDatabase.h"
+#include "RenX_ExemptionDatabase.h"
+#include "RenX_Tags.h"
 
 RenX::Core pluginInstance;
 RenX::Core *RenXInstance = &pluginInstance;
@@ -35,12 +38,16 @@ RenX::Core *RenX::getCore()
 	return &pluginInstance;
 }
 
-void RenX::Core::init()
+bool RenX::Core::initialize()
 {
-	const Jupiter::ReadableString &serverList = Jupiter::IRC::Client::Config->get(STRING_LITERAL_AS_REFERENCE("RenX"), STRING_LITERAL_AS_REFERENCE("Servers"));
-	RenX::Core::translationsFile.readFile(Jupiter::IRC::Client::Config->get(STRING_LITERAL_AS_REFERENCE("RenX"), STRING_LITERAL_AS_REFERENCE("TranslationsFile"), STRING_LITERAL_AS_REFERENCE("Translations.ini")));
+	RenX::banDatabase->initialize();
+	RenX::exemptionDatabase->initialize();
+	RenX::tags->initialize();
+
+	const Jupiter::ReadableString &serverList = this->config.get(Jupiter::ReferenceString::empty, STRING_LITERAL_AS_REFERENCE("Servers"));
+	RenX::Core::translationsFile.readFile(this->config.get(Jupiter::ReferenceString::empty, STRING_LITERAL_AS_REFERENCE("TranslationsFile"), STRING_LITERAL_AS_REFERENCE("Translations.ini")));
 	RenX::initTranslations(RenX::Core::translationsFile);
-	RenX::Core::commandsFile.readFile(Jupiter::IRC::Client::Config->get(STRING_LITERAL_AS_REFERENCE("RenX"), STRING_LITERAL_AS_REFERENCE("CommandsFile"), STRING_LITERAL_AS_REFERENCE("RenXGameCommands.ini")));
+	RenX::Core::commandsFile.readFile(this->config.get(Jupiter::ReferenceString::empty, STRING_LITERAL_AS_REFERENCE("CommandsFile"), STRING_LITERAL_AS_REFERENCE("RenXGameCommands.ini")));
 
 	unsigned int wc = serverList.wordCount(WHITESPACE);
 
@@ -56,6 +63,8 @@ void RenX::Core::init()
 		}
 		else RenX::Core::addServer(server);
 	}
+
+	return true;
 }
 
 RenX::Core::~Core()
@@ -184,17 +193,10 @@ extern "C" __declspec(dllexport) Jupiter::Plugin *getPlugin()
 	return &pluginInstance;
 }
 
-// Load
-
-extern "C" __declspec(dllexport) bool load(void)
-{
-	pluginInstance.init();
-	return true;
-}
-
 // Unload
 
 extern "C" __declspec(dllexport) void unload(void)
 {
-	while (pluginInstance.getPlugins()->size() > 0) freePlugin(pluginInstance.getPlugins()->remove(0));
+	while (pluginInstance.getPlugins()->size() > 0)
+		Jupiter::Plugin::free(pluginInstance.getPlugins()->remove(0));
 }

@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2014-2015 Jessica James.
+ * Copyright (C) 2014-2016 Jessica James.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -24,7 +24,7 @@
 
 void SetJoinPlugin::OnJoin(Jupiter::IRC::Client *server, const Jupiter::ReadableString &chan, const Jupiter::ReadableString &nick)
 {
-	const Jupiter::ReadableString &setjoin = server->Config->get(STRING_LITERAL_AS_REFERENCE("SetJoins"), nick);
+	const Jupiter::ReadableString &setjoin = this->config.get(server->getConfigSection(), nick);
 	if (setjoin.isNotEmpty())
 	{
 		if (setjoin == nullptr)
@@ -33,6 +33,8 @@ void SetJoinPlugin::OnJoin(Jupiter::IRC::Client *server, const Jupiter::Readable
 			server->sendMessage(chan, Jupiter::StringS::Format(IRCBOLD IRCCOLOR "07[%.*s]" IRCCOLOR IRCBOLD ": %.*s", nick.size(), nick.ptr(), setjoin.size(), setjoin.ptr()));
 	}
 }
+
+SetJoinPlugin pluginInstance;
 
 // SetJoin Command
 
@@ -45,8 +47,8 @@ void SetJoinIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &
 {
 	if (parameters.isNotEmpty())
 	{
-		source->Config->set(STRING_LITERAL_AS_REFERENCE("SetJoins"), nick, parameters);
-		source->Config->sync();
+		pluginInstance.setjoin_file.set(source->getConfigSection(), nick, parameters);
+		pluginInstance.setjoin_file.sync();
 		source->sendMessage(channel, STRING_LITERAL_AS_REFERENCE("Your join message has been set."));
 	}
 	else source->sendMessage(channel, STRING_LITERAL_AS_REFERENCE("Too few parameters! Syntax: setjoin <message>"));
@@ -71,7 +73,7 @@ void ViewJoinIRCCommand::create()
 void ViewJoinIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &channel, const Jupiter::ReadableString &nick, const Jupiter::ReadableString &parameters)
 {
 	const Jupiter::ReadableString &target = parameters.isEmpty() ? nick : parameters;
-	const Jupiter::ReadableString &r = source->Config->get(STRING_LITERAL_AS_REFERENCE("SetJoins"), target);
+	const Jupiter::ReadableString &r = pluginInstance.setjoin_file.get(source->getConfigSection(), target);
 
 	if (r.isEmpty())
 		source->sendMessage(channel, Jupiter::StringS::Format("No setjoin has been set for \"%.*s\".", target.size(), target.ptr()));
@@ -97,7 +99,7 @@ void DelJoinIRCCommand::create()
 
 void DelJoinIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &channel, const Jupiter::ReadableString &nick, const Jupiter::ReadableString &parameters)
 {
-	if (source->Config->remove(STRING_LITERAL_AS_REFERENCE("SetJoins"), nick))
+	if (pluginInstance.setjoin_file.remove(source->getConfigSection(), nick))
 		source->sendNotice(nick, STRING_LITERAL_AS_REFERENCE("Your setjoin has been deleted successfully."));
 	else source->sendNotice(nick, STRING_LITERAL_AS_REFERENCE("No setjoin was found to delete."));
 }
@@ -111,7 +113,6 @@ const Jupiter::ReadableString &DelJoinIRCCommand::getHelp(const Jupiter::Readabl
 IRC_COMMAND_INIT(DelJoinIRCCommand)
 
 // Plugin instantiation and entry point.
-SetJoinPlugin pluginInstance;
 
 extern "C" __declspec(dllexport) Jupiter::Plugin *getPlugin()
 {

@@ -128,14 +128,9 @@ public: // RenX::Plugin
 
 public: // Jupiter::Plugin
 	int OnRehash() override;
-	const Jupiter::ReadableString &getName() override { return name; }
-
-	RenX_LoggingPlugin();
+	virtual bool initialize() override;
 
 private:
-	void init();
-
-	STRING_LITERAL_AS_NAMED_REFERENCE(name, "RenX.Logging");
 	unsigned int muteOwnExecute : 1;
 	unsigned int playerRDNSPublic : 1;
 	unsigned int joinPublic : 1;

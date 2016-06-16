@@ -26,19 +26,19 @@
 
 using namespace Jupiter::literals;
 
-RenX_ExcessiveHeadshotsPlugin::RenX_ExcessiveHeadshotsPlugin()
+bool RenX_ExcessiveHeadshotsPlugin::initialize()
 {
-	RenX_ExcessiveHeadshotsPlugin::OnRehash();
+	RenX_ExcessiveHeadshotsPlugin::ratio = this->config.getDouble(Jupiter::ReferenceString::empty, "HeadshotKillRatio"_jrs, 0.5);
+	RenX_ExcessiveHeadshotsPlugin::minKills = this->config.getInt(Jupiter::ReferenceString::empty, "Kills"_jrs, 10);
+	RenX_ExcessiveHeadshotsPlugin::minKD = this->config.getDouble(Jupiter::ReferenceString::empty, "KillDeathRatio"_jrs, 5.0);
+	RenX_ExcessiveHeadshotsPlugin::minKPS = this->config.getDouble(Jupiter::ReferenceString::empty, "KillsPerSecond"_jrs, 0.5);
+	RenX_ExcessiveHeadshotsPlugin::minFlags = this->config.getInt(Jupiter::ReferenceString::empty, "Flags"_jrs, 4);
+	return true;
 }
 
 int RenX_ExcessiveHeadshotsPlugin::OnRehash()
 {
-	RenX_ExcessiveHeadshotsPlugin::ratio = Jupiter::IRC::Client::Config->getDouble(RenX_ExcessiveHeadshotsPlugin::getName(), "HeadshotKillRatio"_jrs, 0.5);
-	RenX_ExcessiveHeadshotsPlugin::minKills = Jupiter::IRC::Client::Config->getInt(RenX_ExcessiveHeadshotsPlugin::getName(), "Kills"_jrs, 10);
-	RenX_ExcessiveHeadshotsPlugin::minKD = Jupiter::IRC::Client::Config->getDouble(RenX_ExcessiveHeadshotsPlugin::getName(), "KillDeathRatio"_jrs, 5.0);
-	RenX_ExcessiveHeadshotsPlugin::minKPS = Jupiter::IRC::Client::Config->getDouble(RenX_ExcessiveHeadshotsPlugin::getName(), "KillsPerSecond"_jrs, 0.5);
-	RenX_ExcessiveHeadshotsPlugin::minFlags = Jupiter::IRC::Client::Config->getInt(RenX_ExcessiveHeadshotsPlugin::getName(), "Flags"_jrs, 4);
-	return 0;
+	return this->initialize() ? 0 : -1;
 }
 
 void RenX_ExcessiveHeadshotsPlugin::RenX_OnKill(RenX::Server *server, const RenX::PlayerInfo *player, const RenX::PlayerInfo *victim, const Jupiter::ReadableString &damageType)

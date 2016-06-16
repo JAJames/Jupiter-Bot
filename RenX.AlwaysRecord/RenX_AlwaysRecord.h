@@ -27,12 +27,6 @@ class RenX_AlwaysRecord : public RenX::Plugin
 {
 public: // RenX::Plugin
 	void RenX_OnMapStart(RenX::Server *server, const Jupiter::ReadableString &) override;
-
-public: // Jupiter::Plugin
-	const Jupiter::ReadableString &getName() override { return name; }
-
-private:
-	STRING_LITERAL_AS_NAMED_REFERENCE(name, "RenX.AlwaysRecord");
 };
 
 #endif // _RENX_ALWAYSRECORD_H_HEADER

@@ -14,11 +14,6 @@
 
 class TPlugin : public Jupiter::Plugin
 {
-public:
-	const Jupiter::ReadableString &getName() override { return name; }
-
-private:
-	STRING_LITERAL_AS_NAMED_REFERENCE(name, "TemplatePlugin");
 };
 
 #endif // _EXAMPLE_H_HEADER

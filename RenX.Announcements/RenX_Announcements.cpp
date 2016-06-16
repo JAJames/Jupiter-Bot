@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2014-2015 Jessica James.
+ * Copyright (C) 2014-2016 Jessica James.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -66,35 +66,30 @@ int RenX_AnnouncementsPlugin::OnRehash()
 {
 	RenX_AnnouncementsPlugin::timer->kill();
 	RenX_AnnouncementsPlugin::announcementsFile.unload();
-	return RenX_AnnouncementsPlugin::init();
+	return this->initialize() ? 0 : -1;
 }
 
-int RenX_AnnouncementsPlugin::init()
+bool RenX_AnnouncementsPlugin::initialize()
 {
-	RenX_AnnouncementsPlugin::random = Jupiter::IRC::Client::Config->getBool(STRING_LITERAL_AS_REFERENCE("RenX.Announcements"), STRING_LITERAL_AS_REFERENCE("Random"));
+	RenX_AnnouncementsPlugin::random = this->config.getBool(Jupiter::ReferenceString::empty, STRING_LITERAL_AS_REFERENCE("Random"));
 
-	RenX_AnnouncementsPlugin::announcementsFile.load(Jupiter::IRC::Client::Config->get(STRING_LITERAL_AS_REFERENCE("RenX.Announcements"), STRING_LITERAL_AS_REFERENCE("File"), STRING_LITERAL_AS_REFERENCE("Announcements.txt")));
+	RenX_AnnouncementsPlugin::announcementsFile.load(this->config.get(Jupiter::ReferenceString::empty, STRING_LITERAL_AS_REFERENCE("File"), STRING_LITERAL_AS_REFERENCE("Announcements.txt")));
 	if (RenX_AnnouncementsPlugin::announcementsFile.getLineCount() == 0)
 	{
 		fputs("[RenX.Announcements] ERROR: No announcements loaded." ENDL, stderr);
-		return -1;
+		return false;
 	}
-	time_t delay = Jupiter::IRC::Client::Config->getInt(STRING_LITERAL_AS_REFERENCE("RenX.Announcements"), STRING_LITERAL_AS_REFERENCE("Delay"), 60);
+	time_t delay = this->config.getInt(Jupiter::ReferenceString::empty, STRING_LITERAL_AS_REFERENCE("Delay"), 60);
 	RenX_AnnouncementsPlugin::timer = new Jupiter::Timer(0, delay, announce_);
 	if (RenX_AnnouncementsPlugin::random == false)
 		RenX_AnnouncementsPlugin::lastLine = RenX_AnnouncementsPlugin::announcementsFile.getLineCount() - 1;
-	return 0;
+	return true;
 }
 
 RenX_AnnouncementsPlugin::~RenX_AnnouncementsPlugin()
 {
 	RenX_AnnouncementsPlugin::timer->kill();
 	RenX_AnnouncementsPlugin::announcementsFile.unload();
-}
-
-extern "C" __declspec(dllexport) bool load()
-{
-	return pluginInstance.init() == 0;
 }
 
 extern "C" __declspec(dllexport) Jupiter::Plugin *getPlugin()

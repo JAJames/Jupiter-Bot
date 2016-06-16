@@ -17,14 +17,13 @@
  */
 
 #include "Jupiter/INIFile.h"
-#include "Jupiter/IRC_Client.h"
 #include "HTTPServer.h"
 
 using namespace Jupiter::literals;
 
 HTTPServerPlugin::HTTPServerPlugin()
 {
-	HTTPServerPlugin::server.bind(Jupiter::IRC::Client::Config->get(HTTPServerPlugin::name, "BindAddress"_jrs, "0.0.0.0"_jrs), Jupiter::IRC::Client::Config->getInt(HTTPServerPlugin::name, "BindPort"_jrs, 80));
+	HTTPServerPlugin::server.bind(this->config.get(Jupiter::ReferenceString::empty, "BindAddress"_jrs, "0.0.0.0"_jrs), this->config.getInt(Jupiter::ReferenceString::empty, "BindPort"_jrs, 80));
 }
 
 int HTTPServerPlugin::think()

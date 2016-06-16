@@ -27,12 +27,10 @@
 class RenX_Ladder_All_TimePlugin : public RenX::Plugin
 {
 public:
-	const Jupiter::ReadableString &getName() override { return name; }
+	virtual bool initialize() override;
 
-	RenX_Ladder_All_TimePlugin();
 private:
 	RenX::LadderDatabase database;
-	STRING_LITERAL_AS_NAMED_REFERENCE(name, "RenX.Ladder.All-Time");
 };
 
 #endif // _RENX_LADDER_ALL_TIME

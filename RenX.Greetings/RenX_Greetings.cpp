@@ -63,23 +63,19 @@ void RenX_GreetingsPlugin::RenX_OnJoin(RenX::Server *server, const RenX::PlayerI
 int RenX_GreetingsPlugin::OnRehash()
 {
 	RenX_GreetingsPlugin::greetingsFile.unload();
-	RenX_GreetingsPlugin::init();
-	return 0;
+	return RenX_GreetingsPlugin::initialize() ? 0 : -1;
 }
 
-RenX_GreetingsPlugin::RenX_GreetingsPlugin()
+bool RenX_GreetingsPlugin::initialize()
 {
-	RenX_GreetingsPlugin::init();
-}
-
-void RenX_GreetingsPlugin::init()
-{
-	RenX_GreetingsPlugin::sendPrivate = Jupiter::IRC::Client::Config->getBool(RenX_GreetingsPlugin::name, STRING_LITERAL_AS_REFERENCE("SendPrivate"), true);
-	RenX_GreetingsPlugin::sendMode = Jupiter::IRC::Client::Config->getInt(RenX_GreetingsPlugin::name, STRING_LITERAL_AS_REFERENCE("SendMode"), 0);
-	RenX_GreetingsPlugin::greetingsFile.load(Jupiter::IRC::Client::Config->get(RenX_GreetingsPlugin::name, STRING_LITERAL_AS_REFERENCE("GreetingsFile"), STRING_LITERAL_AS_REFERENCE("RenX.Greetings.txt")));
+	RenX_GreetingsPlugin::sendPrivate = this->config.getBool(Jupiter::ReferenceString::empty, STRING_LITERAL_AS_REFERENCE("SendPrivate"), true);
+	RenX_GreetingsPlugin::sendMode = this->config.getInt(Jupiter::ReferenceString::empty, STRING_LITERAL_AS_REFERENCE("SendMode"), 0);
+	RenX_GreetingsPlugin::greetingsFile.load(this->config.get(Jupiter::ReferenceString::empty, STRING_LITERAL_AS_REFERENCE("GreetingsFile"), STRING_LITERAL_AS_REFERENCE("RenX.Greetings.txt")));
 	if (RenX_GreetingsPlugin::greetingsFile.getLineCount() == 0)
 		RenX_GreetingsPlugin::greetingsFile.addData(STRING_LITERAL_AS_REFERENCE("Please notify the server administrator to properly configure or disable server greetings.\r\n"));
 	RenX_GreetingsPlugin::lastLine = RenX_GreetingsPlugin::greetingsFile.getLineCount() - 1;
+
+	return true;
 }
 
 // Plugin instantiation and entry point.

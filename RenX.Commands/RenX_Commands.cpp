@@ -64,18 +64,23 @@ void RenX_CommandsPlugin::RenX_OnDie(RenX::Server *server, const RenX::PlayerInf
 	onDie(server, player);
 }
 
-int RenX_CommandsPlugin::OnRehash()
+bool RenX_CommandsPlugin::initialize()
 {
-	RenX_CommandsPlugin::_defaultTempBanTime = std::chrono::seconds(Jupiter::IRC::Client::Config->getLongLong(RenX_CommandsPlugin::getName(), STRING_LITERAL_AS_REFERENCE("TBanTime"), 86400));
-	RenX_CommandsPlugin::playerInfoFormat = Jupiter::IRC::Client::Config->get(RenX_CommandsPlugin::getName(), STRING_LITERAL_AS_REFERENCE("PlayerInfoFormat"), STRING_LITERAL_AS_REFERENCE(IRCCOLOR "03[Player Info]" IRCCOLOR "{TCOLOR} Name: " IRCBOLD "{RNAME}" IRCBOLD " - ID: {ID} - Team: " IRCBOLD "{TEAML}" IRCBOLD " - Vehicle Kills: {VEHICLEKILLS} - Building Kills {BUILDINGKILLS} - Kills {KILLS} - Deaths: {DEATHS} - KDR: {KDR} - Access: {ACCESS}"));
-	RenX_CommandsPlugin::adminPlayerInfoFormat = Jupiter::IRC::Client::Config->get(RenX_CommandsPlugin::getName(), STRING_LITERAL_AS_REFERENCE("AdminPlayerInfoFormat"), Jupiter::StringS::Format("%.*s - IP: " IRCBOLD "{IP}" IRCBOLD " - HWID: " IRCBOLD "{HWID}" IRCBOLD " - RDNS: " IRCBOLD "{RDNS}" IRCBOLD " - Steam ID: " IRCBOLD "{STEAM}", RenX_CommandsPlugin::playerInfoFormat.size(), RenX_CommandsPlugin::playerInfoFormat.ptr()));
-	RenX_CommandsPlugin::buildingInfoFormat = Jupiter::IRC::Client::Config->get(RenX_CommandsPlugin::getName(), STRING_LITERAL_AS_REFERENCE("BuildingInfoFormat"), STRING_LITERAL_AS_REFERENCE(IRCCOLOR) + RenX::tags->buildingTeamColorTag + RenX::tags->buildingNameTag + STRING_LITERAL_AS_REFERENCE(IRCCOLOR " - " IRCCOLOR "07") + RenX::tags->buildingHealthPercentageTag + STRING_LITERAL_AS_REFERENCE("%"));
-	RenX_CommandsPlugin::staffTitle = Jupiter::IRC::Client::Config->get(RenX_CommandsPlugin::getName(), STRING_LITERAL_AS_REFERENCE("StaffTitle"), STRING_LITERAL_AS_REFERENCE("Moderator"));
+	RenX_CommandsPlugin::_defaultTempBanTime = std::chrono::seconds(this->config.getLongLong(Jupiter::ReferenceString::empty, STRING_LITERAL_AS_REFERENCE("TBanTime"), 86400));
+	RenX_CommandsPlugin::playerInfoFormat = this->config.get(Jupiter::ReferenceString::empty, STRING_LITERAL_AS_REFERENCE("PlayerInfoFormat"), STRING_LITERAL_AS_REFERENCE(IRCCOLOR "03[Player Info]" IRCCOLOR "{TCOLOR} Name: " IRCBOLD "{RNAME}" IRCBOLD " - ID: {ID} - Team: " IRCBOLD "{TEAML}" IRCBOLD " - Vehicle Kills: {VEHICLEKILLS} - Building Kills {BUILDINGKILLS} - Kills {KILLS} - Deaths: {DEATHS} - KDR: {KDR} - Access: {ACCESS}"));
+	RenX_CommandsPlugin::adminPlayerInfoFormat = this->config.get(Jupiter::ReferenceString::empty, STRING_LITERAL_AS_REFERENCE("AdminPlayerInfoFormat"), Jupiter::StringS::Format("%.*s - IP: " IRCBOLD "{IP}" IRCBOLD " - HWID: " IRCBOLD "{HWID}" IRCBOLD " - RDNS: " IRCBOLD "{RDNS}" IRCBOLD " - Steam ID: " IRCBOLD "{STEAM}", RenX_CommandsPlugin::playerInfoFormat.size(), RenX_CommandsPlugin::playerInfoFormat.ptr()));
+	RenX_CommandsPlugin::buildingInfoFormat = this->config.get(Jupiter::ReferenceString::empty, STRING_LITERAL_AS_REFERENCE("BuildingInfoFormat"), STRING_LITERAL_AS_REFERENCE(IRCCOLOR) + RenX::tags->buildingTeamColorTag + RenX::tags->buildingNameTag + STRING_LITERAL_AS_REFERENCE(IRCCOLOR " - " IRCCOLOR "07") + RenX::tags->buildingHealthPercentageTag + STRING_LITERAL_AS_REFERENCE("%"));
+	RenX_CommandsPlugin::staffTitle = this->config.get(Jupiter::ReferenceString::empty, STRING_LITERAL_AS_REFERENCE("StaffTitle"), STRING_LITERAL_AS_REFERENCE("Moderator"));
 
 	RenX::sanitizeTags(RenX_CommandsPlugin::playerInfoFormat);
 	RenX::sanitizeTags(RenX_CommandsPlugin::adminPlayerInfoFormat);
 	RenX::sanitizeTags(RenX_CommandsPlugin::buildingInfoFormat);
-	return 0;
+	return true;
+}
+
+int RenX_CommandsPlugin::OnRehash()
+{
+	return this->initialize() ? 0 : -1;
 }
 
 std::chrono::seconds RenX_CommandsPlugin::getTBanTime() const
@@ -101,11 +106,6 @@ const Jupiter::ReadableString &RenX_CommandsPlugin::getBuildingInfoFormat() cons
 const Jupiter::ReadableString &RenX_CommandsPlugin::getStaffTitle() const
 {
 	return RenX_CommandsPlugin::staffTitle;
-}
-
-RenX_CommandsPlugin::RenX_CommandsPlugin()
-{
-	this->OnRehash();
 }
 
 // Plugin instantiation and entry point.
@@ -1233,46 +1233,6 @@ const Jupiter::ReadableString &RulesIRCCommand::getHelp(const Jupiter::ReadableS
 }
 
 IRC_COMMAND_INIT(RulesIRCCommand)
-
-// SetRules IRC Command
-
-void SetRulesIRCCommand::create()
-{
-	this->addTrigger(STRING_LITERAL_AS_REFERENCE("setrules"));
-	this->setAccessLevel(4);
-}
-
-void SetRulesIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &channel, const Jupiter::ReadableString &nick, const Jupiter::ReadableString &parameters)
-{
-	if (parameters.isNotEmpty())
-	{
-		unsigned int r = 0;
-		Jupiter::IRC::Client::Channel *chan = source->getChannel(channel);
-		if (chan != nullptr)
-		{
-			int type = chan->getType();
-			for (unsigned int i = 0; i != RenX::getCore()->getServerCount(); i++)
-			{
-				RenX::Server *server = RenX::getCore()->getServer(i);
-				if (server->isLogChanType(type))
-				{
-					server->setRules(parameters);
-					r++;
-				}
-			}
-			if (r == 0)
-				source->sendMessage(channel, STRING_LITERAL_AS_REFERENCE("Error: Channel not attached to any connected Renegade X servers."));
-		}
-	}
-}
-
-const Jupiter::ReadableString &SetRulesIRCCommand::getHelp(const Jupiter::ReadableString &)
-{
-	static STRING_LITERAL_AS_NAMED_REFERENCE(defaultHelp, "Sets the in-game rules. Syntax: setrules [show]");
-	return defaultHelp;
-}
-
-IRC_COMMAND_INIT(SetRulesIRCCommand)
 
 // Reconnect IRC Command
 

@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2014-2015 Jessica James.
+ * Copyright (C) 2014-2016 Jessica James.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -25,11 +25,6 @@
 
 class FunCommandsPlugin : public Jupiter::Plugin
 {
-public:
-	const Jupiter::ReadableString &getName() override { return name; }
-
-private:
-	STRING_LITERAL_AS_NAMED_REFERENCE(name, "ExtraCommands");
 };
 
 GENERIC_GENERIC_COMMAND(SelectGenericCommand)

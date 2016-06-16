@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2014-2015 Jessica James.
+ * Copyright (C) 2014-2016 Jessica James.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -31,16 +31,13 @@ class RenX_AnnouncementsPlugin : public RenX::Plugin
 {
 public:
 	void announce(unsigned int);
-	int init();
 
 public: // Jupiter::Plugin
+	virtual bool initialize() override;
 	int OnRehash();
-	//int think();
-	const Jupiter::ReadableString &getName() override { return name; }
 	~RenX_AnnouncementsPlugin();
 
 private:
-	STRING_LITERAL_AS_NAMED_REFERENCE(name, "RenX.Announcements");
 	bool random;
 	unsigned int lastLine;
 	Jupiter::Timer *timer;

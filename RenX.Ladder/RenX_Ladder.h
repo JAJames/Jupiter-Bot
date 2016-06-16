@@ -35,18 +35,16 @@
 class RenX_LadderPlugin : public RenX::Plugin
 {
 public:
-	const Jupiter::ReadableString &getName() override { return name; }
+	virtual bool initialize() override;
 	void RenX_OnGameOver(RenX::Server *server, RenX::WinType winType, const RenX::TeamType &team, int gScore, int nScore) override;
 	void RenX_OnCommand(RenX::Server *server, const Jupiter::ReadableString &) override;
 
 	size_t getMaxLadderCommandPartNameOutput() const;
-	RenX_LadderPlugin();
 
 private:
 	/** Configuration variables */
-	bool only_pure;
-	size_t max_ladder_command_part_name_output;
-	STRING_LITERAL_AS_NAMED_REFERENCE(name, "RenX.Ladder");
+	bool only_pure = false;
+	size_t max_ladder_command_part_name_output = 0;
 };
 
 GENERIC_GENERIC_COMMAND(LadderGenericCommand)

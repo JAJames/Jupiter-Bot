@@ -16,10 +16,6 @@ class ExamplePlugin : public Jupiter::Plugin
 {
 public:
 	void OnConnect(Jupiter::IRC::Client *server);
-	const Jupiter::ReadableString &getName() override { return this->name; }
-
-private:
-	STRING_LITERAL_AS_NAMED_REFERENCE(name, "ExamplePlugin");
 };
 
 // Example IRC Command Declaration

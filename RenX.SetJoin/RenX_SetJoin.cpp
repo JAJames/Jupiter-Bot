@@ -24,11 +24,6 @@
 
 using namespace Jupiter::literals;
 
-RenX_SetJoinPlugin::RenX_SetJoinPlugin()
-{
-	RenX_SetJoinPlugin::setjoin_file.readFile(Jupiter::IRC::Client::Config->get(this->getName(), "SetJoinFile"_jrs, "RenX.SetJoin.ini"_jrs));
-}
-
 void RenX_SetJoinPlugin::RenX_OnJoin(RenX::Server *server, const RenX::PlayerInfo *player)
 {
 	if (player->uuid.isNotEmpty())

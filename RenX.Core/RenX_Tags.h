@@ -49,6 +49,8 @@ namespace RenX
 
 	struct RENX_API Tags
 	{
+		virtual bool initialize();
+
 		/** Global formats */
 		Jupiter::CStringS dateFmt;
 		Jupiter::CStringS timeFmt;

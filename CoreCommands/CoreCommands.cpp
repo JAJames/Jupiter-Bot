@@ -190,15 +190,12 @@ RehashGenericCommand::RehashGenericCommand()
 
 GenericCommand::ResponseLine *RehashGenericCommand::trigger(const Jupiter::ReadableString &parameters)
 {
-	if (Jupiter::IRC::Client::Config == nullptr)
-		return new GenericCommand::ResponseLine(STRING_LITERAL_AS_REFERENCE("Unable to find Config data."), GenericCommand::DisplayType::PublicError);
-	else
-	{
-		unsigned int r = Jupiter::rehash();
-		if (r == 0)
-			return new GenericCommand::ResponseLine(Jupiter::StringS::Format("All %u objects were successfully rehashed.", Jupiter::getRehashableCount()), GenericCommand::DisplayType::PublicSuccess);
-		return new GenericCommand::ResponseLine(Jupiter::StringS::Format("%u of %u objects failed to successfully rehash.", r, Jupiter::getRehashableCount()), GenericCommand::DisplayType::PublicError);
-	}
+	unsigned int r = Jupiter::rehash();
+
+	if (r == 0)
+		return new GenericCommand::ResponseLine(Jupiter::StringS::Format("All %u objects were successfully rehashed.", Jupiter::getRehashableCount()), GenericCommand::DisplayType::PublicSuccess);
+
+	return new GenericCommand::ResponseLine(Jupiter::StringS::Format("%u of %u objects failed to successfully rehash.", r, Jupiter::getRehashableCount()), GenericCommand::DisplayType::PublicError);
 }
 
 const Jupiter::ReadableString &RehashGenericCommand::getHelp(const Jupiter::ReadableString &)

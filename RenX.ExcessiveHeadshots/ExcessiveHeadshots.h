@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2014-2015 Jessica James.
+ * Copyright (C) 2014-2016 Jessica James.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -29,12 +29,9 @@ public: // RenX::Plugin
 	void RenX_OnKill(RenX::Server *server, const RenX::PlayerInfo *player, const RenX::PlayerInfo *victim, const Jupiter::ReadableString &damageType) override;
 
 public: // Jupiter::Plugin
+	virtual bool initialize() override;
 	int OnRehash() override;
-	const Jupiter::ReadableString &getName() override { return name; }
-
-	RenX_ExcessiveHeadshotsPlugin();
 private:
-	STRING_LITERAL_AS_NAMED_REFERENCE(name, "RenX.ExcessiveHeadshots");
 	unsigned int minFlags = 4;
 	double ratio = 0.5;
 	double minKD = 5.0;

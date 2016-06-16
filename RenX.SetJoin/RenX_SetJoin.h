@@ -27,18 +27,10 @@
 class RenX_SetJoinPlugin : public RenX::Plugin
 {
 public:
-	Jupiter::INIFile setjoin_file;
-
-	RenX_SetJoinPlugin();
+	Jupiter::INIFile &setjoin_file = Jupiter::Plugin::config;
 
 public: // RenX::Plugin
 	void RenX_OnJoin(RenX::Server *server, const RenX::PlayerInfo *player) override;
-
-public: // Jupiter::Plugin
-	const Jupiter::ReadableString &getName() override { return name; }
-
-private:
-	STRING_LITERAL_AS_NAMED_REFERENCE(name, "RenX.SetJoin");
 };
 
 GENERIC_GAME_COMMAND(SetJoinGameCommand)

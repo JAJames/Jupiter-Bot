@@ -26,13 +26,13 @@
 
 using namespace Jupiter::literals;
 
-RenX_Ladder_WebPlugin::RenX_Ladder_WebPlugin()
+bool RenX_Ladder_WebPlugin::initialize()
 {
-	RenX_Ladder_WebPlugin::ladder_page_name = Jupiter::IRC::Client::Config->get(RenX_Ladder_WebPlugin::name, "LadderPageName"_jrs, ""_jrs);
-	RenX_Ladder_WebPlugin::search_page_name = Jupiter::IRC::Client::Config->get(RenX_Ladder_WebPlugin::name, "SearchPageName"_jrs, "search"_jrs);
-	RenX_Ladder_WebPlugin::profile_page_name = Jupiter::IRC::Client::Config->get(RenX_Ladder_WebPlugin::name, "ProfilePageName"_jrs, "profile"_jrs);
-	RenX_Ladder_WebPlugin::web_hostname = Jupiter::IRC::Client::Config->get(RenX_Ladder_WebPlugin::name, "Hostname"_jrs, ""_jrs);
-	RenX_Ladder_WebPlugin::web_path = Jupiter::IRC::Client::Config->get(RenX_Ladder_WebPlugin::name, "Path"_jrs, "/"_jrs);
+	RenX_Ladder_WebPlugin::ladder_page_name = this->config.get(Jupiter::ReferenceString::empty, "LadderPageName"_jrs, ""_jrs);
+	RenX_Ladder_WebPlugin::search_page_name = this->config.get(Jupiter::ReferenceString::empty, "SearchPageName"_jrs, "search"_jrs);
+	RenX_Ladder_WebPlugin::profile_page_name = this->config.get(Jupiter::ReferenceString::empty, "ProfilePageName"_jrs, "profile"_jrs);
+	RenX_Ladder_WebPlugin::web_hostname = this->config.get(Jupiter::ReferenceString::empty, "Hostname"_jrs, ""_jrs);
+	RenX_Ladder_WebPlugin::web_path = this->config.get(Jupiter::ReferenceString::empty, "Path"_jrs, "/"_jrs);
 
 	this->OnRehash();
 
@@ -56,6 +56,8 @@ RenX_Ladder_WebPlugin::RenX_Ladder_WebPlugin()
 	content->type = &Jupiter::HTTP::Content::Type::Text::HTML;
 	content->charset = &Jupiter::HTTP::Content::Type::Text::Charset::UTF8;
 	server.hook(RenX_Ladder_WebPlugin::web_hostname, RenX_Ladder_WebPlugin::web_path, content);
+
+	return true;
 }
 
 RenX_Ladder_WebPlugin::~RenX_Ladder_WebPlugin()
@@ -71,17 +73,17 @@ int RenX_Ladder_WebPlugin::OnRehash()
 	FILE *file;
 	int chr;
 
-	RenX_Ladder_WebPlugin::web_header_filename = Jupiter::IRC::Client::Config->get(RenX_Ladder_WebPlugin::name, "HeaderFilename"_jrs, "RenX.Ladder.Web.Header.html"_jrs);
-	RenX_Ladder_WebPlugin::web_footer_filename = Jupiter::IRC::Client::Config->get(RenX_Ladder_WebPlugin::name, "FooterFilename"_jrs, "RenX.Ladder.Web.Footer.html"_jrs);
-	RenX_Ladder_WebPlugin::web_profile_filename = Jupiter::IRC::Client::Config->get(RenX_Ladder_WebPlugin::name, "ProfileFilename"_jrs, "RenX.Ladder.Web.Profile.html"_jrs);
-	RenX_Ladder_WebPlugin::web_ladder_table_header_filename = Jupiter::IRC::Client::Config->get(RenX_Ladder_WebPlugin::name, "LadderTableHeaderFilename"_jrs, "RenX.Ladder.Web.Ladder.Table.Header.html"_jrs);
-	RenX_Ladder_WebPlugin::web_ladder_table_footer_filename = Jupiter::IRC::Client::Config->get(RenX_Ladder_WebPlugin::name, "LadderTableFooterFilename"_jrs, "RenX.Ladder.Web.Ladder.Table.Footer.html"_jrs);
-	RenX_Ladder_WebPlugin::entries_per_page = Jupiter::IRC::Client::Config->getInt(RenX_Ladder_WebPlugin::name, "EntriesPerPage"_jrs, 50);
-	RenX_Ladder_WebPlugin::min_search_name_length = Jupiter::IRC::Client::Config->getInt(RenX_Ladder_WebPlugin::name, "MinSearchNameLength"_jrs, 3);
+	RenX_Ladder_WebPlugin::web_header_filename = this->config.get(Jupiter::ReferenceString::empty, "HeaderFilename"_jrs, "RenX.Ladder.Web.Header.html"_jrs);
+	RenX_Ladder_WebPlugin::web_footer_filename = this->config.get(Jupiter::ReferenceString::empty, "FooterFilename"_jrs, "RenX.Ladder.Web.Footer.html"_jrs);
+	RenX_Ladder_WebPlugin::web_profile_filename = this->config.get(Jupiter::ReferenceString::empty, "ProfileFilename"_jrs, "RenX.Ladder.Web.Profile.html"_jrs);
+	RenX_Ladder_WebPlugin::web_ladder_table_header_filename = this->config.get(Jupiter::ReferenceString::empty, "LadderTableHeaderFilename"_jrs, "RenX.Ladder.Web.Ladder.Table.Header.html"_jrs);
+	RenX_Ladder_WebPlugin::web_ladder_table_footer_filename = this->config.get(Jupiter::ReferenceString::empty, "LadderTableFooterFilename"_jrs, "RenX.Ladder.Web.Ladder.Table.Footer.html"_jrs);
+	RenX_Ladder_WebPlugin::entries_per_page = this->config.getInt(Jupiter::ReferenceString::empty, "EntriesPerPage"_jrs, 50);
+	RenX_Ladder_WebPlugin::min_search_name_length = this->config.getInt(Jupiter::ReferenceString::empty, "MinSearchNameLength"_jrs, 3);
 
-	RenX_Ladder_WebPlugin::entry_table_row = Jupiter::IRC::Client::Config->get(RenX_Ladder_WebPlugin::name, "EntryTableRow"_jrs, R"html(<tr><td class="data-col-a">{RANK}</td><td class="data-col-b"><a href="profile?id={STEAM}&database={OBJECT}">{NAME}</a></td><td class="data-col-a">{SCORE}</td><td class="data-col-b">{SPM}</td><td class="data-col-a">{GAMES}</td><td class="data-col-b">{WINS}</td><td class="data-col-a">{LOSSES}</td><td class="data-col-b">{WLR}</td><td class="data-col-a">{KILLS}</td><td class="data-col-b">{DEATHS}</td><td class="data-col-a">{KDR}</td></tr>)html"_jrs);
-	RenX_Ladder_WebPlugin::entry_profile_previous = Jupiter::IRC::Client::Config->get(RenX_Ladder_WebPlugin::name, "EntryProfilePrevious"_jrs, R"html(<form class="profile-previous"><input type="hidden" name="database" value="{OBJECT}"/><input type="hidden" name="id" value="{WEAPON}"/><input class="profile-previous-submit" type="submit" value="&#x21A9 Previous" /></form>)html"_jrs);
-	RenX_Ladder_WebPlugin::entry_profile_next = Jupiter::IRC::Client::Config->get(RenX_Ladder_WebPlugin::name, "EntryProfileNext"_jrs, R"html(<form class="profile-next"><input type="hidden" name="database" value="{OBJECT}"/><input type="hidden" name="id" value="{VSTEAM}"/><input class="profile-next-submit" type="submit" value="Next &#x21AA" /></form>)html"_jrs);
+	RenX_Ladder_WebPlugin::entry_table_row = this->config.get(Jupiter::ReferenceString::empty, "EntryTableRow"_jrs, R"html(<tr><td class="data-col-a">{RANK}</td><td class="data-col-b"><a href="profile?id={STEAM}&database={OBJECT}">{NAME}</a></td><td class="data-col-a">{SCORE}</td><td class="data-col-b">{SPM}</td><td class="data-col-a">{GAMES}</td><td class="data-col-b">{WINS}</td><td class="data-col-a">{LOSSES}</td><td class="data-col-b">{WLR}</td><td class="data-col-a">{KILLS}</td><td class="data-col-b">{DEATHS}</td><td class="data-col-a">{KDR}</td></tr>)html"_jrs);
+	RenX_Ladder_WebPlugin::entry_profile_previous = this->config.get(Jupiter::ReferenceString::empty, "EntryProfilePrevious"_jrs, R"html(<form class="profile-previous"><input type="hidden" name="database" value="{OBJECT}"/><input type="hidden" name="id" value="{WEAPON}"/><input class="profile-previous-submit" type="submit" value="&#x21A9 Previous" /></form>)html"_jrs);
+	RenX_Ladder_WebPlugin::entry_profile_next = this->config.get(Jupiter::ReferenceString::empty, "EntryProfileNext"_jrs, R"html(<form class="profile-next"><input type="hidden" name="database" value="{OBJECT}"/><input type="hidden" name="id" value="{VSTEAM}"/><input class="profile-next-submit" type="submit" value="Next &#x21AA" /></form>)html"_jrs);
 
 	RenX::sanitizeTags(RenX_Ladder_WebPlugin::entry_table_row);
 	RenX::sanitizeTags(RenX_Ladder_WebPlugin::entry_profile_previous);

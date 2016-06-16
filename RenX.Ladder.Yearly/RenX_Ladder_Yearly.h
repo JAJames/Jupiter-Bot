@@ -27,14 +27,11 @@
 class RenX_Ladder_Yearly_TimePlugin : public RenX::Plugin
 {
 public:
-	const Jupiter::ReadableString &getName() override { return name; }
-
-	RenX_Ladder_Yearly_TimePlugin();
+	virtual bool initialize() override;
 
 	int last_sorted_year = 0;
 private:
 	RenX::LadderDatabase database;
-	STRING_LITERAL_AS_NAMED_REFERENCE(name, "RenX.Ladder.Yearly");
 };
 
 void OnPreUpdateLadder(RenX::LadderDatabase &database, RenX::Server *server, const RenX::TeamType &team);

@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2014-2015 Jessica James.
+ * Copyright (C) 2014-2016 Jessica James.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -29,12 +29,14 @@
 
 using namespace Jupiter::literals;
 
-RenX_MedalsPlugin::RenX_MedalsPlugin()
+bool RenX_MedalsPlugin::initialize()
 {
 	this->INTERNAL_RECS_TAG = RenX::getUniqueInternalTag();
 	this->INTERNAL_NOOB_TAG = RenX::getUniqueInternalTag();
 	this->INTERNAL_WORTH_TAG = RenX::getUniqueInternalTag();
 	init();
+
+	return true;
 }
 
 RenX_MedalsPlugin::~RenX_MedalsPlugin()
@@ -139,11 +141,11 @@ void RenX_MedalsPlugin::RenX_OnJoin(RenX::Server *server, const RenX::PlayerInfo
 	if (player->uuid.isNotEmpty() && player->isBot == false)
 	{
 		int worth = getWorth(player);
-		Jupiter::INIFile::Section *section = RenX_MedalsPlugin::joinMessageFile.getSection(RenX_MedalsPlugin::firstSection);
+		Jupiter::INIFile::Section *section = RenX_MedalsPlugin::config.getSection(RenX_MedalsPlugin::firstSection);
 		if (section != nullptr)
 		{
 			while (section->hasKey(STRING_LITERAL_AS_REFERENCE("MaxRecs")) && section->get(STRING_LITERAL_AS_REFERENCE("MaxRecs")).asInt() < worth)
-				if ((section = RenX_MedalsPlugin::joinMessageFile.getSection(section->get(STRING_LITERAL_AS_REFERENCE("NextSection")))) == nullptr)
+				if ((section = RenX_MedalsPlugin::config.getSection(section->get(STRING_LITERAL_AS_REFERENCE("NextSection")))) == nullptr)
 					return; // No matching section found.
 
 			if (section->hasKey(STRING_LITERAL_AS_REFERENCE("1")))
@@ -264,24 +266,21 @@ int RenX_MedalsPlugin::OnRehash()
 {
 	RenX_MedalsPlugin::medalsFile.sync(RenX_MedalsPlugin::medalsFileName);
 	RenX_MedalsPlugin::medalsFile.flushData();
-	RenX_MedalsPlugin::joinMessageFile.flushData();
 	init();
 	return 0;
 }
 
 void RenX_MedalsPlugin::init()
 {
-	RenX_MedalsPlugin::killCongratDelay = Jupiter::IRC::Client::Config->getInt(this->getName(), STRING_LITERAL_AS_REFERENCE("KillCongratDelay"), 60);
-	RenX_MedalsPlugin::vehicleKillCongratDelay = Jupiter::IRC::Client::Config->getInt(this->getName(), STRING_LITERAL_AS_REFERENCE("VehicleKillCongratDelay"), 60);
-	RenX_MedalsPlugin::kdrCongratDelay = Jupiter::IRC::Client::Config->getInt(this->getName(), STRING_LITERAL_AS_REFERENCE("KDRCongratDelay"), 60);
-	RenX_MedalsPlugin::medalsFileName = Jupiter::IRC::Client::Config->get(this->getName(), STRING_LITERAL_AS_REFERENCE("MedalsFile"), STRING_LITERAL_AS_REFERENCE("Medals.ini"));
-	RenX_MedalsPlugin::joinMessageFileName = Jupiter::IRC::Client::Config->get(this->getName(), STRING_LITERAL_AS_REFERENCE("JoinMessageFile"), STRING_LITERAL_AS_REFERENCE("Medals.Join.ini"));
+	RenX_MedalsPlugin::killCongratDelay = this->config.getInt(Jupiter::ReferenceString::empty, STRING_LITERAL_AS_REFERENCE("KillCongratDelay"), 60);
+	RenX_MedalsPlugin::vehicleKillCongratDelay = this->config.getInt(Jupiter::ReferenceString::empty, STRING_LITERAL_AS_REFERENCE("VehicleKillCongratDelay"), 60);
+	RenX_MedalsPlugin::kdrCongratDelay = this->config.getInt(Jupiter::ReferenceString::empty, STRING_LITERAL_AS_REFERENCE("KDRCongratDelay"), 60);
+	RenX_MedalsPlugin::medalsFileName = this->config.get(Jupiter::ReferenceString::empty, STRING_LITERAL_AS_REFERENCE("MedalsFile"), STRING_LITERAL_AS_REFERENCE("Medals.ini"));
 	RenX_MedalsPlugin::medalsFile.readFile(RenX_MedalsPlugin::medalsFileName);
-	RenX_MedalsPlugin::joinMessageFile.readFile(RenX_MedalsPlugin::joinMessageFileName);
-	RenX_MedalsPlugin::firstSection = RenX_MedalsPlugin::joinMessageFile.get(Jupiter::StringS::empty, STRING_LITERAL_AS_REFERENCE("FirstSection"));
-	RenX_MedalsPlugin::recsTag = RenX_MedalsPlugin::joinMessageFile.get(Jupiter::String::empty, STRING_LITERAL_AS_REFERENCE("RecsTag"), STRING_LITERAL_AS_REFERENCE("{RECS}"));
-	RenX_MedalsPlugin::noobTag = RenX_MedalsPlugin::joinMessageFile.get(Jupiter::String::empty, STRING_LITERAL_AS_REFERENCE("NoobsTag"), STRING_LITERAL_AS_REFERENCE("{NOOBS}"));
-	RenX_MedalsPlugin::worthTag = RenX_MedalsPlugin::joinMessageFile.get(Jupiter::String::empty, STRING_LITERAL_AS_REFERENCE("WorthTag"), STRING_LITERAL_AS_REFERENCE("{WORTH}"));
+	RenX_MedalsPlugin::firstSection = RenX_MedalsPlugin::config.get(Jupiter::StringS::empty, STRING_LITERAL_AS_REFERENCE("FirstSection"));
+	RenX_MedalsPlugin::recsTag = RenX_MedalsPlugin::config.get(Jupiter::String::empty, STRING_LITERAL_AS_REFERENCE("RecsTag"), STRING_LITERAL_AS_REFERENCE("{RECS}"));
+	RenX_MedalsPlugin::noobTag = RenX_MedalsPlugin::config.get(Jupiter::String::empty, STRING_LITERAL_AS_REFERENCE("NoobsTag"), STRING_LITERAL_AS_REFERENCE("{NOOBS}"));
+	RenX_MedalsPlugin::worthTag = RenX_MedalsPlugin::config.get(Jupiter::String::empty, STRING_LITERAL_AS_REFERENCE("WorthTag"), STRING_LITERAL_AS_REFERENCE("{WORTH}"));
 
 	RenX::Core *core = RenX::getCore();
 	unsigned int sCount = core->getServerCount();

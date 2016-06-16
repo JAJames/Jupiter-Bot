@@ -88,7 +88,7 @@ public:
 	ModGroup *getModeratorGroup() const;
 	ModGroup *getAdministratorGroup() const;
 
-	RenX_ModSystemPlugin();
+	virtual bool initialize() override;
 	~RenX_ModSystemPlugin();
 
 public: // RenX::Plugin
@@ -103,13 +103,9 @@ public: // RenX::Plugin
 
 public: // Jupiter::Plugin
 	int OnRehash();
-	const Jupiter::ReadableString &getName() override { return name; }
 
-	Jupiter::INIFile modsFile;
+	Jupiter::INIFile &modsFile = Jupiter::Plugin::config;
 private:
-	void init();
-	STRING_LITERAL_AS_NAMED_REFERENCE(name, "RenX.ModSystem");
-
 	bool lockSteam;
 	bool lockIP;
 	bool lockName;

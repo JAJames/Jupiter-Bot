@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2015 Jessica James.
+ * Copyright (C) 2015-2016 Jessica James.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -35,9 +35,7 @@ public:
 	void RenX_OnKill(RenX::Server *server, const Jupiter::ReadableString &killer, const RenX::TeamType &killerTeam, const RenX::PlayerInfo *victim, const Jupiter::ReadableString &damageType) override;
 	void RenX_OnDie(RenX::Server *server, const RenX::PlayerInfo *player, const Jupiter::ReadableString &damageType) override;
 
-	const Jupiter::ReadableString &getName() override { return name; }
-
-	RenX_MinPlayersPlugin();
+	virtual bool initialize() override;
 
 private:
 	void AnyDeath(RenX::Server *server, const RenX::PlayerInfo *player);
@@ -45,7 +43,6 @@ private:
 
 	/** Configuration variables */
 	size_t player_threshold;
-	STRING_LITERAL_AS_NAMED_REFERENCE(name, "RenX.MinPlayers");
 };
 
 #endif // _RENX_MINPLAYERS_H_HEADER

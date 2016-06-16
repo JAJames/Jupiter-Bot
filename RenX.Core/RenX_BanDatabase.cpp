@@ -250,10 +250,10 @@ const Jupiter::ArrayList<RenX::BanDatabase::Entry> &RenX::BanDatabase::getEntrie
 	return RenX::BanDatabase::entries;
 }
 
-RenX::BanDatabase::BanDatabase()
+bool RenX::BanDatabase::initialize()
 {
-	RenX::BanDatabase::filename = Jupiter::IRC::Client::Config->get(STRING_LITERAL_AS_REFERENCE("RenX"), STRING_LITERAL_AS_REFERENCE("BanDB"), STRING_LITERAL_AS_REFERENCE("Bans.db"));
-	this->process_file(filename);
+	RenX::BanDatabase::filename = RenX::getCore()->getConfig().get(Jupiter::ReferenceString::empty, STRING_LITERAL_AS_REFERENCE("BanDB"), STRING_LITERAL_AS_REFERENCE("Bans.db"));
+	return this->process_file(filename);
 }
 
 RenX::BanDatabase::~BanDatabase()

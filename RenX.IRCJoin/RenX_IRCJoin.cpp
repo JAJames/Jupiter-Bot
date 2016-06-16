@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2014-2015 Jessica James.
+ * Copyright (C) 2014-2016 Jessica James.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -23,19 +23,21 @@
 #include "RenX_Server.h"
 #include "RenX_IRCJoin.h"
 
-void RenX_IRCJoinPlugin::init()
+bool RenX_IRCJoinPlugin::initialize()
 {
-	RenX_IRCJoinPlugin::publicOnly = Jupiter::IRC::Client::Config->getBool(this->getName(), STRING_LITERAL_AS_REFERENCE("PublicOnly"), true);
-	RenX_IRCJoinPlugin::joinMsgAlways = Jupiter::IRC::Client::Config->getBool(this->getName(), STRING_LITERAL_AS_REFERENCE("Join.MsgAlways"), false);
-	RenX_IRCJoinPlugin::partMsgAlways = Jupiter::IRC::Client::Config->getBool(this->getName(), STRING_LITERAL_AS_REFERENCE("Part.MsgAlways"), false);
-	RenX_IRCJoinPlugin::minAccessPartMessage = Jupiter::IRC::Client::Config->getInt(this->getName(), STRING_LITERAL_AS_REFERENCE("Part.MinAccess"), 0);
-	RenX_IRCJoinPlugin::maxAccessPartMessage = Jupiter::IRC::Client::Config->getInt(this->getName(), STRING_LITERAL_AS_REFERENCE("Part.MaxAccess"), -1);
-	RenX_IRCJoinPlugin::nameTag = Jupiter::IRC::Client::Config->get(this->getName(), STRING_LITERAL_AS_REFERENCE("NameTag"), STRING_LITERAL_AS_REFERENCE("{NAME}"));
-	RenX_IRCJoinPlugin::chanTag = Jupiter::IRC::Client::Config->get(this->getName(), STRING_LITERAL_AS_REFERENCE("ChannelTag"), STRING_LITERAL_AS_REFERENCE("{CHAN}"));
-	RenX_IRCJoinPlugin::partReasonTag = Jupiter::IRC::Client::Config->get(this->getName(), STRING_LITERAL_AS_REFERENCE("PartReasonTag"), STRING_LITERAL_AS_REFERENCE("{REASON}"));
-	RenX_IRCJoinPlugin::joinFmt = Jupiter::IRC::Client::Config->get(this->getName(), STRING_LITERAL_AS_REFERENCE("Join.Format"), STRING_LITERAL_AS_REFERENCE("{NAME} has joined {CHAN}!"));
-	RenX_IRCJoinPlugin::partFmt = Jupiter::IRC::Client::Config->get(this->getName(), STRING_LITERAL_AS_REFERENCE("Part.Format"), STRING_LITERAL_AS_REFERENCE("{NAME} has left {CHAN} ({REASON})!"));
-	RenX_IRCJoinPlugin::partFmtNoReason = Jupiter::IRC::Client::Config->get(this->getName(), STRING_LITERAL_AS_REFERENCE("Part.FormatNoReason"), STRING_LITERAL_AS_REFERENCE("{NAME} has left {CHAN}!"));
+	RenX_IRCJoinPlugin::publicOnly = this->config.getBool(Jupiter::ReferenceString::empty, STRING_LITERAL_AS_REFERENCE("PublicOnly"), true);
+	RenX_IRCJoinPlugin::joinMsgAlways = this->config.getBool(Jupiter::ReferenceString::empty, STRING_LITERAL_AS_REFERENCE("Join.MsgAlways"), false);
+	RenX_IRCJoinPlugin::partMsgAlways = this->config.getBool(Jupiter::ReferenceString::empty, STRING_LITERAL_AS_REFERENCE("Part.MsgAlways"), false);
+	RenX_IRCJoinPlugin::minAccessPartMessage = this->config.getInt(Jupiter::ReferenceString::empty, STRING_LITERAL_AS_REFERENCE("Part.MinAccess"), 0);
+	RenX_IRCJoinPlugin::maxAccessPartMessage = this->config.getInt(Jupiter::ReferenceString::empty, STRING_LITERAL_AS_REFERENCE("Part.MaxAccess"), -1);
+	RenX_IRCJoinPlugin::nameTag = this->config.get(Jupiter::ReferenceString::empty, STRING_LITERAL_AS_REFERENCE("NameTag"), STRING_LITERAL_AS_REFERENCE("{NAME}"));
+	RenX_IRCJoinPlugin::chanTag = this->config.get(Jupiter::ReferenceString::empty, STRING_LITERAL_AS_REFERENCE("ChannelTag"), STRING_LITERAL_AS_REFERENCE("{CHAN}"));
+	RenX_IRCJoinPlugin::partReasonTag = this->config.get(Jupiter::ReferenceString::empty, STRING_LITERAL_AS_REFERENCE("PartReasonTag"), STRING_LITERAL_AS_REFERENCE("{REASON}"));
+	RenX_IRCJoinPlugin::joinFmt = this->config.get(Jupiter::ReferenceString::empty, STRING_LITERAL_AS_REFERENCE("Join.Format"), STRING_LITERAL_AS_REFERENCE("{NAME} has joined {CHAN}!"));
+	RenX_IRCJoinPlugin::partFmt = this->config.get(Jupiter::ReferenceString::empty, STRING_LITERAL_AS_REFERENCE("Part.Format"), STRING_LITERAL_AS_REFERENCE("{NAME} has left {CHAN} ({REASON})!"));
+	RenX_IRCJoinPlugin::partFmtNoReason = this->config.get(Jupiter::ReferenceString::empty, STRING_LITERAL_AS_REFERENCE("Part.FormatNoReason"), STRING_LITERAL_AS_REFERENCE("{NAME} has left {CHAN}!"));
+
+	return true;
 }
 
 void RenX_IRCJoinPlugin::OnJoin(Jupiter::IRC::Client *source, const Jupiter::ReadableString &channel, const Jupiter::ReadableString &nick)
@@ -103,13 +105,7 @@ void RenX_IRCJoinPlugin::OnPart(Jupiter::IRC::Client *source, const Jupiter::Rea
 
 int RenX_IRCJoinPlugin::OnRehash()
 {
-	RenX_IRCJoinPlugin::init();
-	return 0;
-}
-
-RenX_IRCJoinPlugin::RenX_IRCJoinPlugin()
-{
-	RenX_IRCJoinPlugin::init();
+	return RenX_IRCJoinPlugin::initialize() ? 0 : -1;
 }
 
 // Plugin instantiation and entry point.

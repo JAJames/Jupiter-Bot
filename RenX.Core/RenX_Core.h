@@ -60,12 +60,11 @@ namespace RenX
 		virtual int think();
 
 		/**
-		* @brief Returns the name of the plugin.
-		* @see Jupiter::Plugin::getName().
+		* @brief Initializes RenX.Core
 		*
-		* @return Name of the plugin in a string.
+		* @return True.
 		*/
-		const Jupiter::ReadableString &getName() override { return name; }
+		virtual bool initialize() override;
 
 		/**
 		* @brief Sends a command to all servers of a specific type.
@@ -190,7 +189,6 @@ namespace RenX
 
 	private:
 		/** Inaccessible private members */
-		STRING_LITERAL_AS_NAMED_REFERENCE(name, "RenX.Core");
 		Jupiter::ArrayList<RenX::Server> servers;
 		Jupiter::ArrayList<RenX::Plugin> plugins;
 		Jupiter::INIFile translationsFile;

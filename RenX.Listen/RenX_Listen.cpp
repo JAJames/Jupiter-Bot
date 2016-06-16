@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2015 Jessica James.
+ * Copyright (C) 2015-2016 Jessica James.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -28,11 +28,11 @@ RenX_ListenPlugin::~RenX_ListenPlugin()
 	RenX_ListenPlugin::socket.close();
 }
 
-bool RenX_ListenPlugin::init()
+bool RenX_ListenPlugin::initialize()
 {
-	uint16_t port = Jupiter::IRC::Client::Config->getInt(this->getName(), STRING_LITERAL_AS_REFERENCE("Port"), 21337);
-	const Jupiter::ReadableString &address = Jupiter::IRC::Client::Config->get(this->getName(), STRING_LITERAL_AS_REFERENCE("Address"), STRING_LITERAL_AS_REFERENCE("0.0.0.0"));
-	RenX_ListenPlugin::serverSection = Jupiter::IRC::Client::Config->get(this->getName(), STRING_LITERAL_AS_REFERENCE("ServerSection"), this->getName());
+	uint16_t port = this->config.getInt(Jupiter::ReferenceString::empty, STRING_LITERAL_AS_REFERENCE("Port"), 21337);
+	const Jupiter::ReadableString &address = this->config.get(Jupiter::ReferenceString::empty, STRING_LITERAL_AS_REFERENCE("Address"), STRING_LITERAL_AS_REFERENCE("0.0.0.0"));
+	RenX_ListenPlugin::serverSection = this->config.get(Jupiter::ReferenceString::empty, STRING_LITERAL_AS_REFERENCE("ServerSection"), this->getName());
 	return RenX_ListenPlugin::socket.bind(Jupiter::CStringS(address).c_str(), port, true) && RenX_ListenPlugin::socket.setBlocking(false);
 }
 
@@ -53,9 +53,9 @@ int RenX_ListenPlugin::think()
 
 int RenX_ListenPlugin::OnRehash()
 {
-	uint16_t port = Jupiter::IRC::Client::Config->getInt(this->getName(), STRING_LITERAL_AS_REFERENCE("Port"), 21337);
-	const Jupiter::ReadableString &address = Jupiter::IRC::Client::Config->get(this->getName(), STRING_LITERAL_AS_REFERENCE("Address"), STRING_LITERAL_AS_REFERENCE("0.0.0.0"));
-	RenX_ListenPlugin::serverSection = Jupiter::IRC::Client::Config->get(this->getName(), STRING_LITERAL_AS_REFERENCE("ServerSection"), this->getName());
+	uint16_t port = this->config.getInt(Jupiter::ReferenceString::empty, STRING_LITERAL_AS_REFERENCE("Port"), 21337);
+	const Jupiter::ReadableString &address = this->config.get(Jupiter::ReferenceString::empty, STRING_LITERAL_AS_REFERENCE("Address"), STRING_LITERAL_AS_REFERENCE("0.0.0.0"));
+	RenX_ListenPlugin::serverSection = this->config.get(Jupiter::ReferenceString::empty, STRING_LITERAL_AS_REFERENCE("ServerSection"), this->getName());
 	if (port != RenX_ListenPlugin::socket.getRemotePort() || address.equals(RenX_ListenPlugin::socket.getRemoteHostname()) == false)
 	{
 		puts("Notice: The Renegade-X listening socket has been changed!");
@@ -67,11 +67,6 @@ int RenX_ListenPlugin::OnRehash()
 
 // Plugin instantiation and entry point.
 RenX_ListenPlugin pluginInstance;
-
-extern "C" __declspec(dllexport) bool load()
-{
-	return pluginInstance.init();
-}
 
 extern "C" __declspec(dllexport) Jupiter::Plugin *getPlugin()
 {

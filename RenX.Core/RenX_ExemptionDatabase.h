@@ -182,7 +182,7 @@ namespace RenX
 		*/
 		const Jupiter::ArrayList<RenX::ExemptionDatabase::Entry> &getEntries() const;
 
-		ExemptionDatabase();
+		virtual bool initialize();
 		~ExemptionDatabase();
 
 	private:

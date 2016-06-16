@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2015 Jessica James.
+ * Copyright (C) 2015-2016 Jessica James.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -24,9 +24,10 @@
 
 using namespace Jupiter::literals;
 
-RenX_MinPlayersPlugin::RenX_MinPlayersPlugin()
+bool RenX_MinPlayersPlugin::initialize()
 {
-	RenX_MinPlayersPlugin::player_threshold = Jupiter::IRC::Client::Config->getInt(this->getName(), "PlayerThreshold"_jrs, 20);
+	RenX_MinPlayersPlugin::player_threshold = this->config.getInt(Jupiter::ReferenceString::empty, "PlayerThreshold"_jrs, 20);
+	return true;
 }
 
 void RenX_MinPlayersPlugin::RenX_OnMapStart(RenX::Server *server, const Jupiter::ReadableString &map)

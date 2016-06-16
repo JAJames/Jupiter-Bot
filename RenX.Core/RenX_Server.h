@@ -665,13 +665,6 @@ namespace RenX
 		const Jupiter::ReadableString &getRules() const;
 
 		/**
-		* @brief Sets the rules of a server.
-		*
-		* @param rules Rules for the server to be used.
-		*/
-		void setRules(const Jupiter::ReadableString &rules);
-
-		/**
 		* @brief Fetches the hostname of a server.
 		*
 		* @return String containing the hostname of the server.
@@ -993,7 +986,7 @@ namespace RenX
 
 	/** Private members */
 	private:
-		void init();
+		void init(const Jupiter::INIFile::Section &config);
 
 		/** Tracking variables */
 		bool gameover_when_empty = false;

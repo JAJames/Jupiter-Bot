@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2014-2015 Jessica James.
+ * Copyright (C) 2014-2016 Jessica James.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -28,14 +28,11 @@
 class RenX_WarnPlugin : public RenX::Plugin
 {
 public: // Jupiter::Plugin
-	const Jupiter::ReadableString &getName() override { return name; }
+	virtual bool initialize() override;
 	int OnRehash() override;
-	RenX_WarnPlugin();
 
 	int maxWarns;
 	int warnAction; /** -1 = kick; 0 = perm ban; other = temp ban */
-private:
-	STRING_LITERAL_AS_NAMED_REFERENCE(name, "RenX.Warn");
 };
 
 GENERIC_IRC_COMMAND(WarnIRCCommand)

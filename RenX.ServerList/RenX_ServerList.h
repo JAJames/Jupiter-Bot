@@ -31,22 +31,16 @@ public: // RenX_ServerListPlugin
 	void addServerToServerList(RenX::Server *server);
 	void updateServerList();
 
-	RenX_ServerListPlugin();
+	virtual bool initialize() override;
 	~RenX_ServerListPlugin();
 
 public: // RenX::Plugin
 	void RenX_OnServerFullyConnected(RenX::Server *server) override;
-	
 	void RenX_OnServerDisconnect(RenX::Server *server, RenX::DisconnectReason reason) override;
 	void RenX_OnJoin(RenX::Server *server, const RenX::PlayerInfo *player) override;
 	void RenX_OnPart(RenX::Server *server, const RenX::PlayerInfo *player) override;
 
-public: // Jupiter::Plugin
-	const Jupiter::ReadableString &getName() override { return name; }
-
 private:
-	STRING_LITERAL_AS_NAMED_REFERENCE(name, "RenX.ServerList");
-
 	Jupiter::StringS server_list_json;
 	Jupiter::StringS web_hostname, web_path, server_list_page_name, server_list_long_page_name, server_page_name;
 };

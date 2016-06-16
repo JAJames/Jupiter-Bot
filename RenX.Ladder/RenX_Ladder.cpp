@@ -26,14 +26,16 @@
 
 using namespace Jupiter::literals;
 
-RenX_LadderPlugin::RenX_LadderPlugin()
+bool RenX_LadderPlugin::initialize()
 {
-	RenX_LadderPlugin::only_pure = Jupiter::IRC::Client::Config->getBool(this->getName(), "OnlyPure"_jrs, false);
-	int mlcpno = Jupiter::IRC::Client::Config->getInt(this->getName(), "MaxLadderCommandPartNameOutput"_jrs, 5);
+	RenX_LadderPlugin::only_pure = this->config.getBool(Jupiter::ReferenceString::empty, "OnlyPure"_jrs, false);
+	int mlcpno = this->config.getInt(Jupiter::ReferenceString::empty, "MaxLadderCommandPartNameOutput"_jrs, 5);
 	if (mlcpno < 0)
 		RenX_LadderPlugin::max_ladder_command_part_name_output = 0;
 	else
 		RenX_LadderPlugin::max_ladder_command_part_name_output = mlcpno;
+
+	return true;
 }
 
 /** Wait until the client list has been updated to update the ladder */

@@ -15,11 +15,6 @@
 
 class RenX_TPlugin : public RenX::Plugin
 {
-public:
-	const Jupiter::ReadableString &getName() override { return name; }
-
-private:
-	STRING_LITERAL_AS_NAMED_REFERENCE(name, "RenX_TemplatePlugin");
 };
 
 #endif // _EXAMPLE_H_HEADER

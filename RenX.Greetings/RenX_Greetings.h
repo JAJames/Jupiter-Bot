@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2014-2015 Jessica James.
+ * Copyright (C) 2014-2016 Jessica James.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -31,17 +31,14 @@ public: // RenX::Plugin
 	void RenX_OnJoin(RenX::Server *server, const RenX::PlayerInfo *player) override;
 
 public: // Jupiter::Plugin
+	virtual bool initialize() override;
 	int OnRehash() override;
-	const Jupiter::ReadableString &getName() override { return name; }
 
-	RenX_GreetingsPlugin();
 private:
-	void init();
 	bool sendPrivate;
 	unsigned int lastLine;
 	unsigned int sendMode = 0; /** 0 = Send greetings randomly, 1 = Send greetings sequentially, 2 = Send all greetings */
 	Jupiter::File greetingsFile;
-	STRING_LITERAL_AS_NAMED_REFERENCE(name, "RenX.Greetings");
 };
 
 #endif // _RENX_GREETING_H_HEADER

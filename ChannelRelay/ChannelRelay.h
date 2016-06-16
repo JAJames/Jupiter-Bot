@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2015 Jessica James.
+ * Copyright (C) 2015-2016 Jessica James.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -26,13 +26,11 @@ class ChannelRelayPlugin : public Jupiter::Plugin
 {
 public: // Jupiter::Plugin
 	void OnChat(Jupiter::IRC::Client *server, const Jupiter::ReadableString &channel, const Jupiter::ReadableString &nick, const Jupiter::ReadableString &message) override;
-	const Jupiter::ReadableString &getName() override { return name; }
 	int OnRehash() override;
 
-	int init();
+	virtual bool initialize() override;
 private:
 	Jupiter::String_Strict<int> types;
-	STRING_LITERAL_AS_NAMED_REFERENCE(name, "ChannelRelay");
 };
 
 #endif // _CHANNELRELAY_H_HEADER

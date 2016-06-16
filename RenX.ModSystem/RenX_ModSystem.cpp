@@ -26,15 +26,13 @@
 
 using namespace Jupiter::literals;
 
-void RenX_ModSystemPlugin::init()
+bool RenX_ModSystemPlugin::initialize()
 {
-	RenX_ModSystemPlugin::modsFile.readFile(Jupiter::IRC::Client::Config->get(RenX_ModSystemPlugin::getName(), STRING_LITERAL_AS_REFERENCE("ModsFile"), STRING_LITERAL_AS_REFERENCE("Mods.ini")));
-
-	RenX_ModSystemPlugin::lockSteam = RenX_ModSystemPlugin::modsFile.getBool(Jupiter::ReferenceString::empty, STRING_LITERAL_AS_REFERENCE("LockSteam"), false);
+	RenX_ModSystemPlugin::lockSteam = RenX_ModSystemPlugin::modsFile.getBool(Jupiter::ReferenceString::empty, STRING_LITERAL_AS_REFERENCE("LockSteam"), true);
 	RenX_ModSystemPlugin::lockIP = RenX_ModSystemPlugin::modsFile.getBool(Jupiter::ReferenceString::empty, STRING_LITERAL_AS_REFERENCE("LockIP"), false);
 	RenX_ModSystemPlugin::lockName = RenX_ModSystemPlugin::modsFile.getBool(Jupiter::ReferenceString::empty, STRING_LITERAL_AS_REFERENCE("LockName"), false);
 	RenX_ModSystemPlugin::kickLockMismatch = RenX_ModSystemPlugin::modsFile.getBool(Jupiter::ReferenceString::empty, STRING_LITERAL_AS_REFERENCE("KickLockMismatch"), true);
-	RenX_ModSystemPlugin::autoAuthSteam = RenX_ModSystemPlugin::modsFile.getBool(Jupiter::ReferenceString::empty, STRING_LITERAL_AS_REFERENCE("AutoAuthSteam"), false);
+	RenX_ModSystemPlugin::autoAuthSteam = RenX_ModSystemPlugin::modsFile.getBool(Jupiter::ReferenceString::empty, STRING_LITERAL_AS_REFERENCE("AutoAuthSteam"), true);
 	RenX_ModSystemPlugin::autoAuthIP = RenX_ModSystemPlugin::modsFile.getBool(Jupiter::ReferenceString::empty, STRING_LITERAL_AS_REFERENCE("AutoAuthIP"), false);
 	RenX_ModSystemPlugin::atmDefault = RenX_ModSystemPlugin::modsFile.get(Jupiter::ReferenceString::empty, STRING_LITERAL_AS_REFERENCE("ATMDefault"));
 	RenX_ModSystemPlugin::moderatorGroup = RenX_ModSystemPlugin::modsFile.get(Jupiter::ReferenceString::empty, STRING_LITERAL_AS_REFERENCE("Moderator"), STRING_LITERAL_AS_REFERENCE("Moderator"));
@@ -110,6 +108,8 @@ void RenX_ModSystemPlugin::init()
 			for (Jupiter::DLList<RenX::PlayerInfo>::Node *n = server->players.getNode(0); n != nullptr; n = n->next)
 				RenX_ModSystemPlugin::auth(server, n->data, true);
 	}
+
+	return true;
 }
 
 unsigned int RenX_ModSystemPlugin::logoutAllMods(const RenX::Server *server)
@@ -305,11 +305,6 @@ RenX_ModSystemPlugin::ModGroup *RenX_ModSystemPlugin::getAdministratorGroup() co
 	return RenX_ModSystemPlugin::getGroupByName(RenX_ModSystemPlugin::administratorGroup);
 }
 
-RenX_ModSystemPlugin::RenX_ModSystemPlugin()
-{
-	RenX_ModSystemPlugin::init();
-}
-
 RenX_ModSystemPlugin::~RenX_ModSystemPlugin()
 {
 	RenX::Core *core = RenX::getCore();
@@ -415,8 +410,7 @@ int RenX_ModSystemPlugin::OnRehash()
 	RenX_ModSystemPlugin::modsFile.flushData();
 	while (RenX_ModSystemPlugin::groups.size() != 0)
 		delete RenX_ModSystemPlugin::groups.remove(0U);
-	RenX_ModSystemPlugin::init();
-	return 0;
+	return this->initialize() ? 0 : -1;
 }
 
 // Plugin instantiation and entry point.

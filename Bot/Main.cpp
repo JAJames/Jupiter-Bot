@@ -105,7 +105,9 @@ int main(int argc, const char **args)
 		else if ("-config"_jrs.equalsi(args[i]) && ++i < argc)
 			configFileName = args[i];
 		else if ("-pluginsdir"_jrs.equalsi(args[i]) && ++i < argc)
-			Jupiter::setPluginDirectory(Jupiter::ReferenceString(args[i]));
+			Jupiter::Plugin::setDirectory(Jupiter::ReferenceString(args[i]));
+		else if ("-configsdir"_jrs.equals(args[i]) && ++i < argc)
+			Jupiter::Plugin::setConfigDirectory(Jupiter::ReferenceString(args[i]));
 		else if ("-configFormat"_jrs.equalsi(args[i]) && ++i < argc)
 			puts("Feature not yet supported!");
 		else
@@ -120,11 +122,19 @@ int main(int argc, const char **args)
 	}
 
 	fputs("Config loaded. ", stdout);
+	
 	const Jupiter::ReadableString &pDir = Jupiter::IRC::Client::Config->get(STRING_LITERAL_AS_REFERENCE("Config"), STRING_LITERAL_AS_REFERENCE("PluginsDirectory"));
 	if (pDir.isNotEmpty())
 	{
-		Jupiter::setPluginDirectory(pDir);
+		Jupiter::Plugin::setDirectory(pDir);
 		printf("Plugins will be loaded from \"%.*s\"." ENDL, pDir.size(), pDir.ptr());
+	}
+
+	const Jupiter::ReadableString &cDir = Jupiter::IRC::Client::Config->get(STRING_LITERAL_AS_REFERENCE("Config"), STRING_LITERAL_AS_REFERENCE("PluginConfigsDirectory"));
+	if (cDir.isNotEmpty())
+	{
+		Jupiter::Plugin::setDirectory(cDir);
+		printf("Plugin configs will be loaded from \"%.*s\"." ENDL, cDir.size(), cDir.ptr());
 	}
 
 	puts("Loading plugins...");
@@ -138,7 +148,7 @@ int main(int argc, const char **args)
 		for (unsigned int i = 0; i < nPlugins; i++)
 		{
 			Jupiter::ReferenceString plugin = Jupiter::ReferenceString::getWord(pluginList, i, WHITESPACE);
-			if (Jupiter::loadPlugin(plugin) == nullptr) fprintf(stderr, "WARNING: Failed to load plugin \"%.*s\"!" ENDL, plugin.size(), plugin.ptr());
+			if (Jupiter::Plugin::load(plugin) == nullptr) fprintf(stderr, "WARNING: Failed to load plugin \"%.*s\"!" ENDL, plugin.size(), plugin.ptr());
 			else printf("\"%.*s\" loaded successfully." ENDL, plugin.size(), plugin.ptr());
 		}
 	}
@@ -167,7 +177,7 @@ int main(int argc, const char **args)
 		index = 0;
 		while (index < Jupiter::plugins->size())
 			if (Jupiter::plugins->get(index)->shouldRemove() || Jupiter::plugins->get(index)->think() != 0)
-				Jupiter::freePlugin(index);
+				Jupiter::Plugin::free(index);
 			else
 				++index;
 		Jupiter_checkTimers();

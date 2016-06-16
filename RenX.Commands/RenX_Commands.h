@@ -33,7 +33,7 @@ public: // RenX::Plugin
 	void RenX_OnDie(RenX::Server *server, const RenX::PlayerInfo *player, const Jupiter::ReadableString &damageType) override;
 
 public: // Jupiter::Plugin
-	const Jupiter::ReadableString &getName() override { return name; }
+	virtual bool initialize() override;
 	int OnRehash() override;
 
 public:
@@ -42,10 +42,8 @@ public:
 	const Jupiter::ReadableString &getAdminPlayerInfoFormat() const;
 	const Jupiter::ReadableString &getBuildingInfoFormat() const;
 	const Jupiter::ReadableString &getStaffTitle() const;
-	RenX_CommandsPlugin();
 
 private:
-	STRING_LITERAL_AS_NAMED_REFERENCE(name, "RenX.Commands");
 	std::chrono::seconds _defaultTempBanTime;
 	Jupiter::StringS playerInfoFormat;
 	Jupiter::StringS adminPlayerInfoFormat;
@@ -74,7 +72,6 @@ GENERIC_IRC_COMMAND(ShowModsIRCCommand)
 GENERIC_IRC_COMMAND(ModsIRCCommand)
 GENERIC_IRC_COMMAND(ShowRulesIRCCommand)
 GENERIC_IRC_COMMAND(RulesIRCCommand)
-GENERIC_IRC_COMMAND(SetRulesIRCCommand)
 GENERIC_IRC_COMMAND(ReconnectIRCCommand)
 GENERIC_IRC_COMMAND(GameOverIRCCommand)
 GENERIC_IRC_COMMAND(SetMapIRCCommand)

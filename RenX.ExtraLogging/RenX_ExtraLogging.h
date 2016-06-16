@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2014-2015 Jessica James.
+ * Copyright (C) 2014-2016 Jessica James.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -29,19 +29,15 @@ public: // RenX::Plugin
 	virtual void RenX_OnRaw(RenX::Server *server, const Jupiter::ReadableString &raw) override;
 
 public: // Jupiter::Plugin
-	const Jupiter::ReadableString &getName() override { return name; }
+	virtual bool initialize() override;
 	int OnRehash() override;
 	int think() override;
 
 public: // RenX_ExtraLoggingPlugin
-
-	bool init();
-
 	RenX_ExtraLoggingPlugin();
 	~RenX_ExtraLoggingPlugin();
 
 private:
-	STRING_LITERAL_AS_NAMED_REFERENCE(name, "RenX.ExtraLogging");
 	Jupiter::StringS filePrefix;
 	Jupiter::StringS consolePrefix;
 	Jupiter::StringS newDayFmt;

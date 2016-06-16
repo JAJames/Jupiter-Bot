@@ -84,13 +84,13 @@ Jupiter::String jsonify(const Jupiter::ReadableString &in_str)
 	return result;
 }
 
-RenX_ServerListPlugin::RenX_ServerListPlugin()
+bool RenX_ServerListPlugin::initialize()
 {
-	RenX_ServerListPlugin::web_hostname = Jupiter::IRC::Client::Config->get(this->name, "Hostname"_jrs, ""_jrs);
-	RenX_ServerListPlugin::web_path = Jupiter::IRC::Client::Config->get(this->name, "Path"_jrs, "/"_jrs);
-	RenX_ServerListPlugin::server_list_page_name = Jupiter::IRC::Client::Config->get(this->name, "ServersPageName"_jrs, "servers.jsp"_jrs);
-	RenX_ServerListPlugin::server_list_long_page_name = Jupiter::IRC::Client::Config->get(this->name, "HumanServersPageName"_jrs, "servers_long.jsp"_jrs);
-	RenX_ServerListPlugin::server_page_name = Jupiter::IRC::Client::Config->get(this->name, "ServerPageName"_jrs, "server.jsp"_jrs);
+	RenX_ServerListPlugin::web_hostname = this->config.get(Jupiter::ReferenceString::empty, "Hostname"_jrs, ""_jrs);
+	RenX_ServerListPlugin::web_path = this->config.get(Jupiter::ReferenceString::empty, "Path"_jrs, "/"_jrs);
+	RenX_ServerListPlugin::server_list_page_name = this->config.get(Jupiter::ReferenceString::empty, "ServersPageName"_jrs, "servers.jsp"_jrs);
+	RenX_ServerListPlugin::server_list_long_page_name = this->config.get(Jupiter::ReferenceString::empty, "HumanServersPageName"_jrs, "servers_long.jsp"_jrs);
+	RenX_ServerListPlugin::server_page_name = this->config.get(Jupiter::ReferenceString::empty, "ServerPageName"_jrs, "server.jsp"_jrs);
 
 	/** Initialize content */
 	Jupiter::HTTP::Server &server = getHTTPServer();
@@ -120,6 +120,7 @@ RenX_ServerListPlugin::RenX_ServerListPlugin()
 	server.hook(RenX_ServerListPlugin::web_hostname, RenX_ServerListPlugin::web_path, content);
 
 	this->updateServerList();
+	return true;
 }
 
 RenX_ServerListPlugin::~RenX_ServerListPlugin()

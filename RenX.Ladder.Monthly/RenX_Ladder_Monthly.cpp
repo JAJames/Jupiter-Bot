@@ -23,19 +23,21 @@
 
 using namespace Jupiter::literals;
 
-RenX_Ladder_Monthly_TimePlugin::RenX_Ladder_Monthly_TimePlugin()
+bool RenX_Ladder_Monthly_TimePlugin::initialize()
 {
 	// Load database
-	this->database.process_file(Jupiter::IRC::Client::Config->get(this->getName(), "LadderDatabase"_jrs, "Ladder.Monthly.db"_jrs));
-	this->database.setName(Jupiter::IRC::Client::Config->get(this->getName(), "DatabaseName"_jrs, "Monthly"_jrs));
-	this->database.setOutputTimes(Jupiter::IRC::Client::Config->getBool(this->getName(), "OutputTimes"_jrs, false));
+	this->database.process_file(this->config.get(Jupiter::ReferenceString::empty, "LadderDatabase"_jrs, "Ladder.Monthly.db"_jrs));
+	this->database.setName(this->config.get(Jupiter::ReferenceString::empty, "DatabaseName"_jrs, "Monthly"_jrs));
+	this->database.setOutputTimes(this->config.getBool(Jupiter::ReferenceString::empty, "OutputTimes"_jrs, false));
 
 	this->last_sorted_month = gmtime(std::addressof<const time_t>(time(0)))->tm_mon;
 	this->database.OnPreUpdateLadder = OnPreUpdateLadder;
 
 	// Force database to default, if desired
-	if (Jupiter::IRC::Client::Config->getBool(this->getName(), "ForceDefault"_jrs, false))
+	if (this->config.getBool(Jupiter::ReferenceString::empty, "ForceDefault"_jrs, false))
 		RenX::default_ladder_database = &this->database;
+
+	return true;
 }
 
 // Plugin instantiation and entry point.
