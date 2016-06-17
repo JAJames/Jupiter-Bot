@@ -407,6 +407,8 @@ void RenX_ModSystemPlugin::RenX_OnAdminLogout(RenX::Server *server, const RenX::
 
 int RenX_ModSystemPlugin::OnRehash()
 {
+	RenX::Plugin::OnRehash();
+
 	RenX_ModSystemPlugin::modsFile.flushData();
 	while (RenX_ModSystemPlugin::groups.size() != 0)
 		delete RenX_ModSystemPlugin::groups.remove(0U);

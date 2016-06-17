@@ -105,6 +105,8 @@ void RenX_IRCJoinPlugin::OnPart(Jupiter::IRC::Client *source, const Jupiter::Rea
 
 int RenX_IRCJoinPlugin::OnRehash()
 {
+	RenX::Plugin::OnRehash();
+
 	return RenX_IRCJoinPlugin::initialize() ? 0 : -1;
 }
 

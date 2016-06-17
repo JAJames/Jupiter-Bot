@@ -30,6 +30,7 @@ bool RenX_WarnPlugin::initialize()
 
 int RenX_WarnPlugin::OnRehash()
 {
+	RenX::Plugin::OnRehash();
 	return this->initialize() ? 0 : -1;
 }
 

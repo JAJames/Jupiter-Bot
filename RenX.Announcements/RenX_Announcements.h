@@ -34,7 +34,7 @@ public:
 
 public: // Jupiter::Plugin
 	virtual bool initialize() override;
-	int OnRehash();
+	int OnRehash() override;
 	~RenX_AnnouncementsPlugin();
 
 private:

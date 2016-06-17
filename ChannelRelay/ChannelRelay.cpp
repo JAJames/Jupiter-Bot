@@ -40,6 +40,8 @@ bool ChannelRelayPlugin::initialize()
 
 int ChannelRelayPlugin::OnRehash()
 {
+	Jupiter::Plugin::OnRehash();
+
 	ChannelRelayPlugin::types.erase();
 	return this->initialize() ? 0 : -1;
 }

@@ -38,6 +38,7 @@ bool RenX_ExcessiveHeadshotsPlugin::initialize()
 
 int RenX_ExcessiveHeadshotsPlugin::OnRehash()
 {
+	RenX::Plugin::OnRehash();
 	return this->initialize() ? 0 : -1;
 }
 

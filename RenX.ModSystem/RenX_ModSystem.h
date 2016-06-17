@@ -102,7 +102,7 @@ public: // RenX::Plugin
 	void RenX_OnAdminLogout(RenX::Server *server, const RenX::PlayerInfo *player) override;
 
 public: // Jupiter::Plugin
-	int OnRehash();
+	int OnRehash() override;
 
 	Jupiter::INIFile &modsFile = Jupiter::Plugin::config;
 private:

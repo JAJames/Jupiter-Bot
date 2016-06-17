@@ -53,6 +53,8 @@ int RenX_ListenPlugin::think()
 
 int RenX_ListenPlugin::OnRehash()
 {
+	RenX::Plugin::OnRehash();
+
 	uint16_t port = this->config.getInt(Jupiter::ReferenceString::empty, STRING_LITERAL_AS_REFERENCE("Port"), 21337);
 	const Jupiter::ReadableString &address = this->config.get(Jupiter::ReferenceString::empty, STRING_LITERAL_AS_REFERENCE("Address"), STRING_LITERAL_AS_REFERENCE("0.0.0.0"));
 	RenX_ListenPlugin::serverSection = this->config.get(Jupiter::ReferenceString::empty, STRING_LITERAL_AS_REFERENCE("ServerSection"), this->getName());

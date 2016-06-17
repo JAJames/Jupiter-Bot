@@ -2257,6 +2257,7 @@ void RenX_LoggingPlugin::RenX_OnOther(RenX::Server *server, char token, const Ju
 
 int RenX_LoggingPlugin::OnRehash()
 {
+	RenX::Plugin::OnRehash();
 	return this->initialize() ? 0 : -1;
 }
 

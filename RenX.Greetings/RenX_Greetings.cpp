@@ -62,6 +62,8 @@ void RenX_GreetingsPlugin::RenX_OnJoin(RenX::Server *server, const RenX::PlayerI
 
 int RenX_GreetingsPlugin::OnRehash()
 {
+	RenX::Plugin::OnRehash();
+
 	RenX_GreetingsPlugin::greetingsFile.unload();
 	return RenX_GreetingsPlugin::initialize() ? 0 : -1;
 }

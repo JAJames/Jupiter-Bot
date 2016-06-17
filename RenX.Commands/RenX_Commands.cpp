@@ -80,6 +80,7 @@ bool RenX_CommandsPlugin::initialize()
 
 int RenX_CommandsPlugin::OnRehash()
 {
+	RenX::Plugin::OnRehash();
 	return this->initialize() ? 0 : -1;
 }
 

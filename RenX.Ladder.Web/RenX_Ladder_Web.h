@@ -53,6 +53,8 @@ public: // Jupiter::Plugin
 	int OnRehash() override;
 
 private:
+	void init();
+
 	/** Configuration variables */
 	size_t entries_per_page;
 	size_t min_search_name_length;

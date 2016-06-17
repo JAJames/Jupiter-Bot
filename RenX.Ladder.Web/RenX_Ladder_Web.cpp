@@ -34,7 +34,7 @@ bool RenX_Ladder_WebPlugin::initialize()
 	RenX_Ladder_WebPlugin::web_hostname = this->config.get(Jupiter::ReferenceString::empty, "Hostname"_jrs, ""_jrs);
 	RenX_Ladder_WebPlugin::web_path = this->config.get(Jupiter::ReferenceString::empty, "Path"_jrs, "/"_jrs);
 
-	this->OnRehash();
+	this->init();
 
 	/** Initialize content */
 	Jupiter::HTTP::Server &server = getHTTPServer();
@@ -68,7 +68,7 @@ RenX_Ladder_WebPlugin::~RenX_Ladder_WebPlugin()
 	server.remove(RenX_Ladder_WebPlugin::web_hostname, RenX_Ladder_WebPlugin::web_path, RenX_Ladder_WebPlugin::profile_page_name);
 }
 
-int RenX_Ladder_WebPlugin::OnRehash()
+void RenX_Ladder_WebPlugin::init()
 {
 	FILE *file;
 	int chr;
@@ -155,7 +155,12 @@ int RenX_Ladder_WebPlugin::OnRehash()
 			fclose(file);
 		}
 	}
+}
 
+int RenX_Ladder_WebPlugin::OnRehash()
+{
+	RenX::Plugin::OnRehash();
+	this->init();
 	return 0;
 }
 

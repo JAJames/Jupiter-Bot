@@ -73,7 +73,7 @@ namespace RenX
 		*
 		* @return 0.
 		*/
-		virtual int OnRehash();
+		virtual int OnRehash() override;
 
 		/**
 		* @brief Fires when a non-zero value is returned by an object during a call to rehash().

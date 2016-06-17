@@ -35,8 +35,11 @@ RenX_ExtraLoggingPlugin::~RenX_ExtraLoggingPlugin()
 
 int RenX_ExtraLoggingPlugin::OnRehash()
 {
+	RenX::Plugin::OnRehash();
+
 	if (RenX_ExtraLoggingPlugin::file != nullptr)
 		fclose(RenX_ExtraLoggingPlugin::file);
+
 	return this->initialize() ? 0 : -1;
 }
 
