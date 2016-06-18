@@ -30,7 +30,6 @@ class CoreCommandsPlugin : public Jupiter::Plugin
 GENERIC_CONSOLE_COMMAND(HelpConsoleCommand)
 GENERIC_IRC_COMMAND(HelpIRCCommand)
 GENERIC_GENERIC_COMMAND(VersionGenericCommand)
-GENERIC_GENERIC_COMMAND(SyncGenericCommand)
 GENERIC_GENERIC_COMMAND(RehashGenericCommand)
 
 #endif // _CORECOMMANDS_H_HEADER

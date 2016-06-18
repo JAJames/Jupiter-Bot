@@ -148,39 +148,6 @@ GENERIC_COMMAND_INIT(VersionGenericCommand)
 GENERIC_COMMAND_AS_CONSOLE_COMMAND(VersionGenericCommand)
 GENERIC_COMMAND_AS_IRC_COMMAND_NO_CREATE(VersionGenericCommand)
 
-// Sync Command
-
-SyncGenericCommand::SyncGenericCommand()
-{
-	this->addTrigger(STRING_LITERAL_AS_REFERENCE("sync"));
-}
-
-GenericCommand::ResponseLine *SyncGenericCommand::trigger(const Jupiter::ReadableString &parameters)
-{
-	if (Jupiter::IRC::Client::Config == nullptr)
-		return new GenericCommand::ResponseLine(STRING_LITERAL_AS_REFERENCE("Unable to find Config data."), GenericCommand::DisplayType::PublicError);
-	else
-	{
-		bool r;
-		if (parameters.isNotEmpty())
-			r = Jupiter::IRC::Client::Config->sync(parameters);
-		else r = Jupiter::IRC::Client::Config->sync();
-		if (r)
-			return new GenericCommand::ResponseLine(STRING_LITERAL_AS_REFERENCE("Config data synced to file successfully."), GenericCommand::DisplayType::PublicSuccess);
-		return new GenericCommand::ResponseLine(STRING_LITERAL_AS_REFERENCE("Unable to sync Config data."), GenericCommand::DisplayType::PublicError);
-	}
-}
-
-const Jupiter::ReadableString &SyncGenericCommand::getHelp(const Jupiter::ReadableString &)
-{
-	static STRING_LITERAL_AS_NAMED_REFERENCE(defaultHelp, "Syncs the configuration data to a file. Syntax: sync [file]");
-	return defaultHelp;
-}
-
-GENERIC_COMMAND_INIT(SyncGenericCommand)
-GENERIC_COMMAND_AS_CONSOLE_COMMAND(SyncGenericCommand)
-GENERIC_COMMAND_AS_IRC_COMMAND_ACCESS_CREATE(SyncGenericCommand, 4)
-
 // Rehash Command
 
 RehashGenericCommand::RehashGenericCommand()
