@@ -157,3 +157,6 @@ $RECYCLE.BIN/
 
 # Visual Studio OpenDB
 *.VC.opendb
+
+# Visual Studio DB
+*.VC.db
