@@ -562,7 +562,8 @@ void RenX_LoggingPlugin::RenX_OnJoin(RenX::Server *server, const RenX::PlayerInf
 		msg = this->joinNoSteamAdminFmt;
 	else
 		msg = this->joinAdminFmt;
-	if (msg.isNotEmpty())
+
+	if (msg.isNotEmpty() && server->isMatchPending() == false)
 	{
 		RenX::processTags(msg, server, player);
 		server->sendAdmChan(msg);
@@ -578,7 +579,7 @@ void RenX_LoggingPlugin::RenX_OnPart(RenX::Server *server, const RenX::PlayerInf
 		func = &RenX::Server::sendAdmChan;
 
 	Jupiter::String msg = this->partFmt;
-	if (msg.isNotEmpty())
+	if (msg.isNotEmpty() && (server->isTravelling() == false || server->isSeamless()))
 	{
 		RenX::processTags(msg, server, player);
 		(server->*func)(msg);
@@ -2032,8 +2033,6 @@ void RenX_LoggingPlugin::RenX_OnMapChange(RenX::Server *server, const Jupiter::R
 		msg.replace(RenX::tags->INTERNAL_MESSAGE_TAG, map);
 		(server->*func)(msg);
 	}
-	if (server->isSeamless() == false)
-		server->sendLogChan(IRCCOLOR "07[Warning]" IRCCOLOR " This server is using non-seamless server travel; this bot will be disconnected.");
 }
 
 void RenX_LoggingPlugin::RenX_OnMapLoad(RenX::Server *server, const Jupiter::ReadableString &map)

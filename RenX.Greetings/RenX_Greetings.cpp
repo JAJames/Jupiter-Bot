@@ -37,7 +37,7 @@ void RenX_GreetingsPlugin::RenX_OnJoin(RenX::Server *server, const RenX::PlayerI
 		else
 			server->sendMessage(msg);
 	};
-	if (player->isBot == false)
+	if (player->isBot == false && server->isMatchInProgress())
 	{
 		switch (RenX_GreetingsPlugin::sendMode)
 		{

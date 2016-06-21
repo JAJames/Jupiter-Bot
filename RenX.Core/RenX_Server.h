@@ -113,13 +113,6 @@ namespace RenX
 		bool isFullyConnected() const;
 
 		/**
-		* @brief Checks if a map start event has fired.
-		*
-		* @return True if a map start event has fired, false otherwise.
-		*/
-		bool hasSeenStart() const;
-
-		/**
 		* @brief Checks if the first kill has already been processed.
 		* Note: This does not set to "true" until AFTER the first kill has been fully processed.
 		* This includes processing by plugins.
@@ -153,6 +146,42 @@ namespace RenX
 		* @return True if the server is using seamless travel, false otherwise.
 		*/
 		bool isSeamless() const;
+
+		/**
+		* @brief Checks if the match data is reliable (bot has seen full game)
+		* This is based on the bot seeing the "Start;" event.
+		*
+		* @return True if this server's match data is reliable, false otherwise..
+		*/
+		bool isReliable() const;
+
+		/**
+		* @brief Checks if the match is pending (hasn't started OR not in game state).
+		*
+		* @return True if the match is pending, false otherwise.
+		*/
+		bool isMatchPending() const;
+
+		/**
+		* @brief Checks if the match is in progress (started AND not over).
+		*
+		* @return True if a game is in progress, false otherwise.
+		*/
+		bool isMatchInProgress() const;
+
+		/**
+		* @brief Checks if the match has ended (has ended OR not in game state)
+		*
+		* @return True if the match as ended, false otherwise.
+		*/
+		bool isMatchOver() const;
+
+		/**
+		* @brief Checks if the server is travelling between levels (not in game state).
+		*
+		* @return True if the server is travelling, false otherwise.
+		*/
+		bool isTravelling() const;
 
 		/**
 		* @brief Checks if the server is marked as competitive.
@@ -265,7 +294,7 @@ namespace RenX
 
 		/**
 		* @brief Calculates the time since match start.
-		* Note: if hasSeenStart() is false, this is the time since the connection was established.
+		* Note: if isReliable() is false, this is the time since the connection was established.
 		*
 		* @return Time since match start.
 		*/
@@ -996,10 +1025,6 @@ namespace RenX
 		bool subscribed = false;
 		bool fully_connected = false;
 		bool seamless = false;
-		bool needsCList = false;
-		bool silenceParts = false;
-		bool silenceJoins = false;
-		bool seenStart = true;
 		bool firstKill = false;
 		bool firstDeath = false;
 		bool firstAction = false;
@@ -1012,6 +1037,8 @@ namespace RenX
 		bool spawnCrates = true;
 		bool competitive = false;
 		bool devBot = false;
+		bool reliable = false;
+		int match_state = 1; /** 0 = pending, 1 = in progress, 2 = over, 3 = travelling */
 		int attempts = 0;
 		int playerLimit = 0;
 		int vehicleLimit = 0;

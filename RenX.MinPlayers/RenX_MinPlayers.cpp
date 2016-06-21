@@ -38,13 +38,13 @@ void RenX_MinPlayersPlugin::RenX_OnMapStart(RenX::Server *server, const Jupiter:
 
 void RenX_MinPlayersPlugin::RenX_OnJoin(RenX::Server *server, const RenX::PlayerInfo *player)
 {
-	if (server->players.size() > RenX_MinPlayersPlugin::player_threshold)
+	if (server->players.size() > RenX_MinPlayersPlugin::player_threshold && server->isMatchInProgress())
 		++RenX_MinPlayersPlugin::phase_bots;
 }
 
 void RenX_MinPlayersPlugin::RenX_OnPart(RenX::Server *server, const RenX::PlayerInfo *player)
 {
-	if (server->players.size() <= player_threshold)
+	if (server->isMatchInProgress() && server->players.size() <= player_threshold)
 	{
 		switch (player->team)
 		{

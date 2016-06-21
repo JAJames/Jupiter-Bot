@@ -26,7 +26,7 @@ using namespace Jupiter::literals;
 
 void RenX_SetJoinPlugin::RenX_OnJoin(RenX::Server *server, const RenX::PlayerInfo *player)
 {
-	if (player->uuid.isNotEmpty())
+	if (player->uuid.isNotEmpty() && server->isMatchInProgress())
 	{
 		const Jupiter::ReadableString &setjoin = RenX_SetJoinPlugin::setjoin_file.get(Jupiter::ReferenceString::empty, player->uuid);
 		if (setjoin.isNotEmpty())

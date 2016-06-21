@@ -39,6 +39,7 @@ public: // RenX::Plugin
 	void RenX_OnServerDisconnect(RenX::Server *server, RenX::DisconnectReason reason) override;
 	void RenX_OnJoin(RenX::Server *server, const RenX::PlayerInfo *player) override;
 	void RenX_OnPart(RenX::Server *server, const RenX::PlayerInfo *player) override;
+	void RenX_OnMapLoad(RenX::Server *server, const Jupiter::ReadableString &map) override;
 
 private:
 	Jupiter::StringS server_list_json;

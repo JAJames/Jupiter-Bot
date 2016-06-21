@@ -399,7 +399,13 @@ void RenX_ServerListPlugin::RenX_OnJoin(RenX::Server *, const RenX::PlayerInfo *
 	this->updateServerList();
 }
 
-void RenX_ServerListPlugin::RenX_OnPart(RenX::Server *, const RenX::PlayerInfo *)
+void RenX_ServerListPlugin::RenX_OnPart(RenX::Server *server, const RenX::PlayerInfo *)
+{
+	if (server->isTravelling() == false || server->isSeamless())
+		this->updateServerList();
+}
+
+void RenX_ServerListPlugin::RenX_OnMapLoad(RenX::Server *server, const Jupiter::ReadableString &map)
 {
 	this->updateServerList();
 }

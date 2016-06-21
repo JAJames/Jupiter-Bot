@@ -197,11 +197,6 @@ bool RenX::Server::isFullyConnected() const
 	return RenX::Server::fully_connected;
 }
 
-bool RenX::Server::hasSeenStart() const
-{
-	return RenX::Server::seenStart;
-}
-
 bool RenX::Server::isFirstKill() const
 {
 	return RenX::Server::firstKill;
@@ -220,6 +215,31 @@ bool RenX::Server::isFirstAction() const
 bool RenX::Server::isSeamless() const
 {
 	return RenX::Server::seamless;
+}
+
+bool RenX::Server::isReliable() const
+{
+	return RenX::Server::reliable;
+}
+
+bool RenX::Server::isMatchPending() const
+{
+	return RenX::Server::match_state == 0 || RenX::Server::isTravelling();
+}
+
+bool RenX::Server::isMatchInProgress() const
+{
+	return RenX::Server::match_state == 1;
+}
+
+bool RenX::Server::isMatchOver() const
+{
+	return RenX::Server::match_state == 2 || RenX::Server::isMatchOver();
+}
+
+bool RenX::Server::isTravelling() const
+{
+	return RenX::Server::match_state == 3;
 }
 
 bool RenX::Server::isCompetitive() const
@@ -1289,7 +1309,7 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 		return;
 
 	Jupiter::ArrayList<RenX::Plugin> &xPlugins = *RenX::getCore()->getPlugins();
-	Jupiter::ReadableString::TokenizeResult<Jupiter::String_Strict> tokens = Jupiter::StringS::tokenize(line, this->rconVersion >= 4 ? RenX::DelimC : RenX::DelimC3);
+	Jupiter::ReadableString::TokenizeResult<Jupiter::String_Strict> tokens = Jupiter::StringS::tokenize(line, this->rconVersion == 3 ? RenX::DelimC3 : RenX::DelimC);
 
 	for (size_t index = 0; index != tokens.token_count; ++index)
 		tokens.tokens[index].processEscapeSequences();
@@ -1373,7 +1393,6 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 		if (this->firstAction == false)
 		{
 			this->firstAction = true;
-			this->silenceJoins = false;
 		}
 	};
 	auto parsePlayerData = [this](const Jupiter::ReadableString &data, Jupiter::ReferenceString &name, TeamType &team, int &id, bool &isBot)
@@ -1894,9 +1913,20 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 					this->autoBalanceTeams = tokens.getToken(17).asBool();
 					this->spawnCrates = tokens.getToken(19).asBool();
 					this->crateRespawnAfterPickup = tokens.getToken(21).asDouble();
+					this->competitive = tokens.getToken(23).asBool();
+
+					const Jupiter::ReadableString &match_state_token = tokens.getToken(25);
+					if (match_state_token.equalsi("PendingMatch"_jrs))
+						this->match_state = 0;
+					else if (match_state_token.equalsi("MatchInProgress"_jrs))
+						this->match_state = 1;
+					else if (match_state_token.equalsi("RoundOver"_jrs) || match_state_token.equalsi("MatchOver"_jrs))
+						this->match_state = 2;
+					else if (match_state_token.equalsi("TravelTheWorld"_jrs))
+						this->match_state = 3;
+					else // Unknown state -- assume it's in progress
+						this->match_state = 1;
 				}
-				else if (this->lastCommandParams.equalsi("bIsCompetitive"))
-					this->competitive = tokens.getToken(0).asBool();
 			}
 			else if (this->lastCommand.equalsi("mutatorlist"_jrs))
 			{
@@ -2429,6 +2459,8 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 						// "winner" | Winner | Reason("TimeLimit" etc) | "GDI=" GDI Score | "Nod=" Nod Score
 						// "tie" | Reason | "GDI=" GDI Score | "Nod=" Nod Score
 						Jupiter::ReferenceString winTieToken = tokens.getToken(2);
+						this->match_state = 2;
+
 						if (winTieToken.equals("winner"))
 						{
 							Jupiter::ReferenceString sWinType = tokens.getToken(4);
@@ -2584,9 +2616,8 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 					{
 						// Player
 						RenX::PlayerInfo *player = parseGetPlayerOrAdd(tokens.getToken(2));
-						if (this->silenceParts == false)
-							for (size_t i = 0; i < xPlugins.size(); i++)
-								xPlugins.get(i)->RenX_OnPart(this, player);
+						for (size_t i = 0; i < xPlugins.size(); i++)
+							xPlugins.get(i)->RenX_OnPart(this, player);
 						this->removePlayer(player);
 
 						if (this->gameover_when_empty && this->players.size() == this->bot_count)
@@ -3052,15 +3083,16 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 					{
 						// Map | Mode="seamless" / "nonseamless"
 						Jupiter::ReferenceString map = tokens.getToken(2);
+
+						this->match_state = 3;
 						if (tokens.getToken(3).equals("seamless"))
 							this->seamless = true;
 						else
-						{
 							this->seamless = false;
-							this->silenceParts = true;
-						}
+
 						for (size_t i = 0; i < xPlugins.size(); i++)
 							xPlugins.get(i)->RenX_OnMapChange(this, map, seamless);
+
 						this->map = map;
 						onMapChange();
 					}
@@ -3068,17 +3100,23 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 					{
 						// Map
 						Jupiter::ReferenceString map = tokens.getToken(2);
+
+						this->match_state = 0;
 						this->map = map;
+
 						for (size_t i = 0; i < xPlugins.size(); i++)
 							xPlugins.get(i)->RenX_OnMapLoad(this, map);
 					}
 					else if (subHeader.equals("Start;"))
 					{
 						// Map
-						this->seenStart = true;
-						this->gameStart = std::chrono::steady_clock::now();
 						Jupiter::ReferenceString map = tokens.getToken(2);
+
+						this->match_state = 1;
+						this->reliable = true;
+						this->gameStart = std::chrono::steady_clock::now();
 						this->map = map;
+
 						for (size_t i = 0; i < xPlugins.size(); i++)
 							xPlugins.get(i)->RenX_OnMapStart(this, map);
 					}
@@ -3195,7 +3233,6 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 					RenX::Server::send("ping srv_init_done"_jrs);
 
 					RenX::Server::gameStart = std::chrono::steady_clock::now();
-					this->seenStart = false;
 					this->seamless = true;
 
 					for (size_t i = 0; i < xPlugins.size(); i++)
@@ -3253,7 +3290,6 @@ bool RenX::Server::connect()
 		RenX::Server::sock.setBlocking(false);
 		RenX::Server::sock.send(Jupiter::StringS::Format("a%.*s\n", RenX::Server::pass.size(), RenX::Server::pass.ptr()));
 		RenX::Server::connected = true;
-		RenX::Server::silenceParts = false;
 		RenX::Server::attempts = 0;
 		return true;
 	}
@@ -3286,6 +3322,8 @@ void RenX::Server::wipeData()
 
 		delete player;
 	}
+	RenX::Server::reliable = false;
+	RenX::Server::match_state = 1;
 	RenX::Server::subscribed = false;
 	RenX::Server::fully_connected = false;
 	RenX::Server::bot_count = 0;
@@ -3324,7 +3362,6 @@ RenX::Server::Server(Jupiter::Socket &&socket, const Jupiter::ReadableString &co
 	RenX::Server::hostname = RenX::Server::sock.getRemoteHostname();
 	RenX::Server::sock.send(Jupiter::StringS::Format("a%.*s\n", RenX::Server::pass.size(), RenX::Server::pass.ptr()));
 	RenX::Server::connected = true;
-	RenX::Server::silenceParts = false;
 }
 
 RenX::Server::Server(const Jupiter::ReadableString &configurationSection)
