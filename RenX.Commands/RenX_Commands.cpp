@@ -133,7 +133,7 @@ void RawRCONConsoleCommand::trigger(const Jupiter::ReadableString &parameters)
 		while (--i >= 0)
 			RenX::getCore()->getServer(i)->sendData(msg);
 	else
-		puts("Error: Too Few Parameters. Syntax: rcon <input>");
+		puts("Error: Too Few Parameters. Syntax: rrcon <input>");
 }
 
 const Jupiter::ReadableString &RawRCONConsoleCommand::getHelp(const Jupiter::ReadableString &)
