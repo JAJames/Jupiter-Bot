@@ -175,7 +175,7 @@ int RenX_ModSystemPlugin::auth(RenX::Server *server, const RenX::PlayerInfo *pla
 				if (player->access != 0)
 				{
 					server->sendMessage(player, Jupiter::StringS::Format("You are now authenticated with access level %d; group: %.*s.", player->access, group->name.size(), group->name.ptr()));
-					if (server->isDevBot())
+					if (server->isDevBot() && player->access > 1)
 					{
 						if (server->getVersion() >= 4)
 							server->sendData(Jupiter::StringS::Format("dset_dev %d\n", player->id));

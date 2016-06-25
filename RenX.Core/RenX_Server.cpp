@@ -17,7 +17,6 @@
  */
 
 #include <ctime>
-#include <WinSock2.h>
 #include "Jupiter/INIFile.h"
 #include "Jupiter/String.h"
 #include "ServerManager.h"
@@ -1090,13 +1089,23 @@ unsigned int RenX::Server::triggerCommand(const Jupiter::ReadableString &trigger
 
 void RenX::Server::addCommand(RenX::GameCommand *command)
 {
-	RenX::Server::commands.add(command);
+	int access_level;
+
 	if (RenX::Server::commandAccessLevels != nullptr)
 	{
 		const Jupiter::ReadableString &accessLevel = RenX::Server::commandAccessLevels->get(command->getTrigger());
 		if (accessLevel.isNotEmpty())
-			command->setAccessLevel(accessLevel.asInt());
+		{
+			access_level = accessLevel.asInt();
+			if (access_level < 0) // Disabled command
+			{
+				delete command;
+				return;
+			}
+			command->setAccessLevel(access_level);
+		}
 	}
+
 	if (RenX::Server::commandAliases != nullptr)
 	{
 		const Jupiter::ReadableString &aliasList = RenX::Server::commandAliases->get(command->getTrigger());
@@ -1104,6 +1113,8 @@ void RenX::Server::addCommand(RenX::GameCommand *command)
 		while (j != 0)
 			command->addTrigger(Jupiter::ReferenceString::getWord(aliasList, --j, WHITESPACE));
 	}
+
+	RenX::Server::commands.add(command);
 }
 
 bool RenX::Server::removeCommand(RenX::GameCommand *command)
