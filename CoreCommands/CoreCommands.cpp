@@ -131,10 +131,10 @@ VersionGenericCommand::VersionGenericCommand()
 	this->addTrigger(STRING_LITERAL_AS_REFERENCE("clientinfo"));
 }
 
-GenericCommand::ResponseLine *VersionGenericCommand::trigger(const Jupiter::ReadableString &parameters)
+Jupiter::GenericCommand::ResponseLine *VersionGenericCommand::trigger(const Jupiter::ReadableString &parameters)
 {
-	GenericCommand::ResponseLine *ret = new GenericCommand::ResponseLine("Version: "_jrs + Jupiter::ReferenceString(Jupiter::version), GenericCommand::DisplayType::PublicSuccess);
-	ret->next = new GenericCommand::ResponseLine(Jupiter::ReferenceString(Jupiter::copyright), GenericCommand::DisplayType::PublicSuccess);
+	Jupiter::GenericCommand::ResponseLine *ret = new Jupiter::GenericCommand::ResponseLine("Version: "_jrs + Jupiter::ReferenceString(Jupiter::version), GenericCommand::DisplayType::PublicSuccess);
+	ret->next = new Jupiter::GenericCommand::ResponseLine(Jupiter::ReferenceString(Jupiter::copyright), GenericCommand::DisplayType::PublicSuccess);
 	return ret;
 }
 
@@ -155,14 +155,14 @@ RehashGenericCommand::RehashGenericCommand()
 	this->addTrigger(STRING_LITERAL_AS_REFERENCE("rehash"));
 }
 
-GenericCommand::ResponseLine *RehashGenericCommand::trigger(const Jupiter::ReadableString &parameters)
+Jupiter::GenericCommand::ResponseLine *RehashGenericCommand::trigger(const Jupiter::ReadableString &parameters)
 {
 	unsigned int r = Jupiter::rehash();
 
 	if (r == 0)
-		return new GenericCommand::ResponseLine(Jupiter::StringS::Format("All %u objects were successfully rehashed.", Jupiter::getRehashableCount()), GenericCommand::DisplayType::PublicSuccess);
+		return new Jupiter::GenericCommand::ResponseLine(Jupiter::StringS::Format("All %u objects were successfully rehashed.", Jupiter::getRehashableCount()), GenericCommand::DisplayType::PublicSuccess);
 
-	return new GenericCommand::ResponseLine(Jupiter::StringS::Format("%u of %u objects failed to successfully rehash.", r, Jupiter::getRehashableCount()), GenericCommand::DisplayType::PublicError);
+	return new Jupiter::GenericCommand::ResponseLine(Jupiter::StringS::Format("%u of %u objects failed to successfully rehash.", r, Jupiter::getRehashableCount()), GenericCommand::DisplayType::PublicError);
 }
 
 const Jupiter::ReadableString &RehashGenericCommand::getHelp(const Jupiter::ReadableString &)

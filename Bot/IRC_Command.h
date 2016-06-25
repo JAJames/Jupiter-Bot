@@ -24,14 +24,13 @@
 * @brief Provides an extendable command system specialized for IRC chat-based commands.
 */
 
-#include "Jupiter/Command.h"
+#include "Jupiter/GenericCommand.h"
 #include "Jupiter/IRC_Client.h"
 #include "Jupiter/ArrayList.h"
 #include "Jupiter/String.h"
 #include "Jupiter_Bot.h"
 #include "ServerManager.h"
 #include "IRC_Bot.h"
-#include "Generic_Command.h"
 
 class IRCCommand;
 
@@ -218,18 +217,18 @@ template<typename T> Generic_Command_As_IRC_Command<T>::Generic_Command_As_IRC_C
 
 template<typename T> void Generic_Command_As_IRC_Command<T>::trigger(IRC_Bot *source, const Jupiter::ReadableString &channel, const Jupiter::ReadableString &nick, const Jupiter::ReadableString &parameters)
 {
-	GenericCommand::ResponseLine *del;
-	GenericCommand::ResponseLine *ret = T::instance.trigger(parameters);
+	Jupiter::GenericCommand::ResponseLine *del;
+	Jupiter::GenericCommand::ResponseLine *ret = T::instance.trigger(parameters);
 	while (ret != nullptr)
 	{
 		switch (ret->type)
 		{
-		case GenericCommand::DisplayType::PublicSuccess:
-		case GenericCommand::DisplayType::PublicError:
+		case Jupiter::GenericCommand::DisplayType::PublicSuccess:
+		case Jupiter::GenericCommand::DisplayType::PublicError:
 			source->sendMessage(channel, ret->response);
 			break;
-		case GenericCommand::DisplayType::PrivateSuccess:
-		case GenericCommand::DisplayType::PrivateError:
+		case Jupiter::GenericCommand::DisplayType::PrivateSuccess:
+		case Jupiter::GenericCommand::DisplayType::PrivateError:
 			source->sendNotice(nick, ret->response);
 			break;
 		default:

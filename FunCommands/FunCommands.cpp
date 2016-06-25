@@ -157,29 +157,29 @@ ResolveGenericCommand::ResolveGenericCommand()
 	this->addTrigger("resolve"_jrs);
 }
 
-GenericCommand::ResponseLine *ResolveGenericCommand::trigger(const Jupiter::ReadableString &parameters)
+Jupiter::GenericCommand::ResponseLine *ResolveGenericCommand::trigger(const Jupiter::ReadableString &parameters)
 {
 	unsigned int count = parameters.wordCount(WHITESPACE);
 
 	if (count <= 1)
-		return new GenericCommand::ResponseLine("Error: Too few parameters. Syntax: resolve <hostname|ip> <address>"_jrs, GenericCommand::DisplayType::PrivateError);
+		return new Jupiter::GenericCommand::ResponseLine("Error: Too few parameters. Syntax: resolve <hostname|ip> <address>"_jrs, GenericCommand::DisplayType::PrivateError);
 
 	Jupiter::ReferenceString command = Jupiter::ReferenceString::getWord(parameters, 0, WHITESPACE);
 	if (command.equalsi("hostname"_jrs) || command.equalsi("host"_jrs))
 	{
 		Jupiter::ReferenceString resolved = Jupiter::Socket::resolveHostname(Jupiter::CStringS::gotoWord(parameters, 1, WHITESPACE).c_str(), 0);
 		if (resolved.isEmpty())
-			return new GenericCommand::ResponseLine("Error: Unable to resolve."_jrs, GenericCommand::DisplayType::PublicError);
-		return new GenericCommand::ResponseLine(resolved, GenericCommand::DisplayType::PublicSuccess);
+			return new Jupiter::GenericCommand::ResponseLine("Error: Unable to resolve."_jrs, GenericCommand::DisplayType::PublicError);
+		return new Jupiter::GenericCommand::ResponseLine(resolved, GenericCommand::DisplayType::PublicSuccess);
 	}
 	else if (command.equalsi("ip"_jrs))
 	{
 		Jupiter::ReferenceString resolved = Jupiter::Socket::resolveAddress(Jupiter::CStringS::gotoWord(parameters, 1, WHITESPACE).c_str(), 0);
 		if (resolved.isEmpty())
-			return new GenericCommand::ResponseLine("Error: Unable to resolve."_jrs, GenericCommand::DisplayType::PublicError);
-		return new GenericCommand::ResponseLine(resolved, GenericCommand::DisplayType::PublicSuccess);
+			return new Jupiter::GenericCommand::ResponseLine("Error: Unable to resolve."_jrs, GenericCommand::DisplayType::PublicError);
+		return new Jupiter::GenericCommand::ResponseLine(resolved, GenericCommand::DisplayType::PublicSuccess);
 	}
-	return new GenericCommand::ResponseLine("Error: Invalid type. You can only resolve hostnames and IP addresses."_jrs, GenericCommand::DisplayType::PrivateError);
+	return new Jupiter::GenericCommand::ResponseLine("Error: Invalid type. You can only resolve hostnames and IP addresses."_jrs, GenericCommand::DisplayType::PrivateError);
 }
 
 const Jupiter::ReadableString &ResolveGenericCommand::getHelp(const Jupiter::ReadableString &parameters)

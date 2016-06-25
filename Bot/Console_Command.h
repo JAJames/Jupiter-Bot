@@ -24,10 +24,9 @@
 * @brief Provides an extendable command system specialized for console-based commands.
 */
 
-#include "Jupiter/Command.h"
+#include "Jupiter/GenericCommand.h"
 #include "Jupiter/ArrayList.h"
 #include "Jupiter_Bot.h"
-#include "Generic_Command.h"
 
 class ConsoleCommand;
 
@@ -114,11 +113,11 @@ template <typename T> Generic_Command_As_Console_Command<T>::Generic_Command_As_
 
 template<typename T> void Generic_Command_As_Console_Command<T>::trigger(const Jupiter::ReadableString &parameters)
 {
-	GenericCommand::ResponseLine *del;
-	GenericCommand::ResponseLine *ret = T::instance.trigger(parameters);
+	Jupiter::GenericCommand::ResponseLine *del;
+	Jupiter::GenericCommand::ResponseLine *ret = T::instance.trigger(parameters);
 	while (ret != nullptr)
 	{
-		ret->response.println(ret->type == GenericCommand::DisplayType::PublicError || ret->type == GenericCommand::DisplayType::PrivateError ? stderr : stdout);
+		ret->response.println(ret->type == Jupiter::GenericCommand::DisplayType::PublicError || ret->type == Jupiter::GenericCommand::DisplayType::PrivateError ? stderr : stdout);
 		del = ret;
 		ret = ret->next;
 		delete del;

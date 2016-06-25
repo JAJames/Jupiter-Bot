@@ -31,15 +31,15 @@ PluginGenericCommand::PluginGenericCommand()
 	this->addTrigger(STRING_LITERAL_AS_REFERENCE("modules"));
 }
 
-GenericCommand::ResponseLine *PluginGenericCommand::trigger(const Jupiter::ReadableString &parameters)
+Jupiter::GenericCommand::ResponseLine *PluginGenericCommand::trigger(const Jupiter::ReadableString &parameters)
 {
-	GenericCommand::ResponseLine *ret = new GenericCommand::ResponseLine();
+	Jupiter::GenericCommand::ResponseLine *ret = new Jupiter::GenericCommand::ResponseLine();
 	if (parameters.isEmpty() || parameters.matchi("list*"))
 	{
-		GenericCommand::ResponseLine *line = ret->set(Jupiter::String::Format("There are %u plugins loaded:", Jupiter::plugins->size()), GenericCommand::DisplayType::PublicSuccess);
+		Jupiter::GenericCommand::ResponseLine *line = ret->set(Jupiter::String::Format("There are %u plugins loaded:", Jupiter::plugins->size()), GenericCommand::DisplayType::PublicSuccess);
 		for (size_t i = 0; i != Jupiter::plugins->size(); i++)
 		{
-			line->next = new GenericCommand::ResponseLine(Jupiter::plugins->get(i)->getName(), GenericCommand::DisplayType::PublicSuccess);
+			line->next = new Jupiter::GenericCommand::ResponseLine(Jupiter::plugins->get(i)->getName(), GenericCommand::DisplayType::PublicSuccess);
 			line = line->next;
 		}
 		return ret;

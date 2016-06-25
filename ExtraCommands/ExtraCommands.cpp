@@ -31,24 +31,24 @@ SelectGenericCommand::SelectGenericCommand()
 	this->addTrigger("ircselect"_jrs);
 }
 
-GenericCommand::ResponseLine *SelectGenericCommand::trigger(const Jupiter::ReadableString &parameters)
+Jupiter::GenericCommand::ResponseLine *SelectGenericCommand::trigger(const Jupiter::ReadableString &parameters)
 {
 	if (parameters.isEmpty())
 	{
 		if (IRCCommand::selected_server == nullptr)
-			return new GenericCommand::ResponseLine("No IRC server is currently selected."_jrs, GenericCommand::DisplayType::PublicSuccess);
-		return new GenericCommand::ResponseLine(IRCCommand::selected_server->getConfigSection() + " is currently selected."_jrs, GenericCommand::DisplayType::PublicSuccess);
+			return new Jupiter::GenericCommand::ResponseLine("No IRC server is currently selected."_jrs, GenericCommand::DisplayType::PublicSuccess);
+		return new Jupiter::GenericCommand::ResponseLine(IRCCommand::selected_server->getConfigSection() + " is currently selected."_jrs, GenericCommand::DisplayType::PublicSuccess);
 	}
 	if (IRCCommand::active_server == IRCCommand::selected_server)
 		IRCCommand::active_server = nullptr;
 
 	IRCCommand::selected_server = serverManager->getServer(parameters);
 	if (IRCCommand::selected_server == nullptr)
-		return new GenericCommand::ResponseLine("Error: IRC server \""_jrs + parameters + "\" not found. No IRC server is currently selected."_jrs, GenericCommand::DisplayType::PublicError);
+		return new Jupiter::GenericCommand::ResponseLine("Error: IRC server \""_jrs + parameters + "\" not found. No IRC server is currently selected."_jrs, GenericCommand::DisplayType::PublicError);
 
 	if (IRCCommand::active_server == nullptr)
 		IRCCommand::active_server = IRCCommand::selected_server;
-	return new GenericCommand::ResponseLine(IRCCommand::selected_server->getConfigSection() + " is now selected."_jrs, GenericCommand::DisplayType::PublicSuccess);
+	return new Jupiter::GenericCommand::ResponseLine(IRCCommand::selected_server->getConfigSection() + " is now selected."_jrs, GenericCommand::DisplayType::PublicSuccess);
 }
 
 const Jupiter::ReadableString &SelectGenericCommand::getHelp(const Jupiter::ReadableString &)
@@ -73,12 +73,12 @@ DeselectGenericCommand::DeselectGenericCommand()
 	this->addTrigger("ircunselect"_jrs);
 }
 
-GenericCommand::ResponseLine *DeselectGenericCommand::trigger(const Jupiter::ReadableString &parameters)
+Jupiter::GenericCommand::ResponseLine *DeselectGenericCommand::trigger(const Jupiter::ReadableString &parameters)
 {
 	if (IRCCommand::selected_server == nullptr)
-		return new GenericCommand::ResponseLine("No IRC server is currently selected."_jrs, GenericCommand::DisplayType::PublicSuccess);
+		return new Jupiter::GenericCommand::ResponseLine("No IRC server is currently selected."_jrs, GenericCommand::DisplayType::PublicSuccess);
 
-	GenericCommand::ResponseLine *ret = new GenericCommand::ResponseLine(IRCCommand::selected_server->getConfigSection() + " has been deselected."_jrs, GenericCommand::DisplayType::PublicSuccess);
+	Jupiter::GenericCommand::ResponseLine *ret = new Jupiter::GenericCommand::ResponseLine(IRCCommand::selected_server->getConfigSection() + " has been deselected."_jrs, GenericCommand::DisplayType::PublicSuccess);
 	IRCCommand::selected_server = nullptr;
 	IRCCommand::active_server = IRCCommand::selected_server;
 	return ret;
@@ -102,7 +102,7 @@ RawGenericCommand::RawGenericCommand()
 	this->addTrigger("sendraw"_jrs);
 }
 
-GenericCommand::ResponseLine *RawGenericCommand::trigger(const Jupiter::ReadableString &parameters)
+Jupiter::GenericCommand::ResponseLine *RawGenericCommand::trigger(const Jupiter::ReadableString &parameters)
 {
 	IRC_Bot *server;
 	if (IRCCommand::selected_server != nullptr)
@@ -110,13 +110,13 @@ GenericCommand::ResponseLine *RawGenericCommand::trigger(const Jupiter::Readable
 	else if (IRCCommand::active_server != nullptr)
 		server = IRCCommand::active_server;
 	else
-		return new GenericCommand::ResponseLine("Error: No IRC server is currently selected."_jrs, GenericCommand::DisplayType::PublicError);
+		return new Jupiter::GenericCommand::ResponseLine("Error: No IRC server is currently selected."_jrs, GenericCommand::DisplayType::PublicError);
 
 	if (parameters.isEmpty())
-		return new GenericCommand::ResponseLine("Error: Too few parameters. Syntax: raw <message>"_jrs, GenericCommand::DisplayType::PrivateError);
+		return new Jupiter::GenericCommand::ResponseLine("Error: Too few parameters. Syntax: raw <message>"_jrs, GenericCommand::DisplayType::PrivateError);
 
 	server->send(parameters);
-	return new GenericCommand::ResponseLine("Data has been successfully sent to server."_jrs, GenericCommand::DisplayType::PublicSuccess);
+	return new Jupiter::GenericCommand::ResponseLine("Data has been successfully sent to server."_jrs, GenericCommand::DisplayType::PublicSuccess);
 }
 
 const Jupiter::ReadableString &RawGenericCommand::getHelp(const Jupiter::ReadableString &)
@@ -138,7 +138,7 @@ IRCMessageGenericCommand::IRCMessageGenericCommand()
 	this->addTrigger("privmsg"_jrs);
 }
 
-GenericCommand::ResponseLine *IRCMessageGenericCommand::trigger(const Jupiter::ReadableString &parameters)
+Jupiter::GenericCommand::ResponseLine *IRCMessageGenericCommand::trigger(const Jupiter::ReadableString &parameters)
 {
 	IRC_Bot *server;
 	if (IRCCommand::selected_server != nullptr)
@@ -146,13 +146,13 @@ GenericCommand::ResponseLine *IRCMessageGenericCommand::trigger(const Jupiter::R
 	else if (IRCCommand::active_server != nullptr)
 		server = IRCCommand::active_server;
 	else
-		return new GenericCommand::ResponseLine("Error: No IRC server is currently selected."_jrs, GenericCommand::DisplayType::PublicError);
+		return new Jupiter::GenericCommand::ResponseLine("Error: No IRC server is currently selected."_jrs, GenericCommand::DisplayType::PublicError);
 
 	if (parameters.wordCount(WHITESPACE) < 3)
-		return new GenericCommand::ResponseLine("Error: Too few parameters. Syntax: ircmsg <destination> <message>"_jrs, GenericCommand::DisplayType::PrivateError);
+		return new Jupiter::GenericCommand::ResponseLine("Error: Too few parameters. Syntax: ircmsg <destination> <message>"_jrs, GenericCommand::DisplayType::PrivateError);
 
 	server->sendMessage(Jupiter::ReferenceString::getWord(parameters, 0, WHITESPACE), Jupiter::ReferenceString::gotoWord(parameters, 1, WHITESPACE));
-	return new GenericCommand::ResponseLine("Message successfully sent."_jrs, GenericCommand::DisplayType::PublicSuccess);
+	return new Jupiter::GenericCommand::ResponseLine("Message successfully sent."_jrs, GenericCommand::DisplayType::PublicSuccess);
 }
 
 const Jupiter::ReadableString &IRCMessageGenericCommand::getHelp(const Jupiter::ReadableString &)
@@ -172,7 +172,7 @@ JoinGenericCommand::JoinGenericCommand()
 	this->addTrigger("Join"_jrs);
 }
 
-GenericCommand::ResponseLine *JoinGenericCommand::trigger(const Jupiter::ReadableString &parameters)
+Jupiter::GenericCommand::ResponseLine *JoinGenericCommand::trigger(const Jupiter::ReadableString &parameters)
 {
 	IRC_Bot *server;
 	if (IRCCommand::selected_server != nullptr)
@@ -180,17 +180,17 @@ GenericCommand::ResponseLine *JoinGenericCommand::trigger(const Jupiter::Readabl
 	else if (IRCCommand::active_server != nullptr)
 		server = IRCCommand::active_server;
 	else
-		return new GenericCommand::ResponseLine("Error: No IRC server is currently selected."_jrs, GenericCommand::DisplayType::PublicError);
+		return new Jupiter::GenericCommand::ResponseLine("Error: No IRC server is currently selected."_jrs, GenericCommand::DisplayType::PublicError);
 
 	if (parameters.isEmpty())
-		return new GenericCommand::ResponseLine("Error: Too Few Parameters. Syntax: join <channel> [password]"_jrs, GenericCommand::DisplayType::PublicError);
+		return new Jupiter::GenericCommand::ResponseLine("Error: Too Few Parameters. Syntax: join <channel> [password]"_jrs, GenericCommand::DisplayType::PublicError);
 
 	if (parameters.wordCount(WHITESPACE) == 1)
 		server->joinChannel(parameters);
 	else
 		server->joinChannel(Jupiter::ReferenceString::getWord(parameters, 0, WHITESPACE), Jupiter::ReferenceString::gotoWord(parameters, 1, WHITESPACE));
 
-	return new GenericCommand::ResponseLine("Request to join channel has been sent."_jrs, GenericCommand::DisplayType::PublicSuccess);
+	return new Jupiter::GenericCommand::ResponseLine("Request to join channel has been sent."_jrs, GenericCommand::DisplayType::PublicSuccess);
 }
 
 const Jupiter::ReadableString &JoinGenericCommand::getHelp(const Jupiter::ReadableString &)
@@ -210,7 +210,7 @@ PartGenericCommand::PartGenericCommand()
 	this->addTrigger("Part"_jrs);
 }
 
-GenericCommand::ResponseLine *PartGenericCommand::trigger(const Jupiter::ReadableString &parameters)
+Jupiter::GenericCommand::ResponseLine *PartGenericCommand::trigger(const Jupiter::ReadableString &parameters)
 {
 	IRC_Bot *server;
 	if (IRCCommand::selected_server != nullptr)
@@ -218,17 +218,17 @@ GenericCommand::ResponseLine *PartGenericCommand::trigger(const Jupiter::Readabl
 	else if (IRCCommand::active_server != nullptr)
 		server = IRCCommand::active_server;
 	else
-		return new GenericCommand::ResponseLine("Error: No IRC server is currently selected."_jrs, GenericCommand::DisplayType::PublicError);
+		return new Jupiter::GenericCommand::ResponseLine("Error: No IRC server is currently selected."_jrs, GenericCommand::DisplayType::PublicError);
 
 	if (parameters.isEmpty())
-		return new GenericCommand::ResponseLine("Error: Too few parameters. Syntax: part <channel> [message]"_jrs, GenericCommand::DisplayType::PublicError);
+		return new Jupiter::GenericCommand::ResponseLine("Error: Too few parameters. Syntax: part <channel> [message]"_jrs, GenericCommand::DisplayType::PublicError);
 	
 	if (parameters.wordCount(WHITESPACE) == 1)
 		server->partChannel(parameters);
 	else
 		server->partChannel(Jupiter::ReferenceString::getWord(parameters, 0, WHITESPACE), Jupiter::ReferenceString::gotoWord(parameters, 1, WHITESPACE));
 
-	return new GenericCommand::ResponseLine("Part command successfuly sent."_jrs, GenericCommand::DisplayType::PublicSuccess);
+	return new Jupiter::GenericCommand::ResponseLine("Part command successfuly sent."_jrs, GenericCommand::DisplayType::PublicSuccess);
 }
 
 const Jupiter::ReadableString &PartGenericCommand::getHelp(const Jupiter::ReadableString &)
@@ -248,7 +248,7 @@ DebugInfoGenericCommand::DebugInfoGenericCommand()
 	this->addTrigger("debuginfo"_jrs);
 }
 
-GenericCommand::ResponseLine *DebugInfoGenericCommand::trigger(const Jupiter::ReadableString &parameters)
+Jupiter::GenericCommand::ResponseLine *DebugInfoGenericCommand::trigger(const Jupiter::ReadableString &parameters)
 {
 	IRC_Bot *server;
 	if (IRCCommand::selected_server != nullptr)
@@ -256,26 +256,26 @@ GenericCommand::ResponseLine *DebugInfoGenericCommand::trigger(const Jupiter::Re
 	else if (IRCCommand::active_server != nullptr)
 		server = IRCCommand::active_server;
 	else
-		return new GenericCommand::ResponseLine("Error: No IRC server is currently selected."_jrs, GenericCommand::DisplayType::PublicError);
+		return new Jupiter::GenericCommand::ResponseLine("Error: No IRC server is currently selected."_jrs, GenericCommand::DisplayType::PublicError);
 
 	Jupiter::IRC::Client::Channel *chan;
 	Jupiter::IRC::Client::User *user;
-	GenericCommand::ResponseLine *ret = new GenericCommand::ResponseLine("Prefixes: "_jrs + server->getPrefixes(), GenericCommand::DisplayType::PublicSuccess);
-	GenericCommand::ResponseLine *line = new GenericCommand::ResponseLine("Prefix Modes: "_jrs + server->getPrefixModes(), GenericCommand::DisplayType::PublicSuccess);
+	Jupiter::GenericCommand::ResponseLine *ret = new Jupiter::GenericCommand::ResponseLine("Prefixes: "_jrs + server->getPrefixes(), GenericCommand::DisplayType::PublicSuccess);
+	Jupiter::GenericCommand::ResponseLine *line = new Jupiter::GenericCommand::ResponseLine("Prefix Modes: "_jrs + server->getPrefixModes(), GenericCommand::DisplayType::PublicSuccess);
 	ret->next = line;
-	line->next = new GenericCommand::ResponseLine(Jupiter::StringS::Format("Outputting data for %u channels...", server->getChannelCount()), GenericCommand::DisplayType::PublicSuccess);
+	line->next = new Jupiter::GenericCommand::ResponseLine(Jupiter::StringS::Format("Outputting data for %u channels...", server->getChannelCount()), GenericCommand::DisplayType::PublicSuccess);
 	line = line->next;
 	for (unsigned int index = 0; index < server->getChannelCount(); ++index)
 	{
 		chan = server->getChannel(index);
 		if (chan != nullptr)
 		{
-			line->next = new GenericCommand::ResponseLine(Jupiter::StringS::Format("Channel %.*s - Type: %d", chan->getName().size(), chan->getName().ptr(), chan->getType()), GenericCommand::DisplayType::PublicSuccess);
+			line->next = new Jupiter::GenericCommand::ResponseLine(Jupiter::StringS::Format("Channel %.*s - Type: %d", chan->getName().size(), chan->getName().ptr(), chan->getType()), GenericCommand::DisplayType::PublicSuccess);
 			line = line->next;
 			for (unsigned int j = 0; j != chan->getUserCount(); ++j)
 			{
 				user = chan->getUser(j)->getUser();
-				line->next = new GenericCommand::ResponseLine(Jupiter::StringS::Format("User %.*s!%.*s@%.*s (prefix: %c) of channel %.*s (of %u shared)", user->getNickname().size(), user->getNickname().ptr(), user->getUsername().size(), user->getUsername().ptr(), user->getHostname().size(), user->getHostname().ptr(), chan->getUserPrefix(j) ? chan->getUserPrefix(j) : ' ', chan->getName().size(), chan->getName().ptr(), user->getChannelCount()), GenericCommand::DisplayType::PublicSuccess);
+				line->next = new Jupiter::GenericCommand::ResponseLine(Jupiter::StringS::Format("User %.*s!%.*s@%.*s (prefix: %c) of channel %.*s (of %u shared)", user->getNickname().size(), user->getNickname().ptr(), user->getUsername().size(), user->getUsername().ptr(), user->getHostname().size(), user->getHostname().ptr(), chan->getUserPrefix(j) ? chan->getUserPrefix(j) : ' ', chan->getName().size(), chan->getName().ptr(), user->getChannelCount()), GenericCommand::DisplayType::PublicSuccess);
 				line = line->next;
 			}
 		}
@@ -300,7 +300,7 @@ ExitGenericCommand::ExitGenericCommand()
 	this->addTrigger("exit"_jrs);
 }
 
-GenericCommand::ResponseLine *ExitGenericCommand::trigger(const Jupiter::ReadableString &parameters)
+Jupiter::GenericCommand::ResponseLine *ExitGenericCommand::trigger(const Jupiter::ReadableString &parameters)
 {
 	exit(0);
 }
@@ -323,7 +323,7 @@ IRCConnectGenericCommand::IRCConnectGenericCommand()
 	this->addTrigger("IRCReconnect"_jrs);
 }
 
-GenericCommand::ResponseLine *IRCConnectGenericCommand::trigger(const Jupiter::ReadableString &parameters)
+Jupiter::GenericCommand::ResponseLine *IRCConnectGenericCommand::trigger(const Jupiter::ReadableString &parameters)
 {
 	if (parameters.isEmpty())
 	{
@@ -333,20 +333,20 @@ GenericCommand::ResponseLine *IRCConnectGenericCommand::trigger(const Jupiter::R
 		else if (IRCCommand::active_server != nullptr)
 			server = IRCCommand::active_server;
 		else
-			return new GenericCommand::ResponseLine("Error: No IRC server is currently selected."_jrs, GenericCommand::DisplayType::PublicError);
+			return new Jupiter::GenericCommand::ResponseLine("Error: No IRC server is currently selected."_jrs, GenericCommand::DisplayType::PublicError);
 
 		server->disconnect("Connect command used; reconnecting..."_jrs, false);
-		return new GenericCommand::ResponseLine("Disconnected from IRC server."_jrs, GenericCommand::DisplayType::PublicSuccess);
+		return new Jupiter::GenericCommand::ResponseLine("Disconnected from IRC server."_jrs, GenericCommand::DisplayType::PublicSuccess);
 	}
 	IRC_Bot *server = serverManager->getServer(parameters);
 	if (server != nullptr)
 	{
 		server->disconnect("Connect command used; reconnecting..."_jrs, false);
-		return new GenericCommand::ResponseLine("Disconnected from IRC server."_jrs, GenericCommand::DisplayType::PublicSuccess);
+		return new Jupiter::GenericCommand::ResponseLine("Disconnected from IRC server."_jrs, GenericCommand::DisplayType::PublicSuccess);
 	}
 	if (serverManager->addServer(parameters))
-		return new GenericCommand::ResponseLine("Connection successfully established; server added to server list."_jrs, GenericCommand::DisplayType::PublicSuccess);
-	return new GenericCommand::ResponseLine("Error: Unable to find configuration settings for server, or connection refused."_jrs, GenericCommand::DisplayType::PublicError);
+		return new Jupiter::GenericCommand::ResponseLine("Connection successfully established; server added to server list."_jrs, GenericCommand::DisplayType::PublicSuccess);
+	return new Jupiter::GenericCommand::ResponseLine("Error: Unable to find configuration settings for server, or connection refused."_jrs, GenericCommand::DisplayType::PublicError);
 }
 
 const Jupiter::ReadableString &IRCConnectGenericCommand::getHelp(const Jupiter::ReadableString &)
@@ -366,7 +366,7 @@ IRCDisconnectGenericCommand::IRCDisconnectGenericCommand()
 	this->addTrigger("IRCDisconnect"_jrs);
 }
 
-GenericCommand::ResponseLine *IRCDisconnectGenericCommand::trigger(const Jupiter::ReadableString &parameters)
+Jupiter::GenericCommand::ResponseLine *IRCDisconnectGenericCommand::trigger(const Jupiter::ReadableString &parameters)
 {
 	IRC_Bot *server;
 	if (IRCCommand::selected_server != nullptr)
@@ -374,10 +374,10 @@ GenericCommand::ResponseLine *IRCDisconnectGenericCommand::trigger(const Jupiter
 	else if (IRCCommand::active_server != nullptr)
 		server = IRCCommand::active_server;
 	else
-		return new GenericCommand::ResponseLine("Error: No IRC server is currently selected."_jrs, GenericCommand::DisplayType::PublicError);
+		return new Jupiter::GenericCommand::ResponseLine("Error: No IRC server is currently selected."_jrs, GenericCommand::DisplayType::PublicError);
 
 	server->disconnect("Disconnect command used."_jrs, true);
-	return new GenericCommand::ResponseLine("Disconnected from server."_jrs, GenericCommand::DisplayType::PublicSuccess);
+	return new Jupiter::GenericCommand::ResponseLine("Disconnected from server."_jrs, GenericCommand::DisplayType::PublicSuccess);
 }
 
 const Jupiter::ReadableString &IRCDisconnectGenericCommand::getHelp(const Jupiter::ReadableString &)

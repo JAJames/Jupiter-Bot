@@ -20,7 +20,7 @@
 #define _PLUGINMANAGER_H_HEADER
 
 #include "Jupiter/Plugin.h"
-#include "Generic_Command.h"
+#include "Jupiter/GenericCommand.h"
 #include "Console_Command.h"
 #include "IRC_Command.h"
 

@@ -103,49 +103,67 @@ Jupiter::StringL IRC_Bot::getTriggers(Jupiter::ArrayList<IRCCommand> &cmds)
 
 void IRC_Bot::setCommandAccessLevels()
 {
-	// Rewrite this later
-	// Note: Prepare for abstraction of configuration file type.
-	Jupiter::StringS commandSection = "DefaultCommands";
-
-	checkForCommands:
-	int sIndex = Config->getSectionIndex(commandSection);
-	if (sIndex >= 0)
+	auto set_command_access_levels = [this](const Jupiter::ReadableString &section_name)
 	{
-		int sLen = Config->getSectionLength(sIndex);
-		for (int i = 0; i < sLen; i++)
+		Jupiter::INIFile::Section *section = this->Config->getSection(section_name);
+
+		if (section != nullptr)
 		{
-			const Jupiter::ReadableString &key = Config->getKey(commandSection, i);
-			int pos = key.find('.');
-			if (pos != Jupiter::INVALID_INDEX)
+			size_t section_length = section->size();
+			Jupiter::INIFile::Section::KeyValuePair *pair;
+			size_t tmp_index;
+			Jupiter::ReferenceString tmp_key, tmp_sub_key;
+			IRCCommand *command;
+
+			for (size_t pair_index = 0; pair_index != section_length; ++pair_index)
 			{
-				Jupiter::ReferenceString command = Jupiter::ReferenceString(key.ptr(), pos);
-				if (command != nullptr)
+				pair = section->getPair(pair_index);
+
+				tmp_index = pair->getKey().find('.');
+				if (tmp_index != Jupiter::INVALID_INDEX)
 				{
-					IRCCommand *cmd = IRC_Bot::getCommand(command);
-					if (cmd != nullptr)
+					// non-default access assignment
+
+					tmp_key.set(pair->getKey().ptr(), tmp_index);
+
+					tmp_sub_key = pair->getKey();
+					tmp_sub_key.shiftRight(tmp_index + 1);
+
+					if (tmp_sub_key.findi("Type."_jrs) == 0)
 					{
-						Jupiter::ReferenceString channelType(key.ptr() + pos + 1, key.size() - pos - 1);
-						if (isdigit(key[pos + 1]))
-							cmd->setAccessLevel(channelType.asInt(10), Config->getInt(commandSection, key));
-						else cmd->setAccessLevel(channelType.asInt(10), Config->getInt(commandSection, key));
+						tmp_sub_key.shiftRight(5); // shift beyond "Type."
+
+						command = this->getCommand(tmp_key);
+						if (command != nullptr)
+							command->setAccessLevel(tmp_sub_key.asInt(), pair->getValue().asInt());
 					}
-					else if (this->getPrintOutput()) printf("Unable to find command \"%.*s\"" ENDL, key.size(), key.ptr());
+					else if (tmp_sub_key.findi("Channel."_jrs) == 0)
+					{
+						tmp_sub_key.shiftRight(8); // shift beyond "Channel."
+
+						// Assign access level to command (if command exists)
+						command = this->getCommand(tmp_key);
+						if (command != nullptr)
+							command->setAccessLevel(tmp_sub_key, pair->getValue().asInt());
+						else if (this->getPrintOutput() != nullptr)
+							fprintf(this->getPrintOutput(), "Unable to find command \"%.*s\"" ENDL, tmp_key.size(), tmp_key.ptr());
+					}
+				}
+				else
+				{
+					// Assign access level to command (if command exists)
+					command = this->getCommand(pair->getKey());
+					if (command != nullptr)
+						command->setAccessLevel(pair->getValue().asInt());
+					else if (this->getPrintOutput() != nullptr)
+						fprintf(this->getPrintOutput(), "Unable to find command \"%.*s\"" ENDL, pair->getKey().size(), pair->getKey().ptr());
 				}
 			}
-			else
-			{
-				IRCCommand *cmd = IRC_Bot::getCommand(key);
-				if (cmd != nullptr) cmd->setAccessLevel(Config->getInt(commandSection, key));
-				else if (this->getPrintOutput()) printf("Unable to find command \"%.*s\"" ENDL, key.size(), key.ptr());
-			}
 		}
-	}
-	if (commandSection.equals("DefaultCommands"))
-	{
-		commandSection = this->getConfigSection();
-		commandSection += "Commands";
-		if (commandSection.equals("DefaultCommands") == false) goto checkForCommands;
-	}
+	};
+
+	set_command_access_levels("DefaultCommands"_jrs);
+	set_command_access_levels(this->getConfigSection() + "Commands"_jrs);
 }
 
 int IRC_Bot::OnRehash()

@@ -88,13 +88,13 @@ LadderGenericCommand::LadderGenericCommand()
 	this->addTrigger("rank"_jrs);
 }
 
-GenericCommand::ResponseLine *LadderGenericCommand::trigger(const Jupiter::ReadableString &parameters)
+Jupiter::GenericCommand::ResponseLine *LadderGenericCommand::trigger(const Jupiter::ReadableString &parameters)
 {
 	if (parameters.isEmpty())
-		return new GenericCommand::ResponseLine("Error: Too few parameters. Syntax: ladder <name | rank>"_jrs, GenericCommand::DisplayType::PrivateError);
+		return new Jupiter::GenericCommand::ResponseLine("Error: Too few parameters. Syntax: ladder <name | rank>"_jrs, GenericCommand::DisplayType::PrivateError);
 
 	if (RenX::default_ladder_database == nullptr)
-		return new GenericCommand::ResponseLine("Error: No default ladder database specified."_jrs, GenericCommand::DisplayType::PrivateError);
+		return new Jupiter::GenericCommand::ResponseLine("Error: No default ladder database specified."_jrs, GenericCommand::DisplayType::PrivateError);
 
 	RenX::LadderDatabase::Entry *entry;
 	size_t rank;
@@ -102,27 +102,27 @@ GenericCommand::ResponseLine *LadderGenericCommand::trigger(const Jupiter::Reada
 	{
 		rank = parameters.asUnsignedInt(10);
 		if (rank == 0)
-			return new GenericCommand::ResponseLine("Error: Invalid parameters"_jrs, GenericCommand::DisplayType::PrivateError);
+			return new Jupiter::GenericCommand::ResponseLine("Error: Invalid parameters"_jrs, GenericCommand::DisplayType::PrivateError);
 
 		entry = RenX::default_ladder_database->getPlayerEntryByIndex(rank - 1);
 		if (entry == nullptr)
-			return new GenericCommand::ResponseLine("Error: Player not found"_jrs, GenericCommand::DisplayType::PrivateError);
+			return new Jupiter::GenericCommand::ResponseLine("Error: Player not found"_jrs, GenericCommand::DisplayType::PrivateError);
 
-		return new GenericCommand::ResponseLine(FormatLadderResponse(entry, rank), GenericCommand::DisplayType::PublicSuccess);
+		return new Jupiter::GenericCommand::ResponseLine(FormatLadderResponse(entry, rank), GenericCommand::DisplayType::PublicSuccess);
 	}
 	
 	Jupiter::SLList<std::pair<RenX::LadderDatabase::Entry, size_t>> list = RenX::default_ladder_database->getPlayerEntriesAndIndexByPartName(parameters, pluginInstance.getMaxLadderCommandPartNameOutput());
 	if (list.size() == 0)
-		return new GenericCommand::ResponseLine("Error: Player not found"_jrs, GenericCommand::DisplayType::PrivateError);
+		return new Jupiter::GenericCommand::ResponseLine("Error: Player not found"_jrs, GenericCommand::DisplayType::PrivateError);
 
 	std::pair<RenX::LadderDatabase::Entry, size_t> *pair = list.remove(0);
-	GenericCommand::ResponseLine *response_head = new GenericCommand::ResponseLine(FormatLadderResponse(std::addressof(pair->first), pair->second + 1), GenericCommand::DisplayType::PrivateSuccess);
-	GenericCommand::ResponseLine *response_end = response_head;
+	Jupiter::GenericCommand::ResponseLine *response_head = new Jupiter::GenericCommand::ResponseLine(FormatLadderResponse(std::addressof(pair->first), pair->second + 1), GenericCommand::DisplayType::PrivateSuccess);
+	Jupiter::GenericCommand::ResponseLine *response_end = response_head;
 	delete pair;
 	while (list.size() != 0)
 	{
 		pair = list.remove(0);
-		response_end->next = new GenericCommand::ResponseLine(FormatLadderResponse(std::addressof(pair->first), pair->second + 1), GenericCommand::DisplayType::PrivateSuccess);
+		response_end->next = new Jupiter::GenericCommand::ResponseLine(FormatLadderResponse(std::addressof(pair->first), pair->second + 1), GenericCommand::DisplayType::PrivateSuccess);
 		response_end = response_end->next;
 		delete pair;
 	}
@@ -169,8 +169,8 @@ void LadderGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *player, 
 	}
 	else
 	{
-		GenericCommand::ResponseLine *response = LadderGenericCommand_instance.trigger(parameters);
-		GenericCommand::ResponseLine *ptr;
+		Jupiter::GenericCommand::ResponseLine *response = LadderGenericCommand_instance.trigger(parameters);
+		Jupiter::GenericCommand::ResponseLine *ptr;
 		while (response != nullptr)
 		{
 			source->sendMessage(player, response->response);

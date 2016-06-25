@@ -30,9 +30,6 @@
     <ClCompile Include="Console_Command.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Generic_Command.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="IRC_Bot.h">
@@ -48,9 +45,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Console_Command.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Generic_Command.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
