@@ -42,7 +42,7 @@ class IRCCommand;
 /**
 * @brief Provies extendable bot-like interfacing with the IRC client.
 */
-class JUPITER_BOT_API IRC_Bot : public Jupiter::IRC::Client, public Jupiter::Rehashable
+class JUPITER_BOT_API IRC_Bot : public Jupiter::IRC::Client
 {
 public:
 

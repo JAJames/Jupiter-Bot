@@ -87,6 +87,13 @@ void inputLoop()
 	}
 }
 
+int rehash_config()
+{
+	o_config.reload();
+	serverManager->OnConfigRehash();
+	return 0;
+}
+
 int main(int argc, const char **args)
 {
 	atexit(onExit);
@@ -123,6 +130,8 @@ int main(int argc, const char **args)
 		puts("Unable to read config file. Closing...");
 		exit(0);
 	}
+
+	Jupiter::addOnRehash(rehash_config);
 
 	puts("Config loaded.");
 	

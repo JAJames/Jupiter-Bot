@@ -173,12 +173,6 @@ void IRC_Bot::setCommandAccessLevels()
 		set_command_access_levels(section->getName() + "Commands"_jrs);
 }
 
-int IRC_Bot::OnRehash()
-{
-	IRC_Bot::setCommandAccessLevels();
-	return 0;
-}
-
 void IRC_Bot::OnChat(const Jupiter::ReadableString &channel, const Jupiter::ReadableString &nick, const Jupiter::ReadableString &message)
 {
 	int chanIndex = this->getChannelIndex(channel);

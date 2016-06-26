@@ -68,6 +68,19 @@ size_t ServerManager::removeCommand(const Jupiter::ReadableString &command)
 	return r;
 }
 
+void ServerManager::OnConfigRehash()
+{
+	IRC_Bot *server;
+	for (size_t index = 0; index != ServerManager::servers.size(); ++index)
+	{
+		server = ServerManager::servers.get(index);
+
+		server->setPrimaryConfigSection(g_config->getSection(server->getConfigSection()));
+		server->setSecondaryConfigSection(g_config->getSection("Defualt"_jrs));
+		server->setCommandAccessLevels();
+	}
+}
+
 size_t ServerManager::syncCommands()
 {
 	for (size_t i = 0; i != ServerManager::servers.size(); i++)

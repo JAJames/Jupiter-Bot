@@ -77,6 +77,11 @@ public:
 	size_t removeCommand(const Jupiter::ReadableString &command);
 
 	/**
+	* @brief Called when g_config is rehashed
+	*/
+	void OnConfigRehash();
+
+	/**
 	* @brief Syncs command access levels from the configuration file.
 	*
 	* @return Number of servers sync'd.
