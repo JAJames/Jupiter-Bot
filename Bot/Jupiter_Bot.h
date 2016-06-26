@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2013-2015 Jessica James.
+ * Copyright (C) 2013-2016 Jessica James.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -35,5 +35,15 @@
 #else // _WIN32
 #define JUPITER_BOT_API
 #endif // _WIN32
+
+#if defined __cplusplus
+
+/** Forward declaration */
+namespace Jupiter { class INIFile; }
+
+/** Application config file */
+extern Jupiter::INIFile *g_config;
+
+#endif // __cplusplus
 
 #endif // JUPITER_BOT_API

@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2014-2015 Jessica James.
+ * Copyright (C) 2014-2016 Jessica James.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -20,6 +20,8 @@
 #include "ServerManager.h"
 #include "IRC_Bot.h"
 #include "IRC_Command.h"
+
+using namespace Jupiter::literals;
 
 ServerManager _serverManager;
 ServerManager *serverManager = &_serverManager;
@@ -94,8 +96,8 @@ IRC_Bot *ServerManager::getServer(size_t serverIndex)
 
 bool ServerManager::addServer(const Jupiter::ReadableString &serverConfig)
 {
-	IRC_Bot *server = new IRC_Bot(serverConfig);
-	if (server->connect() == true)
+	IRC_Bot *server = new IRC_Bot(g_config->getSection(serverConfig), g_config->getSection("Default"_jrs));
+	if (server->connect())
 	{
 		ServerManager::servers.add(server);
 		return true;

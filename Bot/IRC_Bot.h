@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2013-2015 Jessica James.
+ * Copyright (C) 2013-2016 Jessica James.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -110,7 +110,7 @@ public:
 	bool OnBadRehash(bool removed) { return removed; };
 
 	/** Constructor for IRC_Bot */
-	IRC_Bot(const Jupiter::ReadableString &configSection);
+	IRC_Bot(const Jupiter::INIFile::Section *in_primary_section, const Jupiter::INIFile::Section *in_secondary_section);
 
 	/** Destructor for IRC_Bot */
 	~IRC_Bot();

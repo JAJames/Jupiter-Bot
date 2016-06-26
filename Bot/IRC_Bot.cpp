@@ -27,7 +27,7 @@
 
 using namespace Jupiter::literals;
 
-IRC_Bot::IRC_Bot(const Jupiter::ReadableString &configSection) : Client(configSection)
+IRC_Bot::IRC_Bot(const Jupiter::INIFile::Section *in_primary_section, const Jupiter::INIFile::Section *in_secondary_section) : Client(in_primary_section, in_secondary_section)
 {
 	IRC_Bot::commandPrefix = this->readConfigValue("Prefix"_jrs);
 	for (size_t i = 0; i != IRCMasterCommandList->size(); i++)
@@ -105,7 +105,7 @@ void IRC_Bot::setCommandAccessLevels()
 {
 	auto set_command_access_levels = [this](const Jupiter::ReadableString &section_name)
 	{
-		Jupiter::INIFile::Section *section = this->Config->getSection(section_name);
+		Jupiter::INIFile::Section *section = g_config->getSection(section_name);
 
 		if (section != nullptr)
 		{
@@ -162,13 +162,19 @@ void IRC_Bot::setCommandAccessLevels()
 		}
 	};
 
-	set_command_access_levels("DefaultCommands"_jrs);
-	set_command_access_levels(this->getConfigSection() + "Commands"_jrs);
+	const Jupiter::INIFile::Section *section;
+	
+	section = this->getSecondaryConfigSection();
+	if (section != nullptr)
+		set_command_access_levels(section->getName() + "Commands"_jrs);
+
+	section = this->getPrimaryConfigSection();
+	if (section != nullptr)
+		set_command_access_levels(section->getName() + "Commands"_jrs);
 }
 
 int IRC_Bot::OnRehash()
 {
-	if (Config->reload() == Jupiter::ERROR_INDICATOR) return 1;
 	IRC_Bot::setCommandAccessLevels();
 	return 0;
 }

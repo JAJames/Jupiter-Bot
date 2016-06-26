@@ -35,6 +35,9 @@
 
 using namespace Jupiter::literals;
 
+Jupiter::INIFile o_config;
+Jupiter::INIFile *g_config = &o_config;
+
 #define INPUT_BUFFER_SIZE 2048
 
 struct ConsoleInput
@@ -89,11 +92,11 @@ int main(int argc, const char **args)
 	atexit(onExit);
 	std::set_terminate(onTerminate);
 	std::thread inputThread(inputLoop);
-	Jupiter::ReferenceString command;
+	Jupiter::ReferenceString command, plugins_directory, configs_directory;
 
 	srand(static_cast<unsigned int>(std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count()));
 	puts(Jupiter::copyright);
-	const char *configFileName = CONFIG_INI;
+	const char *configFileName = "Config.ini";
 
 	for (int i = 1; i < argc; i++)
 	{
@@ -105,9 +108,9 @@ int main(int argc, const char **args)
 		else if ("-config"_jrs.equalsi(args[i]) && ++i < argc)
 			configFileName = args[i];
 		else if ("-pluginsdir"_jrs.equalsi(args[i]) && ++i < argc)
-			Jupiter::Plugin::setDirectory(Jupiter::ReferenceString(args[i]));
+			plugins_directory = args[i];
 		else if ("-configsdir"_jrs.equals(args[i]) && ++i < argc)
-			Jupiter::Plugin::setConfigDirectory(Jupiter::ReferenceString(args[i]));
+			configs_directory = args[i];
 		else if ("-configFormat"_jrs.equalsi(args[i]) && ++i < argc)
 			puts("Feature not yet supported!");
 		else
@@ -115,30 +118,34 @@ int main(int argc, const char **args)
 	}
 
 	puts("Loading config file...");
-	if (!Jupiter::IRC::Client::Config->readFile(configFileName))
+	if (!o_config.readFile(configFileName))
 	{
 		puts("Unable to read config file. Closing...");
 		exit(0);
 	}
 
-	fputs("Config loaded. ", stdout);
+	puts("Config loaded.");
 	
-	const Jupiter::ReadableString &pDir = Jupiter::IRC::Client::Config->get(STRING_LITERAL_AS_REFERENCE("Config"), STRING_LITERAL_AS_REFERENCE("PluginsDirectory"));
-	if (pDir.isNotEmpty())
+	if (plugins_directory.isEmpty())
+		plugins_directory = o_config.get(Jupiter::ReferenceString::empty, "PluginsDirectory"_jrs);
+
+	if (configs_directory.isEmpty())
+		configs_directory = o_config.get(Jupiter::ReferenceString::empty, "ConfigsDirectory"_jrs);
+
+	if (plugins_directory.isNotEmpty())
 	{
-		Jupiter::Plugin::setDirectory(pDir);
-		printf("Plugins will be loaded from \"%.*s\"." ENDL, pDir.size(), pDir.ptr());
+		Jupiter::Plugin::setDirectory(plugins_directory);
+		printf("Plugins will be loaded from \"%.*s\"." ENDL, plugins_directory.size(), plugins_directory.ptr());
 	}
 
-	const Jupiter::ReadableString &cDir = Jupiter::IRC::Client::Config->get(STRING_LITERAL_AS_REFERENCE("Config"), STRING_LITERAL_AS_REFERENCE("PluginConfigsDirectory"));
-	if (cDir.isNotEmpty())
+	if (configs_directory.isNotEmpty())
 	{
-		Jupiter::Plugin::setDirectory(cDir);
-		printf("Plugin configs will be loaded from \"%.*s\"." ENDL, cDir.size(), cDir.ptr());
+		Jupiter::Plugin::setDirectory(configs_directory);
+		printf("Plugin configs will be loaded from \"%.*s\"." ENDL, configs_directory.size(), configs_directory.ptr());
 	}
 
 	puts("Loading plugins...");
-	const Jupiter::ReadableString &pluginList = Jupiter::IRC::Client::Config->get(STRING_LITERAL_AS_REFERENCE("Config"), STRING_LITERAL_AS_REFERENCE("Plugins"));
+	const Jupiter::ReadableString &pluginList = o_config.get(Jupiter::ReferenceString::empty, "Plugins"_jrs);
 	if (pluginList.isEmpty())
 		puts("No plugins to load!");
 	else
@@ -148,26 +155,27 @@ int main(int argc, const char **args)
 		for (unsigned int i = 0; i < nPlugins; i++)
 		{
 			Jupiter::ReferenceString plugin = Jupiter::ReferenceString::getWord(pluginList, i, WHITESPACE);
-			if (Jupiter::Plugin::load(plugin) == nullptr) fprintf(stderr, "WARNING: Failed to load plugin \"%.*s\"!" ENDL, plugin.size(), plugin.ptr());
+			if (Jupiter::Plugin::load(plugin) == nullptr)
+				fprintf(stderr, "WARNING: Failed to load plugin \"%.*s\"!" ENDL, plugin.size(), plugin.ptr());
 			else printf("\"%.*s\" loaded successfully." ENDL, plugin.size(), plugin.ptr());
 		}
 	}
 
 	if (consoleCommands->size() > 0)
-		printf("%u Console Commands have been initialized%s" ENDL, consoleCommands->size(), getConsoleCommand(STRING_LITERAL_AS_REFERENCE("help")) == nullptr ? "." : "; type \"help\" for more information.");
+		printf("%u Console Commands have been initialized%s" ENDL, consoleCommands->size(), getConsoleCommand("help"_jrs) == nullptr ? "." : "; type \"help\" for more information.");
 	if (IRCMasterCommandList->size() > 0)
 		printf("%u IRC Commands have been loaded into the master list." ENDL, IRCMasterCommandList->size());
 
 	puts("Retreiving network list...");
-	const Jupiter::ReadableString &serverList = Jupiter::IRC::Client::Config->get(STRING_LITERAL_AS_REFERENCE("Config"), STRING_LITERAL_AS_REFERENCE("Servers"));
+	const Jupiter::ReadableString &serverList = o_config.get(Jupiter::ReferenceString::empty, "Servers"_jrs);
 	if (serverList == nullptr)
 		puts("Unable to find network list.");
 	else
 	{
 		unsigned int nServers = serverList.wordCount(WHITESPACE);
 		printf("Attempting to connect to %u servers..." ENDL, nServers);
-		for (unsigned int i = 0; i < nServers; i++)
-			serverManager->addServer(Jupiter::ReferenceString::getWord(serverList, i, WHITESPACE));
+		for (unsigned int index = 0; index < nServers; ++index)
+			serverManager->addServer(Jupiter::ReferenceString::getWord(serverList, index, WHITESPACE));
 	}
 
 	puts("Sockets established.");

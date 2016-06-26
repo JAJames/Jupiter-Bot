@@ -16,7 +16,6 @@
  * Written by Jessica James <jessica.aj@outlook.com>
  */
 
-#include <functional>
 #include "Jupiter/Functions.h"
 #include "Jupiter/SLList.h"
 #include "IRC_Bot.h"
