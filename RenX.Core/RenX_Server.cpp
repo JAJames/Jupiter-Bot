@@ -2874,12 +2874,11 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 					{
 						// Player | "as" | Type="moderator" / "administrator"
 						RenX::PlayerInfo *player = parseGetPlayerOrAdd(tokens.getToken(2));
-						player->adminType.erase();
 
 						for (size_t i = 0; i < xPlugins.size(); i++)
 							xPlugins.get(i)->RenX_OnAdminLogout(this, player);
 
-						player->adminType = Jupiter::ReferenceString::empty;
+						player->adminType.erase();
 					}
 					else if (subHeader.equals("Granted;"))
 					{
