@@ -1924,19 +1924,23 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 					this->autoBalanceTeams = tokens.getToken(17).asBool();
 					this->spawnCrates = tokens.getToken(19).asBool();
 					this->crateRespawnAfterPickup = tokens.getToken(21).asDouble();
-					this->competitive = tokens.getToken(23).asBool();
 
-					const Jupiter::ReadableString &match_state_token = tokens.getToken(25);
-					if (match_state_token.equalsi("PendingMatch"_jrs))
-						this->match_state = 0;
-					else if (match_state_token.equalsi("MatchInProgress"_jrs))
-						this->match_state = 1;
-					else if (match_state_token.equalsi("RoundOver"_jrs) || match_state_token.equalsi("MatchOver"_jrs))
-						this->match_state = 2;
-					else if (match_state_token.equalsi("TravelTheWorld"_jrs))
-						this->match_state = 3;
-					else // Unknown state -- assume it's in progress
-						this->match_state = 1;
+					if (this->rconVersion >= 4)
+					{
+						this->competitive = tokens.getToken(23).asBool();
+
+						const Jupiter::ReadableString &match_state_token = tokens.getToken(25);
+						if (match_state_token.equalsi("PendingMatch"_jrs))
+							this->match_state = 0;
+						else if (match_state_token.equalsi("MatchInProgress"_jrs))
+							this->match_state = 1;
+						else if (match_state_token.equalsi("RoundOver"_jrs) || match_state_token.equalsi("MatchOver"_jrs))
+							this->match_state = 2;
+						else if (match_state_token.equalsi("TravelTheWorld"_jrs))
+							this->match_state = 3;
+						else // Unknown state -- assume it's in progress
+							this->match_state = 1;
+					}
 				}
 			}
 			else if (this->lastCommand.equalsi("mutatorlist"_jrs))
@@ -2870,8 +2874,11 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 					{
 						// Player | "as" | Type="moderator" / "administrator"
 						RenX::PlayerInfo *player = parseGetPlayerOrAdd(tokens.getToken(2));
+						player->adminType.erase();
+
 						for (size_t i = 0; i < xPlugins.size(); i++)
 							xPlugins.get(i)->RenX_OnAdminLogout(this, player);
+
 						player->adminType = Jupiter::ReferenceString::empty;
 					}
 					else if (subHeader.equals("Granted;"))

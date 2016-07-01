@@ -28,15 +28,15 @@ using namespace Jupiter::literals;
 
 bool RenX_ModSystemPlugin::initialize()
 {
-	RenX_ModSystemPlugin::lockSteam = RenX_ModSystemPlugin::modsFile.getBool(Jupiter::ReferenceString::empty, STRING_LITERAL_AS_REFERENCE("LockSteam"), true);
-	RenX_ModSystemPlugin::lockIP = RenX_ModSystemPlugin::modsFile.getBool(Jupiter::ReferenceString::empty, STRING_LITERAL_AS_REFERENCE("LockIP"), false);
-	RenX_ModSystemPlugin::lockName = RenX_ModSystemPlugin::modsFile.getBool(Jupiter::ReferenceString::empty, STRING_LITERAL_AS_REFERENCE("LockName"), false);
-	RenX_ModSystemPlugin::kickLockMismatch = RenX_ModSystemPlugin::modsFile.getBool(Jupiter::ReferenceString::empty, STRING_LITERAL_AS_REFERENCE("KickLockMismatch"), true);
-	RenX_ModSystemPlugin::autoAuthSteam = RenX_ModSystemPlugin::modsFile.getBool(Jupiter::ReferenceString::empty, STRING_LITERAL_AS_REFERENCE("AutoAuthSteam"), true);
-	RenX_ModSystemPlugin::autoAuthIP = RenX_ModSystemPlugin::modsFile.getBool(Jupiter::ReferenceString::empty, STRING_LITERAL_AS_REFERENCE("AutoAuthIP"), false);
-	RenX_ModSystemPlugin::atmDefault = RenX_ModSystemPlugin::modsFile.get(Jupiter::ReferenceString::empty, STRING_LITERAL_AS_REFERENCE("ATMDefault"));
-	RenX_ModSystemPlugin::moderatorGroup = RenX_ModSystemPlugin::modsFile.get(Jupiter::ReferenceString::empty, STRING_LITERAL_AS_REFERENCE("Moderator"), STRING_LITERAL_AS_REFERENCE("Moderator"));
-	RenX_ModSystemPlugin::administratorGroup = RenX_ModSystemPlugin::modsFile.get(Jupiter::ReferenceString::empty, STRING_LITERAL_AS_REFERENCE("Administrator"), STRING_LITERAL_AS_REFERENCE("Administrator"));
+	RenX_ModSystemPlugin::lockSteam = this->config.getBool(Jupiter::ReferenceString::empty, STRING_LITERAL_AS_REFERENCE("LockSteam"), true);
+	RenX_ModSystemPlugin::lockIP = this->config.getBool(Jupiter::ReferenceString::empty, STRING_LITERAL_AS_REFERENCE("LockIP"), false);
+	RenX_ModSystemPlugin::lockName = this->config.getBool(Jupiter::ReferenceString::empty, STRING_LITERAL_AS_REFERENCE("LockName"), false);
+	RenX_ModSystemPlugin::kickLockMismatch = this->config.getBool(Jupiter::ReferenceString::empty, STRING_LITERAL_AS_REFERENCE("KickLockMismatch"), true);
+	RenX_ModSystemPlugin::autoAuthSteam = this->config.getBool(Jupiter::ReferenceString::empty, STRING_LITERAL_AS_REFERENCE("AutoAuthSteam"), true);
+	RenX_ModSystemPlugin::autoAuthIP = this->config.getBool(Jupiter::ReferenceString::empty, STRING_LITERAL_AS_REFERENCE("AutoAuthIP"), false);
+	RenX_ModSystemPlugin::atmDefault = this->config.get(Jupiter::ReferenceString::empty, STRING_LITERAL_AS_REFERENCE("ATMDefault"));
+	RenX_ModSystemPlugin::moderatorGroup = this->config.get(Jupiter::ReferenceString::empty, STRING_LITERAL_AS_REFERENCE("Moderator"), STRING_LITERAL_AS_REFERENCE("Moderator"));
+	RenX_ModSystemPlugin::administratorGroup = this->config.get(Jupiter::ReferenceString::empty, STRING_LITERAL_AS_REFERENCE("Administrator"), STRING_LITERAL_AS_REFERENCE("Administrator"));
 
 	ModGroup *group;
 	Jupiter::ReferenceString dotLockSteam = ".LockSteam";
@@ -50,52 +50,53 @@ bool RenX_ModSystemPlugin::initialize()
 	Jupiter::ReferenceString dotPrefix = ".Prefix";
 	Jupiter::ReferenceString dotGamePrefix = ".GamePrefix";
 
-	Jupiter::String groupName = RenX_ModSystemPlugin::modsFile.get(Jupiter::ReferenceString::empty, STRING_LITERAL_AS_REFERENCE("Default"));
+	Jupiter::String groupName = this->config.get(Jupiter::ReferenceString::empty, STRING_LITERAL_AS_REFERENCE("Default"));
+
 	while (groupName.isNotEmpty())
 	{
 		group = new ModGroup();
 		group->name = groupName;
 
 		groupName += dotLockSteam;
-		group->lockSteam = RenX_ModSystemPlugin::modsFile.getBool(Jupiter::ReferenceString::empty, groupName, RenX_ModSystemPlugin::lockSteam);
+		group->lockSteam = this->config.getBool(Jupiter::ReferenceString::empty, groupName, RenX_ModSystemPlugin::lockSteam);
 		groupName.truncate(dotLockSteam.size());
 
 		groupName += dotLockIP;
-		group->lockIP = RenX_ModSystemPlugin::modsFile.getBool(Jupiter::ReferenceString::empty, groupName, RenX_ModSystemPlugin::lockIP);
+		group->lockIP = this->config.getBool(Jupiter::ReferenceString::empty, groupName, RenX_ModSystemPlugin::lockIP);
 		groupName.truncate(dotLockIP.size());
 
 		groupName += dotLockName;
-		group->lockName = RenX_ModSystemPlugin::modsFile.getBool(Jupiter::ReferenceString::empty, groupName, RenX_ModSystemPlugin::lockName);
+		group->lockName = this->config.getBool(Jupiter::ReferenceString::empty, groupName, RenX_ModSystemPlugin::lockName);
 		groupName.truncate(dotLockName.size());
 
 		groupName += dotKickLockMismatch;
-		group->kickLockMismatch = RenX_ModSystemPlugin::modsFile.getBool(Jupiter::ReferenceString::empty, groupName, RenX_ModSystemPlugin::kickLockMismatch);
+		group->kickLockMismatch = this->config.getBool(Jupiter::ReferenceString::empty, groupName, RenX_ModSystemPlugin::kickLockMismatch);
 		groupName.truncate(dotKickLockMismatch.size());
 
 		groupName += dotAutoAuthSteam;
-		group->autoAuthSteam = RenX_ModSystemPlugin::modsFile.getBool(Jupiter::ReferenceString::empty, groupName, RenX_ModSystemPlugin::autoAuthSteam);
+		group->autoAuthSteam = this->config.getBool(Jupiter::ReferenceString::empty, groupName, RenX_ModSystemPlugin::autoAuthSteam);
 		groupName.truncate(dotAutoAuthSteam.size());
 
 		groupName += dotAutoAuthIP;
-		group->autoAuthIP = RenX_ModSystemPlugin::modsFile.getBool(Jupiter::ReferenceString::empty, groupName, RenX_ModSystemPlugin::autoAuthIP);
+		group->autoAuthIP = this->config.getBool(Jupiter::ReferenceString::empty, groupName, RenX_ModSystemPlugin::autoAuthIP);
 		groupName.truncate(dotAutoAuthIP.size());
 
 		groupName += dotAccess;
-		group->access = RenX_ModSystemPlugin::modsFile.getInt(Jupiter::ReferenceString::empty, groupName);
+		group->access = this->config.getInt(Jupiter::ReferenceString::empty, groupName);
 		groupName.truncate(dotAccess.size());
 		
 		groupName += dotPrefix;
-		group->prefix = RenX_ModSystemPlugin::modsFile.get(Jupiter::ReferenceString::empty, groupName);
+		group->prefix = this->config.get(Jupiter::ReferenceString::empty, groupName);
 		groupName.truncate(dotPrefix.size());
 
 		groupName += dotGamePrefix;
-		group->gamePrefix = RenX_ModSystemPlugin::modsFile.get(Jupiter::ReferenceString::empty, groupName);
+		group->gamePrefix = this->config.get(Jupiter::ReferenceString::empty, groupName);
 		groupName.truncate(dotGamePrefix.size());
 
 		RenX_ModSystemPlugin::groups.add(group);
 
 		groupName += dotNext;
-		groupName = RenX_ModSystemPlugin::modsFile.get(Jupiter::ReferenceString::empty, groupName);
+		groupName = this->config.get(Jupiter::ReferenceString::empty, groupName);
 	}
 
 	RenX::Core *core = RenX::getCore();
@@ -154,17 +155,22 @@ int RenX_ModSystemPlugin::auth(RenX::Server *server, const RenX::PlayerInfo *pla
 {
 	if (player->isBot)
 		return 0;
+
 	ModGroup *group;
 	if (player->uuid.isNotEmpty())
 	{
-		Jupiter::INIFile::Section *section = RenX_ModSystemPlugin::modsFile.getSection(player->uuid);
+		Jupiter::INIFile::Section *section = this->config.getSection(player->uuid);
 		if (section != nullptr)
 		{
 			const Jupiter::ReadableString &groupName = section->get(STRING_LITERAL_AS_REFERENCE("Group"));
 			if (groupName.isEmpty())
 				group = RenX_ModSystemPlugin::groups.get(0);
-			else if ((group = RenX_ModSystemPlugin::getGroupByName(groupName)) == nullptr)
-				group = RenX_ModSystemPlugin::groups.get(0);
+			else
+			{
+				group = RenX_ModSystemPlugin::getGroupByName(groupName);
+				if (group == nullptr)
+					group = RenX_ModSystemPlugin::groups.get(0);
+			}
 
 			auto sectionAuth = [&]
 			{
@@ -236,11 +242,11 @@ void RenX_ModSystemPlugin::tempAuth(RenX::Server *server, const RenX::PlayerInfo
 
 bool RenX_ModSystemPlugin::set(RenX::PlayerInfo *player, RenX_ModSystemPlugin::ModGroup *group)
 {
-	bool r = RenX_ModSystemPlugin::modsFile.set(player->uuid, STRING_LITERAL_AS_REFERENCE("Group"), group->name);
-	RenX_ModSystemPlugin::modsFile.set(player->uuid, STRING_LITERAL_AS_REFERENCE("SteamID"), Jupiter::StringS::Format("%llu", player->steamid));
-	RenX_ModSystemPlugin::modsFile.set(player->uuid, STRING_LITERAL_AS_REFERENCE("LastIP"), player->ip);
-	RenX_ModSystemPlugin::modsFile.set(player->uuid, STRING_LITERAL_AS_REFERENCE("Name"), player->name);
-	RenX_ModSystemPlugin::modsFile.sync();
+	bool r = this->config.set(player->uuid, STRING_LITERAL_AS_REFERENCE("Group"), group->name);
+	this->config.set(player->uuid, STRING_LITERAL_AS_REFERENCE("SteamID"), Jupiter::StringS::Format("%llu", player->steamid));
+	this->config.set(player->uuid, STRING_LITERAL_AS_REFERENCE("LastIP"), player->ip);
+	this->config.set(player->uuid, STRING_LITERAL_AS_REFERENCE("Name"), player->name);
+	this->config.sync();
 	return r;
 }
 
@@ -273,7 +279,7 @@ RenX_ModSystemPlugin::ModGroup *RenX_ModSystemPlugin::getGroupByIndex(size_t ind
 
 int RenX_ModSystemPlugin::getConfigAccess(const Jupiter::ReadableString &uuid) const
 {
-	Jupiter::INIFile::Section *section = RenX_ModSystemPlugin::modsFile.getSection(uuid);
+	Jupiter::INIFile::Section *section = this->config.getSection(uuid);
 	if (section == nullptr)
 		return RenX_ModSystemPlugin::groups.get(0)->access;
 	RenX_ModSystemPlugin::ModGroup *group = RenX_ModSystemPlugin::getGroupByName(section->get(STRING_LITERAL_AS_REFERENCE("Group")), groups.get(0));
@@ -344,9 +350,9 @@ void RenX_ModSystemPlugin::RenX_OnPlayerCreate(RenX::Server *server, const RenX:
 
 void RenX_ModSystemPlugin::RenX_OnPlayerDelete(RenX::Server *server, const RenX::PlayerInfo *player)
 {
-	if (RenX_ModSystemPlugin::groups.size() != 0 && player->isBot == false)
+	if (RenX_ModSystemPlugin::groups.size() != 0 && player->isBot == false && player->uuid.isNotEmpty())
 	{
-		Jupiter::INIFile::Section *section = RenX_ModSystemPlugin::modsFile.getSection(player->uuid);
+		Jupiter::INIFile::Section *section = this->config.getSection(player->uuid);
 		if (section != nullptr)
 		{
 			section->set(STRING_LITERAL_AS_REFERENCE("SteamID"), Jupiter::StringS::Format("%llu", player->steamid));
@@ -409,9 +415,9 @@ int RenX_ModSystemPlugin::OnRehash()
 {
 	RenX::Plugin::OnRehash();
 
-	RenX_ModSystemPlugin::modsFile.flushData();
 	while (RenX_ModSystemPlugin::groups.size() != 0)
 		delete RenX_ModSystemPlugin::groups.remove(0U);
+
 	return this->initialize() ? 0 : -1;
 }
 

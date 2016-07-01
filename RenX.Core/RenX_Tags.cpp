@@ -38,17 +38,7 @@ struct TagsImp : RenX::Tags
 	const Jupiter::ReadableString &getUniqueInternalTag();
 private:
 	Jupiter::StringS uniqueTag;
-	union
-	{
-		uint32_t tagItr;
-		struct
-		{
-			uint8_t tagItrP1;
-			uint8_t tagItrP2;
-			uint8_t tagItrP3;
-			uint8_t tagItrP4;
-		};
-	};
+	uint32_t tagItr;
 	size_t bar_width;
 } _tags;
 RenX::Tags *RenX::tags = &_tags;
@@ -885,11 +875,8 @@ void TagsImp::sanitizeTags(Jupiter::StringType &fmt)
 
 const Jupiter::ReadableString &TagsImp::getUniqueInternalTag()
 {
-	this->uniqueTag.set(1, this->tagItrP1);
-	this->uniqueTag.set(2, this->tagItrP2);
-	this->uniqueTag.set(3, this->tagItrP3);
-	this->uniqueTag.set(4, this->tagItrP4);
-	this->tagItr++;
+	this->uniqueTag.set(1, reinterpret_cast<const char *>(&this->tagItr), sizeof(TagsImp::tagItr));
+	++TagsImp::tagItr;
 	return this->uniqueTag;
 }
 
