@@ -65,6 +65,7 @@ Jupiter::ReferenceString baseWinTypePlainTranslation = "Base Destruction";
 Jupiter::ReferenceString beaconWinTypePlainTranslation = "Beacon";
 Jupiter::ReferenceString tieWinTypePlainTranslation = "Tie";
 Jupiter::ReferenceString shutdownWinTypePlainTranslation = "Shutdown";
+Jupiter::ReferenceString surrenderWinTypePlainTranslation = "Surrender";
 Jupiter::ReferenceString unknownWinTypePlainTranslation = "Unknown";
 
 /** Vote translations */
@@ -829,6 +830,8 @@ const Jupiter::ReadableString &RenX::translateWinTypePlain(RenX::WinType winType
 		return tieWinTypePlainTranslation;
 	case RenX::WinType::Shutdown:
 		return shutdownWinTypePlainTranslation;
+	case RenX::WinType::Surrender:
+		return surrenderWinTypePlainTranslation;
 	case RenX::WinType::Unknown:
 	default:
 		return unknownWinTypePlainTranslation;
@@ -861,6 +864,7 @@ void RenX::initTranslations(Jupiter::INIFile &translationsFile)
 	beaconWinTypePlainTranslation = translationsFile.get("WinTypePlain"_jrs, "Beacon"_jrs, "Beacon"_jrs);
 	tieWinTypePlainTranslation = translationsFile.get("WinTypePlain"_jrs, "Tie"_jrs, "Tie"_jrs);
 	shutdownWinTypePlainTranslation = translationsFile.get("WinTypePlain"_jrs, "Shutdown"_jrs, "Shutdown"_jrs);
+	surrenderWinTypePlainTranslation = translationsFile.get("WinTypePlain"_jrs, "Surrender"_jrs, "Surrender"_jrs);
 	unknownWinTypePlainTranslation = translationsFile.get("WinTypePlain"_jrs, "Unknown"_jrs, "Unknown"_jrs);
 }
 
