@@ -492,7 +492,7 @@ const Jupiter::ReferenceString RenX::translateName(const Jupiter::ReadableString
 	if (obj.isEmpty())
 		return Jupiter::ReferenceString::empty;
 
-	Jupiter::ReferenceString iniTranslation = RenX::getCore()->getTranslationsFile().get(STRING_LITERAL_AS_REFERENCE("Name"), obj);
+	Jupiter::ReferenceString iniTranslation = RenX::getCore()->getConfig().get(STRING_LITERAL_AS_REFERENCE("Name"), obj);
 	if (iniTranslation.isNotEmpty())
 		return iniTranslation;
 
@@ -837,31 +837,31 @@ const Jupiter::ReadableString &RenX::translateWinTypePlain(RenX::WinType winType
 
 void RenX::initTranslations(Jupiter::INIFile &translationsFile)
 {
-	NodColor = translationsFile.get(STRING_LITERAL_AS_REFERENCE("TeamColor"), STRING_LITERAL_AS_REFERENCE("Nod"), STRING_LITERAL_AS_REFERENCE("04"));
-	GDIColor = translationsFile.get(STRING_LITERAL_AS_REFERENCE("TeamColor"), STRING_LITERAL_AS_REFERENCE("GDI"), STRING_LITERAL_AS_REFERENCE("08"));
-	OtherColor = translationsFile.get(STRING_LITERAL_AS_REFERENCE("TeamColor"), STRING_LITERAL_AS_REFERENCE("Other"), STRING_LITERAL_AS_REFERENCE("14"));
+	NodColor = translationsFile.get("TeamColor"_jrs, "Nod"_jrs, "04"_jrs);
+	GDIColor = translationsFile.get("TeamColor"_jrs, "GDI"_jrs, "08"_jrs);
+	OtherColor = translationsFile.get("TeamColor"_jrs, "Other"_jrs, "14"_jrs);
 
-	NodShortName = translationsFile.get(STRING_LITERAL_AS_REFERENCE("ShortTeamName"), STRING_LITERAL_AS_REFERENCE("Nod"), STRING_LITERAL_AS_REFERENCE("Nod"));
-	GDIShortName = translationsFile.get(STRING_LITERAL_AS_REFERENCE("ShortTeamName"), STRING_LITERAL_AS_REFERENCE("GDI"), STRING_LITERAL_AS_REFERENCE("GDI"));
-	OtherShortName = translationsFile.get(STRING_LITERAL_AS_REFERENCE("ShortTeamName"), STRING_LITERAL_AS_REFERENCE("Other"), STRING_LITERAL_AS_REFERENCE("N/A"));
-	NodLongName = translationsFile.get(STRING_LITERAL_AS_REFERENCE("LongTeamName"), STRING_LITERAL_AS_REFERENCE("Nod"), STRING_LITERAL_AS_REFERENCE("Brotherhood of Nod"));
-	GDILongName = translationsFile.get(STRING_LITERAL_AS_REFERENCE("LongTeamName"), STRING_LITERAL_AS_REFERENCE("GDI"), STRING_LITERAL_AS_REFERENCE("Global Defense Initiative"));
-	OtherLongName = translationsFile.get(STRING_LITERAL_AS_REFERENCE("LongTeamName"), STRING_LITERAL_AS_REFERENCE("Other"), STRING_LITERAL_AS_REFERENCE("Unknown"));
+	NodShortName = translationsFile.get("ShortTeamName"_jrs, "Nod"_jrs, "Nod"_jrs);
+	GDIShortName = translationsFile.get("ShortTeamName"_jrs, "GDI"_jrs, "GDI"_jrs);
+	OtherShortName = translationsFile.get("ShortTeamName"_jrs, "Other"_jrs, "N/A"_jrs);
+	NodLongName = translationsFile.get("LongTeamName"_jrs, "Nod"_jrs, "Brotherhood of Nod"_jrs);
+	GDILongName = translationsFile.get("LongTeamName"_jrs, "GDI"_jrs, "Global Defense Initiative"_jrs);
+	OtherLongName = translationsFile.get("LongTeamName"_jrs, "Other"_jrs, "Unknown"_jrs);
 
-	scoreWinTypeTranslation = translationsFile.get(STRING_LITERAL_AS_REFERENCE("WinType"), STRING_LITERAL_AS_REFERENCE("Score"), STRING_LITERAL_AS_REFERENCE("Domination (High Score)"));
-	baseWinTypeTranslation = translationsFile.get(STRING_LITERAL_AS_REFERENCE("WinType"), STRING_LITERAL_AS_REFERENCE("Base"), STRING_LITERAL_AS_REFERENCE("Conquest (Base Destruction)"));
-	beaconWinTypeTranslation = translationsFile.get(STRING_LITERAL_AS_REFERENCE("WinType"), STRING_LITERAL_AS_REFERENCE("Beacon"), STRING_LITERAL_AS_REFERENCE("Espionage (Beacon)"));
-	tieWinTypeTranslation = translationsFile.get(STRING_LITERAL_AS_REFERENCE("WinType"), STRING_LITERAL_AS_REFERENCE("Tie"), STRING_LITERAL_AS_REFERENCE("Draw (Tie)"));
-	shutdownWinTypeTranslation = translationsFile.get(STRING_LITERAL_AS_REFERENCE("WinType"), STRING_LITERAL_AS_REFERENCE("Shutdown"), STRING_LITERAL_AS_REFERENCE("Ceasefire (Shutdown)"));
-	surrenderWinTypeTranslation = translationsFile.get(STRING_LITERAL_AS_REFERENCE("WinType"), STRING_LITERAL_AS_REFERENCE("Surrender"), STRING_LITERAL_AS_REFERENCE("Forfeit (Surrender)"));
-	unknownWinTypeTranslation = translationsFile.get(STRING_LITERAL_AS_REFERENCE("WinType"), STRING_LITERAL_AS_REFERENCE("Unknown"), STRING_LITERAL_AS_REFERENCE("Aliens (Unknown)"));
+	scoreWinTypeTranslation = translationsFile.get("WinType"_jrs, "Score"_jrs, "Domination (High Score)"_jrs);
+	baseWinTypeTranslation = translationsFile.get("WinType"_jrs, "Base"_jrs, "Conquest (Base Destruction)"_jrs);
+	beaconWinTypeTranslation = translationsFile.get("WinType"_jrs, "Beacon"_jrs, "Espionage (Beacon)"_jrs);
+	tieWinTypeTranslation = translationsFile.get("WinType"_jrs, "Tie"_jrs, "Draw (Tie)"_jrs);
+	shutdownWinTypeTranslation = translationsFile.get("WinType"_jrs, "Shutdown"_jrs, "Ceasefire (Shutdown)"_jrs);
+	surrenderWinTypeTranslation = translationsFile.get("WinType"_jrs, "Surrender"_jrs, "Forfeit (Surrender)"_jrs);
+	unknownWinTypeTranslation = translationsFile.get("WinType"_jrs, "Unknown"_jrs, "Aliens (Unknown)"_jrs);
 
-	scoreWinTypePlainTranslation = translationsFile.get(STRING_LITERAL_AS_REFERENCE("WinTypePlain"), STRING_LITERAL_AS_REFERENCE("Score"), STRING_LITERAL_AS_REFERENCE("High Score"));
-	baseWinTypePlainTranslation = translationsFile.get(STRING_LITERAL_AS_REFERENCE("WinTypePlain"), STRING_LITERAL_AS_REFERENCE("Base"), STRING_LITERAL_AS_REFERENCE("Base Destruction"));
-	beaconWinTypePlainTranslation = translationsFile.get(STRING_LITERAL_AS_REFERENCE("WinTypePlain"), STRING_LITERAL_AS_REFERENCE("Beacon"), STRING_LITERAL_AS_REFERENCE("Beacon"));
-	tieWinTypePlainTranslation = translationsFile.get(STRING_LITERAL_AS_REFERENCE("WinTypePlain"), STRING_LITERAL_AS_REFERENCE("Tie"), STRING_LITERAL_AS_REFERENCE("Tie"));
-	shutdownWinTypePlainTranslation = translationsFile.get(STRING_LITERAL_AS_REFERENCE("WinTypePlain"), STRING_LITERAL_AS_REFERENCE("Shutdown"), STRING_LITERAL_AS_REFERENCE("Shutdown"));
-	unknownWinTypePlainTranslation = translationsFile.get(STRING_LITERAL_AS_REFERENCE("WinTypePlain"), STRING_LITERAL_AS_REFERENCE("Unknown"), STRING_LITERAL_AS_REFERENCE("Unknown"));
+	scoreWinTypePlainTranslation = translationsFile.get("WinTypePlain"_jrs, "Score"_jrs, "High Score"_jrs);
+	baseWinTypePlainTranslation = translationsFile.get("WinTypePlain"_jrs, "Base"_jrs, "Base Destruction"_jrs);
+	beaconWinTypePlainTranslation = translationsFile.get("WinTypePlain"_jrs, "Beacon"_jrs, "Beacon"_jrs);
+	tieWinTypePlainTranslation = translationsFile.get("WinTypePlain"_jrs, "Tie"_jrs, "Tie"_jrs);
+	shutdownWinTypePlainTranslation = translationsFile.get("WinTypePlain"_jrs, "Shutdown"_jrs, "Shutdown"_jrs);
+	unknownWinTypePlainTranslation = translationsFile.get("WinTypePlain"_jrs, "Unknown"_jrs, "Unknown"_jrs);
 }
 
 Jupiter::String RenX::getFormattedPlayerName(const RenX::PlayerInfo *player)

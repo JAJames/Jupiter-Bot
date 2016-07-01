@@ -43,10 +43,9 @@ bool RenX::Core::initialize()
 	RenX::banDatabase->initialize();
 	RenX::exemptionDatabase->initialize();
 	RenX::tags->initialize();
+	RenX::initTranslations(this->config);
 
 	const Jupiter::ReadableString &serverList = this->config.get(Jupiter::ReferenceString::empty, STRING_LITERAL_AS_REFERENCE("Servers"));
-	RenX::Core::translationsFile.readFile(this->config.get(Jupiter::ReferenceString::empty, STRING_LITERAL_AS_REFERENCE("TranslationsFile"), STRING_LITERAL_AS_REFERENCE("Translations.ini")));
-	RenX::initTranslations(RenX::Core::translationsFile);
 	RenX::Core::commandsFile.readFile(this->config.get(Jupiter::ReferenceString::empty, STRING_LITERAL_AS_REFERENCE("CommandsFile"), STRING_LITERAL_AS_REFERENCE("RenXGameCommands.ini")));
 
 	unsigned int wc = serverList.wordCount(WHITESPACE);
@@ -150,11 +149,6 @@ unsigned int RenX::Core::getServerCount()
 Jupiter::ArrayList<RenX::Plugin> *RenX::Core::getPlugins()
 {
 	return &(RenX::Core::plugins);
-}
-
-Jupiter::INIFile &RenX::Core::getTranslationsFile()
-{
-	return RenX::Core::translationsFile;
 }
 
 Jupiter::INIFile &RenX::Core::getCommandsFile()

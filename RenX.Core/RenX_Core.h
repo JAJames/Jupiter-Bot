@@ -151,13 +151,6 @@ namespace RenX
 		Jupiter::ArrayList<RenX::Plugin> *getPlugins();
 
 		/**
-		* @brief Fetches the translations override file.
-		*
-		* @return INIFile containing translations overrides.
-		*/
-		Jupiter::INIFile &getTranslationsFile();
-
-		/**
 		* @brief Fetches the commands settings file.
 		*
 		* @return Commands settings configuration file.
@@ -191,7 +184,6 @@ namespace RenX
 		/** Inaccessible private members */
 		Jupiter::ArrayList<RenX::Server> servers;
 		Jupiter::ArrayList<RenX::Plugin> plugins;
-		Jupiter::INIFile translationsFile;
 		Jupiter::INIFile commandsFile;
 	};
 

@@ -54,7 +54,7 @@ bool TagsImp::initialize()
 	this->uniqueTag = "\0\0\0\0\0\0"_jrs;
 
 	const Jupiter::INIFile &config = RenX::getCore()->getConfig();
-	const Jupiter::ReadableString &configSection = config.get(Jupiter::ReferenceString::empty, "TagDefinitions"_jrs, "RenX.Tags"_jrs);
+	const Jupiter::ReadableString &configSection = config.get(Jupiter::ReferenceString::empty, "TagDefinitions"_jrs, "Tags"_jrs);
 
 	TagsImp::bar_width = config.getInt(configSection, "BarWidth"_jrs, 19);
 
