@@ -77,7 +77,7 @@ public:
 	size_t removeCommand(const Jupiter::ReadableString &command);
 
 	/**
-	* @brief Called when g_config is rehashed
+	* @brief Called when m_config is rehashed
 	*/
 	void OnConfigRehash();
 
@@ -143,6 +143,20 @@ public:
 	size_t size();
 
 	/**
+	* @brief Fetches the configuration file being used
+	*
+	* @return Configuration file being used
+	*/
+	inline Jupiter::INIFile &getConfig() const { return *this->m_config; };
+
+	/**
+	* @brief Sets the configuration file to use
+	*
+	* @param Reference to the config file to use
+	*/
+	inline void setConfig(Jupiter::INIFile &in_config) { this->m_config = &in_config; };
+
+	/**
 	* Destructor for the ServerManager class.
 	*/
 	virtual ~ServerManager();
@@ -150,6 +164,9 @@ public:
 private:
 	/** Underlying ArrayList of servers */
 	Jupiter::ArrayList<IRC_Bot> servers;
+
+	/** Config to read data from */
+	Jupiter::INIFile *m_config = g_config;
 };
 
 /** Pointer to an instance of the server manager. Note: DO NOT DELETE OR FREE THIS POINTER. */

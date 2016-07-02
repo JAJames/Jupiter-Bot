@@ -29,7 +29,6 @@
 #include "Jupiter/Plugin.h"
 #include "Jupiter/Timer.h"
 #include "IRC_Bot.h"
-#include "ServerManager.h"
 #include "Console_Command.h"
 #include "IRC_Command.h"
 
@@ -87,19 +86,13 @@ void inputLoop()
 	}
 }
 
-int rehash_config()
-{
-	o_config.reload();
-	serverManager->OnConfigRehash();
-	return 0;
-}
-
 int main(int argc, const char **args)
 {
 	atexit(onExit);
 	std::set_terminate(onTerminate);
 	std::thread inputThread(inputLoop);
 	Jupiter::ReferenceString command, plugins_directory, configs_directory;
+	size_t index;
 
 	srand(static_cast<unsigned int>(std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count()));
 	puts(Jupiter::copyright);
@@ -131,8 +124,6 @@ int main(int argc, const char **args)
 		exit(0);
 	}
 
-	Jupiter::addOnRehash(rehash_config);
-
 	puts("Config loaded.");
 	
 	if (plugins_directory.isEmpty())
@@ -159,8 +150,10 @@ int main(int argc, const char **args)
 		puts("No plugins to load!");
 	else
 	{
+		// initialize plugins
 		unsigned int nPlugins = pluginList.wordCount(WHITESPACE);
 		printf("Attempting to load %u plugins..." ENDL, nPlugins);
+
 		for (unsigned int i = 0; i < nPlugins; i++)
 		{
 			Jupiter::ReferenceString plugin = Jupiter::ReferenceString::getWord(pluginList, i, WHITESPACE);
@@ -168,6 +161,10 @@ int main(int argc, const char **args)
 				fprintf(stderr, "WARNING: Failed to load plugin \"%.*s\"!" ENDL, plugin.size(), plugin.ptr());
 			else printf("\"%.*s\" loaded successfully." ENDL, plugin.size(), plugin.ptr());
 		}
+
+		// OnPostInitialize
+		for (index = 0; index != Jupiter::plugins->size(); ++index)
+			Jupiter::plugins->get(index)->OnPostInitialize();
 	}
 
 	if (consoleCommands->size() > 0)
@@ -175,20 +172,6 @@ int main(int argc, const char **args)
 	if (IRCMasterCommandList->size() > 0)
 		printf("%u IRC Commands have been loaded into the master list." ENDL, IRCMasterCommandList->size());
 
-	puts("Retreiving network list...");
-	const Jupiter::ReadableString &serverList = o_config.get(Jupiter::ReferenceString::empty, "Servers"_jrs);
-	if (serverList == nullptr)
-		puts("Unable to find network list.");
-	else
-	{
-		unsigned int nServers = serverList.wordCount(WHITESPACE);
-		printf("Attempting to connect to %u servers..." ENDL, nServers);
-		for (unsigned int index = 0; index < nServers; ++index)
-			serverManager->addServer(Jupiter::ReferenceString::getWord(serverList, index, WHITESPACE));
-	}
-
-	puts("Sockets established.");
-	size_t index;
 	while (1)
 	{
 		index = 0;
@@ -198,7 +181,6 @@ int main(int argc, const char **args)
 			else
 				++index;
 		Jupiter_checkTimers();
-		serverManager->think();
 		
 		if (console_input.input_mutex.try_lock())
 		{

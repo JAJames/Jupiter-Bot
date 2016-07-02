@@ -135,12 +135,8 @@ GenericCommandWrapperIRCCommand::GenericCommandWrapperIRCCommand(GenericCommandW
 	GenericCommandWrapperIRCCommand::m_command = in_command.m_command;
 
 	// Copy triggers
-	size_t index = 0;
-	while (index != GenericCommandWrapperIRCCommand::m_command->getTriggerCount())
-	{
+	for (size_t index = 0; index != GenericCommandWrapperIRCCommand::m_command->getTriggerCount(); ++index)
 		this->addTrigger(GenericCommandWrapperIRCCommand::m_command->getTrigger(index));
-		++index;
-	}
 }
 
 GenericCommandWrapperIRCCommand::GenericCommandWrapperIRCCommand(Jupiter::GenericCommand &in_command) : IRCCommand()
@@ -148,12 +144,8 @@ GenericCommandWrapperIRCCommand::GenericCommandWrapperIRCCommand(Jupiter::Generi
 	GenericCommandWrapperIRCCommand::m_command = &in_command;
 
 	// Copy triggers
-	size_t index = 0;
-	while (index != GenericCommandWrapperIRCCommand::m_command->getTriggerCount())
-	{
+	for (size_t index = 0; index != GenericCommandWrapperIRCCommand::m_command->getTriggerCount(); ++index)
 		this->addTrigger(GenericCommandWrapperIRCCommand::m_command->getTrigger(index));
-		++index;
-	}
 
 	if (serverManager != nullptr)
 		serverManager->addCommand(this);

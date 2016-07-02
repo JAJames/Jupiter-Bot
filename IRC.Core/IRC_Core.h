@@ -26,6 +26,23 @@ class IRCCorePlugin : public Jupiter::Plugin
 {
 public:
 	/**
+	* @brief Initializes the plugin
+	*/
+	virtual bool initialize() override;
+
+	/**
+	* @brief Called when there is a rehash
+	*
+	* @return 0 always.
+	*/
+	virtual int OnRehash() override;
+
+	/**
+	* @brief Cycles through IRC servers for new data
+	*/
+	virtual int think() override;
+
+	/**
 	* @brief This is called when a GenericCommand is instantiated.
 	*/
 	virtual void OnGenericCommandAdd(Jupiter::GenericCommand &command);

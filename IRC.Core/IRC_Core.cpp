@@ -21,9 +21,38 @@
 #include "IRC_Command.h"
 #include "IRC_Core.h"
 
+using namespace Jupiter::literals;
+
 IRCCorePlugin::~IRCCorePlugin()
 {
 	IRCCorePlugin::m_wrapped_commands.emptyAndDelete();
+}
+
+bool IRCCorePlugin::initialize()
+{
+	const Jupiter::ReadableString &serverList = this->config.get(Jupiter::ReferenceString::empty, "Servers"_jrs);
+	if (serverList != nullptr)
+	{
+		serverManager->setConfig(this->config);
+
+		unsigned int server_count = serverList.wordCount(WHITESPACE);
+		for (unsigned int index = 0; index != server_count; ++index)
+			serverManager->addServer(Jupiter::ReferenceString::getWord(serverList, index, WHITESPACE));
+	}
+
+	return true;
+}
+
+int IRCCorePlugin::OnRehash()
+{
+	serverManager->OnConfigRehash();
+	return 0;
+}
+
+int IRCCorePlugin::think()
+{
+	serverManager->think();
+	return 0;
 }
 
 void IRCCorePlugin::OnGenericCommandAdd(Jupiter::GenericCommand &in_command)

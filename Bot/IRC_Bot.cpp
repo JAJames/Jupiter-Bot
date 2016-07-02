@@ -30,8 +30,10 @@ using namespace Jupiter::literals;
 IRC_Bot::IRC_Bot(const Jupiter::INIFile::Section *in_primary_section, const Jupiter::INIFile::Section *in_secondary_section) : Client(in_primary_section, in_secondary_section)
 {
 	IRC_Bot::commandPrefix = this->readConfigValue("Prefix"_jrs);
+	
 	for (size_t i = 0; i != IRCMasterCommandList->size(); i++)
-		IRC_Bot::addCommand(IRCMasterCommandList->get(i)->copy());
+		IRC_Bot::commands.add(IRCMasterCommandList->get(i)->copy());
+
 	IRC_Bot::setCommandAccessLevels();
 }
 
@@ -45,9 +47,10 @@ IRC_Bot::~IRC_Bot()
 	IRC_Bot::commands.emptyAndDelete();
 }
 
-void IRC_Bot::addCommand(IRCCommand *cmd)
+void IRC_Bot::addCommand(IRCCommand *in_command)
 {
-	IRC_Bot::commands.add(cmd);
+	IRC_Bot::commands.add(in_command);
+	IRC_Bot::setCommandAccessLevels(in_command);
 }
 
 bool IRC_Bot::freeCommand(const Jupiter::ReadableString &trigger)
@@ -101,11 +104,11 @@ Jupiter::StringL IRC_Bot::getTriggers(Jupiter::ArrayList<IRCCommand> &cmds)
 	return r;
 }
 
-void IRC_Bot::setCommandAccessLevels()
+void IRC_Bot::setCommandAccessLevels(IRCCommand *in_command)
 {
-	auto set_command_access_levels = [this](const Jupiter::ReadableString &section_name)
+	auto set_command_access_levels = [this, in_command](const Jupiter::ReadableString &section_name)
 	{
-		Jupiter::INIFile::Section *section = g_config->getSection(section_name);
+		Jupiter::INIFile::Section *section = serverManager->getConfig().getSection(section_name);
 
 		if (section != nullptr)
 		{
@@ -134,7 +137,7 @@ void IRC_Bot::setCommandAccessLevels()
 						tmp_sub_key.shiftRight(5); // shift beyond "Type."
 
 						command = this->getCommand(tmp_key);
-						if (command != nullptr)
+						if (command != nullptr && (in_command == nullptr || in_command == command))
 							command->setAccessLevel(tmp_sub_key.asInt(), pair->getValue().asInt());
 					}
 					else if (tmp_sub_key.findi("Channel."_jrs) == 0)
@@ -143,7 +146,7 @@ void IRC_Bot::setCommandAccessLevels()
 
 						// Assign access level to command (if command exists)
 						command = this->getCommand(tmp_key);
-						if (command != nullptr)
+						if (command != nullptr && (in_command == nullptr || in_command == command))
 							command->setAccessLevel(tmp_sub_key, pair->getValue().asInt());
 					}
 				}
@@ -151,7 +154,7 @@ void IRC_Bot::setCommandAccessLevels()
 				{
 					// Assign access level to command (if command exists)
 					command = this->getCommand(pair->getKey());
-					if (command != nullptr)
+					if (command != nullptr && (in_command == nullptr || in_command == command))
 						command->setAccessLevel(pair->getValue().asInt());
 				}
 			}

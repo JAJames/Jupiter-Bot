@@ -75,8 +75,8 @@ void ServerManager::OnConfigRehash()
 	{
 		server = ServerManager::servers.get(index);
 
-		server->setPrimaryConfigSection(g_config->getSection(server->getConfigSection()));
-		server->setSecondaryConfigSection(g_config->getSection("Defualt"_jrs));
+		server->setPrimaryConfigSection(m_config->getSection(server->getConfigSection()));
+		server->setSecondaryConfigSection(m_config->getSection("Defualt"_jrs));
 		server->setCommandAccessLevels();
 	}
 }
@@ -109,7 +109,7 @@ IRC_Bot *ServerManager::getServer(size_t serverIndex)
 
 bool ServerManager::addServer(const Jupiter::ReadableString &serverConfig)
 {
-	IRC_Bot *server = new IRC_Bot(g_config->getSection(serverConfig), g_config->getSection("Default"_jrs));
+	IRC_Bot *server = new IRC_Bot(m_config->getSection(serverConfig), m_config->getSection("Default"_jrs));
 	if (server->connect())
 	{
 		ServerManager::servers.add(server);

@@ -49,12 +49,12 @@ public:
 	/**
 	* @brief Pulls the configured access levels from the config and applies them.
 	*/
-	void setCommandAccessLevels();
+	void setCommandAccessLevels(IRCCommand *in_command = nullptr);
 
 	/**
 	* @brief Adds a command to the command list.
 	*/
-	void addCommand(IRCCommand *cmd);
+	void addCommand(IRCCommand *in_command);
 
 	/**
 	* @brief Removes a command from the command list.
