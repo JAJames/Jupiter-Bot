@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2013-2015 Jessica James.
+ * Copyright (C) 2013-2016 Jessica James.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -106,6 +106,11 @@ public:
 	void setAccessLevel(const Jupiter::ReadableString &channel, int accessLevel);
 
 	/**
+	* @brief Called when the command is intially created. Define triggers and access levels here.
+	*/
+	virtual void create();
+
+	/**
 	* @brief Called when the command is to be executed.
 	*
 	* @param source IRC Server from which the command is being executed.
@@ -114,11 +119,6 @@ public:
 	* @param parameters Parameters specified with the command.
 	*/
 	virtual void trigger(IRC_Bot *source, const Jupiter::ReadableString &channel, const Jupiter::ReadableString &nick, const Jupiter::ReadableString &parameters) = 0;
-
-	/**
-	* @brief Called when the command is intially created. Define triggers and access levels here.
-	*/
-	virtual void create() = 0;
 
 	/**
 	* @brief Creates a copy of a command.
@@ -169,6 +169,55 @@ private:
 	Jupiter::ArrayList<IRCCommand::ChannelAccessPair> channels; /** Access levels for specific channels */
 };
 
+class JUPITER_BOT_API GenericCommandWrapperIRCCommand : public IRCCommand
+{
+public:
+	/**
+	* @brief Triggers the underlying GenericCommand and outputs the result
+	*
+	* @param in_server IRC server to deliver result to
+	* @param in_channel Name of the channel to deliver result to (if result is not 'Private' type)
+	* @param in_nick Name of the user to deliver result to (if result is 'Private' type)
+	* @param in_parameters Parameters to pass to the GenericCommand's trigger()
+	*/
+	void trigger(IRC_Bot *in_server, const Jupiter::ReadableString &in_channel, const Jupiter::ReadableString &in_nick, const Jupiter::ReadableString &in_parameters) override;
+
+	/**
+	* @brief Forwards the help message from the underlying GenericCommand
+	*
+	* @param in_parameters Parameters to forward to the GenericCommand's getHelp()
+	* @return Help string from the GenericCommand
+	*/
+	const Jupiter::ReadableString &getHelp(const Jupiter::ReadableString &in_parameters) override;
+
+	/**
+	* @brief Copies the GenericCommandWrapperIRCCommand
+	*
+	* @return Copy of the GenericCommandWrapperIRCCommand
+	*/
+	IRCCommand *copy() override;
+
+	/**
+	* @brief Fetches the underlying GenericCommand
+	*
+	* @return GenericCommand this wrapper interfaces with
+	*/
+	const Jupiter::GenericCommand &getGenericCommand() const;
+
+	/**
+	* @brief Copy constructor for the GenericCommandWrapperIRCCommand class
+	*/
+	GenericCommandWrapperIRCCommand(GenericCommandWrapperIRCCommand &in_command);
+
+	/**
+	* @brief Wrapper constructor for the GenericCommandWrapperIRCCommand class
+	*/
+	GenericCommandWrapperIRCCommand(Jupiter::GenericCommand &in_command);
+
+private:
+	Jupiter::GenericCommand *m_command;
+};
+
 /** IRC Command Macros */
 
 /** Defines the core of an IRC command's declaration. This should be included in every IRC command. */
@@ -190,98 +239,6 @@ class CLASS : public IRCCommand { \
 #define IRC_COMMAND_INIT(CLASS) \
 	CLASS CLASS ## _instance; \
 	IRCCommand *CLASS::copy() { return new CLASS(*this); }
-
-/** GenericCommand to IRCCommand conversion */
-
-/** Generates an IRC command from a generic command. */
-template<typename T> class Generic_Command_As_IRC_Command : public IRCCommand
-{
-public:
-	virtual void trigger(IRC_Bot *source, const Jupiter::ReadableString &channel, const Jupiter::ReadableString &nick, const Jupiter::ReadableString &parameters) override;
-	virtual const Jupiter::ReadableString &getHelp(const Jupiter::ReadableString &parameters) override;
-
-	void copyTriggers();
-	Generic_Command_As_IRC_Command();
-	Generic_Command_As_IRC_Command(const Generic_Command_As_IRC_Command<T> &cmd);
-};
-
-template<typename T> Generic_Command_As_IRC_Command<T>::Generic_Command_As_IRC_Command() : IRCCommand()
-{
-	Generic_Command_As_IRC_Command<T>::copyTriggers();
-}
-
-template<typename T> Generic_Command_As_IRC_Command<T>::Generic_Command_As_IRC_Command(const Generic_Command_As_IRC_Command<T> &cmd) : IRCCommand(cmd)
-{
-	Generic_Command_As_IRC_Command<T>::copyTriggers();
-}
-
-template<typename T> void Generic_Command_As_IRC_Command<T>::trigger(IRC_Bot *source, const Jupiter::ReadableString &channel, const Jupiter::ReadableString &nick, const Jupiter::ReadableString &parameters)
-{
-	Jupiter::GenericCommand::ResponseLine *del;
-	Jupiter::GenericCommand::ResponseLine *ret = T::instance.trigger(parameters);
-	while (ret != nullptr)
-	{
-		switch (ret->type)
-		{
-		case Jupiter::GenericCommand::DisplayType::PublicSuccess:
-		case Jupiter::GenericCommand::DisplayType::PublicError:
-			source->sendMessage(channel, ret->response);
-			break;
-		case Jupiter::GenericCommand::DisplayType::PrivateSuccess:
-		case Jupiter::GenericCommand::DisplayType::PrivateError:
-			source->sendNotice(nick, ret->response);
-			break;
-		default:
-			source->sendMessage(nick, ret->response);
-			break;
-		}
-		del = ret;
-		ret = ret->next;
-		delete del;
-	}
-}
-
-template<typename T> const Jupiter::ReadableString &Generic_Command_As_IRC_Command<T>::getHelp(const Jupiter::ReadableString &parameters)
-{
-	return T::instance.getHelp(parameters);
-}
-
-template<typename T> void Generic_Command_As_IRC_Command<T>::copyTriggers()
-{
-	size_t index = 0;
-	while (index != T::instance.getTriggerCount())
-		this->addTrigger(T::instance.getTrigger(index++));
-}
-
-/** Defines the core of an IRC command's declaration. This should be included in every Generic to IRC command conversion. */
-#define GENERIC_COMMAND_AS_IRC_COMMAND_2_BASE(CLASS, NEW_CLASS) \
-	public: \
-	void create(); \
-	IRCCommand *copy() override; \
-	NEW_CLASS() : Generic_Command_As_IRC_Command< CLASS >() { \
-		this->create(); \
-		if (serverManager != nullptr) serverManager->addCommand(this); } \
-	NEW_CLASS(const NEW_CLASS &cmd) : Generic_Command_As_IRC_Command< CLASS >(cmd) { this->create(); }
-
-/** Generates an IRC command from a generic command. */
-#define GENERIC_COMMAND_AS_IRC_COMMAND_2(CLASS, NEW_CLASS) \
-	class NEW_CLASS : public Generic_Command_As_IRC_Command< CLASS > { \
-	GENERIC_COMMAND_AS_IRC_COMMAND_2_BASE(CLASS, NEW_CLASS) }; \
-	IRC_COMMAND_INIT(NEW_CLASS)
-
-/** Generates an IRC command from a generic command. */
-#define GENERIC_COMMAND_AS_IRC_COMMAND(CLASS) \
-	GENERIC_COMMAND_AS_IRC_COMMAND_2(CLASS, CLASS ## _AS_IRC_COMMAND);
-
-/** Generates an IRC command from a generic command, and defines a default create() function. */
-#define GENERIC_COMMAND_AS_IRC_COMMAND_NO_CREATE(CLASS) \
-	GENERIC_COMMAND_AS_IRC_COMMAND(CLASS) \
-	void CLASS ## _AS_IRC_COMMAND::create() {}
-
-/** Generates an IRC command from a generic command, and defines an access-setting create() function. */
-#define GENERIC_COMMAND_AS_IRC_COMMAND_ACCESS_CREATE(CLASS, ACCESS_LEVEL) \
-	GENERIC_COMMAND_AS_IRC_COMMAND(CLASS) \
-	void CLASS ## _AS_IRC_COMMAND::create() { this->setAccessLevel(ACCESS_LEVEL); }
 
 /** Re-enable warnings */
 #if defined _MSC_VER

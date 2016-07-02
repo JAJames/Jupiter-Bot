@@ -146,7 +146,6 @@ const Jupiter::ReadableString &VersionGenericCommand::getHelp(const Jupiter::Rea
 
 GENERIC_COMMAND_INIT(VersionGenericCommand)
 GENERIC_COMMAND_AS_CONSOLE_COMMAND(VersionGenericCommand)
-GENERIC_COMMAND_AS_IRC_COMMAND_NO_CREATE(VersionGenericCommand)
 
 // Rehash Command
 
@@ -173,7 +172,6 @@ const Jupiter::ReadableString &RehashGenericCommand::getHelp(const Jupiter::Read
 
 GENERIC_COMMAND_INIT(RehashGenericCommand)
 GENERIC_COMMAND_AS_CONSOLE_COMMAND(RehashGenericCommand)
-GENERIC_COMMAND_AS_IRC_COMMAND_ACCESS_CREATE(RehashGenericCommand, 4)
 
 // Plugin instantiation and entry point.
 CoreCommandsPlugin pluginInstance;

@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2014-2015 Jessica James.
+ * Copyright (C) 2014-2016 Jessica James.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -83,7 +83,6 @@ const Jupiter::ReadableString &PluginGenericCommand::getHelp(const Jupiter::Read
 
 GENERIC_COMMAND_INIT(PluginGenericCommand)
 GENERIC_COMMAND_AS_CONSOLE_COMMAND(PluginGenericCommand)
-GENERIC_COMMAND_AS_IRC_COMMAND_ACCESS_CREATE(PluginGenericCommand, 5)
 
 // Plugin instantiation and entry point.
 PluginManager pluginInstance;

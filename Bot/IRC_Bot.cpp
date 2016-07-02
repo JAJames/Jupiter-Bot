@@ -145,8 +145,6 @@ void IRC_Bot::setCommandAccessLevels()
 						command = this->getCommand(tmp_key);
 						if (command != nullptr)
 							command->setAccessLevel(tmp_sub_key, pair->getValue().asInt());
-						else if (this->getPrintOutput() != nullptr)
-							fprintf(this->getPrintOutput(), "Unable to find command \"%.*s\"" ENDL, tmp_key.size(), tmp_key.ptr());
 					}
 				}
 				else
@@ -155,8 +153,6 @@ void IRC_Bot::setCommandAccessLevels()
 					command = this->getCommand(pair->getKey());
 					if (command != nullptr)
 						command->setAccessLevel(pair->getValue().asInt());
-					else if (this->getPrintOutput() != nullptr)
-						fprintf(this->getPrintOutput(), "Unable to find command \"%.*s\"" ENDL, pair->getKey().size(), pair->getKey().ptr());
 				}
 			}
 		}

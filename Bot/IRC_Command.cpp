@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2013-2015 Jessica James.
+ * Copyright (C) 2013-2016 Jessica James.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -20,6 +20,8 @@
 
 Jupiter::ArrayList<IRCCommand> _IRCMasterCommandList;
 Jupiter::ArrayList<IRCCommand> *IRCMasterCommandList = &_IRCMasterCommandList;
+
+/** IRCCommand */
 
 IRCCommand::IRCCommand()
 {
@@ -120,4 +122,84 @@ void IRCCommand::setAccessLevel(const Jupiter::ReadableString &channel, int acce
 	pair->channel = channel;
 	pair->access = accessLevel;
 	IRCCommand::channels.add(pair);
+}
+
+void IRCCommand::create()
+{
+}
+
+/** GenericCommandWrapperIRCCommand */
+
+GenericCommandWrapperIRCCommand::GenericCommandWrapperIRCCommand(GenericCommandWrapperIRCCommand &in_command) : IRCCommand(in_command)
+{
+	GenericCommandWrapperIRCCommand::m_command = in_command.m_command;
+
+	// Copy triggers
+	size_t index = 0;
+	while (index != GenericCommandWrapperIRCCommand::m_command->getTriggerCount())
+	{
+		this->addTrigger(GenericCommandWrapperIRCCommand::m_command->getTrigger(index));
+		++index;
+	}
+}
+
+GenericCommandWrapperIRCCommand::GenericCommandWrapperIRCCommand(Jupiter::GenericCommand &in_command) : IRCCommand()
+{
+	GenericCommandWrapperIRCCommand::m_command = &in_command;
+
+	// Copy triggers
+	size_t index = 0;
+	while (index != GenericCommandWrapperIRCCommand::m_command->getTriggerCount())
+	{
+		this->addTrigger(GenericCommandWrapperIRCCommand::m_command->getTrigger(index));
+		++index;
+	}
+
+	if (serverManager != nullptr)
+		serverManager->addCommand(this);
+}
+
+// GenericCommandWrapperIRCCommand functions
+
+void GenericCommandWrapperIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &in_channel, const Jupiter::ReadableString &in_nick, const Jupiter::ReadableString &in_parameters)
+{
+	Jupiter::GenericCommand::ResponseLine *del;
+	Jupiter::GenericCommand::ResponseLine *result = GenericCommandWrapperIRCCommand::m_command->trigger(in_parameters);
+
+	while (result != nullptr)
+	{
+		switch (result->type)
+		{
+		case Jupiter::GenericCommand::DisplayType::PublicSuccess:
+		case Jupiter::GenericCommand::DisplayType::PublicError:
+			source->sendMessage(in_channel, result->response);
+			break;
+		case Jupiter::GenericCommand::DisplayType::PrivateSuccess:
+		case Jupiter::GenericCommand::DisplayType::PrivateError:
+			source->sendNotice(in_nick, result->response);
+			break;
+		default:
+			source->sendMessage(in_nick, result->response);
+			break;
+		}
+
+		del = result;
+		result = result->next;
+		delete del;
+	}
+}
+
+const Jupiter::ReadableString &GenericCommandWrapperIRCCommand::getHelp(const Jupiter::ReadableString &parameters)
+{
+	return GenericCommandWrapperIRCCommand::m_command->getHelp(parameters);
+}
+
+IRCCommand *GenericCommandWrapperIRCCommand::copy()
+{
+	return new GenericCommandWrapperIRCCommand(*this);
+}
+
+const Jupiter::GenericCommand &GenericCommandWrapperIRCCommand::getGenericCommand() const
+{
+	return *GenericCommandWrapperIRCCommand::m_command;
 }

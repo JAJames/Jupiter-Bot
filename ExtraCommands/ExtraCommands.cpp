@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2014-2015 Jessica James.
+ * Copyright (C) 2014-2016 Jessica James.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -59,7 +59,6 @@ const Jupiter::ReadableString &SelectGenericCommand::getHelp(const Jupiter::Read
 
 GENERIC_COMMAND_INIT(SelectGenericCommand)
 GENERIC_COMMAND_AS_CONSOLE_COMMAND(SelectGenericCommand)
-GENERIC_COMMAND_AS_IRC_COMMAND_ACCESS_CREATE(SelectGenericCommand, 4)
 
 // Deselect Command
 
@@ -92,7 +91,6 @@ const Jupiter::ReadableString &DeselectGenericCommand::getHelp(const Jupiter::Re
 
 GENERIC_COMMAND_INIT(DeselectGenericCommand)
 GENERIC_COMMAND_AS_CONSOLE_COMMAND(DeselectGenericCommand)
-GENERIC_COMMAND_AS_IRC_COMMAND_ACCESS_CREATE(DeselectGenericCommand, 4)
 
 // Raw Command
 
@@ -127,7 +125,6 @@ const Jupiter::ReadableString &RawGenericCommand::getHelp(const Jupiter::Readabl
 
 GENERIC_COMMAND_INIT(RawGenericCommand)
 GENERIC_COMMAND_AS_CONSOLE_COMMAND(RawGenericCommand)
-GENERIC_COMMAND_AS_IRC_COMMAND_ACCESS_CREATE(RawGenericCommand, 5)
 
 // Message Command
 
@@ -163,7 +160,6 @@ const Jupiter::ReadableString &IRCMessageGenericCommand::getHelp(const Jupiter::
 
 GENERIC_COMMAND_INIT(IRCMessageGenericCommand)
 GENERIC_COMMAND_AS_CONSOLE_COMMAND(IRCMessageGenericCommand)
-GENERIC_COMMAND_AS_IRC_COMMAND_ACCESS_CREATE(IRCMessageGenericCommand, 5)
 
 // Join Command
 
@@ -201,7 +197,6 @@ const Jupiter::ReadableString &JoinGenericCommand::getHelp(const Jupiter::Readab
 
 GENERIC_COMMAND_INIT(JoinGenericCommand)
 GENERIC_COMMAND_AS_CONSOLE_COMMAND(JoinGenericCommand)
-GENERIC_COMMAND_AS_IRC_COMMAND_ACCESS_CREATE(JoinGenericCommand, 3)
 
 // Part Command
 
@@ -239,7 +234,6 @@ const Jupiter::ReadableString &PartGenericCommand::getHelp(const Jupiter::Readab
 
 GENERIC_COMMAND_INIT(PartGenericCommand)
 GENERIC_COMMAND_AS_CONSOLE_COMMAND(PartGenericCommand)
-GENERIC_COMMAND_AS_IRC_COMMAND_ACCESS_CREATE(PartGenericCommand, 3)
 
 // DebugInfo Command
 
@@ -291,7 +285,6 @@ const Jupiter::ReadableString &DebugInfoGenericCommand::getHelp(const Jupiter::R
 
 GENERIC_COMMAND_INIT(DebugInfoGenericCommand)
 GENERIC_COMMAND_AS_CONSOLE_COMMAND(DebugInfoGenericCommand)
-GENERIC_COMMAND_AS_IRC_COMMAND_ACCESS_CREATE(DebugInfoGenericCommand, 4)
 
 // Exit command
 
@@ -313,7 +306,6 @@ const Jupiter::ReadableString &ExitGenericCommand::getHelp(const Jupiter::Readab
 
 GENERIC_COMMAND_INIT(ExitGenericCommand)
 GENERIC_COMMAND_AS_CONSOLE_COMMAND(ExitGenericCommand)
-GENERIC_COMMAND_AS_IRC_COMMAND_ACCESS_CREATE(ExitGenericCommand, 5)
 
 // IRC Connect command
 
@@ -357,7 +349,6 @@ const Jupiter::ReadableString &IRCConnectGenericCommand::getHelp(const Jupiter::
 
 GENERIC_COMMAND_INIT(IRCConnectGenericCommand)
 GENERIC_COMMAND_AS_CONSOLE_COMMAND(IRCConnectGenericCommand)
-GENERIC_COMMAND_AS_IRC_COMMAND_ACCESS_CREATE(IRCConnectGenericCommand, 5)
 
 // IRC Disconnect command
 
@@ -388,7 +379,6 @@ const Jupiter::ReadableString &IRCDisconnectGenericCommand::getHelp(const Jupite
 
 GENERIC_COMMAND_INIT(IRCDisconnectGenericCommand)
 GENERIC_COMMAND_AS_CONSOLE_COMMAND(IRCDisconnectGenericCommand)
-GENERIC_COMMAND_AS_IRC_COMMAND_ACCESS_CREATE(IRCDisconnectGenericCommand, 5)
 
 // Plugin instantiation and entry point.
 FunCommandsPlugin pluginInstance;

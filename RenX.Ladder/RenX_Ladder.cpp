@@ -137,7 +137,6 @@ const Jupiter::ReadableString &LadderGenericCommand::getHelp(const Jupiter::Read
 
 GENERIC_COMMAND_INIT(LadderGenericCommand)
 GENERIC_COMMAND_AS_CONSOLE_COMMAND(LadderGenericCommand)
-GENERIC_COMMAND_AS_IRC_COMMAND_NO_CREATE(LadderGenericCommand)
 
 // Ladder Game Command
 
