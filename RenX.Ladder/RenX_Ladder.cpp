@@ -35,14 +35,28 @@ bool RenX_LadderPlugin::initialize()
 	else
 		RenX_LadderPlugin::max_ladder_command_part_name_output = mlcpno;
 
+	RenX::Server *server;
+	for (size_t index = 0; index != RenX::getCore()->getServerCount(); ++index)
+	{
+		server = RenX::getCore()->getServer(index);
+		if (this->only_pure == false || server->isPure())
+			server->setRanked(true);
+	}
+
 	return true;
+}
+
+void RenX_LadderPlugin::RenX_OnServerFullyConnected(RenX::Server *server)
+{
+	if (this->only_pure == false || server->isPure())
+		server->setRanked(true);
 }
 
 /** Wait until the client list has been updated to update the ladder */
 
 void RenX_LadderPlugin::RenX_OnGameOver(RenX::Server *server, RenX::WinType winType, const RenX::TeamType &team, int gScore, int nScore)
 {
-	if (server->isReliable() && server->players.size() != server->getBotCount())
+	if (server->isRanked() && server->isReliable() && server->players.size() != server->getBotCount())
 	{
 		char chr = static_cast<char>(team);
 		server->varData.set(this->name, "t"_jrs, Jupiter::ReferenceString(&chr, 1));

@@ -317,7 +317,7 @@ void PlayersIRCCommand::create()
 
 const size_t STRING_LENGTH = 240;
 
-void PlayersIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &channel, const Jupiter::ReadableString &nick, const Jupiter::ReadableString &)
+void PlayersIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &channel, const Jupiter::ReadableString &, const Jupiter::ReadableString &)
 {
 	int type = source->getChannel(channel)->getType();
 
@@ -340,6 +340,12 @@ void PlayersIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &
 			noServers = false;
 			if (server->players.size() != server->getBotCount())
 			{
+				if (server->players.size() == 0)
+				{
+					source->sendMessage(channel, Jupiter::StringS::Format("ERROR: NO PLAYERS BUT BOT_COUNT = %u.", server->getBotCount()));
+					continue;
+				}
+
 				// End string containers
 				Jupiter::DLList<Jupiter::String> gStrings;
 				Jupiter::DLList<Jupiter::String> nStrings;
@@ -451,7 +457,8 @@ void PlayersIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &
 				}
 				source->sendMessage(channel, out);
 			}
-			else source->sendMessage(channel, STRING_LITERAL_AS_REFERENCE("No players are in-game."));
+			else
+				source->sendMessage(channel, STRING_LITERAL_AS_REFERENCE("No players are in-game."));
 		}
 	}
 	if (noServers)

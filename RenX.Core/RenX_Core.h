@@ -171,11 +171,6 @@ namespace RenX
 		void banCheck();
 
 		/**
-		* @brief Initializes the Core.
-		*/
-		void init();
-
-		/**
 		* Destructor for the Core class.
 		*/
 		~Core();

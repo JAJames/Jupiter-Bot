@@ -931,6 +931,11 @@ void RenX::Server::setCommandPrefix(const Jupiter::ReadableString &prefix)
 	RenX::Server::CommandPrefix = prefix;
 }
 
+void RenX::Server::setRanked(bool in_value)
+{
+	RenX::Server::m_ranked = in_value;
+}
+
 const Jupiter::ReadableString &RenX::Server::getRules() const
 {
 	return RenX::Server::rules;
@@ -986,6 +991,16 @@ int RenX::Server::getTimeLimit() const
 	return RenX::Server::timeLimit;
 }
 
+int RenX::Server::getTeamMode() const
+{
+	return RenX::Server::m_team_mode;
+}
+
+int RenX::Server::getGameType() const
+{
+	return RenX::Server::m_game_type;
+}
+
 double RenX::Server::getCrateRespawnDelay() const
 {
 	return RenX::Server::crateRespawnAfterPickup;
@@ -1006,19 +1021,24 @@ bool RenX::Server::isPrivateMessagingEnabled() const
 	return RenX::Server::allowPrivateMessaging;
 }
 
+bool RenX::Server::isRanked() const
+{
+	return RenX::Server::m_ranked;
+}
+
 bool RenX::Server::isPassworded() const
 {
 	return RenX::Server::passworded;
 }
 
-bool RenX::Server::isAutoBalanceEnabled() const
-{
-	return RenX::Server::autoBalanceTeams;
-}
-
 bool RenX::Server::isCratesEnabled() const
 {
 	return RenX::Server::spawnCrates;
+}
+
+bool RenX::Server::isBotsEnabled() const
+{
+	return RenX::Server::botsEnabled;
 }
 
 const Jupiter::ReadableString &RenX::Server::getPassword() const
@@ -1912,7 +1932,7 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 			{
 				if (this->lastCommandParams.isEmpty())
 				{
-					// "PlayerLimit" | PlayerLimit | "VehicleLimit" | VehicleLimit | "MineLimit" | MineLimit | "TimeLimit" | TimeLimit | "bPassworded" | bPassworded | "bSteamRequired" | bSteamRequired | "bPrivateMessageTeamOnly" | bPrivateMessageTeamOnly | "bAllowPrivateMessaging" | bAllowPrivateMessaging | "bAutoBalanceTeams" | bAutoBalanceTeams | "bSpawnCrates" | bSpawnCrates | "CrateRespawnAfterPickup" | CrateRespawnAfterPickup | bIsCompetitive | "bIsCompetitive"
+					// "PlayerLimit" | PlayerLimit | "VehicleLimit" | VehicleLimit | "MineLimit" | MineLimit | "TimeLimit" | TimeLimit | "bPassworded" | bPassworded | "bSteamRequired" | bSteamRequired | "bPrivateMessageTeamOnly" | bPrivateMessageTeamOnly | "bAllowPrivateMessaging" | bAllowPrivateMessaging | "TeamMode" | TeamMode | "bSpawnCrates" | bSpawnCrates | "CrateRespawnAfterPickup" | CrateRespawnAfterPickup | bIsCompetitive | "bIsCompetitive"
 					this->playerLimit = tokens.getToken(1).asInt();
 					this->vehicleLimit = tokens.getToken(3).asInt();
 					this->mineLimit = tokens.getToken(5).asInt();
@@ -1921,7 +1941,7 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 					this->steamRequired = tokens.getToken(11).asBool();
 					this->privateMessageTeamOnly = tokens.getToken(13).asBool();
 					this->allowPrivateMessaging = tokens.getToken(15).asBool();
-					this->autoBalanceTeams = tokens.getToken(17).asBool();
+					this->m_team_mode = this->rconVersion >= 4 ? tokens.getToken(17).asInt() : true;
 					this->spawnCrates = tokens.getToken(19).asBool();
 					this->crateRespawnAfterPickup = tokens.getToken(21).asDouble();
 
@@ -1940,6 +1960,9 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 							this->match_state = 3;
 						else // Unknown state -- assume it's in progress
 							this->match_state = 1;
+
+						this->botsEnabled = tokens.getToken(27).asBool();
+						this->m_game_type = tokens.getToken(29).asInt();
 					}
 				}
 			}
@@ -3340,6 +3363,10 @@ void RenX::Server::wipeData()
 		delete player;
 	}
 	RenX::Server::reliable = false;
+	RenX::Server::m_team_mode = 3;
+	RenX::Server::m_game_type = 1;
+	RenX::Server::m_ranked = false;
+	RenX::Server::botsEnabled = true;
 	RenX::Server::match_state = 1;
 	RenX::Server::subscribed = false;
 	RenX::Server::fully_connected = false;

@@ -686,6 +686,8 @@ namespace RenX
 		*/
 		void setCommandPrefix(const Jupiter::ReadableString &prefix);
 
+		void setRanked(bool in_value);
+
 		/**
 		* @brief Fetches the rules of a server.
 		*
@@ -736,28 +738,17 @@ namespace RenX
 		*/
 		std::chrono::milliseconds getDelay() const;
 
-		/**
-		server->getMineLimit(),
-		json_bool_as_cstring(server->isSteamRequired()),
-		json_bool_as_cstring(server->isPrivateMessageTeamOnly()),
-		json_bool_as_cstring(server->isPassworded()),
-		json_bool_as_cstring(server->isPrivateMessagingEnabled()),
-		server->getPlayerLimit(),
-		server->getVehicleLimit(),
-		json_bool_as_cstring(server->isAutoBalanceTeams()),
-		json_bool_as_cstring(server->isCratesEnabled()),
-		server->getCrateRespawnDelay(),
-		server->getTimeLimit(),
-		*/
-
 		int getMineLimit() const;
 		int getPlayerLimit() const;
 		int getVehicleLimit() const;
 		int getTimeLimit() const;
+		int getTeamMode() const;
+		int getGameType() const;
 		double getCrateRespawnDelay() const;
 		bool isSteamRequired() const;
 		bool isPrivateMessageTeamOnly() const;
 		bool isPrivateMessagingEnabled() const;
+		bool isRanked() const;
 
 		/**
 		* @brief Checks if the server has a game password.
@@ -766,8 +757,8 @@ namespace RenX
 		*/
 		bool isPassworded() const;
 		
-		bool isAutoBalanceEnabled() const;
 		bool isCratesEnabled() const;
+		bool isBotsEnabled() const;
 
 		/**
 		* @brief Fetches the RCON password of a server.
@@ -1033,12 +1024,15 @@ namespace RenX
 		bool steamRequired = false;
 		bool privateMessageTeamOnly = false;
 		bool allowPrivateMessaging = true;
-		bool autoBalanceTeams = true;
 		bool spawnCrates = true;
+		bool botsEnabled = true;
 		bool competitive = false;
 		bool devBot = false;
 		bool reliable = false;
+		bool m_ranked = false;
+		int m_team_mode = 3; /** 0 = static, 1 = swap, 2 = random swap, 3 = shuffle, 4 = traditional (assign as players connect) */
 		int match_state = 1; /** 0 = pending, 1 = in progress, 2 = over, 3 = travelling */
+		int m_game_type = 1; /** < 0 = Invalid, 0 = Main Menu, 1 = Rx_Game, 2 = TS_Game, > 2 = Unassigned */
 		int attempts = 0;
 		int playerLimit = 0;
 		int vehicleLimit = 0;

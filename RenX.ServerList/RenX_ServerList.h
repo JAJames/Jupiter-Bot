@@ -27,6 +27,7 @@ class RenX_ServerListPlugin : public RenX::Plugin
 {
 public: // RenX_ServerListPlugin
 	Jupiter::ReadableString *getServerListJSON();
+	Jupiter::ReadableString *getServerListGame();
 
 	void addServerToServerList(RenX::Server *server);
 	void updateServerList();
@@ -42,12 +43,13 @@ public: // RenX::Plugin
 	void RenX_OnMapLoad(RenX::Server *server, const Jupiter::ReadableString &map) override;
 
 private:
-	Jupiter::StringS server_list_json;
-	Jupiter::StringS web_hostname, web_path, server_list_page_name, server_list_long_page_name, server_page_name;
+	Jupiter::StringS server_list_json, server_list_game;
+	Jupiter::StringS web_hostname, web_path, server_list_page_name, server_list_long_page_name, server_page_name, game_server_list_page_name;
 };
 
 Jupiter::ReadableString *handle_server_list_page(const Jupiter::ReadableString &);
 Jupiter::ReadableString *handle_server_list_long_page(const Jupiter::ReadableString &);
 Jupiter::ReadableString *handle_server_page(const Jupiter::ReadableString &query_string);
+Jupiter::ReadableString *handle_game_server_list_page(const Jupiter::ReadableString &);
 
 #endif // _RENX_SERVERLIST_H_HEADER
