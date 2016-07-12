@@ -197,7 +197,9 @@ RenX_ServerListPlugin::~RenX_ServerListPlugin()
 {
 	Jupiter::HTTP::Server &server = getHTTPServer();
 	server.remove(RenX_ServerListPlugin::web_hostname, RenX_ServerListPlugin::web_path, RenX_ServerListPlugin::server_list_page_name);
+	server.remove(RenX_ServerListPlugin::web_hostname, RenX_ServerListPlugin::web_path, RenX_ServerListPlugin::server_list_long_page_name);
 	server.remove(RenX_ServerListPlugin::web_hostname, RenX_ServerListPlugin::web_path, RenX_ServerListPlugin::server_page_name);
+	server.remove(RenX_ServerListPlugin::web_hostname, RenX_ServerListPlugin::web_path, RenX_ServerListPlugin::game_server_list_page_name);
 }
 
 Jupiter::ReadableString *RenX_ServerListPlugin::getServerListJSON()
