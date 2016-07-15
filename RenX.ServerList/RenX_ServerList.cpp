@@ -23,8 +23,9 @@
 #include "HTTPServer.h"
 #include "RenX_Core.h"
 #include "RenX_Server.h"
-#include "RenX_ServerList.h"
 #include "RenX_Functions.h"
+#include "RenX_PlayerInfo.h"
+#include "RenX_ServerList.h"
 
 using namespace Jupiter::literals;
 
@@ -347,7 +348,7 @@ Jupiter::StringS server_as_long_json(const RenX::Server *server)
 			server_json_block += ",\n\t\t\"Levels\": ["_jrs;
 
 			server_json_block += "\n\t\t\t{\n\t\t\t\t\"Name\": \""_jrs;
-			server_json_block += server->maps.get(0)->name;
+			server_json_block += jsonify(server->maps.get(0)->name);
 			server_json_block += "\",\n\t\t\t\t\"GUID\": \""_jrs;
 			server_json_block += RenX::formatGUID(*server->maps.get(0));
 			server_json_block += "\"\n\t\t\t}"_jrs;
@@ -355,7 +356,7 @@ Jupiter::StringS server_as_long_json(const RenX::Server *server)
 			for (size_t index = 1; index != server->maps.size(); ++index)
 			{
 				server_json_block += ",\n\t\t\t{\n\t\t\t\t\"Name\": \""_jrs;
-				server_json_block += server->maps.get(index)->name;
+				server_json_block += jsonify(server->maps.get(index)->name);
 				server_json_block += "\",\n\t\t\t\t\"GUID\": \""_jrs;
 				server_json_block += RenX::formatGUID(*server->maps.get(index));
 				server_json_block += "\"\n\t\t\t}"_jrs;
@@ -370,14 +371,47 @@ Jupiter::StringS server_as_long_json(const RenX::Server *server)
 			server_json_block += ",\n\t\t\"Mutators\": ["_jrs;
 
 			server_json_block += "\n\t\t\t{\n\t\t\t\t\"Name\": \""_jrs;
-			server_json_block += *server->mutators.get(0);
+			server_json_block += jsonify(*server->mutators.get(0));
 			server_json_block += "\"\n\t\t\t}"_jrs;
 
 			for (size_t index = 1; index != server->mutators.size(); ++index)
 			{
 				server_json_block += ",\n\t\t\t{\n\t\t\t\t\"Name\": \""_jrs;
-				server_json_block += *server->mutators.get(index);
+				server_json_block += jsonify(*server->mutators.get(index));
 				server_json_block += "\"\n\t\t\t}"_jrs;
+			}
+
+			server_json_block += "\n\t\t]"_jrs;
+		}
+
+		// Player List
+		if (server->players.size() != 0 && server->players.size() != server->getBotCount())
+		{
+			server_json_block += ",\n\t\t\"PlayerList\": ["_jrs;
+
+			size_t index = 0;
+
+			while (index != server->players.size())
+			{
+				if (server->players.get(index)->isBot == false)
+				{
+					server_json_block += "\n\t\t\t{\n\t\t\t\t\"Name\": \""_jrs;
+					server_json_block += jsonify(server->players.get(index)->name);
+					server_json_block += "\"\n\t\t\t}"_jrs;
+
+					++index;
+					break;
+				}
+				++index;
+			}
+
+			while (index != server->players.size())
+			{
+				server_json_block += ",\n\t\t\t{\n\t\t\t\t\"Name\": \""_jrs;
+				server_json_block += jsonify(server->players.get(index)->name);
+				server_json_block += "\"\n\t\t\t}"_jrs;
+
+				++index;
 			}
 
 			server_json_block += "\n\t\t]"_jrs;
@@ -468,6 +502,39 @@ void RenX_ServerListPlugin::addServerToServerList(RenX::Server *server)
 		}
 
 		server_json_block += ']';
+	}
+
+	// Player List
+	if (server->players.size() != 0 && server->players.size() != server->getBotCount())
+	{
+		server_json_block += ",\"PlayerList\":["_jrs;
+
+		size_t index = 0;
+
+		while (index != server->players.size())
+		{
+			if (server->players.get(index)->isBot == false)
+			{
+				server_json_block += "{\"Name\":\""_jrs;
+				server_json_block += jsonify(server->players.get(index)->name);
+				server_json_block += "\"}"_jrs;
+
+				++index;
+				break;
+			}
+			++index;
+		}
+
+		while (index != server->players.size())
+		{
+			server_json_block += ",{\"Name\":\""_jrs;
+			server_json_block += jsonify(server->players.get(index)->name);
+			server_json_block += "\"}"_jrs;
+
+			++index;
+		}
+
+		server_json_block += "]"_jrs;
 	}
 
 	server_json_block += '}';
