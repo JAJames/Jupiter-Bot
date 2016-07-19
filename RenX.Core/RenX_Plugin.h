@@ -36,6 +36,7 @@ namespace RenX
 	struct BuildingInfo;
 	class Plugin;
 	class Server;
+	class GameCommand;
 
 	class RENX_API Plugin : public Jupiter::Plugin
 	{
@@ -64,6 +65,7 @@ namespace RenX
 		virtual void RenX_OnRank(Server *server, const PlayerInfo *player);
 		virtual void RenX_OnDev(Server *server, const PlayerInfo *player);
 		virtual void RenX_OnExecute(Server *server, const PlayerInfo *player, const Jupiter::ReadableString &command);
+		virtual void RenX_OnPlayerCommand(Server *server, const PlayerInfo *player, const Jupiter::ReadableString &message, GameCommand *command);
 		virtual void RenX_OnSpeedHack(Server *server, const PlayerInfo *player);
 		virtual void RenX_OnPlayer(Server *server, const Jupiter::ReadableString &raw);
 		

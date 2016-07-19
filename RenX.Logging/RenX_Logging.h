@@ -33,6 +33,7 @@ public: // RenX::Plugin
 	void RenX_OnNameChange(RenX::Server *server, const RenX::PlayerInfo *player, const Jupiter::ReadableString &newPlayerName) override;
 	void RenX_OnTeamChange(RenX::Server *server, const RenX::PlayerInfo *player, const RenX::TeamType &oldTeam) override;
 	void RenX_OnExecute(RenX::Server *server, const RenX::PlayerInfo *player, const Jupiter::ReadableString &command) override;
+	void RenX_OnPlayerCommand(RenX::Server *server, const RenX::PlayerInfo *player, const Jupiter::ReadableString &message, RenX::GameCommand *command) override;
 	void RenX_OnSpeedHack(RenX::Server *server, const RenX::PlayerInfo *player) override;
 	void RenX_OnPlayer(RenX::Server *server, const Jupiter::ReadableString &raw) override;
 	
@@ -185,6 +186,7 @@ private:
 	unsigned int gameOverPublic : 1;
 	unsigned int gamePublic : 1;
 	unsigned int executePublic : 1;
+	unsigned int playerCommandPublic : 1;
 	unsigned int subscribePublic : 1;
 	unsigned int RCONPublic : 1;
 	unsigned int adminLoginPublic : 1;
@@ -277,6 +279,7 @@ private:
 	Jupiter::StringS gameOverScoreFmt;
 	Jupiter::StringS gameFmt;
 	Jupiter::StringS executeFmt, playerExecuteFmt, devBotExecuteFmt;
+	Jupiter::StringS playerCommandSuccessFmt, playerCommandFailFmt;
 	Jupiter::StringS subscribeFmt;
 	Jupiter::StringS rconFmt;
 	Jupiter::StringS adminLoginFmt;

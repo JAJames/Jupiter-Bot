@@ -1088,10 +1088,10 @@ unsigned int RenX::Server::getCommandCount() const
 	return RenX::Server::commands.size();
 }
 
-unsigned int RenX::Server::triggerCommand(const Jupiter::ReadableString &trigger, RenX::PlayerInfo *player, const Jupiter::ReadableString &parameters)
+RenX::GameCommand *RenX::Server::triggerCommand(const Jupiter::ReadableString &trigger, RenX::PlayerInfo *player, const Jupiter::ReadableString &parameters)
 {
-	unsigned int r = 0;
 	RenX::GameCommand *cmd;
+
 	for (size_t i = 0; i < RenX::Server::commands.size(); i++)
 	{
 		cmd = RenX::Server::commands.get(i);
@@ -1101,10 +1101,12 @@ unsigned int RenX::Server::triggerCommand(const Jupiter::ReadableString &trigger
 				cmd->trigger(this, player, parameters);
 			else
 				RenX::Server::sendMessage(player, "Access Denied."_jrs);
-			++r;
+
+			return cmd;
 		}
 	}
-	return r;
+
+	return nullptr;
 }
 
 void RenX::Server::addCommand(RenX::GameCommand *command)
@@ -2734,7 +2736,10 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 						RenX::PlayerInfo *player = parseGetPlayerOrAdd(tokens.getToken(2));
 						Jupiter::ReferenceString message = gotoToken(3);
 
-						this->triggerCommand(Jupiter::ReferenceString::getWord(message, 0, WHITESPACE), player, Jupiter::ReferenceString::gotoWord(message, 1, WHITESPACE));
+						RenX::GameCommand *command = this->triggerCommand(Jupiter::ReferenceString::getWord(message, 0, WHITESPACE), player, Jupiter::ReferenceString::gotoWord(message, 1, WHITESPACE));
+
+						for (size_t i = 0; i < xPlugins.size(); i++)
+							xPlugins.get(i)->RenX_OnPlayerCommand(this, player, message, command);
 					}
 					else
 					{

@@ -83,6 +83,7 @@ bool RenX_LoggingPlugin::initialize()
 	RenX_LoggingPlugin::gamePublic = this->config.getBool(Jupiter::ReferenceString::empty, "GamePublic"_jrs, true);
 	RenX_LoggingPlugin::gameOverPublic = this->config.getBool(Jupiter::ReferenceString::empty, "GameOverPublic"_jrs, true);
 	RenX_LoggingPlugin::executePublic = this->config.getBool(Jupiter::ReferenceString::empty, "ExecutePublic"_jrs, false);
+	RenX_LoggingPlugin::playerCommandPublic = this->config.getBool(Jupiter::ReferenceString::empty, "PlayerCommandPublic"_jrs, false);
 	RenX_LoggingPlugin::subscribePublic = this->config.getBool(Jupiter::ReferenceString::empty, "SubscribePublic"_jrs, false);
 	RenX_LoggingPlugin::RCONPublic = this->config.getBool(Jupiter::ReferenceString::empty, "RCONPublic"_jrs, false);
 	RenX_LoggingPlugin::adminLoginPublic = this->config.getBool(Jupiter::ReferenceString::empty, "AdminLoginPublic"_jrs, true);
@@ -128,6 +129,11 @@ bool RenX_LoggingPlugin::initialize()
 
 	RenX_LoggingPlugin::playerExecuteFmt = this->config.get(Jupiter::ReferenceString::empty, "PlayerExecuteFormat"_jrs,
 		Jupiter::StringS::Format("%.*s" IRCCOLOR "07 executed: %.*s", RenX::tags->nameTag.size(), RenX::tags->nameTag.ptr(), RenX::tags->messageTag.size(), RenX::tags->messageTag.ptr()));
+
+	RenX_LoggingPlugin::playerCommandSuccessFmt = this->config.get(Jupiter::ReferenceString::empty, "PlayerCommandSuccessFormat"_jrs,
+		Jupiter::StringS::Format("%.*s" IRCCOLOR ": " IRCCOLOR "10%.*s", RenX::tags->nameTag.size(), RenX::tags->nameTag.ptr(), RenX::tags->messageTag.size(), RenX::tags->messageTag.ptr()));
+
+	RenX_LoggingPlugin::playerCommandFailFmt = this->config.get(Jupiter::ReferenceString::empty, "PlayerCommandFailFormat"_jrs);
 
 	RenX_LoggingPlugin::playerFmt = this->config.get(Jupiter::ReferenceString::empty, "PlayerFormat"_jrs,
 		Jupiter::StringS::Format(IRCCOLOR "12[Player]" IRCCOLOR " %.*s", RenX::tags->messageTag.size(), RenX::tags->messageTag.ptr()));
@@ -488,6 +494,8 @@ bool RenX_LoggingPlugin::initialize()
 	RenX::sanitizeTags(gameFmt);
 	RenX::sanitizeTags(executeFmt);
 	RenX::sanitizeTags(playerExecuteFmt);
+	RenX::sanitizeTags(playerCommandSuccessFmt);
+	RenX::sanitizeTags(playerCommandFailFmt);
 	RenX::sanitizeTags(devBotExecuteFmt);
 	RenX::sanitizeTags(hostChatFmt);
 	RenX::sanitizeTags(hostPageFmt);
@@ -665,6 +673,26 @@ void RenX_LoggingPlugin::RenX_OnExecute(RenX::Server *server, const RenX::Player
 	{
 		processTags(msg, server, player);
 		msg.replace(RenX::tags->INTERNAL_MESSAGE_TAG, command);
+		(server->*func)(msg);
+	}
+}
+
+void RenX_LoggingPlugin::RenX_OnPlayerCommand(RenX::Server *server, const RenX::PlayerInfo *player, const Jupiter::ReadableString &message, RenX::GameCommand *command)
+{
+	logFuncType func;
+	if (RenX_LoggingPlugin::playerCommandPublic)
+		func = &RenX::Server::sendLogChan;
+	else
+		func = &RenX::Server::sendAdmChan;
+
+	Jupiter::String msg = command != nullptr
+		? this->playerCommandSuccessFmt
+		: this->playerCommandFailFmt;
+
+	if (msg.isNotEmpty())
+	{
+		processTags(msg, server, player);
+		msg.replace(RenX::tags->INTERNAL_MESSAGE_TAG, message);
 		(server->*func)(msg);
 	}
 }

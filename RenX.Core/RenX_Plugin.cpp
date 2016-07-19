@@ -131,6 +131,11 @@ void RenX::Plugin::RenX_OnExecute(Server *, const PlayerInfo *, const Jupiter::R
 	return;
 }
 
+void RenX::Plugin::RenX_OnPlayerCommand(Server *, const PlayerInfo *, const Jupiter::ReadableString &, GameCommand *)
+{
+	return;
+}
+
 void RenX::Plugin::RenX_OnSpeedHack(Server *, const PlayerInfo *)
 {
 	return;

@@ -819,12 +819,13 @@ namespace RenX
 		unsigned int getCommandCount() const;
 
 		/**
-		* @brief Triggers commands matching a specified trigger.
+		* @brief Finds and triggers a matching GameCommand with the given parameters
 		*
-		* @param trigger Trigger of the command to fire.
-		* @return Number of commands triggered.
+		* @param trigger Trigger of the command to fire
+		* @param parameters Parameters to pass to the command
+		* @return Command executed if a match is found, nullptr otherwise.
 		*/
-		unsigned int triggerCommand(const Jupiter::ReadableString &trigger, RenX::PlayerInfo *player, const Jupiter::ReadableString &parameters);
+		RenX::GameCommand *triggerCommand(const Jupiter::ReadableString &trigger, RenX::PlayerInfo *player, const Jupiter::ReadableString &parameters);
 
 		/**
 		* @brief Adds a command to the server's game command list.
