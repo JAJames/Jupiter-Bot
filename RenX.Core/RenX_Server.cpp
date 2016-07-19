@@ -2728,6 +2728,14 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 						for (size_t i = 0; i < xPlugins.size(); i++)
 							xPlugins.get(i)->RenX_OnSpeedHack(this, player);
 					}
+					else if (subHeader.equals("Command;"))
+					{
+						// Player | Command
+						RenX::PlayerInfo *player = parseGetPlayerOrAdd(tokens.getToken(2));
+						Jupiter::ReferenceString message = gotoToken(3);
+
+						this->triggerCommand(Jupiter::ReferenceString::getWord(message, 0, WHITESPACE), player, Jupiter::ReferenceString::gotoWord(message, 1, WHITESPACE));
+					}
 					else
 					{
 						Jupiter::ReferenceString raw = gotoToken(1);
