@@ -45,6 +45,8 @@ bool IRCCorePlugin::initialize()
 
 int IRCCorePlugin::OnRehash()
 {
+	Jupiter::Plugin::OnRehash();
+
 	serverManager->OnConfigRehash();
 	return 0;
 }
