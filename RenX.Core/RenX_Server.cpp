@@ -1380,22 +1380,27 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 				player = n->data;
 				if (player != nullptr)
 				{
-					player->score = 0.0f;
-					player->credits = 0.0f;
-					player->kills = 0;
-					player->deaths = 0;
-					player->suicides = 0;
-					player->headshots = 0;
-					player->vehicleKills = 0;
-					player->buildingKills = 0;
-					player->defenceKills = 0;
-					player->beaconPlacements = 0;
-					player->beaconDisarms = 0;
-					player->proxy_placements = 0;
-					player->proxy_disarms = 0;
-					player->captures = 0;
-					player->steals = 0;
-					player->stolen = 0;
+					if (this->isSeamless())
+					{
+						player->score = 0.0f;
+						player->credits = 0.0f;
+						player->kills = 0;
+						player->deaths = 0;
+						player->suicides = 0;
+						player->headshots = 0;
+						player->vehicleKills = 0;
+						player->buildingKills = 0;
+						player->defenceKills = 0;
+						player->beaconPlacements = 0;
+						player->beaconDisarms = 0;
+						player->proxy_placements = 0;
+						player->proxy_disarms = 0;
+						player->captures = 0;
+						player->steals = 0;
+						player->stolen = 0;
+					}
+					else
+						this->removePlayer(player);
 				}
 			}
 		}
@@ -2655,10 +2660,18 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 					else if (subHeader.equals("Exit;"))
 					{
 						// Player
-						RenX::PlayerInfo *player = parseGetPlayerOrAdd(tokens.getToken(2));
-						for (size_t i = 0; i < xPlugins.size(); i++)
-							xPlugins.get(i)->RenX_OnPart(this, player);
-						this->removePlayer(player);
+						Jupiter::ReferenceString playerToken = tokens.getToken(2);
+						PARSE_PLAYER_DATA_P(playerToken);
+
+						RenX::PlayerInfo *player = getPlayer(id);
+						//RenX::PlayerInfo *player = parseGetPlayerOrAdd(tokens.getToken(2));
+
+						if (player != nullptr)
+						{
+							for (size_t i = 0; i < xPlugins.size(); i++)
+								xPlugins.get(i)->RenX_OnPart(this, player);
+							this->removePlayer(player);
+						}
 
 						if (this->gameover_when_empty && this->players.size() == this->bot_count)
 							this->gameover();

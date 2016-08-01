@@ -303,7 +303,9 @@ Jupiter::ReferenceString translated_Building_Obelisk_Internals = STRING_LITERAL_
 
 /** Other structures */
 Jupiter::ReferenceString translated_Building_Silo = STRING_LITERAL_AS_REFERENCE("Tiberium Silo");
+Jupiter::ReferenceString translated_Building_CommCentre = STRING_LITERAL_AS_REFERENCE("Communications Center");
 Jupiter::ReferenceString translated_Building_Silo_Internals = STRING_LITERAL_AS_REFERENCE("Tiberium Silo");
+Jupiter::ReferenceString translated_Building_CommCentre_Internals = STRING_LITERAL_AS_REFERENCE("Communications Center");
 
 /** Defences */
 Jupiter::ReferenceString translated_Defence_GuardTower = STRING_LITERAL_AS_REFERENCE("Guard Tower");
@@ -751,7 +753,9 @@ const Jupiter::ReferenceString RenX::translateName(const Jupiter::ReadableString
 
 		/** Other structures */
 		if (object.equals(STRING_LITERAL_AS_REFERENCE("Silo"))) return translated_Building_Silo;
+		if (object.equals(STRING_LITERAL_AS_REFERENCE("CommCentre"))) return translated_Building_CommCentre;
 		if (object.equals(STRING_LITERAL_AS_REFERENCE("Silo_Internals"))) return translated_Building_Silo_Internals;
+		if (object.equals(STRING_LITERAL_AS_REFERENCE("CommCentre_Internals"))) return translated_Building_CommCentre_Internals;
 	}
 	else if (object.find(STRING_LITERAL_AS_REFERENCE("Defence_")) == 0)
 	{

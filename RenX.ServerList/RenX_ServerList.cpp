@@ -254,13 +254,34 @@ Jupiter::StringS server_as_json(const RenX::Server *server)
 
 Jupiter::StringS server_as_game(const RenX::Server *server)
 {
-	Jupiter::String server_game_block(128);
+	Jupiter::String server_game_block(256);
 
 	Jupiter::String server_name = sanitize_game(server->getName());
 	Jupiter::String server_map = sanitize_game(server->getMap().name);
 	Jupiter::String server_version = sanitize_game(server->getGameVersion());
+	Jupiter::String server_levels;
 
-	server_game_block.format("\n<@>%.*s~%.*s~%u~%s~%.*s~" "%d;%d;%d;%s;%d;%d;%d;%s;%s;%s;%.*s;%s" "~%u~%d~%s~%s",
+	RenX::Map *map;
+
+	if (server->maps.size() != 0)
+	{
+		map = server->maps.get(0);
+		server_levels = sanitize_game(RenX::formatGUID(*map));
+		server_levels += '=';
+		server_levels += sanitize_game(map->name);
+
+		for (size_t index = 1; index != server->maps.size(); ++index)
+		{
+			map = server->maps.get(index);
+
+			server_levels += ';';
+			server_levels += sanitize_game(RenX::formatGUID(*map));
+			server_levels += '=';
+			server_levels += sanitize_game(map->name);
+		}
+	}
+
+	server_game_block.format("\n<@>%.*s~%.*s~%u~%s~%.*s~" "%d;%d;%d;%s;%d;%d;%d;%s;%s;%s;%.*s;%s" "~%u~%d~%s~%s~%.*s",
 		server_name.size(), server_name.ptr(),
 		server->getSocketHostname().size(), server->getSocketHostname().ptr(),
 		server->getPort(),
@@ -282,8 +303,9 @@ Jupiter::StringS server_as_game(const RenX::Server *server)
 		//END OPTIONS
 		server->players.size() - server->getBotCount(),
 		server->getPlayerLimit(),
-		json_bool_as_cstring(server->isRanked()), // json_bool_as_cstring(plugin != nullptr && (reinterpret_cast<RenX_LadderPlugin *>(plugin)->isOnlyPure() == false || server->isPure())),
-		json_bool_as_cstring(server->isMatchInProgress()));
+		json_bool_as_cstring(server->isRanked()),
+		json_bool_as_cstring(server->isMatchInProgress()),
+		server_levels.size(), server_levels.ptr());
 
 	return server_game_block;
 }
