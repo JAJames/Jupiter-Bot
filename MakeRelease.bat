@@ -44,7 +44,7 @@ DEL /F /Q "..\Jupiter Bot.zip"
 GOTO EOF
 
 :BinaryCopy:
-ROBOCOPY "Release\\" "..\Jupiter Bot Binaries\\" *.dll *.exe /S
+ROBOCOPY "Release\\" "..\Jupiter Bot Binaries\\" *.dll *.exe /S /xf Tester.exe
 ROBOCOPY "Configs\\" "..\Jupiter Bot Binaries\Configs\\" *.ini
 ROBOCOPY ".\\" "..\Jupiter Bot Binaries\\" *.ini *.txt
 "C:\Program Files\WinRAR\WinRAR.exe" a -r "..\Jupiter Bot Binaries.zip" "..\Jupiter Bot Binaries"
