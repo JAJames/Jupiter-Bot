@@ -351,7 +351,14 @@ std::chrono::milliseconds RenX::Server::getGameTime(const RenX::PlayerInfo *play
 
 size_t RenX::Server::getBotCount() const
 {
-	return RenX::Server::bot_count;
+	size_t count = 0;
+
+	for (size_t index = 0; index != this->players.size(); ++index)
+		if (this->players.get(index)->isBot)
+			++count;
+
+	return count;
+	//return RenX::Server::bot_count;
 }
 
 RenX::PlayerInfo *RenX::Server::getPlayer(int id) const
@@ -732,7 +739,7 @@ bool RenX::Server::updateClientList()
 	RenX::Server::lastClientListUpdate = std::chrono::steady_clock::now();
 
 	int r = 0;
-	if (RenX::Server::players.size() != RenX::Server::bot_count)
+	if (RenX::Server::players.size() != this->getBotCount())
 	{
 		if (this->rconVersion >= 4)
 			r = RenX::Server::sock.send(STRING_LITERAL_AS_REFERENCE("cclientvarlist ID SCORE CREDITS PING\n")) > 0;
@@ -740,7 +747,7 @@ bool RenX::Server::updateClientList()
 			r = RenX::Server::sock.send(STRING_LITERAL_AS_REFERENCE("cclientvarlist ID\xA0""SCORE\xA0""CREDITS\xA0""PING\n")) > 0;
 	}
 
-	if (RenX::Server::bot_count != 0)
+	if (this->getBotCount() != 0)
 	{
 		if (this->rconVersion >= 4)
 			r |= RenX::Server::sock.send(STRING_LITERAL_AS_REFERENCE("cbotvarlist ID SCORE CREDITS\n")) > 0;
@@ -785,7 +792,7 @@ bool RenX::Server::gameoverStop()
 
 void RenX::Server::gameoverWhenEmpty()
 {
-	if (this->players.size() == this->bot_count)
+	if (this->players.size() == this->getBotCount())
 		this->gameover();
 	else
 		this->gameover_when_empty = true;
@@ -2673,7 +2680,7 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 							this->removePlayer(player);
 						}
 
-						if (this->gameover_when_empty && this->players.size() == this->bot_count)
+						if (this->gameover_when_empty && this->players.size() == this->getBotCount())
 							this->gameover();
 					}
 					else if (subHeader.equals("Kick;"))

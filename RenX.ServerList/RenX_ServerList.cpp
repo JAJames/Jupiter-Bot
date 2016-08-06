@@ -36,11 +36,11 @@ const Jupiter::ReferenceString server_list_game_footer = "\n</body></html>"_jrs;
 
 Jupiter::String jsonify(const Jupiter::ReadableString &in_str)
 {
-	const char *ptr = in_str.ptr();
-	size_t str_length = in_str.size();
-	Jupiter::String result(str_length);
+	const unsigned char *ptr = reinterpret_cast<const unsigned char *>(in_str.ptr());
+	const unsigned char *end_ptr = ptr + in_str.size();
+	Jupiter::String result(in_str.size());
 
-	while (str_length != 0)
+	while (ptr < end_ptr)
 	{
 		if (*ptr == '\\') // backslash
 		{
@@ -82,7 +82,6 @@ Jupiter::String jsonify(const Jupiter::ReadableString &in_str)
 			result += *ptr;
 
 		++ptr;
-		--str_length;
 	}
 
 	return result;
@@ -90,11 +89,11 @@ Jupiter::String jsonify(const Jupiter::ReadableString &in_str)
 
 Jupiter::String sanitize_game(const Jupiter::ReadableString &in_str)
 {
-	const char *ptr = in_str.ptr();
-	size_t str_length = in_str.size();
-	Jupiter::String result(str_length);
+	const unsigned char *ptr = reinterpret_cast<const unsigned char *>(in_str.ptr());
+	const unsigned char *end_ptr = ptr + in_str.size();
+	Jupiter::String result(in_str.size());
 
-	while (str_length != 0)
+	while (ptr < end_ptr != 0)
 	{
 		if (*ptr == '\\') // backslash
 		{
@@ -140,7 +139,6 @@ Jupiter::String sanitize_game(const Jupiter::ReadableString &in_str)
 			result += *ptr;
 
 		++ptr;
-		--str_length;
 	}
 
 	return result;
