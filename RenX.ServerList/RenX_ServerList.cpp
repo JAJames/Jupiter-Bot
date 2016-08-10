@@ -331,7 +331,7 @@ Jupiter::StringS server_as_long_json(const RenX::Server *server)
 			"Player Limit": %d,
 			"Vehicle Limit": %d,
 			"bAutoBalanceTeams": %s,
-			"Team Mode": %d
+			"Team Mode": %d,
 			"bSpawnCrates": %s,
 			"CrateRespawnAfterPickup": %f,
 			"Time Limit": %d

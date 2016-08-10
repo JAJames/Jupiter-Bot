@@ -32,6 +32,10 @@
 #include "Console_Command.h"
 #include "IRC_Command.h"
 
+#if defined _WIN32
+#include <Windows.h>
+#endif // _WIN32
+
 using namespace Jupiter::literals;
 
 Jupiter::INIFile o_config;
@@ -93,6 +97,12 @@ int main(int argc, const char **args)
 	std::thread inputThread(inputLoop);
 	Jupiter::ReferenceString command, plugins_directory, configs_directory;
 	size_t index;
+
+#if defined _WIN32
+	// Sets console to UTF-8
+	SetConsoleCP(65001);
+	SetConsoleOutputCP(65001);
+#endif // _WIN32
 
 	srand(static_cast<unsigned int>(std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count()));
 	puts(Jupiter::copyright);
