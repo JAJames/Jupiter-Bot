@@ -307,6 +307,12 @@ Jupiter::ReferenceString translated_Building_CommCentre = STRING_LITERAL_AS_REFE
 Jupiter::ReferenceString translated_Building_Silo_Internals = STRING_LITERAL_AS_REFERENCE("Tiberium Silo");
 Jupiter::ReferenceString translated_Building_CommCentre_Internals = STRING_LITERAL_AS_REFERENCE("Communications Center");
 
+/** Fort structures */
+Jupiter::ReferenceString translated_CapturableMCT_Fort = STRING_LITERAL_AS_REFERENCE("Fort");
+Jupiter::ReferenceString translated_CapturableMCT_MC = STRING_LITERAL_AS_REFERENCE("Medical Center");
+Jupiter::ReferenceString translated_CapturableMCT_Fort_Internals = STRING_LITERAL_AS_REFERENCE("Fort");
+Jupiter::ReferenceString translated_CapturableMCT_MC_Internals = STRING_LITERAL_AS_REFERENCE("Medical Center");
+
 /** Defences */
 Jupiter::ReferenceString translated_Defence_GuardTower = STRING_LITERAL_AS_REFERENCE("Guard Tower");
 Jupiter::ReferenceString translated_Defence_Turret = STRING_LITERAL_AS_REFERENCE("Turret");
@@ -527,6 +533,53 @@ const Jupiter::ReferenceString RenX::translateName(const Jupiter::ReadableString
 			if (object.equals(STRING_LITERAL_AS_REFERENCE("HoverMRLS_DmgType"))) return translated_TS_Vehicle_HoverMRLS_DmgType;
 			if (object.equals(STRING_LITERAL_AS_REFERENCE("Titan_DmgType"))) return translated_TS_Vehicle_Titan_DmgType;
 			if (object.equals(STRING_LITERAL_AS_REFERENCE("Wolverine_DmgType"))) return translated_TS_Vehicle_Wolverine_DmgType;
+		}
+		return object;
+	}
+
+	/** Fort Vehicles */
+	if (object.find(STRING_LITERAL_AS_REFERENCE("nBab_")) == 0)
+	{
+		object.shiftRight(3);
+		if (object.find(STRING_LITERAL_AS_REFERENCE("TS_")) == 0)
+		{
+			object.shiftRight(3);
+			if (object.find(STRING_LITERAL_AS_REFERENCE("Vehicle_")) == 0)
+			{
+				object.shiftRight(8);
+				/** Nod Tiberian Sun Vehicles */
+				if (object.equals(STRING_LITERAL_AS_REFERENCE("Buggy"))) return translated_TS_Vehicle_Buggy;
+			}
+		}
+		else if (object.find(STRING_LITERAL_AS_REFERENCE("Vehicle_")) == 0)
+		{
+			object.shiftRight(8);
+
+			/** Nod Tiberian Sun Vehicles */
+			if (object.equals(STRING_LITERAL_AS_REFERENCE("ReconBike"))) return translated_TS_Vehicle_ReconBike;
+			if (object.equals(STRING_LITERAL_AS_REFERENCE("TickTank"))) return translated_TS_Vehicle_TickTank;
+
+			/** GDI Tiberian Sun Vehicles */
+			if (object.equals(STRING_LITERAL_AS_REFERENCE("HoverMRLS"))) return translated_TS_Vehicle_HoverMRLS;
+			if (object.equals(STRING_LITERAL_AS_REFERENCE("Titan"))) return translated_TS_Vehicle_Titan;
+			if (object.equals(STRING_LITERAL_AS_REFERENCE("Wolverine"))) return translated_TS_Vehicle_Wolverine;
+
+			/** Nod Vehicles */
+			if (object.equals(STRING_LITERAL_AS_REFERENCE("Harvester_Nod"))) return translated_Vehicle_Harvester_Nod;
+			if (object.equals(STRING_LITERAL_AS_REFERENCE("Buggy"))) return translated_Vehicle_Buggy;
+			if (object.equals(STRING_LITERAL_AS_REFERENCE("Artillery"))) return translated_Vehicle_Artillery;
+			if (object.equals(STRING_LITERAL_AS_REFERENCE("APC_Nod"))) return translated_Vehicle_APC_Nod;
+			if (object.equals(STRING_LITERAL_AS_REFERENCE("LightTank"))) return translated_Vehicle_LightTank;
+			if (object.equals(STRING_LITERAL_AS_REFERENCE("FlameTank"))) return translated_Vehicle_FlameTank;
+			if (object.equals(STRING_LITERAL_AS_REFERENCE("StealthTank"))) return translated_Vehicle_StealthTank;
+
+			/** GDI Vehicles */
+			if (object.equals(STRING_LITERAL_AS_REFERENCE("Harvester_GDI"))) return translated_Vehicle_Harvester_GDI;
+			if (object.equals(STRING_LITERAL_AS_REFERENCE("Humvee"))) return translated_Vehicle_Humvee;
+			if (object.equals(STRING_LITERAL_AS_REFERENCE("MRLS"))) return translated_Vehicle_MRLS;
+			if (object.equals(STRING_LITERAL_AS_REFERENCE("APC_GDI"))) return translated_Vehicle_APC_GDI;
+			if (object.equals(STRING_LITERAL_AS_REFERENCE("MediumTank"))) return translated_Vehicle_MediumTank;
+			if (object.equals(STRING_LITERAL_AS_REFERENCE("MammothTank"))) return translated_Vehicle_MammothTank;
 		}
 		return object;
 	}
@@ -756,6 +809,14 @@ const Jupiter::ReferenceString RenX::translateName(const Jupiter::ReadableString
 		if (object.equals(STRING_LITERAL_AS_REFERENCE("CommCentre"))) return translated_Building_CommCentre;
 		if (object.equals(STRING_LITERAL_AS_REFERENCE("Silo_Internals"))) return translated_Building_Silo_Internals;
 		if (object.equals(STRING_LITERAL_AS_REFERENCE("CommCentre_Internals"))) return translated_Building_CommCentre_Internals;
+	}
+	else if (object.find(STRING_LITERAL_AS_REFERENCE("CapturableMCT_")) == 0)
+	{
+		/** Fort structures */
+		if (object.equals(STRING_LITERAL_AS_REFERENCE("Fort"))) return translated_CapturableMCT_Fort;
+		if (object.equals(STRING_LITERAL_AS_REFERENCE("MC"))) return translated_CapturableMCT_MC;
+		if (object.equals(STRING_LITERAL_AS_REFERENCE("Fort_Internals"))) return translated_CapturableMCT_Fort_Internals;
+		if (object.equals(STRING_LITERAL_AS_REFERENCE("MC_Internals"))) return translated_CapturableMCT_MC_Internals;
 	}
 	else if (object.find(STRING_LITERAL_AS_REFERENCE("Defence_")) == 0)
 	{
