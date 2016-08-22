@@ -812,6 +812,7 @@ const Jupiter::ReferenceString RenX::translateName(const Jupiter::ReadableString
 	}
 	else if (object.find(STRING_LITERAL_AS_REFERENCE("CapturableMCT_")) == 0)
 	{
+		object.shiftRight(14);
 		/** Fort structures */
 		if (object.equals(STRING_LITERAL_AS_REFERENCE("Fort"))) return translated_CapturableMCT_Fort;
 		if (object.equals(STRING_LITERAL_AS_REFERENCE("MC"))) return translated_CapturableMCT_MC;
