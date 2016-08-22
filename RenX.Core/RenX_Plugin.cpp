@@ -111,6 +111,11 @@ void RenX::Plugin::RenX_OnTeamChange(Server *, const PlayerInfo *, const TeamTyp
 	return;
 }
 
+void RenX::Plugin::RenX_OnHWID(Server *, const PlayerInfo *)
+{
+	return;
+}
+
 void RenX::Plugin::RenX_OnIDChange(Server *, const PlayerInfo *, int)
 {
 	return;

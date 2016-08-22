@@ -2664,6 +2664,22 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 									xPlugins.get(i)->RenX_OnTeamChange(this, player, oldTeam);
 						}
 					}
+					else if (subHeader.equals("HWID;"))
+					{
+						// ["player" |] Player | "hwid" | HWID
+						size_t offset = 0;
+						if (tokens.getToken(2).equals("player"))
+							offset = 1;
+
+						RenX::PlayerInfo *player = parseGetPlayerOrAdd(tokens.getToken(2 + offset));
+						player->hwid = tokens.getToken(4 + offset);
+
+						if (player->isBot == false)
+							this->banCheck(player);
+
+						for (size_t index = 0; index < xPlugins.size(); ++index)
+							xPlugins.get(index)->RenX_OnHWID(this, player);
+					}
 					else if (subHeader.equals("Exit;"))
 					{
 						// Player
@@ -2709,13 +2725,16 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 						if (player != nullptr)
 						{
 							player->id = tokens.getToken(3).asInt();
+
 							if (player->isBot == false)
 								this->banCheck(player);
+
 							if (this->devBot && player->global_rank != 0U)
 							{
 								if (this->rconVersion >= 4)
 									this->sendData(Jupiter::StringS::Format("dset_rank %d %d\n", player->id, player->global_rank));
 							}
+
 							for (size_t i = 0; i < xPlugins.size(); i++)
 								xPlugins.get(i)->RenX_OnIDChange(this, player, oldID);
 						}
