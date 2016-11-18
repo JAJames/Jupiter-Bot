@@ -22,6 +22,9 @@
 Jupiter::ArrayList<RenX::GameCommand> _GameMasterCommandList;
 Jupiter::ArrayList<RenX::GameCommand> *RenX::GameMasterCommandList = &_GameMasterCommandList;
 
+RenX::Server *RenX::GameCommand::active_server = nullptr;
+RenX::Server *RenX::GameCommand::selected_server = nullptr;
+
 RenX::GameCommand::GameCommand(nullptr_t)
 {
 }

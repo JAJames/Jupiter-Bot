@@ -109,6 +109,11 @@ namespace RenX
 		*/
 		virtual ~GameCommand();
 
+		/** Public members */
+
+		static RenX::Server *active_server; /** Currently active IRC server */
+		static RenX::Server *selected_server; /** Currently selected IRC server */
+
 	private:
 		int access = 0; /** Minimum access level */
 	};

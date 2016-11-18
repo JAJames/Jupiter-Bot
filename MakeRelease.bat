@@ -1,5 +1,5 @@
 @ECHO OFF
-if NOT "%2" == "-scr" ECHO Copyright (C) 2014 Jessica James. All rights reserved.
+if NOT "%2" == "-scr" ECHO Copyright (C) 2014-2016 Jessica James. All rights reserved.
 ECHO.
 
 if "%1" == "/?" GOTO Help
@@ -45,8 +45,8 @@ GOTO EOF
 
 :BinaryCopy:
 ROBOCOPY "Release\\" "..\Jupiter Bot Binaries\\" *.dll *.exe /S /xf Tester.exe
-ROBOCOPY "Configs\\" "..\Jupiter Bot Binaries\Configs\\" *.ini
-ROBOCOPY ".\\" "..\Jupiter Bot Binaries\\" *.ini *.txt
+ROBOCOPY "Configs\\" "..\Jupiter Bot Binaries\Configs\\" *
+ROBOCOPY ".\\" "..\Jupiter Bot Binaries\\" *.ini *.txt LICENSE
 "C:\Program Files\WinRAR\WinRAR.exe" a -r "..\Jupiter Bot Binaries.zip" "..\Jupiter Bot Binaries"
 GOTO EOF
 

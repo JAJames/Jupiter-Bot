@@ -31,6 +31,7 @@ bool RenX_LoggingPlugin::initialize()
 {
 	RenX_LoggingPlugin::muteOwnExecute = this->config.getBool(Jupiter::ReferenceString::empty, "MuteOwnExecute"_jrs, true);
 	RenX_LoggingPlugin::playerRDNSPublic = this->config.getBool(Jupiter::ReferenceString::empty, "PlayerRDNSPublic"_jrs, false);
+	RenX_LoggingPlugin::playerIdentifyPublic = this->config.getBool(Jupiter::ReferenceString::empty, "PlayerIdentifyPublic"_jrs, false);
 	RenX_LoggingPlugin::joinPublic = this->config.getBool(Jupiter::ReferenceString::empty, "JoinPublic"_jrs, true);
 	RenX_LoggingPlugin::partPublic = this->config.getBool(Jupiter::ReferenceString::empty, "PartPublic"_jrs, true);
 	RenX_LoggingPlugin::kickPublic = this->config.getBool(Jupiter::ReferenceString::empty, "KickPublic"_jrs, true);
@@ -110,16 +111,19 @@ bool RenX_LoggingPlugin::initialize()
 
 	/** Event formats */
 	RenX_LoggingPlugin::playerRDNSFmt = this->config.get(Jupiter::ReferenceString::empty, "PlayerRDNSFormat"_jrs,
-		Jupiter::StringS::Format(IRCCOLOR "05[RDNS] " IRCBOLD "%.*s" IRCNORMAL "'s hostname is " IRCBOLD "%.*s", RenX::tags->nameTag.size(), RenX::tags->nameTag.ptr(), RenX::tags->rdnsTag.size(), RenX::tags->rdnsTag.ptr()));
+		Jupiter::ReferenceString::empty);
+
+	RenX_LoggingPlugin::playerIdentifyFmt = this->config.get(Jupiter::ReferenceString::empty, "PlayerIdentifyFormat"_jrs,
+		Jupiter::StringS::Format(IRCCOLOR "12[Join] " IRCBOLD "%.*s" IRCBOLD " (" IRCBOLD "%.*s" IRCBOLD ") joined the game fighting for the %.*s from " IRCBOLD "%.*s" IRCBOLD " (" IRCBOLD "%.*s" IRCBOLD ") with HWID " IRCBOLD "%.*s" IRCBOLD ".", RenX::tags->nameTag.size(), RenX::tags->nameTag.ptr(), RenX::tags->steamTag.size(), RenX::tags->steamTag.ptr(), RenX::tags->teamLongTag.size(), RenX::tags->teamLongTag.ptr(), RenX::tags->ipTag.size(), RenX::tags->ipTag.ptr(), RenX::tags->rdnsTag.size(), RenX::tags->rdnsTag.ptr(), RenX::tags->hwidTag.size(), RenX::tags->hwidTag.ptr()));
 
 	RenX_LoggingPlugin::joinPublicFmt = this->config.get(Jupiter::ReferenceString::empty, "JoinPublicFormat"_jrs,
 		Jupiter::StringS::Format(IRCCOLOR "12[Join] " IRCBOLD "%.*s" IRCBOLD " joined the game fighting for the %.*s!", RenX::tags->nameTag.size(), RenX::tags->nameTag.ptr(), RenX::tags->teamLongTag.size(), RenX::tags->teamLongTag.ptr()));
 
 	RenX_LoggingPlugin::joinAdminFmt = this->config.get(Jupiter::ReferenceString::empty, "JoinAdminFormat"_jrs,
-		Jupiter::StringS::Format(IRCCOLOR "12[Join] " IRCBOLD "%.*s" IRCBOLD " joined the game fighting for the %.*s from " IRCBOLD "%.*s" IRCBOLD " using Steam ID " IRCBOLD "%.*s" IRCBOLD ". HWID: \"" IRCBOLD "%.*s" IRCBOLD "\"", RenX::tags->nameTag.size(), RenX::tags->nameTag.ptr(), RenX::tags->teamLongTag.size(), RenX::tags->teamLongTag.ptr(), RenX::tags->ipTag.size(), RenX::tags->ipTag.ptr(), RenX::tags->steamTag.size(), RenX::tags->steamTag.ptr(), RenX::tags->hwidTag.size(), RenX::tags->hwidTag.ptr()));
+		Jupiter::ReferenceString::empty);
 
 	RenX_LoggingPlugin::joinNoSteamAdminFmt = this->config.get(Jupiter::ReferenceString::empty, "JoinNoSteamAdminFormat"_jrs,
-		Jupiter::StringS::Format(IRCCOLOR "12[Join] " IRCBOLD "%.*s" IRCBOLD " joined the game fighting for the %.*s from " IRCBOLD "%.*s" IRCBOLD ", but is " IRCBOLD "not" IRCBOLD " using Steam. HWID: \"" IRCBOLD "%.*s" IRCBOLD "\"", RenX::tags->nameTag.size(), RenX::tags->nameTag.ptr(), RenX::tags->teamLongTag.size(), RenX::tags->teamLongTag.ptr(), RenX::tags->ipTag.size(), RenX::tags->ipTag.ptr(), RenX::tags->hwidTag.size(), RenX::tags->hwidTag.ptr()));
+		Jupiter::ReferenceString::empty);
 
 	RenX_LoggingPlugin::partFmt = this->config.get(Jupiter::ReferenceString::empty, "PartFormat"_jrs,
 		Jupiter::StringS::Format(IRCCOLOR "12[Part] " IRCBOLD "%.*s" IRCBOLD " left the %.*s.", RenX::tags->nameTag.size(), RenX::tags->nameTag.ptr(), RenX::tags->teamLongTag.size(), RenX::tags->teamLongTag.ptr()));
@@ -427,6 +431,7 @@ bool RenX_LoggingPlugin::initialize()
 
 	/** Sanitize tags */
 	RenX::sanitizeTags(playerRDNSFmt);
+	RenX::sanitizeTags(playerIdentifyFmt);
 	RenX::sanitizeTags(joinPublicFmt);
 	RenX::sanitizeTags(joinAdminFmt);
 	RenX::sanitizeTags(joinNoSteamAdminFmt);
@@ -548,6 +553,22 @@ void RenX_LoggingPlugin::RenX_OnPlayerRDNS(RenX::Server *server, const RenX::Pla
 
 	Jupiter::String msg = this->playerRDNSFmt;
 	if (msg.isNotEmpty())
+	{
+		RenX::processTags(msg, server, player);
+		(server->*func)(msg);
+	}
+}
+
+void RenX_LoggingPlugin::RenX_OnPlayerIdentify(RenX::Server *server, const RenX::PlayerInfo *player)
+{
+	logFuncType func;
+	if (RenX_LoggingPlugin::playerIdentifyPublic)
+		func = &RenX::Server::sendLogChan;
+	else
+		func = &RenX::Server::sendAdmChan;
+
+	Jupiter::String msg = this->playerIdentifyFmt;
+	if (msg.isNotEmpty() && server->isMatchPending() == false)
 	{
 		RenX::processTags(msg, server, player);
 		(server->*func)(msg);

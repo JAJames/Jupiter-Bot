@@ -80,6 +80,11 @@ int RenX::Server::think()
 						for (size_t index = 0; index < xPlugins.size(); ++index)
 							xPlugins.get(index)->RenX_OnPlayerRDNS(this, player);
 
+						// Fire player indentified event if ready
+						if (player->hwid.isNotEmpty())
+							for (size_t index = 0; index < xPlugins.size(); ++index)
+								xPlugins.get(index)->RenX_OnPlayerIdentify(this, player);
+
 						if (this->player_rdns_resolutions_pending == 0) // No more resolutions pending
 							return;
 					}
@@ -1099,6 +1104,7 @@ RenX::GameCommand *RenX::Server::triggerCommand(const Jupiter::ReadableString &t
 {
 	RenX::GameCommand *cmd;
 
+	RenX::GameCommand::active_server = this;
 	for (size_t i = 0; i < RenX::Server::commands.size(); i++)
 	{
 		cmd = RenX::Server::commands.get(i);
@@ -1112,6 +1118,7 @@ RenX::GameCommand *RenX::Server::triggerCommand(const Jupiter::ReadableString &t
 			return cmd;
 		}
 	}
+	RenX::GameCommand::active_server = RenX::GameCommand::selected_server;
 
 	return nullptr;
 }
@@ -2679,6 +2686,10 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 
 						for (size_t index = 0; index < xPlugins.size(); ++index)
 							xPlugins.get(index)->RenX_OnHWID(this, player);
+
+						if (player->rdns.isNotEmpty())
+							for (size_t index = 0; index < xPlugins.size(); ++index)
+								xPlugins.get(index)->RenX_OnPlayerIdentify(this, player);
 					}
 					else if (subHeader.equals("Exit;"))
 					{
@@ -3542,6 +3553,11 @@ void RenX::Server::init(const Jupiter::INIFile::Section &config)
 
 RenX::Server::~Server()
 {
+	if (RenX::GameCommand::selected_server == nullptr)
+		RenX::GameCommand::selected_server = nullptr;
+	if (RenX::GameCommand::active_server == nullptr)
+		RenX::GameCommand::active_server = RenX::GameCommand::selected_server;
+
 	sock.close();
 	RenX::Server::wipeData();
 	RenX::Server::commands.emptyAndDelete();
