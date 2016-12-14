@@ -1008,6 +1008,7 @@ namespace RenX
 	/** Private members */
 	private:
 		void init(const Jupiter::INIFile::Section &config);
+		void wipePlayers();
 
 		/** Tracking variables */
 		bool gameover_when_empty = false;

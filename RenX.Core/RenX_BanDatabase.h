@@ -151,6 +151,7 @@ namespace RenX
 		* @param name Name of the player to ban
 		* @param ip IPv4 address of the player to ban
 		* @param steamid SteamID of the player to ban
+		* @param hwid Hardware ID of the player to ban
 		* @param rdns RDNS of the player to ban
 		* @param banner Person implementing the ban
 		* @param reason Reason the player is getting banned

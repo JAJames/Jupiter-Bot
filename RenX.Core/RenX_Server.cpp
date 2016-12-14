@@ -1387,34 +1387,31 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 		this->firstDeath = false;
 		RenX::PlayerInfo *player;
 
-		if (this->players.size() != 0)
+		if (this->isSeamless() == false)
+			RenX::Server::wipePlayers();
+		else if (this->players.size() != 0)
 		{
 			for (Jupiter::DLList<RenX::PlayerInfo>::Node *n = this->players.getNode(0); n != nullptr; n = n->next)
 			{
 				player = n->data;
 				if (player != nullptr)
 				{
-					if (this->isSeamless())
-					{
-						player->score = 0.0f;
-						player->credits = 0.0f;
-						player->kills = 0;
-						player->deaths = 0;
-						player->suicides = 0;
-						player->headshots = 0;
-						player->vehicleKills = 0;
-						player->buildingKills = 0;
-						player->defenceKills = 0;
-						player->beaconPlacements = 0;
-						player->beaconDisarms = 0;
-						player->proxy_placements = 0;
-						player->proxy_disarms = 0;
-						player->captures = 0;
-						player->steals = 0;
-						player->stolen = 0;
-					}
-					else
-						this->removePlayer(player);
+					player->score = 0.0f;
+					player->credits = 0.0f;
+					player->kills = 0;
+					player->deaths = 0;
+					player->suicides = 0;
+					player->headshots = 0;
+					player->vehicleKills = 0;
+					player->buildingKills = 0;
+					player->defenceKills = 0;
+					player->beaconPlacements = 0;
+					player->beaconDisarms = 0;
+					player->proxy_placements = 0;
+					player->proxy_disarms = 0;
+					player->captures = 0;
+					player->steals = 0;
+					player->stolen = 0;
 				}
 			}
 		}
@@ -3409,22 +3406,7 @@ bool RenX::Server::reconnect(RenX::DisconnectReason reason)
 
 void RenX::Server::wipeData()
 {
-	RenX::PlayerInfo *player;
-	Jupiter::ArrayList<RenX::Plugin> &xPlugins = *RenX::getCore()->getPlugins();
-	while (RenX::Server::players.size() != 0)
-	{
-		player = RenX::Server::players.remove(0U);
-		for (size_t index = 0; index < xPlugins.size(); ++index)
-			xPlugins.get(index)->RenX_OnPlayerDelete(this, player);
-
-		if (player->rdns_thread.joinable()) // Close the RDNS thread, if one exists
-		{
-			--this->player_rdns_resolutions_pending;
-			player->rdns_thread.join();
-		}
-
-		delete player;
-	}
+	RenX::Server::wipePlayers();
 	RenX::Server::reliable = false;
 	RenX::Server::m_team_mode = 3;
 	RenX::Server::m_game_type = 1;
@@ -3441,6 +3423,27 @@ void RenX::Server::wipeData()
 	RenX::Server::awaitingPong = false;
 	RenX::Server::rconVersion = 0;
 	RenX::Server::rconUser.truncate(RenX::Server::rconUser.size());
+}
+
+void RenX::Server::wipePlayers()
+{
+	RenX::PlayerInfo *player;
+	Jupiter::ArrayList<RenX::Plugin> &xPlugins = *RenX::getCore()->getPlugins();
+
+	while (RenX::Server::players.size() != 0)
+	{
+		player = RenX::Server::players.remove(0U);
+		for (size_t index = 0; index < xPlugins.size(); ++index)
+			xPlugins.get(index)->RenX_OnPlayerDelete(this, player);
+
+		if (player->rdns_thread.joinable()) // Close the RDNS thread, if one exists
+		{
+			--this->player_rdns_resolutions_pending;
+			player->rdns_thread.join();
+		}
+
+		delete player;
+	}
 }
 
 unsigned int RenX::Server::getVersion() const
