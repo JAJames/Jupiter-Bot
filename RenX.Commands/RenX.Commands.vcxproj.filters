@@ -21,7 +21,7 @@
     <Library Include="..\Release\Plugins\RenX.Core.lib">
       <Filter>Resource Files</Filter>
     </Library>
-    <Library Include="..\Jupiter\Release\Jupiter.lib">
+    <Library Include="..\Release\Jupiter.lib">
       <Filter>Resource Files</Filter>
     </Library>
   </ItemGroup>

@@ -11,8 +11,8 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{24B039D0-5A71-4F76-8908-BAD772FDBE1A}</ProjectGuid>
-    <RootNamespace>RenX.Ladder.All-Time</RootNamespace>
+    <ProjectGuid>{29C995BB-6A23-4704-BF8D-EA177D5FC7A5}</ProjectGuid>
+    <RootNamespace>RenX.Net</RootNamespace>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -59,7 +59,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>../Bot;../Jupiter;../RenX.Core</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>../Bot;../Jupiter;../RenX.Core;../HTTPServer</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
@@ -69,14 +69,15 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="RenX_Ladder_All_Time.h" />
+    <ClInclude Include="RenX_Net.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="RenX_Ladder_All_Time.cpp" />
+    <ClCompile Include="RenX_Net.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Library Include="..\Release\Jupiter.lib" />
     <Library Include="..\Release\Bot.lib" />
+    <Library Include="..\Release\Plugins\HTTPServer.lib" />
     <Library Include="..\Release\Plugins\RenX.Core.lib" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

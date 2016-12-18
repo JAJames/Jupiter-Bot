@@ -101,7 +101,7 @@
     <ClInclude Include="ServerManager.h" />
   </ItemGroup>
   <ItemGroup>
-    <Library Include="..\Jupiter\Release\Jupiter.lib" />
+    <Library Include="..\Release\Jupiter.lib" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

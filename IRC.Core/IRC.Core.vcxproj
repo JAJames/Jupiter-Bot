@@ -75,7 +75,7 @@
     <ClCompile Include="IRC_Core.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <Library Include="..\Jupiter\Release\Jupiter.lib" />
+    <Library Include="..\Release\Jupiter.lib" />
     <Library Include="..\Release\Bot.lib" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

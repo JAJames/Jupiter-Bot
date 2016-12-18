@@ -1388,7 +1388,7 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 		RenX::PlayerInfo *player;
 
 		if (this->isSeamless() == false)
-			RenX::Server::wipePlayers();
+			this->wipePlayers();
 		else if (this->players.size() != 0)
 		{
 			for (Jupiter::DLList<RenX::PlayerInfo>::Node *n = this->players.getNode(0); n != nullptr; n = n->next)

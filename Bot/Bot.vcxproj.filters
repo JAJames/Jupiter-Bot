@@ -49,7 +49,7 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <Library Include="..\Jupiter\Release\Jupiter.lib">
+    <Library Include="..\Release\Jupiter.lib">
       <Filter>Resource Files</Filter>
     </Library>
   </ItemGroup>

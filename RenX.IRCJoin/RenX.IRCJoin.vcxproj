@@ -75,7 +75,7 @@
     <ClCompile Include="RenX_IRCJoin.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <Library Include="..\Jupiter\Release\Jupiter.lib" />
+    <Library Include="..\Release\Jupiter.lib" />
     <Library Include="..\Release\Bot.lib" />
     <Library Include="..\Release\Plugins\RenX.Core.lib" />
   </ItemGroup>
