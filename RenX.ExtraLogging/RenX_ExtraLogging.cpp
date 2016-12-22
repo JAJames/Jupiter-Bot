@@ -17,10 +17,11 @@
  */
 
 #include "Jupiter/IRC_Client.h"
-#include "Jupiter/INIFile.h"
 #include "RenX_ExtraLogging.h"
 #include "RenX_Server.h"
 #include "RenX_Tags.h"
+
+using namespace Jupiter::literals;
 
 RenX_ExtraLoggingPlugin::RenX_ExtraLoggingPlugin()
 {
@@ -45,11 +46,11 @@ int RenX_ExtraLoggingPlugin::OnRehash()
 
 bool RenX_ExtraLoggingPlugin::initialize()
 {
-	RenX_ExtraLoggingPlugin::filePrefix = this->config.get(Jupiter::ReferenceString::empty, STRING_LITERAL_AS_REFERENCE("FilePrefix"), Jupiter::StringS::Format("[%.*s] %.*s", RenX::tags->timeTag.size(), RenX::tags->timeTag.ptr(), RenX::tags->serverPrefixTag.size(), RenX::tags->serverPrefixTag.ptr()));
-	RenX_ExtraLoggingPlugin::consolePrefix = this->config.get(Jupiter::ReferenceString::empty, STRING_LITERAL_AS_REFERENCE("ConsolePrefix"), RenX_ExtraLoggingPlugin::filePrefix);
-	RenX_ExtraLoggingPlugin::newDayFmt = this->config.get(Jupiter::ReferenceString::empty, STRING_LITERAL_AS_REFERENCE("NewDayFormat"), Jupiter::StringS::Format("Time: %.*s %.*s", RenX::tags->timeTag.size(), RenX::tags->timeTag.ptr(), RenX::tags->dateTag.size(), RenX::tags->dateTag.ptr()));
-	RenX_ExtraLoggingPlugin::printToConsole = this->config.getBool(Jupiter::ReferenceString::empty, STRING_LITERAL_AS_REFERENCE("PrintToConsole"), true);
-	const Jupiter::CStringS logFile = this->config.get(Jupiter::ReferenceString::empty, STRING_LITERAL_AS_REFERENCE("LogFile"));
+	RenX_ExtraLoggingPlugin::filePrefix = this->config.get("FilePrefix"_jrs, Jupiter::StringS::Format("[%.*s] %.*s", RenX::tags->timeTag.size(), RenX::tags->timeTag.ptr(), RenX::tags->serverPrefixTag.size(), RenX::tags->serverPrefixTag.ptr()));
+	RenX_ExtraLoggingPlugin::consolePrefix = this->config.get("ConsolePrefix"_jrs, RenX_ExtraLoggingPlugin::filePrefix);
+	RenX_ExtraLoggingPlugin::newDayFmt = this->config.get("NewDayFormat"_jrs, Jupiter::StringS::Format("Time: %.*s %.*s", RenX::tags->timeTag.size(), RenX::tags->timeTag.ptr(), RenX::tags->dateTag.size(), RenX::tags->dateTag.ptr()));
+	RenX_ExtraLoggingPlugin::printToConsole = this->config.get<bool>("PrintToConsole"_jrs, true);
+	const Jupiter::CStringS logFile = this->config.get("LogFile"_jrs);
 
 	RenX::sanitizeTags(RenX_ExtraLoggingPlugin::filePrefix);
 	RenX::sanitizeTags(RenX_ExtraLoggingPlugin::consolePrefix);

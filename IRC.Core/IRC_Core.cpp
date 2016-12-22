@@ -30,7 +30,7 @@ IRCCorePlugin::~IRCCorePlugin()
 
 bool IRCCorePlugin::initialize()
 {
-	const Jupiter::ReadableString &serverList = this->config.get(Jupiter::ReferenceString::empty, "Servers"_jrs);
+	const Jupiter::ReadableString &serverList = this->config.get("Servers"_jrs);
 	if (serverList != nullptr)
 	{
 		serverManager->setConfig(this->config);

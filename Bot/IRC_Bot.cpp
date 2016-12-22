@@ -19,7 +19,7 @@
 #include <cstdio>
 #include <cstring>
 #include <cctype>
-#include "Jupiter/INIFile.h"
+#include "Jupiter/Config.h"
 #include "Jupiter/Plugin.h"
 #include "Jupiter/Functions.h"
 #include "IRC_Bot.h"
@@ -27,7 +27,7 @@
 
 using namespace Jupiter::literals;
 
-IRC_Bot::IRC_Bot(const Jupiter::INIFile::Section *in_primary_section, const Jupiter::INIFile::Section *in_secondary_section) : Client(in_primary_section, in_secondary_section)
+IRC_Bot::IRC_Bot(const Jupiter::Config *in_primary_section, const Jupiter::Config *in_secondary_section) : Client(in_primary_section, in_secondary_section)
 {
 	IRC_Bot::commandPrefix = this->readConfigValue("Prefix"_jrs);
 	
@@ -108,28 +108,24 @@ void IRC_Bot::setCommandAccessLevels(IRCCommand *in_command)
 {
 	auto set_command_access_levels = [this, in_command](const Jupiter::ReadableString &section_name)
 	{
-		Jupiter::INIFile::Section *section = serverManager->getConfig().getSection(section_name);
+		Jupiter::Config *section = serverManager->getConfig().getSection(section_name);
 
 		if (section != nullptr)
 		{
-			size_t section_length = section->size();
-			Jupiter::INIFile::Section::KeyValuePair *pair;
-			size_t tmp_index;
-			Jupiter::ReferenceString tmp_key, tmp_sub_key;
-			IRCCommand *command;
-
-			for (size_t pair_index = 0; pair_index != section_length; ++pair_index)
+			auto read_section = [this, section, in_command](Jupiter::HashTable::Bucket::Entry &in_entry)
 			{
-				pair = section->getPair(pair_index);
+				size_t tmp_index;
+				Jupiter::ReferenceString tmp_key, tmp_sub_key;
+				IRCCommand *command;
 
-				tmp_index = pair->getKey().find('.');
+				tmp_index = in_entry.key.find('.');
 				if (tmp_index != Jupiter::INVALID_INDEX)
 				{
 					// non-default access assignment
 
-					tmp_key.set(pair->getKey().ptr(), tmp_index);
+					tmp_key.set(in_entry.key.ptr(), tmp_index);
 
-					tmp_sub_key = pair->getKey();
+					tmp_sub_key = in_entry.key;
 					tmp_sub_key.shiftRight(tmp_index + 1);
 
 					if (tmp_sub_key.findi("Type."_jrs) == 0)
@@ -138,7 +134,7 @@ void IRC_Bot::setCommandAccessLevels(IRCCommand *in_command)
 
 						command = this->getCommand(tmp_key);
 						if (command != nullptr && (in_command == nullptr || in_command == command))
-							command->setAccessLevel(tmp_sub_key.asInt(), pair->getValue().asInt());
+							command->setAccessLevel(tmp_sub_key.asInt(), in_entry.value.asInt());
 					}
 					else if (tmp_sub_key.findi("Channel."_jrs) == 0)
 					{
@@ -147,21 +143,21 @@ void IRC_Bot::setCommandAccessLevels(IRCCommand *in_command)
 						// Assign access level to command (if command exists)
 						command = this->getCommand(tmp_key);
 						if (command != nullptr && (in_command == nullptr || in_command == command))
-							command->setAccessLevel(tmp_sub_key, pair->getValue().asInt());
+							command->setAccessLevel(tmp_sub_key, in_entry.value.asInt());
 					}
 				}
 				else
 				{
 					// Assign access level to command (if command exists)
-					command = this->getCommand(pair->getKey());
+					command = this->getCommand(in_entry.key);
 					if (command != nullptr && (in_command == nullptr || in_command == command))
-						command->setAccessLevel(pair->getValue().asInt());
+						command->setAccessLevel(in_entry.value.asInt());
 				}
-			}
+			};
 		}
 	};
 
-	const Jupiter::INIFile::Section *section;
+	const Jupiter::Config *section;
 	
 	section = this->getSecondaryConfigSection();
 	if (section != nullptr)

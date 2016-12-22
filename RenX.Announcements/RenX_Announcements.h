@@ -30,7 +30,7 @@
 class RenX_AnnouncementsPlugin : public RenX::Plugin
 {
 public:
-	void announce(unsigned int);
+	void announce(unsigned int, void *);
 
 public: // Jupiter::Plugin
 	virtual bool initialize() override;
@@ -41,7 +41,6 @@ private:
 	bool random;
 	unsigned int lastLine;
 	Jupiter::Timer *timer;
-	//Jupiter::StringS modsTag;
 	Jupiter::File announcementsFile;
 };
 

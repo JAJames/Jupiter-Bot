@@ -25,7 +25,7 @@
  */
 
 #include <chrono>
-#include "Jupiter/INIFile.h"
+#include "Jupiter/Config.h"
 #include "Jupiter/String.h"
 #include "RenX.h"
 #include "RenX_Map.h"
@@ -126,7 +126,7 @@ namespace RenX
 	*
 	* @param filename Optional parameter to specify which file to load.
 	*/
-	RENX_API void initTranslations(Jupiter::INIFile &settings);
+	RENX_API void initTranslations(Jupiter::Config &settings);
 
 	/**
 	* @brief Creates a String containing an IRC-ready version of the player's name.

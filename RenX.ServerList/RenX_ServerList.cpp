@@ -17,7 +17,6 @@
  */
 
 #include "Jupiter/IRC_Client.h"
-#include "Jupiter/INIFile.h"
 #include "Jupiter/HTTP.h"
 #include "Jupiter/HTTP_QueryString.h"
 #include "HTTPServer.h"
@@ -146,12 +145,12 @@ Jupiter::String sanitize_game(const Jupiter::ReadableString &in_str)
 
 bool RenX_ServerListPlugin::initialize()
 {
-	RenX_ServerListPlugin::web_hostname = this->config.get(Jupiter::ReferenceString::empty, "Hostname"_jrs, ""_jrs);
-	RenX_ServerListPlugin::web_path = this->config.get(Jupiter::ReferenceString::empty, "Path"_jrs, "/"_jrs);
-	RenX_ServerListPlugin::server_list_page_name = this->config.get(Jupiter::ReferenceString::empty, "ServersPageName"_jrs, "servers.jsp"_jrs);
-	RenX_ServerListPlugin::server_list_long_page_name = this->config.get(Jupiter::ReferenceString::empty, "HumanServersPageName"_jrs, "servers_long.jsp"_jrs);
-	RenX_ServerListPlugin::server_page_name = this->config.get(Jupiter::ReferenceString::empty, "ServerPageName"_jrs, "server.jsp"_jrs);
-	RenX_ServerListPlugin::game_server_list_page_name = this->config.get(Jupiter::ReferenceString::empty, "ServersGamePageName"_jrs, "browser.jsp"_jrs);
+	RenX_ServerListPlugin::web_hostname = this->config.get("Hostname"_jrs, ""_jrs);
+	RenX_ServerListPlugin::web_path = this->config.get("Path"_jrs, "/"_jrs);
+	RenX_ServerListPlugin::server_list_page_name = this->config.get("ServersPageName"_jrs, "servers.jsp"_jrs);
+	RenX_ServerListPlugin::server_list_long_page_name = this->config.get("HumanServersPageName"_jrs, "servers_long.jsp"_jrs);
+	RenX_ServerListPlugin::server_page_name = this->config.get("ServerPageName"_jrs, "server.jsp"_jrs);
+	RenX_ServerListPlugin::game_server_list_page_name = this->config.get("ServersGamePageName"_jrs, "browser.jsp"_jrs);
 
 	/** Initialize content */
 	Jupiter::HTTP::Server &server = getHTTPServer();
@@ -559,7 +558,7 @@ void RenX_ServerListPlugin::addServerToServerList(RenX::Server *server)
 
 	server_json_block += '}';
 
-	server->varData.set(this->name, "j"_jrs, server_json_block);
+	server->varData[this->name].set("j"_jrs, server_json_block);
 }
 
 void RenX_ServerListPlugin::updateServerList()
@@ -613,7 +612,7 @@ void RenX_ServerListPlugin::RenX_OnServerDisconnect(RenX::Server *server, RenX::
 	this->updateServerList();
 
 	// remove from individual listing
-	server->varData.remove(this->name, "j"_jrs);
+	server->varData[this->name].remove("j"_jrs);
 }
 
 void RenX_ServerListPlugin::RenX_OnJoin(RenX::Server *, const RenX::PlayerInfo *)
@@ -694,7 +693,7 @@ Jupiter::ReadableString *handle_server_page(const Jupiter::ReadableString &query
 	if (html_form_response.table.size() != 0)
 	{
 		address = html_form_response.table.get("ip"_jrs, address);
-		port = html_form_response.table.getInt("port"_jrs, port);
+		port = html_form_response.table.getCast<int>("port"_jrs, port);
 	}
 
 	// search for server
@@ -714,7 +713,7 @@ Jupiter::ReadableString *handle_server_page(const Jupiter::ReadableString &query
 	}
 
 	// return server data
-	return new Jupiter::ReferenceString(server->varData.get(pluginInstance.getName(), "j"_jrs));
+	return new Jupiter::ReferenceString(server->varData[pluginInstance.getName()].get("j"_jrs));
 }
 
 Jupiter::ReadableString *handle_game_server_list_page(const Jupiter::ReadableString &query_string)

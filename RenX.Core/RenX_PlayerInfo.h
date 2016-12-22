@@ -29,7 +29,7 @@
 #include <thread>
 #include "Jupiter/Reference_String.h"
 #include "Jupiter/String.h"
-#include "Jupiter/INIFile.h"
+#include "Jupiter/Config.h"
 #include "RenX.h"
 
 /** DLL Linkage Nagging */
@@ -93,7 +93,7 @@ namespace RenX
 		mutable Jupiter::StringS formatNamePrefix;
 		mutable std::thread rdns_thread;
 		mutable int access = 0;
-		mutable Jupiter::INIFile varData; // This will be replaced later with a more dedicated type.
+		mutable Jupiter::Config varData;
 	};
 
 	static Jupiter::ReferenceString rdns_pending = STRING_LITERAL_AS_REFERENCE("RDNS_PENDING");

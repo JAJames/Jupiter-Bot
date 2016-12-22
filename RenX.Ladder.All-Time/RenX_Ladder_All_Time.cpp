@@ -16,7 +16,6 @@
  * Written by Jessica James <jessica.aj@outlook.com>
  */
 
-#include "Jupiter/INIFile.h"
 #include "Jupiter/IRC_Client.h"
 #include "RenX_Ladder_All_Time.h"
 
@@ -25,12 +24,12 @@ using namespace Jupiter::literals;
 bool RenX_Ladder_All_TimePlugin::initialize()
 {
 	// Load database
-	this->database.process_file(this->config.get(Jupiter::ReferenceString::empty, "LadderDatabase"_jrs, "Ladder.db"_jrs));
-	this->database.setName(this->config.get(Jupiter::ReferenceString::empty, "DatabaseName"_jrs, "All-Time"_jrs));
-	this->database.setOutputTimes(this->config.getBool(Jupiter::ReferenceString::empty, "OutputTimes"_jrs, true));
+	this->database.process_file(this->config.get("LadderDatabase"_jrs, "Ladder.db"_jrs));
+	this->database.setName(this->config.get("DatabaseName"_jrs, "All-Time"_jrs));
+	this->database.setOutputTimes(this->config.get<bool>("OutputTimes"_jrs, true));
 
 	// Force database to default, if desired
-	if (this->config.getBool(Jupiter::ReferenceString::empty, "ForceDefault"_jrs, true))
+	if (this->config.get<bool>("ForceDefault"_jrs, true))
 		RenX::default_ladder_database = &this->database;
 
 	return true;

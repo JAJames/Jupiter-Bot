@@ -17,7 +17,6 @@
  */
 
 #include <cinttypes>
-#include "Jupiter/INIFile.h"
 #include "Console_Command.h"
 #include "RenX_Ladder.h"
 #include "RenX_Server.h"
@@ -28,8 +27,8 @@ using namespace Jupiter::literals;
 
 bool RenX_LadderPlugin::initialize()
 {
-	RenX_LadderPlugin::only_pure = this->config.getBool(Jupiter::ReferenceString::empty, "OnlyPure"_jrs, false);
-	int mlcpno = this->config.getInt(Jupiter::ReferenceString::empty, "MaxLadderCommandPartNameOutput"_jrs, 5);
+	RenX_LadderPlugin::only_pure = this->config.get<bool>("OnlyPure"_jrs, false);
+	int mlcpno = this->config.get<int>("MaxLadderCommandPartNameOutput"_jrs, 5);
 	if (mlcpno < 0)
 		RenX_LadderPlugin::max_ladder_command_part_name_output = 0;
 	else
@@ -59,8 +58,8 @@ void RenX_LadderPlugin::RenX_OnGameOver(RenX::Server *server, RenX::WinType winT
 	if (server->isRanked() && server->isReliable() && server->players.size() != server->getBotCount())
 	{
 		char chr = static_cast<char>(team);
-		server->varData.set(this->name, "t"_jrs, Jupiter::ReferenceString(&chr, 1));
-		server->varData.set(this->name, "w"_jrs, "1"_jrs);
+		server->varData[this->name].set("t"_jrs, Jupiter::ReferenceString(&chr, 1));
+		server->varData[this->name].set("w"_jrs, "1"_jrs);
 		server->updateClientList();
 	}
 }
@@ -69,10 +68,10 @@ void RenX_LadderPlugin::RenX_OnCommand(RenX::Server *server, const Jupiter::Read
 {
 	if (server->getCurrentRCONCommand().equalsi("clientvarlist"_jrs))
 	{
-		if (server->varData.get(this->name, "w"_jrs, "0"_jrs).equals("1"))
+		if (server->varData[this->name].get("w"_jrs, "0"_jrs).equals("1"))
 		{
-			server->varData.set(this->name, "w"_jrs, "0"_jrs);
-			RenX::TeamType team = static_cast<RenX::TeamType>(server->varData.get(this->name, "t"_jrs, "\0"_jrs).get(0));
+			server->varData[this->name].set("w"_jrs, "0"_jrs);
+			RenX::TeamType team = static_cast<RenX::TeamType>(server->varData[this->name].get("t"_jrs, "\0"_jrs).get(0));
 			for (size_t index = 0; index != RenX::ladder_databases.size(); ++index)
 				RenX::ladder_databases.get(index)->updateLadder(server, team);
 		}

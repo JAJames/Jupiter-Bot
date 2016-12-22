@@ -17,7 +17,6 @@
  */
 
 #include "Jupiter/IRC_Client.h"
-#include "Jupiter/INIFile.h"
 #include "RenX_Server.h"
 #include "RenX_PlayerInfo.h"
 #include "RenX_MinPlayers.h"
@@ -26,7 +25,7 @@ using namespace Jupiter::literals;
 
 bool RenX_MinPlayersPlugin::initialize()
 {
-	RenX_MinPlayersPlugin::player_threshold = this->config.getInt(Jupiter::ReferenceString::empty, "PlayerThreshold"_jrs, 20);
+	RenX_MinPlayersPlugin::player_threshold = this->config.get<size_t>("PlayerThreshold"_jrs, 20);
 	return true;
 }
 

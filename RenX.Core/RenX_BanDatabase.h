@@ -91,7 +91,7 @@ namespace RenX
 			Jupiter::StringS name /** Name of the banned player */;
 			Jupiter::StringS banner /** Name of the user who initiated the ban */;
 			Jupiter::StringS reason /** Reason the player was banned */;
-			Jupiter::INIFile::Section varData; /** Variable entry data */
+			Jupiter::HashTable varData; /** Variable entry data */
 
 			static const uint16_t FLAG_ACTIVE = 0x8000U;
 			static const uint16_t FLAG_USE_RDNS = 0x4000U;

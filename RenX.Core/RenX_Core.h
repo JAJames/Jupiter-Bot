@@ -25,7 +25,7 @@
  */
 
 #include "Jupiter/Plugin.h"
-#include "Jupiter/INIFile.h"
+#include "Jupiter/Config.h"
 #include "RenX.h"
 
 /** DLL Linkage Nagging */
@@ -155,7 +155,7 @@ namespace RenX
 		*
 		* @return Commands settings configuration file.
 		*/
-		Jupiter::INIFile &getCommandsFile();
+		Jupiter::Config &getCommandsFile();
 
 		/**
 		* @brief Copys a command, and passes it to each server.
@@ -179,7 +179,7 @@ namespace RenX
 		/** Inaccessible private members */
 		Jupiter::ArrayList<RenX::Server> servers;
 		Jupiter::ArrayList<RenX::Plugin> plugins;
-		Jupiter::INIFile commandsFile;
+		Jupiter::INIConfig commandsFile;
 	};
 
 	RENX_API Core *getCore();

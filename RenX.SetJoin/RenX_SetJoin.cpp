@@ -17,7 +17,6 @@
  */
 
 #include "Jupiter/IRC_Client.h"
-#include "Jupiter/INIFile.h"
 #include "RenX_PlayerInfo.h"
 #include "RenX_Server.h"
 #include "RenX_SetJoin.h"
@@ -28,7 +27,7 @@ void RenX_SetJoinPlugin::RenX_OnJoin(RenX::Server *server, const RenX::PlayerInf
 {
 	if (player->uuid.isNotEmpty() && server->isMatchInProgress())
 	{
-		const Jupiter::ReadableString &setjoin = RenX_SetJoinPlugin::setjoin_file.get(Jupiter::ReferenceString::empty, player->uuid);
+		const Jupiter::ReadableString &setjoin = RenX_SetJoinPlugin::setjoin_file.get(player->uuid);
 		if (setjoin.isNotEmpty())
 			server->sendMessage(Jupiter::StringS::Format("[%.*s] %.*s", player->name.size(), player->name.ptr(), setjoin.size(), setjoin.ptr()));
 	}
@@ -49,7 +48,7 @@ void ViewJoinGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *player
 {
 	if (player->uuid.isNotEmpty())
 	{
-		const Jupiter::ReadableString &setjoin = pluginInstance.setjoin_file.get(Jupiter::ReferenceString::empty, player->uuid);
+		const Jupiter::ReadableString &setjoin = pluginInstance.setjoin_file.get(player->uuid);
 		if (setjoin.isNotEmpty())
 			source->sendMessage(player, Jupiter::StringS::Format("[%.*s] %.*s", player->name.size(), player->name.ptr(), setjoin.size(), setjoin.ptr()));
 		else source->sendMessage(player, "Error: No setjoin found."_jrs);
@@ -77,7 +76,7 @@ void ShowJoinGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *player
 {
 	if (player->uuid.isNotEmpty())
 	{
-		const Jupiter::ReadableString &setjoin = pluginInstance.setjoin_file.get(Jupiter::ReferenceString::empty, player->uuid);
+		const Jupiter::ReadableString &setjoin = pluginInstance.setjoin_file.get(player->uuid);
 		if (setjoin.isNotEmpty())
 			source->sendMessage(Jupiter::StringS::Format("[%.*s] %.*s", player->name.size(), player->name.ptr(), setjoin.size(), setjoin.ptr()));
 		else source->sendMessage(player, "Error: No setjoin found."_jrs);
@@ -107,7 +106,7 @@ void DelJoinGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *player,
 {
 	if (player->uuid.isNotEmpty())
 	{
-		if (pluginInstance.setjoin_file.remove(Jupiter::ReferenceString::empty, player->uuid))
+		if (pluginInstance.setjoin_file.remove(player->uuid))
 			source->sendMessage(player, Jupiter::StringS::Format("%.*s, your join message has been removed.", player->name.size(), player->name.ptr()));
 		else source->sendMessage(player, "Error: Setjoin not found."_jrs);
 	}
@@ -136,8 +135,8 @@ void SetJoinGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *player,
 	{
 		if (parameters.isNotEmpty())
 		{
-			pluginInstance.setjoin_file.set(Jupiter::ReferenceString::empty, player->uuid, parameters);
-			pluginInstance.setjoin_file.sync();
+			pluginInstance.setjoin_file.set(player->uuid, parameters);
+			pluginInstance.setjoin_file.write();
 			source->sendMessage(player, Jupiter::StringS::Format("%.*s, your join message is now: %.*s", player->name.size(), player->name.ptr(), parameters.size(), parameters.ptr()));
 		}
 		else DelJoinGameCommand_instance.trigger(source, player, parameters);

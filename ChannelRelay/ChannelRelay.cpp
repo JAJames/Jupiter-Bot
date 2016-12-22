@@ -17,7 +17,6 @@
  */
 
 #include "Jupiter/IRC_Client.h"
-#include "Jupiter/INIFile.h"
 #include "Jupiter/String.h"
 #include "ServerManager.h"
 #include "IRC_Bot.h"
@@ -27,7 +26,7 @@ using namespace Jupiter::literals;
 
 bool ChannelRelayPlugin::initialize()
 {
-	Jupiter::ReferenceString str = this->config.get(Jupiter::ReferenceString::empty, "Types"_jrs);
+	Jupiter::ReferenceString str = this->config.get("Types"_jrs);
 	unsigned int words = str.wordCount(WHITESPACE);
 	if (words == 0)
 		return false;

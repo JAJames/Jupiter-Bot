@@ -21,10 +21,12 @@
 #include "RenX_PlayerInfo.h"
 #include "RenX_Warn.h"
 
+using namespace Jupiter::literals;
+
 bool RenX_WarnPlugin::initialize()
 {
-	RenX_WarnPlugin::maxWarns = this->config.getInt(Jupiter::ReferenceString::empty, STRING_LITERAL_AS_REFERENCE("MaxWarns"), 3);
-	RenX_WarnPlugin::warnAction = this->config.getInt(Jupiter::ReferenceString::empty, STRING_LITERAL_AS_REFERENCE("MaxAction"), -1);
+	RenX_WarnPlugin::maxWarns = this->config.get<int>("MaxWarns"_jrs, 3);
+	RenX_WarnPlugin::warnAction = this->config.get<int>("MaxAction"_jrs, -1);
 	return true;
 }
 
@@ -43,8 +45,8 @@ STRING_LITERAL_AS_NAMED_REFERENCE(WARNS_KEY, "w");
 
 void WarnIRCCommand::create()
 {
-	this->addTrigger(STRING_LITERAL_AS_REFERENCE("warn"));
-	this->addTrigger(STRING_LITERAL_AS_REFERENCE("w"));
+	this->addTrigger("warn"_jrs);
+	this->addTrigger("w"_jrs);
 	this->setAccessLevel(2);
 }
 
@@ -68,7 +70,7 @@ void WarnIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &cha
 						player = server->getPlayerByPartName(parameters);
 						if (player != nullptr)
 						{
-							int warns = player->varData.getInt(pluginInstance.getName(), WARNS_KEY) + 1;
+							int warns = player->varData[pluginInstance.getName()].get<int>(WARNS_KEY) + 1;
 							if (warns > pluginInstance.maxWarns)
 							{
 								switch (pluginInstance.warnAction)
@@ -78,14 +80,14 @@ void WarnIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &cha
 									source->sendNotice(nick, Jupiter::StringS::Format("%.*s has been kicked from the server for exceeding the warning limit (%d warnings).", player->name.size(), player->name.ptr(), warns));
 									break;
 								default:
-									server->banPlayer(player, STRING_LITERAL_AS_REFERENCE("Jupiter Bot/RenX.Warn"), Jupiter::StringS::Format("Warning limit reached (%d warnings)", warns), std::chrono::seconds(pluginInstance.warnAction));
+									server->banPlayer(player, "Jupiter Bot/RenX.Warn"_jrs, Jupiter::StringS::Format("Warning limit reached (%d warnings)", warns), std::chrono::seconds(pluginInstance.warnAction));
 									source->sendNotice(nick, Jupiter::StringS::Format("%.*s has been banned from the server for exceeding the warning limit (%d warnings).", player->name.size(), player->name.ptr(), warns));
 									break;
 								}
 							}
 							else
 							{
-								player->varData.set(pluginInstance.getName(), WARNS_KEY, Jupiter::StringS::Format("%d", warns));
+								player->varData[pluginInstance.getName()].set(WARNS_KEY, Jupiter::StringS::Format("%d", warns));
 								server->sendMessage(player, Jupiter::StringS::Format("You have been warned by %.*s@IRC; improve your behavior, or you will be disciplined. You have %d warnings.", nick.size(), nick.ptr(), warns));
 								source->sendNotice(nick, Jupiter::StringS::Format("%.*s has been warned; they now have %d warnings.", player->name.size(), player->name.ptr(), warns));
 							}
@@ -94,11 +96,11 @@ void WarnIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &cha
 				}
 			}
 			else
-				source->sendMessage(channel, STRING_LITERAL_AS_REFERENCE("Error: Channel not attached to any connected Renegade X servers."));
+				source->sendMessage(channel, "Error: Channel not attached to any connected Renegade X servers."_jrs);
 		}
 	}
 	else
-		source->sendNotice(nick, STRING_LITERAL_AS_REFERENCE("Error: Too Few Parameters. Syntax: Warn <Player>"));
+		source->sendNotice(nick, "Error: Too Few Parameters. Syntax: Warn <Player>"_jrs);
 }
 
 const Jupiter::ReadableString &WarnIRCCommand::getHelp(const Jupiter::ReadableString &)
@@ -113,9 +115,9 @@ IRC_COMMAND_INIT(WarnIRCCommand)
 
 void PardonIRCCommand::create()
 {
-	this->addTrigger(STRING_LITERAL_AS_REFERENCE("pardon"));
-	this->addTrigger(STRING_LITERAL_AS_REFERENCE("forgive"));
-	this->addTrigger(STRING_LITERAL_AS_REFERENCE("unwarn"));
+	this->addTrigger("pardon"_jrs);
+	this->addTrigger("forgive"_jrs);
+	this->addTrigger("unwarn"_jrs);
 	this->setAccessLevel(2);
 }
 
@@ -139,7 +141,7 @@ void PardonIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &c
 						player = server->getPlayerByPartName(parameters);
 						if (player != nullptr)
 						{
-							player->varData.remove(pluginInstance.getName(), WARNS_KEY);
+							player->varData[pluginInstance.getName()].remove(WARNS_KEY);
 							server->sendMessage(player, Jupiter::StringS::Format("You have been pardoned by %.*s@IRC; your warnings have been reset.", nick.size(), nick.ptr()));
 							source->sendNotice(nick, Jupiter::StringS::Format("%.*s has been pardoned; their warnings have been reset.", player->name.size(), player->name.ptr()));
 						}
@@ -147,7 +149,7 @@ void PardonIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &c
 				}
 			}
 			else
-				source->sendMessage(channel, STRING_LITERAL_AS_REFERENCE("Error: Channel not attached to any connected Renegade X servers."));
+				source->sendMessage(channel, "Error: Channel not attached to any connected Renegade X servers."_jrs);
 		}
 	}
 	else
@@ -166,8 +168,8 @@ IRC_COMMAND_INIT(PardonIRCCommand)
 
 void WarnGameCommand::create()
 {
-	this->addTrigger(STRING_LITERAL_AS_REFERENCE("warn"));
-	this->addTrigger(STRING_LITERAL_AS_REFERENCE("w"));
+	this->addTrigger("warn"_jrs);
+	this->addTrigger("w"_jrs);
 	this->setAccessLevel(1);
 }
 
@@ -178,7 +180,7 @@ void WarnGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *player, co
 		RenX::PlayerInfo *target = source->getPlayerByPartName(parameters);
 		if (target != nullptr)
 		{
-			int warns = target->varData.getInt(pluginInstance.getName(), WARNS_KEY) + 1;
+			int warns = target->varData[pluginInstance.getName()].get<int>(WARNS_KEY) + 1;
 			if (warns > pluginInstance.maxWarns)
 			{
 				switch (pluginInstance.warnAction)
@@ -188,21 +190,21 @@ void WarnGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *player, co
 					source->sendMessage(player, Jupiter::StringS::Format("%.*s has been kicked from the server for exceeding the warning limit (%d warnings).", target->name.size(), target->name.ptr(), warns));
 					break;
 				default:
-					source->banPlayer(target, STRING_LITERAL_AS_REFERENCE("Jupiter Bot/RenX.Warn"), Jupiter::StringS::Format("Warning limit reached (%d warnings)", warns), std::chrono::seconds(pluginInstance.warnAction));
+					source->banPlayer(target, "Jupiter Bot/RenX.Warn"_jrs, Jupiter::StringS::Format("Warning limit reached (%d warnings)", warns), std::chrono::seconds(pluginInstance.warnAction));
 					source->sendMessage(player, Jupiter::StringS::Format("%.*s has been banned from the server for exceeding the warning limit (%d warnings).", target->name.size(), target->name.ptr(), warns));
 					break;
 				}
 			}
 			else
 			{
-				target->varData.set(pluginInstance.getName(), WARNS_KEY, Jupiter::StringS::Format("%d", warns));
+				target->varData[pluginInstance.getName()].set(WARNS_KEY, Jupiter::StringS::Format("%d", warns));
 				source->sendMessage(target, Jupiter::StringS::Format("You have been warned by %.*s; improve your behavior, or you will be disciplined. You have %d warnings.", player->name.size(), player->name.ptr(), warns));
 				source->sendMessage(player, Jupiter::StringS::Format("%.*s has been warned; they now have %d warnings.", target->name.size(), target->name.ptr(), warns));
 			}
 		}
 	}
 	else
-		source->sendMessage(player, STRING_LITERAL_AS_REFERENCE("Error: Too few parameters. Syntax: Warn <Player>"));
+		source->sendMessage(player, "Error: Too few parameters. Syntax: Warn <Player>"_jrs);
 }
 
 const Jupiter::ReadableString &WarnGameCommand::getHelp(const Jupiter::ReadableString &)
@@ -217,9 +219,9 @@ GAME_COMMAND_INIT(WarnGameCommand)
 
 void PardonGameCommand::create()
 {
-	this->addTrigger(STRING_LITERAL_AS_REFERENCE("pardon"));
-	this->addTrigger(STRING_LITERAL_AS_REFERENCE("forgive"));
-	this->addTrigger(STRING_LITERAL_AS_REFERENCE("unwarn"));
+	this->addTrigger("pardon"_jrs);
+	this->addTrigger("forgive"_jrs);
+	this->addTrigger("unwarn"_jrs);
 	this->setAccessLevel(1);
 }
 
@@ -230,7 +232,7 @@ void PardonGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *player, 
 		RenX::PlayerInfo *target = source->getPlayerByPartName(parameters);
 		if (target != nullptr)
 		{
-			target->varData.remove(pluginInstance.getName(), WARNS_KEY);
+			target->varData[pluginInstance.getName()].remove(WARNS_KEY);
 			source->sendMessage(target, Jupiter::StringS::Format("You have been pardoned by %.*s@IRC; your warnings have been reset.", player->name.size(), player->name.ptr()));
 			source->sendMessage(player, Jupiter::StringS::Format("%.*s has been pardoned; their warnings have been reset.", target->name.size(), target->name.ptr()));
 		}

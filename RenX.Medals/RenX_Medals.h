@@ -19,8 +19,8 @@
 #if !defined _RENX_MEDALS_H_HEADER
 #define _RENX_MEDALS_H_HEADER
 
+#include <chrono>
 #include "Jupiter/Plugin.h"
-#include "Jupiter/INIFile.h"
 #include "Jupiter/String.h"
 #include "RenX_Plugin.h"
 #include "RenX_GameCommand.h"
@@ -57,15 +57,15 @@ public: // Jupiter::Plugin
 	int OnRehash() override;
 
 public:
-	time_t killCongratDelay;
-	time_t vehicleKillCongratDelay;
-	time_t kdrCongratDelay;
+	std::chrono::milliseconds killCongratDelay;
+	std::chrono::milliseconds vehicleKillCongratDelay;
+	std::chrono::milliseconds kdrCongratDelay;
 	Jupiter::StringS recsTag;
 	Jupiter::StringS noobTag;
 	Jupiter::StringS worthTag;
 	Jupiter::StringS firstSection;
 	Jupiter::StringS medalsFileName;
-	Jupiter::INIFile medalsFile;
+	Jupiter::INIConfig medalsFile;
 
 private:
 	Jupiter::StringS INTERNAL_RECS_TAG;

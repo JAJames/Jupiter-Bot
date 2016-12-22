@@ -17,25 +17,26 @@
  */
 
 #include "Jupiter/IRC_Client.h"
-#include "Jupiter/INIFile.h"
 #include "Jupiter/String.h"
 #include "RenX_Core.h"
 #include "RenX_Server.h"
 #include "RenX_IRCJoin.h"
 
+using namespace Jupiter::literals;
+
 bool RenX_IRCJoinPlugin::initialize()
 {
-	RenX_IRCJoinPlugin::publicOnly = this->config.getBool(Jupiter::ReferenceString::empty, STRING_LITERAL_AS_REFERENCE("PublicOnly"), true);
-	RenX_IRCJoinPlugin::joinMsgAlways = this->config.getBool(Jupiter::ReferenceString::empty, STRING_LITERAL_AS_REFERENCE("Join.MsgAlways"), false);
-	RenX_IRCJoinPlugin::partMsgAlways = this->config.getBool(Jupiter::ReferenceString::empty, STRING_LITERAL_AS_REFERENCE("Part.MsgAlways"), false);
-	RenX_IRCJoinPlugin::minAccessPartMessage = this->config.getInt(Jupiter::ReferenceString::empty, STRING_LITERAL_AS_REFERENCE("Part.MinAccess"), 0);
-	RenX_IRCJoinPlugin::maxAccessPartMessage = this->config.getInt(Jupiter::ReferenceString::empty, STRING_LITERAL_AS_REFERENCE("Part.MaxAccess"), -1);
-	RenX_IRCJoinPlugin::nameTag = this->config.get(Jupiter::ReferenceString::empty, STRING_LITERAL_AS_REFERENCE("NameTag"), STRING_LITERAL_AS_REFERENCE("{NAME}"));
-	RenX_IRCJoinPlugin::chanTag = this->config.get(Jupiter::ReferenceString::empty, STRING_LITERAL_AS_REFERENCE("ChannelTag"), STRING_LITERAL_AS_REFERENCE("{CHAN}"));
-	RenX_IRCJoinPlugin::partReasonTag = this->config.get(Jupiter::ReferenceString::empty, STRING_LITERAL_AS_REFERENCE("PartReasonTag"), STRING_LITERAL_AS_REFERENCE("{REASON}"));
-	RenX_IRCJoinPlugin::joinFmt = this->config.get(Jupiter::ReferenceString::empty, STRING_LITERAL_AS_REFERENCE("Join.Format"), STRING_LITERAL_AS_REFERENCE("{NAME} has joined {CHAN}!"));
-	RenX_IRCJoinPlugin::partFmt = this->config.get(Jupiter::ReferenceString::empty, STRING_LITERAL_AS_REFERENCE("Part.Format"), STRING_LITERAL_AS_REFERENCE("{NAME} has left {CHAN} ({REASON})!"));
-	RenX_IRCJoinPlugin::partFmtNoReason = this->config.get(Jupiter::ReferenceString::empty, STRING_LITERAL_AS_REFERENCE("Part.FormatNoReason"), STRING_LITERAL_AS_REFERENCE("{NAME} has left {CHAN}!"));
+	RenX_IRCJoinPlugin::publicOnly = this->config.get<bool>("PublicOnly"_jrs, true);
+	RenX_IRCJoinPlugin::joinMsgAlways = this->config.get<bool>("Join.MsgAlways"_jrs, false);
+	RenX_IRCJoinPlugin::partMsgAlways = this->config.get<bool>("Part.MsgAlways"_jrs, false);
+	RenX_IRCJoinPlugin::minAccessPartMessage = this->config.get<int>("Part.MinAccess"_jrs, 0);
+	RenX_IRCJoinPlugin::maxAccessPartMessage = this->config.get<int>("Part.MaxAccess"_jrs, -1);
+	RenX_IRCJoinPlugin::nameTag = this->config.get("NameTag"_jrs, "{NAME}"_jrs);
+	RenX_IRCJoinPlugin::chanTag = this->config.get("ChannelTag"_jrs, "{CHAN}"_jrs);
+	RenX_IRCJoinPlugin::partReasonTag = this->config.get("PartReasonTag"_jrs, "{REASON}"_jrs);
+	RenX_IRCJoinPlugin::joinFmt = this->config.get("Join.Format"_jrs, "{NAME} has joined {CHAN}!"_jrs);
+	RenX_IRCJoinPlugin::partFmt = this->config.get("Part.Format"_jrs, "{NAME} has left {CHAN} ({REASON})!"_jrs);
+	RenX_IRCJoinPlugin::partFmtNoReason = this->config.get("Part.FormatNoReason"_jrs, "{NAME} has left {CHAN}!"_jrs);
 
 	return true;
 }

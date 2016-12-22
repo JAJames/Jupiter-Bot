@@ -17,11 +17,12 @@
  */
 
 #include "Jupiter/IRC_Client.h"
-#include "Jupiter/INIFile.h"
 #include "Jupiter/CString.h"
 #include "RenX_Listen.h"
 #include "RenX_Core.h"
 #include "RenX_Server.h"
+
+using namespace Jupiter::literals;
 
 RenX_ListenPlugin::~RenX_ListenPlugin()
 {
@@ -30,9 +31,10 @@ RenX_ListenPlugin::~RenX_ListenPlugin()
 
 bool RenX_ListenPlugin::initialize()
 {
-	uint16_t port = this->config.getInt(Jupiter::ReferenceString::empty, STRING_LITERAL_AS_REFERENCE("Port"), 21337);
-	const Jupiter::ReadableString &address = this->config.get(Jupiter::ReferenceString::empty, STRING_LITERAL_AS_REFERENCE("Address"), STRING_LITERAL_AS_REFERENCE("0.0.0.0"));
-	RenX_ListenPlugin::serverSection = this->config.get(Jupiter::ReferenceString::empty, STRING_LITERAL_AS_REFERENCE("ServerSection"), this->getName());
+	uint16_t port = this->config.get<uint16_t>("Port"_jrs, 21337);
+	const Jupiter::ReadableString &address = this->config.get("Address"_jrs, "0.0.0.0"_jrs);
+	RenX_ListenPlugin::serverSection = this->config.get("ServerSection"_jrs, this->getName());
+
 	return RenX_ListenPlugin::socket.bind(Jupiter::CStringS(address).c_str(), port, true) && RenX_ListenPlugin::socket.setBlocking(false);
 }
 
@@ -55,9 +57,10 @@ int RenX_ListenPlugin::OnRehash()
 {
 	RenX::Plugin::OnRehash();
 
-	uint16_t port = this->config.getInt(Jupiter::ReferenceString::empty, STRING_LITERAL_AS_REFERENCE("Port"), 21337);
-	const Jupiter::ReadableString &address = this->config.get(Jupiter::ReferenceString::empty, STRING_LITERAL_AS_REFERENCE("Address"), STRING_LITERAL_AS_REFERENCE("0.0.0.0"));
-	RenX_ListenPlugin::serverSection = this->config.get(Jupiter::ReferenceString::empty, STRING_LITERAL_AS_REFERENCE("ServerSection"), this->getName());
+	uint16_t port = this->config.get<uint16_t>("Port"_jrs, 21337);
+	const Jupiter::ReadableString &address = this->config.get("Address"_jrs, "0.0.0.0"_jrs);
+	RenX_ListenPlugin::serverSection = this->config.get("ServerSection"_jrs, this->getName());
+
 	if (port != RenX_ListenPlugin::socket.getRemotePort() || address.equals(RenX_ListenPlugin::socket.getRemoteHostname()) == false)
 	{
 		puts("Notice: The Renegade-X listening socket has been changed!");

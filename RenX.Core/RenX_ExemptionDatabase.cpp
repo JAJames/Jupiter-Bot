@@ -18,7 +18,6 @@
 
 #include <cstdio>
 #include "Jupiter/IRC_Client.h"
-#include "Jupiter/INIFile.h"
 #include "RenX_PlayerInfo.h"
 #include "RenX_ExemptionDatabase.h"
 #include "RenX_Core.h"
@@ -187,7 +186,7 @@ const Jupiter::ArrayList<RenX::ExemptionDatabase::Entry> &RenX::ExemptionDatabas
 
 bool RenX::ExemptionDatabase::initialize()
 {
-	RenX::ExemptionDatabase::filename = RenX::getCore()->getConfig().get(Jupiter::ReferenceString::empty, STRING_LITERAL_AS_REFERENCE("ExemptionDB"), STRING_LITERAL_AS_REFERENCE("Exemptions.db"));
+	RenX::ExemptionDatabase::filename = RenX::getCore()->getConfig().get("ExemptionDB"_jrs, "Exemptions.db"_jrs);
 	return this->process_file(filename);
 }
 

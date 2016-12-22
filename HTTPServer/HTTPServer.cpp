@@ -16,14 +16,13 @@
  * Written by Jessica James <jessica.aj@outlook.com>
  */
 
-#include "Jupiter/INIFile.h"
 #include "HTTPServer.h"
 
 using namespace Jupiter::literals;
 
 HTTPServerPlugin::HTTPServerPlugin()
 {
-	HTTPServerPlugin::server.bind(this->config.get(Jupiter::ReferenceString::empty, "BindAddress"_jrs, "0.0.0.0"_jrs), this->config.getInt(Jupiter::ReferenceString::empty, "BindPort"_jrs, 80));
+	HTTPServerPlugin::server.bind(this->config.get("BindAddress"_jrs, "0.0.0.0"_jrs), this->config.get<uint16_t>("BindPort"_jrs, 80));
 }
 
 int HTTPServerPlugin::think()

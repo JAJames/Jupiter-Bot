@@ -147,14 +147,14 @@ public:
 	*
 	* @return Configuration file being used
 	*/
-	inline Jupiter::INIFile &getConfig() const { return *this->m_config; };
+	inline Jupiter::Config &getConfig() const { return *this->m_config; };
 
 	/**
 	* @brief Sets the configuration file to use
 	*
 	* @param Reference to the config file to use
 	*/
-	inline void setConfig(Jupiter::INIFile &in_config) { this->m_config = &in_config; };
+	inline void setConfig(Jupiter::Config &in_config) { this->m_config = &in_config; };
 
 	/**
 	* Destructor for the ServerManager class.
@@ -166,7 +166,7 @@ private:
 	Jupiter::ArrayList<IRC_Bot> servers;
 
 	/** Config to read data from */
-	Jupiter::INIFile *m_config = g_config;
+	Jupiter::Config *m_config = Jupiter::g_config;
 };
 
 /** Pointer to an instance of the server manager. Note: DO NOT DELETE OR FREE THIS POINTER. */

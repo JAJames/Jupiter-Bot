@@ -31,20 +31,22 @@
 
 using namespace Jupiter::literals;
 
+const Jupiter::ReferenceString RxCommandsSection = "RenX.Commands"_jrs;
+
 inline bool togglePhasing(RenX::Server *server, bool newState)
 {
-	server->varData.set(STRING_LITERAL_AS_REFERENCE("RenX.Commands"), STRING_LITERAL_AS_REFERENCE("phasing"), newState ? STRING_LITERAL_AS_REFERENCE("true") : STRING_LITERAL_AS_REFERENCE("false"));
+	server->varData[RxCommandsSection].set("phasing"_jrs, newState ? "true"_jrs : "false"_jrs);
 	return newState;
 }
 
 inline bool togglePhasing(RenX::Server *server)
 {
-	return togglePhasing(server, !server->varData.getBool(STRING_LITERAL_AS_REFERENCE("RenX.Commands"), STRING_LITERAL_AS_REFERENCE("phasing"), false));
+	return togglePhasing(server, !server->varData[RxCommandsSection].get<bool>("phasing"_jrs, false));
 }
 
 inline void onDie(RenX::Server *server, const RenX::PlayerInfo *player)
 {
-	if (player->isBot && server->varData.getBool(STRING_LITERAL_AS_REFERENCE("RenX.Commands"), STRING_LITERAL_AS_REFERENCE("phasing"), false))
+	if (player->isBot && server->varData[RxCommandsSection].get<bool>("phasing"_jrs, false))
 		server->kickPlayer(player, Jupiter::StringS::empty);
 }
 
@@ -65,11 +67,11 @@ void RenX_CommandsPlugin::RenX_OnDie(RenX::Server *server, const RenX::PlayerInf
 
 bool RenX_CommandsPlugin::initialize()
 {
-	RenX_CommandsPlugin::_defaultTempBanTime = std::chrono::seconds(this->config.getLongLong(Jupiter::ReferenceString::empty, STRING_LITERAL_AS_REFERENCE("TBanTime"), 86400));
-	RenX_CommandsPlugin::playerInfoFormat = this->config.get(Jupiter::ReferenceString::empty, STRING_LITERAL_AS_REFERENCE("PlayerInfoFormat"), STRING_LITERAL_AS_REFERENCE(IRCCOLOR "03[Player Info]" IRCCOLOR "{TCOLOR} Name: " IRCBOLD "{RNAME}" IRCBOLD " - ID: {ID} - Team: " IRCBOLD "{TEAML}" IRCBOLD " - Vehicle Kills: {VEHICLEKILLS} - Building Kills {BUILDINGKILLS} - Kills {KILLS} - Deaths: {DEATHS} - KDR: {KDR} - Access: {ACCESS}"));
-	RenX_CommandsPlugin::adminPlayerInfoFormat = this->config.get(Jupiter::ReferenceString::empty, STRING_LITERAL_AS_REFERENCE("AdminPlayerInfoFormat"), Jupiter::StringS::Format("%.*s - IP: " IRCBOLD "{IP}" IRCBOLD " - HWID: " IRCBOLD "{HWID}" IRCBOLD " - RDNS: " IRCBOLD "{RDNS}" IRCBOLD " - Steam ID: " IRCBOLD "{STEAM}", RenX_CommandsPlugin::playerInfoFormat.size(), RenX_CommandsPlugin::playerInfoFormat.ptr()));
-	RenX_CommandsPlugin::buildingInfoFormat = this->config.get(Jupiter::ReferenceString::empty, STRING_LITERAL_AS_REFERENCE("BuildingInfoFormat"), STRING_LITERAL_AS_REFERENCE(IRCCOLOR) + RenX::tags->buildingTeamColorTag + RenX::tags->buildingNameTag + STRING_LITERAL_AS_REFERENCE(IRCCOLOR " - " IRCCOLOR "07") + RenX::tags->buildingHealthPercentageTag + STRING_LITERAL_AS_REFERENCE("%"));
-	RenX_CommandsPlugin::staffTitle = this->config.get(Jupiter::ReferenceString::empty, STRING_LITERAL_AS_REFERENCE("StaffTitle"), STRING_LITERAL_AS_REFERENCE("Moderator"));
+	RenX_CommandsPlugin::_defaultTempBanTime = std::chrono::seconds(this->config.get<long long>("TBanTime"_jrs, 86400));
+	RenX_CommandsPlugin::playerInfoFormat = this->config.get("PlayerInfoFormat"_jrs, IRCCOLOR "03[Player Info]" IRCCOLOR "{TCOLOR} Name: " IRCBOLD "{RNAME}" IRCBOLD " - ID: {ID} - Team: " IRCBOLD "{TEAML}" IRCBOLD " - Vehicle Kills: {VEHICLEKILLS} - Building Kills {BUILDINGKILLS} - Kills {KILLS} - Deaths: {DEATHS} - KDR: {KDR} - Access: {ACCESS}"_jrs);
+	RenX_CommandsPlugin::adminPlayerInfoFormat = this->config.get("AdminPlayerInfoFormat"_jrs, Jupiter::StringS::Format("%.*s - IP: " IRCBOLD "{IP}" IRCBOLD " - HWID: " IRCBOLD "{HWID}" IRCBOLD " - RDNS: " IRCBOLD "{RDNS}" IRCBOLD " - Steam ID: " IRCBOLD "{STEAM}", RenX_CommandsPlugin::playerInfoFormat.size(), RenX_CommandsPlugin::playerInfoFormat.ptr()));
+	RenX_CommandsPlugin::buildingInfoFormat = this->config.get("BuildingInfoFormat"_jrs, ""_jrs IRCCOLOR + RenX::tags->buildingTeamColorTag + RenX::tags->buildingNameTag + IRCCOLOR " - " IRCCOLOR "07"_jrs + RenX::tags->buildingHealthPercentageTag + "%"_jrs);
+	RenX_CommandsPlugin::staffTitle = this->config.get("StaffTitle"_jrs, "Moderator"_jrs);
 
 	RenX::sanitizeTags(RenX_CommandsPlugin::playerInfoFormat);
 	RenX::sanitizeTags(RenX_CommandsPlugin::adminPlayerInfoFormat);

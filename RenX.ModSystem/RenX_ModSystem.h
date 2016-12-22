@@ -22,7 +22,6 @@
 #include "Jupiter/Plugin.h"
 #include "Jupiter/Reference_String.h"
 #include "Jupiter/String.h"
-#include "Jupiter/INIFile.h"
 #include "Jupiter/DLList.h"
 #include "IRC_Command.h"
 #include "RenX_Plugin.h"
@@ -104,7 +103,7 @@ public: // RenX::Plugin
 public: // Jupiter::Plugin
 	int OnRehash() override;
 
-	Jupiter::INIFile &modsFile = Jupiter::Plugin::config;
+	Jupiter::Config &modsFile = Jupiter::Plugin::config;
 private:
 	bool lockSteam;
 	bool lockIP;

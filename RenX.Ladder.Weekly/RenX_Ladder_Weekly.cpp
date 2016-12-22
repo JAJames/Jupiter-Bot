@@ -17,7 +17,6 @@
  */
 
 #include <ctime>
-#include "Jupiter/INIFile.h"
 #include "Jupiter/IRC_Client.h"
 #include "RenX_Ladder_Weekly.h"
 
@@ -26,16 +25,16 @@ using namespace Jupiter::literals;
 bool RenX_Ladder_Weekly_TimePlugin::initialize()
 {
 	// Load database
-	this->database.process_file(this->config.get(Jupiter::ReferenceString::empty, "LadderDatabase"_jrs, "Ladder.Weekly.db"_jrs));
-	this->database.setName(this->config.get(Jupiter::ReferenceString::empty, "DatabaseName"_jrs, "Weekly"_jrs));
-	this->database.setOutputTimes(this->config.getBool(Jupiter::ReferenceString::empty, "OutputTimes"_jrs, false));
+	this->database.process_file(this->config.get("LadderDatabase"_jrs, "Ladder.Weekly.db"_jrs));
+	this->database.setName(this->config.get("DatabaseName"_jrs, "Weekly"_jrs));
+	this->database.setOutputTimes(this->config.get<bool>("OutputTimes"_jrs, false));
 
 	this->last_sorted_day = gmtime(std::addressof<const time_t>(time(0)))->tm_wday;
-	this->reset_day = this->config.getInt(Jupiter::ReferenceString::empty, "ResetDay"_jrs);
+	this->reset_day = this->config.get<int>("ResetDay"_jrs);
 	this->database.OnPreUpdateLadder = OnPreUpdateLadder;
 
 	// Force database to default, if desired
-	if (this->config.getBool(Jupiter::ReferenceString::empty, "ForceDefault"_jrs, false))
+	if (this->config.get<bool>("ForceDefault"_jrs, false))
 		RenX::default_ladder_database = &this->database;
 
 	return true;

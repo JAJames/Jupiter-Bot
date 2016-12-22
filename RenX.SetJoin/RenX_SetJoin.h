@@ -20,14 +20,13 @@
 #define _RENX_SETJOIN_H_HEADER
 
 #include "Jupiter/Plugin.h"
-#include "Jupiter/INIFile.h"
 #include "RenX_Plugin.h"
 #include "RenX_GameCommand.h"
 
 class RenX_SetJoinPlugin : public RenX::Plugin
 {
 public:
-	Jupiter::INIFile &setjoin_file = Jupiter::Plugin::config;
+	Jupiter::Config &setjoin_file = Jupiter::Plugin::config;
 
 public: // RenX::Plugin
 	void RenX_OnJoin(RenX::Server *server, const RenX::PlayerInfo *player) override;

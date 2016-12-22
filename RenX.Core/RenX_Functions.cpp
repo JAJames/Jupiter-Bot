@@ -18,7 +18,6 @@
 
 #include <ctime>
 #include "Jupiter/Functions.h"
-#include "Jupiter/INIFile.h"
 #include "IRC_Bot.h"
 #include "ServerManager.h"
 #include "RenX_Functions.h"
@@ -828,34 +827,34 @@ const Jupiter::ReadableString &RenX::translateWinTypePlain(RenX::WinType winType
 	}
 }
 
-void RenX::initTranslations(Jupiter::INIFile &translationsFile)
+void RenX::initTranslations(Jupiter::Config &translationsFile)
 {
-	NodColor = translationsFile.get("TeamColor"_jrs, "Nod"_jrs, "04"_jrs);
-	GDIColor = translationsFile.get("TeamColor"_jrs, "GDI"_jrs, "08"_jrs);
-	OtherColor = translationsFile.get("TeamColor"_jrs, "Other"_jrs, "14"_jrs);
+	NodColor = translationsFile["TeamColor"_jrs].get("Nod"_jrs, "04"_jrs);
+	GDIColor = translationsFile["TeamColor"_jrs].get("GDI"_jrs, "08"_jrs);
+	OtherColor = translationsFile["TeamColor"_jrs].get("Other"_jrs, "14"_jrs);
 
-	NodShortName = translationsFile.get("ShortTeamName"_jrs, "Nod"_jrs, "Nod"_jrs);
-	GDIShortName = translationsFile.get("ShortTeamName"_jrs, "GDI"_jrs, "GDI"_jrs);
-	OtherShortName = translationsFile.get("ShortTeamName"_jrs, "Other"_jrs, "N/A"_jrs);
-	NodLongName = translationsFile.get("LongTeamName"_jrs, "Nod"_jrs, "Brotherhood of Nod"_jrs);
-	GDILongName = translationsFile.get("LongTeamName"_jrs, "GDI"_jrs, "Global Defense Initiative"_jrs);
-	OtherLongName = translationsFile.get("LongTeamName"_jrs, "Other"_jrs, "Unknown"_jrs);
+	NodShortName = translationsFile["ShortTeamName"_jrs].get("Nod"_jrs, "Nod"_jrs);
+	GDIShortName = translationsFile["ShortTeamName"_jrs].get("GDI"_jrs, "GDI"_jrs);
+	OtherShortName = translationsFile["ShortTeamName"_jrs].get("Other"_jrs, "N/A"_jrs);
+	NodLongName = translationsFile["LongTeamName"_jrs].get("Nod"_jrs, "Brotherhood of Nod"_jrs);
+	GDILongName = translationsFile["LongTeamName"_jrs].get("GDI"_jrs, "Global Defense Initiative"_jrs);
+	OtherLongName = translationsFile["LongTeamName"_jrs].get("Other"_jrs, "Unknown"_jrs);
 
-	scoreWinTypeTranslation = translationsFile.get("WinType"_jrs, "Score"_jrs, "Domination (High Score)"_jrs);
-	baseWinTypeTranslation = translationsFile.get("WinType"_jrs, "Base"_jrs, "Conquest (Base Destruction)"_jrs);
-	beaconWinTypeTranslation = translationsFile.get("WinType"_jrs, "Beacon"_jrs, "Espionage (Beacon)"_jrs);
-	tieWinTypeTranslation = translationsFile.get("WinType"_jrs, "Tie"_jrs, "Draw (Tie)"_jrs);
-	shutdownWinTypeTranslation = translationsFile.get("WinType"_jrs, "Shutdown"_jrs, "Ceasefire (Shutdown)"_jrs);
-	surrenderWinTypeTranslation = translationsFile.get("WinType"_jrs, "Surrender"_jrs, "Forfeit (Surrender)"_jrs);
-	unknownWinTypeTranslation = translationsFile.get("WinType"_jrs, "Unknown"_jrs, "Aliens (Unknown)"_jrs);
+	scoreWinTypeTranslation = translationsFile["WinType"_jrs].get("Score"_jrs, "Domination (High Score)"_jrs);
+	baseWinTypeTranslation = translationsFile["WinType"_jrs].get("Base"_jrs, "Conquest (Base Destruction)"_jrs);
+	beaconWinTypeTranslation = translationsFile["WinType"_jrs].get("Beacon"_jrs, "Espionage (Beacon)"_jrs);
+	tieWinTypeTranslation = translationsFile["WinType"_jrs].get("Tie"_jrs, "Draw (Tie)"_jrs);
+	shutdownWinTypeTranslation = translationsFile["WinType"_jrs].get("Shutdown"_jrs, "Ceasefire (Shutdown)"_jrs);
+	surrenderWinTypeTranslation = translationsFile["WinType"_jrs].get("Surrender"_jrs, "Forfeit (Surrender)"_jrs);
+	unknownWinTypeTranslation = translationsFile["WinType"_jrs].get("Unknown"_jrs, "Aliens (Unknown)"_jrs);
 
-	scoreWinTypePlainTranslation = translationsFile.get("WinTypePlain"_jrs, "Score"_jrs, "High Score"_jrs);
-	baseWinTypePlainTranslation = translationsFile.get("WinTypePlain"_jrs, "Base"_jrs, "Base Destruction"_jrs);
-	beaconWinTypePlainTranslation = translationsFile.get("WinTypePlain"_jrs, "Beacon"_jrs, "Beacon"_jrs);
-	tieWinTypePlainTranslation = translationsFile.get("WinTypePlain"_jrs, "Tie"_jrs, "Tie"_jrs);
-	shutdownWinTypePlainTranslation = translationsFile.get("WinTypePlain"_jrs, "Shutdown"_jrs, "Shutdown"_jrs);
-	surrenderWinTypePlainTranslation = translationsFile.get("WinTypePlain"_jrs, "Surrender"_jrs, "Surrender"_jrs);
-	unknownWinTypePlainTranslation = translationsFile.get("WinTypePlain"_jrs, "Unknown"_jrs, "Unknown"_jrs);
+	scoreWinTypePlainTranslation = translationsFile["WinTypePlain"_jrs].get("Score"_jrs, "High Score"_jrs);
+	baseWinTypePlainTranslation = translationsFile["WinTypePlain"_jrs].get("Base"_jrs, "Base Destruction"_jrs);
+	beaconWinTypePlainTranslation = translationsFile["WinTypePlain"_jrs].get("Beacon"_jrs, "Beacon"_jrs);
+	tieWinTypePlainTranslation = translationsFile["WinTypePlain"_jrs].get("Tie"_jrs, "Tie"_jrs);
+	shutdownWinTypePlainTranslation = translationsFile["WinTypePlain"_jrs].get("Shutdown"_jrs, "Shutdown"_jrs);
+	surrenderWinTypePlainTranslation = translationsFile["WinTypePlain"_jrs].get("Surrender"_jrs, "Surrender"_jrs);
+	unknownWinTypePlainTranslation = translationsFile["WinTypePlain"_jrs].get("Unknown"_jrs, "Unknown"_jrs);
 }
 
 Jupiter::String RenX::getFormattedPlayerName(const RenX::PlayerInfo *player)

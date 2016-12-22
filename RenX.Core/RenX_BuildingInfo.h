@@ -25,7 +25,7 @@
  */
 
 #include "Jupiter/String.h"
-#include "Jupiter/INIFile.h"
+#include "Jupiter/Config.h"
 #include "RenX.h"
 
 /** DLL Linkage Nagging */
@@ -51,7 +51,7 @@ namespace RenX
 		bool capturable = false;
 		bool destroyed = false;
 		std::chrono::steady_clock::time_point destruction_time;
-		mutable Jupiter::INIFile varData;
+		mutable Jupiter::Config varData;
 	};
 
 }

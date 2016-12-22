@@ -18,7 +18,6 @@
 
 #include <ctime>
 #include "Jupiter/IRC_Client.h"
-#include "Jupiter/INIFile.h"
 #include "ExcessiveHeadshots.h"
 #include "RenX_Server.h"
 #include "RenX_PlayerInfo.h"
@@ -28,11 +27,11 @@ using namespace Jupiter::literals;
 
 bool RenX_ExcessiveHeadshotsPlugin::initialize()
 {
-	RenX_ExcessiveHeadshotsPlugin::ratio = this->config.getDouble(Jupiter::ReferenceString::empty, "HeadshotKillRatio"_jrs, 0.5);
-	RenX_ExcessiveHeadshotsPlugin::minKills = this->config.getInt(Jupiter::ReferenceString::empty, "Kills"_jrs, 10);
-	RenX_ExcessiveHeadshotsPlugin::minKD = this->config.getDouble(Jupiter::ReferenceString::empty, "KillDeathRatio"_jrs, 5.0);
-	RenX_ExcessiveHeadshotsPlugin::minKPS = this->config.getDouble(Jupiter::ReferenceString::empty, "KillsPerSecond"_jrs, 0.5);
-	RenX_ExcessiveHeadshotsPlugin::minFlags = this->config.getInt(Jupiter::ReferenceString::empty, "Flags"_jrs, 4);
+	RenX_ExcessiveHeadshotsPlugin::ratio = this->config.get<double>("HeadshotKillRatio"_jrs, 0.5);
+	RenX_ExcessiveHeadshotsPlugin::minKills = this->config.get<unsigned int>("Kills"_jrs, 10);
+	RenX_ExcessiveHeadshotsPlugin::minKD = this->config.get<double>("KillDeathRatio"_jrs, 5.0);
+	RenX_ExcessiveHeadshotsPlugin::minKPS = this->config.get<double>("KillsPerSecond"_jrs, 0.5);
+	RenX_ExcessiveHeadshotsPlugin::minFlags = this->config.get<unsigned int>("Flags"_jrs, 4);
 	return true;
 }
 

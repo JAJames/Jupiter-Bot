@@ -31,7 +31,7 @@
 #include "Jupiter/ArrayList.h"
 #include "Jupiter/String.h"
 #include "Jupiter/CString.h"
-#include "Jupiter/INIFile.h"
+#include "Jupiter/Config.h"
 #include "Jupiter/Thinker.h"
 #include "Jupiter/Rehash.h"
 #include "RenX.h"
@@ -88,7 +88,7 @@ namespace RenX
 		Jupiter::ArrayList<RenX::BuildingInfo> buildings; /** A list of buildings in the server */
 		Jupiter::ArrayList<Jupiter::StringS> mutators; /** A list of buildings the server is running */
 		Jupiter::ArrayList<RenX::Map> maps; /** A list of maps in the server's rotation */
-		Jupiter::INIFile varData; /** This may be replaced later with a more dedicated type. */
+		Jupiter::Config varData; /** Variable data. */
 
 		/**
 		* @brief Checks if the server is connected to RCON.
@@ -1007,7 +1007,7 @@ namespace RenX
 
 	/** Private members */
 	private:
-		void init(const Jupiter::INIFile::Section &config);
+		void init(const Jupiter::Config &config);
 		void wipePlayers();
 
 		/** Tracking variables */
@@ -1091,8 +1091,8 @@ namespace RenX
 		Jupiter::StringS ban_from_str;
 		Jupiter::StringS IRCPrefix;
 		Jupiter::StringS CommandPrefix;
-		Jupiter::INIFile::Section *commandAccessLevels;
-		Jupiter::INIFile::Section *commandAliases;
+		Jupiter::Config *commandAccessLevels;
+		Jupiter::Config *commandAliases;
 	};
 
 }

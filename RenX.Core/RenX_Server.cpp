@@ -17,7 +17,6 @@
  */
 
 #include <ctime>
-#include "Jupiter/INIFile.h"
 #include "Jupiter/String.h"
 #include "ServerManager.h"
 #include "IRC_Bot.h"
@@ -1617,76 +1616,76 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 					rPlayerLog Kills PlayerKills BotKills Deaths Score Credits Character BoundVehicle Vehicle Spy RemoteC4 ATMine KDR Ping Admin Steam IP ID Name Team TeamNum
 					rGDI,256,EKT-J 0 0 0 0 0 5217.9629 Rx_FamilyInfo_GDI_Soldier   False 0 0 0.0000 8 None 0x0110000104AE0666 127.0.0.1 256 EKT-J GDI 0
 					*/
-					Jupiter::INIFile::Section table;
+					Jupiter::HashTable table;
 					size_t i = tokens.token_count;
 					while (i-- != 0)
 						table.set(this->commandListFormat.getToken(i), tokens.getToken(i));
 					auto parse = [&table](RenX::PlayerInfo *player)
 					{
-						Jupiter::INIFile::Section::KeyValuePair *pair;
+						Jupiter::ReadableString *value;
 
-						pair = table.getPair("Kills"_jrs);
-						if (pair != nullptr)
-							player->kills = pair->getValue().asUnsignedInt();
+						value = table.get("Kills"_jrs);
+						if (value != nullptr)
+							player->kills = value->asUnsignedInt();
 
-						pair = table.getPair("Deaths"_jrs);
-						if (pair != nullptr)
-							player->deaths = pair->getValue().asUnsignedInt();
+						value = table.get("Deaths"_jrs);
+						if (value != nullptr)
+							player->deaths = value->asUnsignedInt();
 
-						pair = table.getPair("Score"_jrs);
-						if (pair != nullptr)
-							player->score = pair->getValue().asDouble();
+						value = table.get("Score"_jrs);
+						if (value != nullptr)
+							player->score = value->asDouble();
 
-						pair = table.getPair("Credits"_jrs);
-						if (pair != nullptr)
-							player->credits = pair->getValue().asDouble();
+						value = table.get("Credits"_jrs);
+						if (value != nullptr)
+							player->credits = value->asDouble();
 
-						pair = table.getPair("Character"_jrs);
-						if (pair != nullptr)
-							player->character = pair->getValue();
+						value = table.get("Character"_jrs);
+						if (value != nullptr)
+							player->character = *value;
 
-						pair = table.getPair("Vehicle"_jrs);
-						if (pair != nullptr)
-							player->vehicle = pair->getValue();
+						value = table.get("Vehicle"_jrs);
+						if (value != nullptr)
+							player->vehicle = *value;
 
-						pair = table.getPair("Ping"_jrs);
-						if (pair != nullptr)
-							player->ping = pair->getValue().asUnsignedInt();
+						value = table.get("Ping"_jrs);
+						if (value != nullptr)
+							player->ping = value->asUnsignedInt();
 
-						pair = table.getPair("Admin"_jrs);
-						if (pair != nullptr)
+						value = table.get("Admin"_jrs);
+						if (value != nullptr)
 						{
-							if (pair->getValue().equals("None"_jrs))
+							if (value->equals("None"_jrs))
 								player->adminType = "";
 							else
-								player->adminType = pair->getValue();
+								player->adminType = *value;
 						}
 					};
-					Jupiter::INIFile::Section::KeyValuePair *pair = table.getPair("PlayerLog"_jrs);
-					if (pair != nullptr)
-						parse(getPlayerOrAdd(Jupiter::ReferenceString::getToken(pair->getValue(), 2, ','), Jupiter::ReferenceString::getToken(pair->getValue(), 1, ',').asInt(), RenX::getTeam(Jupiter::ReferenceString::getToken(pair->getValue(), 0, ',')), false, table.get("STEAM"_jrs).asUnsignedLongLong(), table.get("IP"_jrs), table.get("HWID"_jrs)));
+					Jupiter::ReadableString *value = table.get("PlayerLog"_jrs);
+					if (value != nullptr)
+						parse(getPlayerOrAdd(Jupiter::ReferenceString::getToken(*value, 2, ','), Jupiter::ReferenceString::getToken(*value, 1, ',').asInt(), RenX::getTeam(Jupiter::ReferenceString::getToken(*value, 0, ',')), false, table.get("STEAM"_jrs, Jupiter::ReferenceString::empty).asUnsignedLongLong(), table.get("IP"_jrs, Jupiter::ReferenceString::empty), table.get("HWID"_jrs, Jupiter::ReferenceString::empty)));
 					else
 					{
-						Jupiter::INIFile::Section::KeyValuePair *namePair = table.getPair("Name"_jrs);
-						pair = table.getPair("ID"_jrs);
+						Jupiter::ReadableString *name = table.get("Name"_jrs);
+						value = table.get("ID"_jrs);
 
-						if (pair != nullptr)
+						if (value != nullptr)
 						{
-							RenX::PlayerInfo *player = getPlayer(pair->getValue().asInt());
+							RenX::PlayerInfo *player = getPlayer(value->asInt());
 							if (player != nullptr)
 							{
 								if (player->name.isEmpty())
 								{
-									player->name = table.get("Name"_jrs);
+									player->name = table.get("Name"_jrs, Jupiter::ReferenceString::empty);
 									player->name.processEscapeSequences();
 								}
 								if (player->ip.isEmpty())
-									player->ip = table.get("IP"_jrs);
+									player->ip = table.get("IP"_jrs, Jupiter::ReferenceString::empty);
 								if (player->hwid.isEmpty())
-									player->hwid = table.get("HWID"_jrs);
+									player->hwid = table.get("HWID"_jrs, Jupiter::ReferenceString::empty);
 								if (player->steamid == 0)
 								{
-									uint64_t steamid = table.get("STEAM"_jrs).asUnsignedLongLong();
+									uint64_t steamid = table.get("STEAM"_jrs, Jupiter::ReferenceString::empty).asUnsignedLongLong();
 									if (steamid != 0)
 									{
 										player->steamid = steamid;
@@ -1694,14 +1693,14 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 									}
 								}
 
-								pair = table.getPair("TeamNum"_jrs);
-								if (pair != nullptr)
-									player->team = RenX::getTeam(pair->getValue().asInt());
+								value = table.get("TeamNum"_jrs);
+								if (value != nullptr)
+									player->team = RenX::getTeam(value->asInt());
 								else
 								{
-									pair = table.getPair("Team"_jrs);
-									if (pair != nullptr)
-										player->team = RenX::getTeam(pair->getValue());
+									value = table.get("Team"_jrs);
+									if (value != nullptr)
+										player->team = RenX::getTeam(*value);
 								}
 
 								parse(player);
@@ -1709,18 +1708,18 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 							// I *could* try and fetch a player by name, but that seems like it *could* open a security hole.
 							// In addition, would I update their ID?
 						}
-						else if (namePair != nullptr)
+						else if (name != nullptr)
 						{
-							RenX::PlayerInfo *player = getPlayerByName(namePair->getValue());
+							RenX::PlayerInfo *player = getPlayerByName(*name);
 							if (player != nullptr)
 							{
 								if (player->ip.isEmpty())
-									player->ip = table.get("IP"_jrs);
+									player->ip = table.get("IP"_jrs, Jupiter::ReferenceString::empty);
 								if (player->hwid.isEmpty())
-									player->hwid = table.get("HWID"_jrs);
+									player->hwid = table.get("HWID"_jrs, Jupiter::ReferenceString::empty);
 								if (player->steamid == 0)
 								{
-									uint64_t steamid = table.get("STEAM"_jrs).asUnsignedLongLong();
+									uint64_t steamid = table.get("STEAM"_jrs, Jupiter::ReferenceString::empty).asUnsignedLongLong();
 									if (steamid != 0)
 									{
 										player->steamid = steamid;
@@ -1728,14 +1727,14 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 									}
 								}
 
-								pair = table.getPair("TeamNum"_jrs);
-								if (pair != nullptr)
-									player->team = RenX::getTeam(pair->getValue().asInt());
+								value = table.get("TeamNum"_jrs);
+								if (value != nullptr)
+									player->team = RenX::getTeam(value->asInt());
 								else
 								{
-									pair = table.getPair("Team"_jrs);
-									if (pair != nullptr)
-										player->team = RenX::getTeam(pair->getValue());
+									value = table.get("Team"_jrs);
+									if (value != nullptr)
+										player->team = RenX::getTeam(*value);
 								}
 
 								parse(player);
@@ -1764,83 +1763,83 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 					rPlayerLog Kills PlayerKills BotKills Deaths Score Credits Character BoundVehicle Vehicle Spy RemoteC4 ATMine KDR Ping Admin Steam IP ID Name Team TeamNum
 					rGDI,256,EKT-J 0 0 0 0 0 5217.9629 Rx_FamilyInfo_GDI_Soldier   False 0 0 0.0000 8 None 0x0110000104AE0666 127.0.0.1 256 EKT-J GDI 0
 					*/
-					Jupiter::INIFile::Section table;
+					Jupiter::HashTable table;
 					size_t i = tokens.token_count;
 					while (i-- != 0)
 						table.set(this->commandListFormat.getToken(i), tokens.getToken(i));
 					auto parse = [&table](RenX::PlayerInfo *player)
 					{
-						Jupiter::INIFile::Section::KeyValuePair *pair;
+						Jupiter::ReadableString *value;
 
-						pair = table.getPair("Kills"_jrs);
-						if (pair != nullptr)
-							player->kills = pair->getValue().asUnsignedInt();
+						value = table.get("Kills"_jrs);
+						if (value != nullptr)
+							player->kills = value->asUnsignedInt();
 
-						pair = table.getPair("Deaths"_jrs);
-						if (pair != nullptr)
-							player->deaths = pair->getValue().asUnsignedInt();
+						value = table.get("Deaths"_jrs);
+						if (value != nullptr)
+							player->deaths = value->asUnsignedInt();
 
-						pair = table.getPair("Score"_jrs);
-						if (pair != nullptr)
-							player->score = pair->getValue().asDouble();
+						value = table.get("Score"_jrs);
+						if (value != nullptr)
+							player->score = value->asDouble();
 
-						pair = table.getPair("Credits"_jrs);
-						if (pair != nullptr)
-							player->credits = pair->getValue().asDouble();
+						value = table.get("Credits"_jrs);
+						if (value != nullptr)
+							player->credits = value->asDouble();
 
-						pair = table.getPair("Character"_jrs);
-						if (pair != nullptr)
-							player->character = pair->getValue();
+						value = table.get("Character"_jrs);
+						if (value != nullptr)
+							player->character = *value;
 
-						pair = table.getPair("Vehicle"_jrs);
-						if (pair != nullptr)
-							player->vehicle = pair->getValue();
+						value = table.get("Vehicle"_jrs);
+						if (value != nullptr)
+							player->vehicle = *value;
 					};
-					Jupiter::INIFile::Section::KeyValuePair *pair = table.getPair("PlayerLog"_jrs);
-					if (pair != nullptr)
-						parse(getPlayerOrAdd(Jupiter::ReferenceString::getToken(pair->getValue(), 2, ','), Jupiter::ReferenceString::getToken(pair->getValue(), 1, ',').substring(1).asInt(), RenX::getTeam(Jupiter::ReferenceString::getToken(pair->getValue(), 0, ',')), true, 0ULL, Jupiter::ReferenceString::empty, Jupiter::ReferenceString::empty));
+					Jupiter::ReadableString *value = table.get("PlayerLog"_jrs);
+					if (value != nullptr)
+						parse(getPlayerOrAdd(Jupiter::ReferenceString::getToken(*value, 2, ','), Jupiter::ReferenceString::getToken(*value, 1, ',').substring(1).asInt(), RenX::getTeam(Jupiter::ReferenceString::getToken(*value, 0, ',')), true, 0ULL, Jupiter::ReferenceString::empty, Jupiter::ReferenceString::empty));
 					else
 					{
-						Jupiter::INIFile::Section::KeyValuePair *namePair = table.getPair("Name"_jrs);
-						pair = table.getPair("ID"_jrs);
+						Jupiter::ReadableString *name = table.get("Name"_jrs);
+						value = table.get("ID"_jrs);
 
-						if (pair != nullptr)
+						if (value != nullptr)
 						{
-							RenX::PlayerInfo *player = getPlayer(pair->getValue().asInt());
+							RenX::PlayerInfo *player = getPlayer(value->asInt());
 							if (player != nullptr)
 							{
 								if (player->name.isEmpty())
 								{
-									player->name = table.get("Name"_jrs);
+									player->name = table.get("Name"_jrs, Jupiter::ReferenceString::empty);
 									player->name.processEscapeSequences();
 								}
 
-								pair = table.getPair("TeamNum"_jrs);
-								if (pair != nullptr)
-									player->team = RenX::getTeam(pair->getValue().asInt());
+								value = table.get("TeamNum"_jrs);
+								if (value != nullptr)
+									player->team = RenX::getTeam(value->asInt());
 								else
 								{
-									pair = table.getPair("Team"_jrs);
-									if (pair != nullptr)
-										player->team = RenX::getTeam(pair->getValue());
+									value = table.get("Team"_jrs);
+									if (value != nullptr)
+										player->team = RenX::getTeam(*value);
 								}
 
 								parse(player);
 							}
 						}
-						else if (namePair != nullptr)
+						else if (name != nullptr)
 						{
-							RenX::PlayerInfo *player = getPlayerByName(namePair->getValue());
+							RenX::PlayerInfo *player = getPlayerByName(*name);
 							if (player != nullptr)
 							{
-								pair = table.getPair("TeamNum"_jrs);
-								if (pair != nullptr)
-									player->team = RenX::getTeam(pair->getValue().asInt());
+								value = table.get("TeamNum"_jrs);
+								if (value != nullptr)
+									player->team = RenX::getTeam(value->asInt());
 								else
 								{
-									pair = table.getPair("Team"_jrs);
-									if (pair != nullptr)
-										player->team = RenX::getTeam(pair->getValue());
+									value = table.get("Team"_jrs);
+									if (value != nullptr)
+										player->team = RenX::getTeam(*value);
 								}
 
 								parse(player);
@@ -1861,52 +1860,52 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 					rBuilding Health MaxHealth Armor MaxArmor Team Capturable Destroyed
 					rRx_Building_Refinery_GDI 2000 2000 2000 2000 GDI False False
 					*/
-					Jupiter::INIFile::Section table;
+					Jupiter::HashTable table;
 					size_t i = tokens.token_count;
 					while (i-- != 0)
 						table.set(this->commandListFormat.getToken(i), tokens.getToken(i));
 
-					Jupiter::INIFile::Section::KeyValuePair *pair;
+					Jupiter::ReadableString *value;
 					RenX::BuildingInfo *building;
 
-					pair = table.getPair("Building"_jrs);
-					if (pair != nullptr)
+					value = table.get("Building"_jrs);
+					if (value != nullptr)
 					{
-						building = this->getBuildingByName(pair->getValue());
+						building = this->getBuildingByName(*value);
 						if (building == nullptr)
 						{
 							building = new RenX::BuildingInfo();
 							RenX::Server::buildings.add(building);
-							building->name = pair->getValue();
+							building->name = *value;
 						}
 
-						pair = table.getPair("Health"_jrs);
-						if (pair != nullptr)
-							building->health = pair->getValue().asInt(10);
+						value = table.get("Health"_jrs);
+						if (value != nullptr)
+							building->health = value->asInt(10);
 
-						pair = table.getPair("MaxHealth"_jrs);
-						if (pair != nullptr)
-							building->max_health = pair->getValue().asInt(10);
+						value = table.get("MaxHealth"_jrs);
+						if (value != nullptr)
+							building->max_health = value->asInt(10);
 
-						pair = table.getPair("Team"_jrs);
-						if (pair != nullptr)
-							building->team = RenX::getTeam(pair->getValue());
+						value = table.get("Team"_jrs);
+						if (value != nullptr)
+							building->team = RenX::getTeam(*value);
 
-						pair = table.getPair("Capturable"_jrs);
-						if (pair != nullptr)
-							building->capturable = pair->getValue().asBool();
+						value = table.get("Capturable"_jrs);
+						if (value != nullptr)
+							building->capturable = value->asBool();
 
-						pair = table.getPair("Destroyed"_jrs);
-						if (pair != nullptr)
-							building->destroyed = pair->getValue().asBool();
+						value = table.get("Destroyed"_jrs);
+						if (value != nullptr)
+							building->destroyed = value->asBool();
 
-						pair = table.getPair("Armor"_jrs);
-						if (pair != nullptr)
-							building->armor = pair->getValue().asInt(10);
+						value = table.get("Armor"_jrs);
+						if (value != nullptr)
+							building->armor = value->asInt(10);
 
-						pair = table.getPair("MaxArmor"_jrs);
-						if (pair != nullptr)
-							building->max_armor = pair->getValue().asInt(10);
+						value = table.get("MaxArmor"_jrs);
+						if (value != nullptr)
+							building->max_armor = value->asInt(10);
 					}
 				}
 			}
@@ -3484,39 +3483,39 @@ RenX::Server::Server(const Jupiter::ReadableString &configurationSection)
 		xPlugins.get(i)->RenX_OnServerCreate(this);
 }
 
-void RenX::Server::init(const Jupiter::INIFile::Section &config)
+void RenX::Server::init(const Jupiter::Config &config)
 {
 	RenX::Server::hostname = config.get("Hostname"_jrs, "localhost"_jrs);
-	RenX::Server::port = static_cast<unsigned short>(config.getInt("Port"_jrs, 7777));
+	RenX::Server::port = config.get<unsigned short>("Port"_jrs, 7777);
 	RenX::Server::clientHostname = config.get("ClientAddress"_jrs);
 	RenX::Server::pass = config.get("Password"_jrs, "renx"_jrs);
 
-	RenX::Server::logChanType = config.getShort("ChanType"_jrs);
-	RenX::Server::adminLogChanType = config.getShort("AdminChanType"_jrs);
+	RenX::Server::logChanType = config.get<int>("ChanType"_jrs);
+	RenX::Server::adminLogChanType = config.get<int>("AdminChanType"_jrs);
 
 	RenX::Server::setCommandPrefix(config.get("CommandPrefix"_jrs));
 	RenX::Server::setPrefix(config.get("IRCPrefix"_jrs));
 
 	RenX::Server::ban_from_str = config.get("BanFromStr"_jrs, "the server"_jrs);
 	RenX::Server::rules = config.get("Rules"_jrs, "Anarchy!"_jrs);
-	RenX::Server::delay = std::chrono::milliseconds(config.getInt("ReconnectDelay"_jrs, 10000));
-	RenX::Server::maxAttempts = config.getInt("MaxReconnectAttempts"_jrs, -1);
-	RenX::Server::rconBan = config.getBool("RCONBan"_jrs, false);
-	RenX::Server::localSteamBan = config.getBool("LocalSteamBan"_jrs, true);
-	RenX::Server::localIPBan = config.getBool("LocalIPBan"_jrs, true);
-	RenX::Server::localHWIDBan = config.getBool("LocalHWIDBan"_jrs, true);
-	RenX::Server::localRDNSBan = config.getBool("LocalRDNSBan"_jrs, false);
-	RenX::Server::localNameBan = config.getBool("LocalNameBan"_jrs, false);
+	RenX::Server::delay = std::chrono::milliseconds(config.get<long long>("ReconnectDelay"_jrs, 10000));
+	RenX::Server::maxAttempts = config.get<int>("MaxReconnectAttempts"_jrs, -1);
+	RenX::Server::rconBan = config.get<bool>("RCONBan"_jrs, false);
+	RenX::Server::localSteamBan = config.get<bool>("LocalSteamBan"_jrs, true);
+	RenX::Server::localIPBan = config.get<bool>("LocalIPBan"_jrs, true);
+	RenX::Server::localHWIDBan = config.get<bool>("LocalHWIDBan"_jrs, true);
+	RenX::Server::localRDNSBan = config.get<bool>("LocalRDNSBan"_jrs, false);
+	RenX::Server::localNameBan = config.get<bool>("LocalNameBan"_jrs, false);
 	RenX::Server::localBan = RenX::Server::localIPBan || RenX::Server::localRDNSBan || RenX::Server::localSteamBan || RenX::Server::localNameBan;
-	RenX::Server::steamFormat = config.getInt("SteamFormat"_jrs, 16);
-	RenX::Server::neverSay = config.getBool("NeverSay"_jrs, false);
-	RenX::Server::resolve_player_rdns = config.getBool("ResolvePlayerRDNS"_jrs, true);
-	RenX::Server::clientUpdateRate = std::chrono::milliseconds(config.getInt("ClientUpdateRate"_jrs, 2500));
-	RenX::Server::buildingUpdateRate = std::chrono::milliseconds(config.getInt("BuildingUpdateRate"_jrs, 7500));
-	RenX::Server::pingRate = std::chrono::milliseconds(config.getInt("PingUpdateRate"_jrs, 60000));
-	RenX::Server::pingTimeoutThreshold = std::chrono::milliseconds(config.getInt("PingTimeoutThreshold"_jrs, 10000));
+	RenX::Server::steamFormat = config.get<int>("SteamFormat"_jrs, 16);
+	RenX::Server::neverSay = config.get<bool>("NeverSay"_jrs, false);
+	RenX::Server::resolve_player_rdns = config.get<bool>("ResolvePlayerRDNS"_jrs, true);
+	RenX::Server::clientUpdateRate = std::chrono::milliseconds(config.get<long long>("ClientUpdateRate"_jrs, 2500));
+	RenX::Server::buildingUpdateRate = std::chrono::milliseconds(config.get<long long>("BuildingUpdateRate"_jrs, 7500));
+	RenX::Server::pingRate = std::chrono::milliseconds(config.get<long long>("PingUpdateRate"_jrs, 60000));
+	RenX::Server::pingTimeoutThreshold = std::chrono::milliseconds(config.get<long long>("PingTimeoutThreshold"_jrs, 10000));
 
-	Jupiter::INIFile &commandsFile = RenX::getCore()->getCommandsFile();
+	Jupiter::Config &commandsFile = RenX::getCore()->getCommandsFile();
 	RenX::Server::commandAccessLevels = commandsFile.getSection(RenX::Server::configSection);
 	RenX::Server::commandAliases = commandsFile.getSection(RenX::Server::configSection + ".Aliases"_jrs);
 
@@ -3525,28 +3524,27 @@ void RenX::Server::init(const Jupiter::INIFile::Section &config)
 
 	auto load_basic_commands = [this, &commandsFile](const Jupiter::ReadableString &section_prefix)
 	{
-		Jupiter::INIFile::Section *basic_commands = commandsFile.getSection(section_prefix + ".Basic"_jrs);
+		Jupiter::Config *basic_commands = commandsFile.getSection(section_prefix + ".Basic"_jrs);
 		if (basic_commands != nullptr)
 		{
-			Jupiter::INIFile::Section *basic_commands_help = commandsFile.getSection(section_prefix + ".Basic.Help"_jrs);
-			Jupiter::INIFile::Section::KeyValuePair *pair;
-			size_t i = 0;
+			Jupiter::Config *basic_commands_help = commandsFile.getSection(section_prefix + ".Basic.Help"_jrs);
+
+			auto basic_command_no_help_callback = [this](Jupiter::HashTable::Bucket::Entry &in_entry)
+			{
+				if (this->getCommand(in_entry.key) == nullptr)
+					this->addCommand(new RenX::BasicGameCommand(in_entry.key, in_entry.value, ""_jrs));
+			};
+
+			auto basic_command_callback = [this, basic_commands_help](Jupiter::HashTable::Bucket::Entry &in_entry)
+			{
+				if (this->getCommand(in_entry.key) == nullptr)
+					this->addCommand(new RenX::BasicGameCommand(in_entry.key, in_entry.value, basic_commands_help->get(in_entry.value, ""_jrs)));
+			};
+
 			if (basic_commands_help == nullptr)
-				while (i != basic_commands->size())
-				{
-					pair = basic_commands->getPair(i);
-					++i;
-					if (this->getCommand(pair->getKey()) == nullptr)
-						this->addCommand(new RenX::BasicGameCommand(pair->getKey(), pair->getValue(), ""_jrs));
-				}
+				basic_commands->getTable().callback(basic_command_no_help_callback);
 			else
-				while (i != basic_commands->size())
-				{
-					pair = basic_commands->getPair(i);
-					++i;
-					if (this->getCommand(pair->getKey()) == nullptr)
-						this->addCommand(new RenX::BasicGameCommand(pair->getKey(), pair->getValue(), basic_commands_help->get(pair->getKey(), ""_jrs)));
-				}
+				basic_commands->getTable().callback(basic_command_callback);
 		}
 	};
 

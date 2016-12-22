@@ -110,7 +110,7 @@ public:
 	bool OnBadRehash(bool removed) { return removed; };
 
 	/** Constructor for IRC_Bot */
-	IRC_Bot(const Jupiter::INIFile::Section *in_primary_section, const Jupiter::INIFile::Section *in_secondary_section);
+	IRC_Bot(const Jupiter::Config *in_primary_section, const Jupiter::Config *in_secondary_section);
 
 	/** Destructor for IRC_Bot */
 	~IRC_Bot();

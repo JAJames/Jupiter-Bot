@@ -38,11 +38,20 @@
 
 #if defined __cplusplus
 
-/** Forward declaration */
-namespace Jupiter { class INIFile; }
+#include <chrono>
 
-/** Application config file */
-extern Jupiter::INIFile *g_config;
+/** Forward declaration */
+namespace Jupiter { class Config; }
+
+namespace Jupiter
+{
+
+	/** Application config file */
+	extern Jupiter::Config *g_config;
+
+	/** Application start time */
+	extern std::chrono::steady_clock::time_point g_start_time;
+}
 
 #endif // __cplusplus
 

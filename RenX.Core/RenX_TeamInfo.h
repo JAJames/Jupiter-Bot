@@ -25,7 +25,6 @@
  */
 
 #include "Jupiter/String.h"
-#include "Jupiter/INIFile.h"
 #include "RenX.h"
 
 /** DLL Linkage Nagging */

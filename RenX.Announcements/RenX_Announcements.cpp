@@ -17,20 +17,21 @@
  */
 
 #include "Jupiter/IRC_Client.h"
-#include "Jupiter/INIFile.h"
 #include "RenX_Announcements.h"
 #include "RenX_Core.h"
 #include "RenX_Server.h"
 #include "RenX_Tags.h"
 
+using namespace Jupiter::literals;
+
 RenX_AnnouncementsPlugin pluginInstance;
 
-void announce_(unsigned int x)
+void announce_(unsigned int x, void*)
 {
-	pluginInstance.announce(x);
+	pluginInstance.announce(x, nullptr);
 }
 
-void RenX_AnnouncementsPlugin::announce(unsigned int)
+void RenX_AnnouncementsPlugin::announce(unsigned int, void *)
 {
 	if (RenX_AnnouncementsPlugin::random == false)
 	{
@@ -73,15 +74,15 @@ int RenX_AnnouncementsPlugin::OnRehash()
 
 bool RenX_AnnouncementsPlugin::initialize()
 {
-	RenX_AnnouncementsPlugin::random = this->config.getBool(Jupiter::ReferenceString::empty, STRING_LITERAL_AS_REFERENCE("Random"));
+	RenX_AnnouncementsPlugin::random = this->config.get<bool>("Random"_jrs);
 
-	RenX_AnnouncementsPlugin::announcementsFile.load(this->config.get(Jupiter::ReferenceString::empty, STRING_LITERAL_AS_REFERENCE("File"), STRING_LITERAL_AS_REFERENCE("Announcements.txt")));
+	RenX_AnnouncementsPlugin::announcementsFile.load(this->config.get("File"_jrs, "Announcements.txt"_jrs));
 	if (RenX_AnnouncementsPlugin::announcementsFile.getLineCount() == 0)
 	{
 		fputs("[RenX.Announcements] ERROR: No announcements loaded." ENDL, stderr);
 		return false;
 	}
-	time_t delay = this->config.getInt(Jupiter::ReferenceString::empty, STRING_LITERAL_AS_REFERENCE("Delay"), 60);
+	std::chrono::milliseconds delay = std::chrono::seconds(this->config.get<long long>("Delay"_jrs, 60));
 	RenX_AnnouncementsPlugin::timer = new Jupiter::Timer(0, delay, announce_);
 	if (RenX_AnnouncementsPlugin::random == false)
 		RenX_AnnouncementsPlugin::lastLine = RenX_AnnouncementsPlugin::announcementsFile.getLineCount() - 1;

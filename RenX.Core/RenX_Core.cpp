@@ -17,7 +17,6 @@
  */
 
 #include <ctime>
-#include "Jupiter/INIFile.h"
 #include "Jupiter/Functions.h"
 #include "IRC_Bot.h"
 #include "RenX_Core.h"
@@ -29,6 +28,8 @@
 #include "RenX_BanDatabase.h"
 #include "RenX_ExemptionDatabase.h"
 #include "RenX_Tags.h"
+
+using namespace Jupiter::literals;
 
 RenX::Core pluginInstance;
 RenX::Core *RenXInstance = &pluginInstance;
@@ -45,8 +46,8 @@ bool RenX::Core::initialize()
 	RenX::tags->initialize();
 	RenX::initTranslations(this->config);
 
-	const Jupiter::ReadableString &serverList = this->config.get(Jupiter::ReferenceString::empty, STRING_LITERAL_AS_REFERENCE("Servers"));
-	RenX::Core::commandsFile.readFile(this->config.get(Jupiter::ReferenceString::empty, STRING_LITERAL_AS_REFERENCE("CommandsFile"), STRING_LITERAL_AS_REFERENCE("RenXGameCommands.ini")));
+	const Jupiter::ReadableString &serverList = this->config.get("Servers"_jrs);
+	RenX::Core::commandsFile.read(this->config.get("CommandsFile"_jrs, "RenXGameCommands.ini"_jrs));
 
 	unsigned int wc = serverList.wordCount(WHITESPACE);
 
@@ -151,7 +152,7 @@ Jupiter::ArrayList<RenX::Plugin> *RenX::Core::getPlugins()
 	return &(RenX::Core::plugins);
 }
 
-Jupiter::INIFile &RenX::Core::getCommandsFile()
+Jupiter::Config &RenX::Core::getCommandsFile()
 {
 	return RenX::Core::commandsFile;
 }

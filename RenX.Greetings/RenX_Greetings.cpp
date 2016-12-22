@@ -17,11 +17,12 @@
  */
 
 #include "Jupiter/IRC_Client.h"
-#include "Jupiter/INIFile.h"
 #include "RenX_Greetings.h"
 #include "RenX_PlayerInfo.h"
 #include "RenX_Server.h"
 #include "RenX_Tags.h"
+
+using namespace Jupiter::literals;
 
 void RenX_GreetingsPlugin::RenX_OnJoin(RenX::Server *server, const RenX::PlayerInfo *player)
 {
@@ -70,11 +71,11 @@ int RenX_GreetingsPlugin::OnRehash()
 
 bool RenX_GreetingsPlugin::initialize()
 {
-	RenX_GreetingsPlugin::sendPrivate = this->config.getBool(Jupiter::ReferenceString::empty, STRING_LITERAL_AS_REFERENCE("SendPrivate"), true);
-	RenX_GreetingsPlugin::sendMode = this->config.getInt(Jupiter::ReferenceString::empty, STRING_LITERAL_AS_REFERENCE("SendMode"), 0);
-	RenX_GreetingsPlugin::greetingsFile.load(this->config.get(Jupiter::ReferenceString::empty, STRING_LITERAL_AS_REFERENCE("GreetingsFile"), STRING_LITERAL_AS_REFERENCE("RenX.Greetings.txt")));
+	RenX_GreetingsPlugin::sendPrivate = this->config.get<bool>("SendPrivate"_jrs, true);
+	RenX_GreetingsPlugin::sendMode = this->config.get<unsigned int>("SendMode"_jrs, 0);
+	RenX_GreetingsPlugin::greetingsFile.load(this->config.get("GreetingsFile"_jrs, "RenX.Greetings.txt"_jrs));
 	if (RenX_GreetingsPlugin::greetingsFile.getLineCount() == 0)
-		RenX_GreetingsPlugin::greetingsFile.addData(STRING_LITERAL_AS_REFERENCE("Please notify the server administrator to properly configure or disable server greetings.\r\n"));
+		RenX_GreetingsPlugin::greetingsFile.addData("Please notify the server administrator to properly configure or disable server greetings.\r\n"_jrs);
 	RenX_GreetingsPlugin::lastLine = RenX_GreetingsPlugin::greetingsFile.getLineCount() - 1;
 
 	return true;

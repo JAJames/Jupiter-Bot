@@ -19,7 +19,6 @@
 #include <ctime>
 #include <cstdio>
 #include "Jupiter/IRC_Client.h"
-#include "Jupiter/INIFile.h"
 #include "RenX_PlayerInfo.h"
 #include "RenX_BanDatabase.h"
 #include "RenX_Core.h"
@@ -154,13 +153,13 @@ void RenX::BanDatabase::write(RenX::BanDatabase::Entry *entry, FILE *file)
 	size_t varData_entries = entry->varData.size();
 	buffer.push(varData_entries);
 
-	Jupiter::INIFile::Section::KeyValuePair *pair;
-	while (varData_entries != 0)
+	auto write_varData_entry = [&buffer](Jupiter::HashTable::Bucket::Entry &in_entry)
 	{
-		pair = entry->varData.getPair(--varData_entries);
-		buffer.push(pair->getKey());
-		buffer.push(pair->getValue());
-	}
+		buffer.push(in_entry.key);
+		buffer.push(in_entry.value);
+	};
+
+	entry->varData.callback(write_varData_entry);
 
 	// push buffer to file
 	buffer.push_to(file);
@@ -252,7 +251,7 @@ const Jupiter::ArrayList<RenX::BanDatabase::Entry> &RenX::BanDatabase::getEntrie
 
 bool RenX::BanDatabase::initialize()
 {
-	RenX::BanDatabase::filename = RenX::getCore()->getConfig().get(Jupiter::ReferenceString::empty, STRING_LITERAL_AS_REFERENCE("BanDB"), STRING_LITERAL_AS_REFERENCE("Bans.db"));
+	RenX::BanDatabase::filename = RenX::getCore()->getConfig().get("BanDB"_jrs, "Bans.db"_jrs);
 	return this->process_file(filename);
 }
 

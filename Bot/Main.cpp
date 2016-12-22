@@ -23,8 +23,7 @@
 #include <thread>
 #include <mutex>
 #include "Jupiter/Functions.h"
-#include "Jupiter/INIFile.h"
-#include "Jupiter/Queue.h"
+#include "Jupiter/INIConfig.h"
 #include "Jupiter/Socket.h"
 #include "Jupiter/Plugin.h"
 #include "Jupiter/Timer.h"
@@ -38,8 +37,9 @@
 
 using namespace Jupiter::literals;
 
-Jupiter::INIFile o_config;
-Jupiter::INIFile *g_config = &o_config;
+Jupiter::INIConfig o_config;
+Jupiter::Config *Jupiter::g_config = &o_config;
+std::chrono::steady_clock::time_point Jupiter::g_start_time = std::chrono::steady_clock::now();
 
 #define INPUT_BUFFER_SIZE 2048
 
@@ -127,20 +127,24 @@ int main(int argc, const char **args)
 			printf("Warning: Unknown command line argument \"%s\" specified. Ignoring...", args[i]);
 	}
 
+	std::chrono::steady_clock::time_point load_start = std::chrono::steady_clock::now();
+
 	puts("Loading config file...");
-	if (!o_config.readFile(configFileName))
+	if (!o_config.read(configFileName))
 	{
 		puts("Unable to read config file. Closing...");
 		exit(0);
 	}
 
-	puts("Config loaded.");
+	double time_taken = static_cast<double>(std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::steady_clock::now() - load_start).count()) / 1000.0;
+
+	printf("Config loaded (%fms)." ENDL, time_taken);
 	
 	if (plugins_directory.isEmpty())
-		plugins_directory = o_config.get(Jupiter::ReferenceString::empty, "PluginsDirectory"_jrs);
+		plugins_directory = o_config.get("PluginsDirectory"_jrs);
 
 	if (configs_directory.isEmpty())
-		configs_directory = o_config.get(Jupiter::ReferenceString::empty, "ConfigsDirectory"_jrs);
+		configs_directory = o_config.get("ConfigsDirectory"_jrs);
 
 	if (plugins_directory.isNotEmpty())
 	{
@@ -155,7 +159,7 @@ int main(int argc, const char **args)
 	}
 
 	puts("Loading plugins...");
-	const Jupiter::ReadableString &pluginList = o_config.get(Jupiter::ReferenceString::empty, "Plugins"_jrs);
+	const Jupiter::ReadableString &pluginList = o_config.get("Plugins"_jrs);
 	if (pluginList.isEmpty())
 		puts("No plugins to load!");
 	else
@@ -164,18 +168,28 @@ int main(int argc, const char **args)
 		unsigned int nPlugins = pluginList.wordCount(WHITESPACE);
 		printf("Attempting to load %u plugins..." ENDL, nPlugins);
 
+		bool load_success;
+
 		for (unsigned int i = 0; i < nPlugins; i++)
 		{
 			Jupiter::ReferenceString plugin = Jupiter::ReferenceString::getWord(pluginList, i, WHITESPACE);
-			if (Jupiter::Plugin::load(plugin) == nullptr)
-				fprintf(stderr, "WARNING: Failed to load plugin \"%.*s\"!" ENDL, plugin.size(), plugin.ptr());
-			else printf("\"%.*s\" loaded successfully." ENDL, plugin.size(), plugin.ptr());
+
+			load_start = std::chrono::steady_clock::now();
+			load_success = Jupiter::Plugin::load(plugin) != nullptr;
+			time_taken = static_cast<double>(std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::steady_clock::now() - load_start).count()) / 1000.0;
+			
+			if (load_success)
+				printf("\"%.*s\" loaded successfully (%fms)." ENDL, plugin.size(), plugin.ptr(), time_taken);
+			else
+				fprintf(stderr, "WARNING: Failed to load plugin \"%.*s\" (%fms)!" ENDL, plugin.size(), plugin.ptr(), time_taken);
 		}
 
 		// OnPostInitialize
 		for (index = 0; index != Jupiter::plugins->size(); ++index)
 			Jupiter::plugins->get(index)->OnPostInitialize();
 	}
+
+	printf("Initialization completed in %f milliseconds." ENDL, static_cast<double>(std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::steady_clock::now() - Jupiter::g_start_time).count()) / 1000.0 );
 
 	if (consoleCommands->size() > 0)
 		printf("%u Console Commands have been initialized%s" ENDL, consoleCommands->size(), getConsoleCommand("help"_jrs) == nullptr ? "." : "; type \"help\" for more information.");
@@ -190,7 +204,7 @@ int main(int argc, const char **args)
 				Jupiter::Plugin::free(index);
 			else
 				++index;
-		Jupiter_checkTimers();
+		Jupiter::Timer::check();
 		
 		if (console_input.input_mutex.try_lock())
 		{

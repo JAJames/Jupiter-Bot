@@ -22,7 +22,6 @@
 #include "Jupiter/Plugin.h"
 #include "Jupiter/Reference_String.h"
 #include "Jupiter/CString.h"
-#include "Jupiter/INIFile.h"
 #include "RenX_Plugin.h"
 
 class RenX_Ladder_WebPlugin : public RenX::Plugin
@@ -40,9 +39,9 @@ public:
 
 	Jupiter::StringS header;
 	Jupiter::StringS footer;
-	Jupiter::String *generate_ladder_page(RenX::LadderDatabase *db, uint8_t format, size_t start_index, size_t count, const Jupiter::INIFile::Section &query_params);
-	Jupiter::String *generate_search_page(RenX::LadderDatabase *db, uint8_t format, size_t start_index, size_t count, const Jupiter::ReadableString &name, const Jupiter::INIFile::Section &query_params);
-	Jupiter::String *generate_profile_page(RenX::LadderDatabase *db, uint8_t format, uint64_t steam_id, const Jupiter::INIFile::Section &query_params);
+	Jupiter::String *generate_ladder_page(RenX::LadderDatabase *db, uint8_t format, size_t start_index, size_t count, const Jupiter::HashTable &query_params);
+	Jupiter::String *generate_search_page(RenX::LadderDatabase *db, uint8_t format, size_t start_index, size_t count, const Jupiter::ReadableString &name, const Jupiter::HashTable &query_params);
+	Jupiter::String *generate_profile_page(RenX::LadderDatabase *db, uint8_t format, uint64_t steam_id, const Jupiter::HashTable &query_params);
 	inline size_t getEntriesPerPage() const { return this->entries_per_page; }
 	inline size_t getMinSearchNameLength() const { return this->min_search_name_length; };
 

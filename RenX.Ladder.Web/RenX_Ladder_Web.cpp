@@ -17,7 +17,6 @@
  */
 
 #include "Jupiter/IRC_Client.h"
-#include "Jupiter/INIFile.h"
 #include "Jupiter/HTTP.h"
 #include "Jupiter/HTTP_QueryString.h"
 #include "HTTPServer.h"
@@ -28,11 +27,11 @@ using namespace Jupiter::literals;
 
 bool RenX_Ladder_WebPlugin::initialize()
 {
-	RenX_Ladder_WebPlugin::ladder_page_name = this->config.get(Jupiter::ReferenceString::empty, "LadderPageName"_jrs, ""_jrs);
-	RenX_Ladder_WebPlugin::search_page_name = this->config.get(Jupiter::ReferenceString::empty, "SearchPageName"_jrs, "search"_jrs);
-	RenX_Ladder_WebPlugin::profile_page_name = this->config.get(Jupiter::ReferenceString::empty, "ProfilePageName"_jrs, "profile"_jrs);
-	RenX_Ladder_WebPlugin::web_hostname = this->config.get(Jupiter::ReferenceString::empty, "Hostname"_jrs, ""_jrs);
-	RenX_Ladder_WebPlugin::web_path = this->config.get(Jupiter::ReferenceString::empty, "Path"_jrs, "/"_jrs);
+	RenX_Ladder_WebPlugin::ladder_page_name = this->config.get("LadderPageName"_jrs, ""_jrs);
+	RenX_Ladder_WebPlugin::search_page_name = this->config.get("SearchPageName"_jrs, "search"_jrs);
+	RenX_Ladder_WebPlugin::profile_page_name = this->config.get("ProfilePageName"_jrs, "profile"_jrs);
+	RenX_Ladder_WebPlugin::web_hostname = this->config.get("Hostname"_jrs, ""_jrs);
+	RenX_Ladder_WebPlugin::web_path = this->config.get("Path"_jrs, "/"_jrs);
 
 	this->init();
 
@@ -73,17 +72,17 @@ void RenX_Ladder_WebPlugin::init()
 	FILE *file;
 	int chr;
 
-	RenX_Ladder_WebPlugin::web_header_filename = this->config.get(Jupiter::ReferenceString::empty, "HeaderFilename"_jrs, "RenX.Ladder.Web.Header.html"_jrs);
-	RenX_Ladder_WebPlugin::web_footer_filename = this->config.get(Jupiter::ReferenceString::empty, "FooterFilename"_jrs, "RenX.Ladder.Web.Footer.html"_jrs);
-	RenX_Ladder_WebPlugin::web_profile_filename = this->config.get(Jupiter::ReferenceString::empty, "ProfileFilename"_jrs, "RenX.Ladder.Web.Profile.html"_jrs);
-	RenX_Ladder_WebPlugin::web_ladder_table_header_filename = this->config.get(Jupiter::ReferenceString::empty, "LadderTableHeaderFilename"_jrs, "RenX.Ladder.Web.Ladder.Table.Header.html"_jrs);
-	RenX_Ladder_WebPlugin::web_ladder_table_footer_filename = this->config.get(Jupiter::ReferenceString::empty, "LadderTableFooterFilename"_jrs, "RenX.Ladder.Web.Ladder.Table.Footer.html"_jrs);
-	RenX_Ladder_WebPlugin::entries_per_page = this->config.getInt(Jupiter::ReferenceString::empty, "EntriesPerPage"_jrs, 50);
-	RenX_Ladder_WebPlugin::min_search_name_length = this->config.getInt(Jupiter::ReferenceString::empty, "MinSearchNameLength"_jrs, 3);
+	RenX_Ladder_WebPlugin::web_header_filename = this->config.get("HeaderFilename"_jrs, "RenX.Ladder.Web.Header.html"_jrs);
+	RenX_Ladder_WebPlugin::web_footer_filename = this->config.get("FooterFilename"_jrs, "RenX.Ladder.Web.Footer.html"_jrs);
+	RenX_Ladder_WebPlugin::web_profile_filename = this->config.get("ProfileFilename"_jrs, "RenX.Ladder.Web.Profile.html"_jrs);
+	RenX_Ladder_WebPlugin::web_ladder_table_header_filename = this->config.get("LadderTableHeaderFilename"_jrs, "RenX.Ladder.Web.Ladder.Table.Header.html"_jrs);
+	RenX_Ladder_WebPlugin::web_ladder_table_footer_filename = this->config.get("LadderTableFooterFilename"_jrs, "RenX.Ladder.Web.Ladder.Table.Footer.html"_jrs);
+	RenX_Ladder_WebPlugin::entries_per_page = this->config.get<size_t>("EntriesPerPage"_jrs, 50);
+	RenX_Ladder_WebPlugin::min_search_name_length = this->config.get<size_t>("MinSearchNameLength"_jrs, 3);
 
-	RenX_Ladder_WebPlugin::entry_table_row = this->config.get(Jupiter::ReferenceString::empty, "EntryTableRow"_jrs, R"html(<tr><td class="data-col-a">{RANK}</td><td class="data-col-b"><a href="profile?id={STEAM}&database={OBJECT}">{NAME}</a></td><td class="data-col-a">{SCORE}</td><td class="data-col-b">{SPM}</td><td class="data-col-a">{GAMES}</td><td class="data-col-b">{WINS}</td><td class="data-col-a">{LOSSES}</td><td class="data-col-b">{WLR}</td><td class="data-col-a">{KILLS}</td><td class="data-col-b">{DEATHS}</td><td class="data-col-a">{KDR}</td></tr>)html"_jrs);
-	RenX_Ladder_WebPlugin::entry_profile_previous = this->config.get(Jupiter::ReferenceString::empty, "EntryProfilePrevious"_jrs, R"html(<form class="profile-previous"><input type="hidden" name="database" value="{OBJECT}"/><input type="hidden" name="id" value="{WEAPON}"/><input class="profile-previous-submit" type="submit" value="&#x21A9 Previous" /></form>)html"_jrs);
-	RenX_Ladder_WebPlugin::entry_profile_next = this->config.get(Jupiter::ReferenceString::empty, "EntryProfileNext"_jrs, R"html(<form class="profile-next"><input type="hidden" name="database" value="{OBJECT}"/><input type="hidden" name="id" value="{VSTEAM}"/><input class="profile-next-submit" type="submit" value="Next &#x21AA" /></form>)html"_jrs);
+	RenX_Ladder_WebPlugin::entry_table_row = this->config.get("EntryTableRow"_jrs, R"html(<tr><td class="data-col-a">{RANK}</td><td class="data-col-b"><a href="profile?id={STEAM}&database={OBJECT}">{NAME}</a></td><td class="data-col-a">{SCORE}</td><td class="data-col-b">{SPM}</td><td class="data-col-a">{GAMES}</td><td class="data-col-b">{WINS}</td><td class="data-col-a">{LOSSES}</td><td class="data-col-b">{WLR}</td><td class="data-col-a">{KILLS}</td><td class="data-col-b">{DEATHS}</td><td class="data-col-a">{KDR}</td></tr>)html"_jrs);
+	RenX_Ladder_WebPlugin::entry_profile_previous = this->config.get("EntryProfilePrevious"_jrs, R"html(<form class="profile-previous"><input type="hidden" name="database" value="{OBJECT}"/><input type="hidden" name="id" value="{WEAPON}"/><input class="profile-previous-submit" type="submit" value="&#x21A9 Previous" /></form>)html"_jrs);
+	RenX_Ladder_WebPlugin::entry_profile_next = this->config.get("EntryProfileNext"_jrs, R"html(<form class="profile-next"><input type="hidden" name="database" value="{OBJECT}"/><input type="hidden" name="id" value="{VSTEAM}"/><input class="profile-next-submit" type="submit" value="Next &#x21AA" /></form>)html"_jrs);
 
 	RenX::sanitizeTags(RenX_Ladder_WebPlugin::entry_table_row);
 	RenX::sanitizeTags(RenX_Ladder_WebPlugin::entry_profile_previous);
@@ -185,7 +184,7 @@ Jupiter::String generate_search(RenX::LadderDatabase *db)
 }
 
 /** Database selector */
-Jupiter::String generate_database_selector(RenX::LadderDatabase *db, const Jupiter::INIFile::Section &query_params)
+Jupiter::String generate_database_selector(RenX::LadderDatabase *db, const Jupiter::HashTable &query_params)
 {
 	RenX::LadderDatabase *db_ptr;
 	Jupiter::String result(256);
@@ -215,17 +214,13 @@ Jupiter::String generate_database_selector(RenX::LadderDatabase *db, const Jupit
 			result += "</option>"_jrs;
 		}
 	}
-	
-	Jupiter::INIFile::Section::KeyValuePair *pair;
-	for (size_t index = 0; index != query_params.size(); ++index)
+
+	const Jupiter::ReadableString *value = query_params.get("id"_jrs);
+	if (value != nullptr)
 	{
-		pair = query_params.getPair(index);
-		if (pair->getKey().equalsi("id"))
-		{
-			result += R"html(<input type="hidden" name="id" value=")html"_jrs;
-			result += pair->getValue();
-			result += R"html("/>)html"_jrs;
-		}
+		result += R"html(<input type="hidden" name="id" value=")html"_jrs;
+		result += *value;
+		result += R"html("/>)html"_jrs;
 	}
 
 	result += R"database-select(</select><input type="submit" class="leaderboard-button" value="Go"/></form>)database-select"_jrs;
@@ -314,7 +309,7 @@ Jupiter::String RenX_Ladder_WebPlugin::generate_entry_table(RenX::LadderDatabase
 	return result;
 }
 
-Jupiter::String *RenX_Ladder_WebPlugin::generate_ladder_page(RenX::LadderDatabase *db, uint8_t format, size_t index, size_t count, const Jupiter::INIFile::Section &query_params)
+Jupiter::String *RenX_Ladder_WebPlugin::generate_ladder_page(RenX::LadderDatabase *db, uint8_t format, size_t index, size_t count, const Jupiter::HashTable &query_params)
 {
 	Jupiter::String *result = new Jupiter::String(2048);
 
@@ -339,7 +334,7 @@ Jupiter::String *RenX_Ladder_WebPlugin::generate_ladder_page(RenX::LadderDatabas
 //	include_header | include_footer | include_any_headers | include_any_footers
 
 /** Search page */
-Jupiter::String *RenX_Ladder_WebPlugin::generate_search_page(RenX::LadderDatabase *db, uint8_t format, size_t start_index, size_t count, const Jupiter::ReadableString &name, const Jupiter::INIFile::Section &query_params)
+Jupiter::String *RenX_Ladder_WebPlugin::generate_search_page(RenX::LadderDatabase *db, uint8_t format, size_t start_index, size_t count, const Jupiter::ReadableString &name, const Jupiter::HashTable &query_params)
 {
 	Jupiter::String *result = new Jupiter::String(2048);
 
@@ -390,7 +385,7 @@ Jupiter::String *RenX_Ladder_WebPlugin::generate_search_page(RenX::LadderDatabas
 }
 
 /** Profile page */
-Jupiter::String *RenX_Ladder_WebPlugin::generate_profile_page(RenX::LadderDatabase *db, uint8_t format, uint64_t steam_id, const Jupiter::INIFile::Section &query_params)
+Jupiter::String *RenX_Ladder_WebPlugin::generate_profile_page(RenX::LadderDatabase *db, uint8_t format, uint64_t steam_id, const Jupiter::HashTable &query_params)
 {
 	Jupiter::String *result = new Jupiter::String(2048);
 
@@ -457,7 +452,7 @@ Jupiter::String *RenX_Ladder_WebPlugin::generate_profile_page(RenX::LadderDataba
 
 /** Content functions */
 
-Jupiter::ReadableString *generate_no_db_page(const Jupiter::INIFile::Section &query_params)
+Jupiter::ReadableString *generate_no_db_page(const Jupiter::HashTable &query_params)
 {
 	Jupiter::String *result = new Jupiter::String(pluginInstance.header);
 	if (RenX::ladder_databases.size() != 0)
@@ -481,11 +476,11 @@ Jupiter::ReadableString *handle_ladder_page(const Jupiter::ReadableString &query
 
 	if (html_form_response.table.size() != 0)
 	{
-		format = static_cast<uint8_t>(html_form_response.table.getInt("format"_jrs, format));
-		start_index = static_cast<size_t>(html_form_response.table.getInt("start"_jrs, start_index));
-		count = static_cast<size_t>(html_form_response.table.getInt("count"_jrs, count));
+		format = html_form_response.table.getCast<uint8_t>("format"_jrs, format);
+		start_index = html_form_response.table.getCast<size_t>("start"_jrs, start_index);
+		count = html_form_response.table.getCast<size_t>("count"_jrs, count);
 		
-		const Jupiter::ReadableString &db_name = html_form_response.table.get("database"_jrs);
+		const Jupiter::ReadableString &db_name = html_form_response.table.get("database"_jrs, Jupiter::ReferenceString::empty);
 		if (db_name.isNotEmpty())
 		{
 			db = nullptr;
@@ -514,12 +509,12 @@ Jupiter::ReadableString *handle_search_page(const Jupiter::ReadableString &query
 
 	if (html_form_response.table.size() != 0)
 	{
-		format = static_cast<uint8_t>(html_form_response.table.getInt("format"_jrs, format));
-		start_index = static_cast<size_t>(html_form_response.table.getInt("start"_jrs, start_index));
-		count = static_cast<size_t>(html_form_response.table.getInt("count"_jrs, count));
-		name = html_form_response.table.get("name"_jrs);
+		format = html_form_response.table.getCast<uint8_t>("format"_jrs, format);
+		start_index = html_form_response.table.getCast<size_t>("start"_jrs, start_index);
+		count = html_form_response.table.getCast<size_t>("count"_jrs, count);
+		name = html_form_response.table.get("name"_jrs, name);
 
-		const Jupiter::ReadableString &db_name = html_form_response.table.get("database"_jrs);
+		const Jupiter::ReadableString &db_name = html_form_response.table.get("database"_jrs, Jupiter::ReferenceString::empty);
 		if (db_name.isNotEmpty())
 		{
 			db = nullptr;
@@ -550,10 +545,10 @@ Jupiter::ReadableString *handle_profile_page(const Jupiter::ReadableString &quer
 
 	if (html_form_response.table.size() != 0)
 	{
-		format = static_cast<uint8_t>(html_form_response.table.getInt("format"_jrs, format));
-		steam_id = html_form_response.table.getLongLong("id"_jrs);
+		format = html_form_response.table.getCast<uint8_t>("format"_jrs, format);
+		steam_id = html_form_response.table.getCast<uint64_t>("id"_jrs, steam_id);
 
-		const Jupiter::ReadableString &db_name = html_form_response.table.get("database"_jrs);
+		const Jupiter::ReadableString &db_name = html_form_response.table.get("database"_jrs, Jupiter::ReferenceString::empty);
 		if (db_name.isNotEmpty())
 		{
 			db = nullptr;
