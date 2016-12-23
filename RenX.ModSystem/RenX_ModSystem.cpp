@@ -122,6 +122,7 @@ unsigned int RenX_ModSystemPlugin::logoutAllMods(const RenX::Server *server)
 	for (Jupiter::DLList<RenX::PlayerInfo>::Node *n = server->players.getNode(0); n != nullptr; n = n->next)
 		if (RenX_ModSystemPlugin::resetAccess(n->data))
 			total++;
+
 	return total;
 }
 
@@ -148,6 +149,7 @@ bool RenX_ModSystemPlugin::resetAccess(RenX::PlayerInfo *player)
 		player->access = groups.get(0)->access;
 	else
 		player->access = 0;
+
 	return player->access != oAccess;
 }
 
@@ -163,6 +165,7 @@ int RenX_ModSystemPlugin::auth(RenX::Server *server, const RenX::PlayerInfo *pla
 		if (section != nullptr)
 		{
 			const Jupiter::ReadableString &groupName = section->get("Group"_jrs);
+
 			if (groupName.isEmpty())
 				group = RenX_ModSystemPlugin::groups.get(0);
 			else
@@ -232,10 +235,12 @@ void RenX_ModSystemPlugin::tempAuth(RenX::Server *server, const RenX::PlayerInfo
 {
 	if (group == nullptr)
 		group = this->getDefaultGroup();
+
 	player->varData[name].set("Group"_jrs, group->name);
 	player->formatNamePrefix = group->prefix;
 	player->gamePrefix = group->gamePrefix;
 	player->access = group->access;
+
 	if (notify)
 		server->sendMessage(player, Jupiter::StringS::Format("You have been authorized into group \"%.*s\", with access level %u.", group->name.size(), group->name.ptr(), player->access));
 }
@@ -247,6 +252,7 @@ bool RenX_ModSystemPlugin::set(RenX::PlayerInfo *player, RenX_ModSystemPlugin::M
 	this->config[player->uuid].set("LastIP"_jrs, player->ip);
 	this->config[player->uuid].set("Name"_jrs, player->name);
 	this->config.write();
+
 	return r;
 }
 
@@ -256,6 +262,7 @@ RenX_ModSystemPlugin::ModGroup *RenX_ModSystemPlugin::getGroupByName(const Jupit
 		for (Jupiter::DLList<ModGroup>::Node *n = groups.getNode(0); n != nullptr; n = n->next)
 			if (n->data->name.equalsi(name))
 				return n->data;
+
 	return defaultGroup;
 }
 
@@ -265,6 +272,7 @@ RenX_ModSystemPlugin::ModGroup *RenX_ModSystemPlugin::getGroupByAccess(int acces
 		for (Jupiter::DLList<ModGroup>::Node *n = groups.getNode(0); n != nullptr; n = n->next)
 			if (n->data->access == access)
 				return n->data;
+
 	return defaultGroup;
 }
 
@@ -274,14 +282,17 @@ RenX_ModSystemPlugin::ModGroup *RenX_ModSystemPlugin::getGroupByIndex(size_t ind
 		for (Jupiter::DLList<ModGroup>::Node *n = groups.getNode(0); n != nullptr; n = n->next)
 			if (index-- == 0)
 				return n->data;
+
 	return nullptr;
 }
 
 int RenX_ModSystemPlugin::getConfigAccess(const Jupiter::ReadableString &uuid) const
 {
 	Jupiter::Config *section = this->config.getSection(uuid);
+
 	if (section == nullptr)
 		return RenX_ModSystemPlugin::groups.get(0)->access;
+
 	RenX_ModSystemPlugin::ModGroup *group = RenX_ModSystemPlugin::getGroupByName(section->get("Group"_jrs), groups.get(0));
 	return section->get<int>("Access"_jrs, group->access);
 }
@@ -889,8 +900,6 @@ void ModListIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &
 		msg += group->name;
 		msg.aformat(IRCNORMAL " (Access: %d): ", group->access);
 		msgBaseSize = msg.size();
-		auto bucket_itr = pluginInstance.modsFile.getSections().begin();
-		auto bucket_end = pluginInstance.modsFile.getSections().end();
 
 		auto entry_callback = [&msg, group](Jupiter::Config::SectionHashTable::Bucket::Entry &in_entry)
 		{

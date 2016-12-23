@@ -1624,35 +1624,35 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 					{
 						Jupiter::ReadableString *value;
 
-						value = table.get("Kills"_jrs);
+						value = table.get("KILLS"_jrs);
 						if (value != nullptr)
 							player->kills = value->asUnsignedInt();
 
-						value = table.get("Deaths"_jrs);
+						value = table.get("DEATHS"_jrs);
 						if (value != nullptr)
 							player->deaths = value->asUnsignedInt();
 
-						value = table.get("Score"_jrs);
+						value = table.get("SCORE"_jrs);
 						if (value != nullptr)
 							player->score = value->asDouble();
 
-						value = table.get("Credits"_jrs);
+						value = table.get("CREDITS"_jrs);
 						if (value != nullptr)
 							player->credits = value->asDouble();
 
-						value = table.get("Character"_jrs);
+						value = table.get("CHARACTER"_jrs);
 						if (value != nullptr)
 							player->character = *value;
 
-						value = table.get("Vehicle"_jrs);
+						value = table.get("VEHICLE"_jrs);
 						if (value != nullptr)
 							player->vehicle = *value;
 
-						value = table.get("Ping"_jrs);
+						value = table.get("PING"_jrs);
 						if (value != nullptr)
 							player->ping = value->asUnsignedInt();
 
-						value = table.get("Admin"_jrs);
+						value = table.get("ADMIN"_jrs);
 						if (value != nullptr)
 						{
 							if (value->equals("None"_jrs))
@@ -1661,12 +1661,12 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 								player->adminType = *value;
 						}
 					};
-					Jupiter::ReadableString *value = table.get("PlayerLog"_jrs);
+					Jupiter::ReadableString *value = table.get("PLAYERLOG"_jrs);
 					if (value != nullptr)
 						parse(getPlayerOrAdd(Jupiter::ReferenceString::getToken(*value, 2, ','), Jupiter::ReferenceString::getToken(*value, 1, ',').asInt(), RenX::getTeam(Jupiter::ReferenceString::getToken(*value, 0, ',')), false, table.get("STEAM"_jrs, Jupiter::ReferenceString::empty).asUnsignedLongLong(), table.get("IP"_jrs, Jupiter::ReferenceString::empty), table.get("HWID"_jrs, Jupiter::ReferenceString::empty)));
 					else
 					{
-						Jupiter::ReadableString *name = table.get("Name"_jrs);
+						Jupiter::ReadableString *name = table.get("NAME"_jrs);
 						value = table.get("ID"_jrs);
 
 						if (value != nullptr)
@@ -1676,7 +1676,7 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 							{
 								if (player->name.isEmpty())
 								{
-									player->name = table.get("Name"_jrs, Jupiter::ReferenceString::empty);
+									player->name = table.get("NAME"_jrs, Jupiter::ReferenceString::empty);
 									player->name.processEscapeSequences();
 								}
 								if (player->ip.isEmpty())
@@ -1693,12 +1693,12 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 									}
 								}
 
-								value = table.get("TeamNum"_jrs);
+								value = table.get("TEAMNUM"_jrs);
 								if (value != nullptr)
 									player->team = RenX::getTeam(value->asInt());
 								else
 								{
-									value = table.get("Team"_jrs);
+									value = table.get("TEAM"_jrs);
 									if (value != nullptr)
 										player->team = RenX::getTeam(*value);
 								}
@@ -1727,12 +1727,12 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 									}
 								}
 
-								value = table.get("TeamNum"_jrs);
+								value = table.get("TEAMNUM"_jrs);
 								if (value != nullptr)
 									player->team = RenX::getTeam(value->asInt());
 								else
 								{
-									value = table.get("Team"_jrs);
+									value = table.get("TEAM"_jrs);
 									if (value != nullptr)
 										player->team = RenX::getTeam(*value);
 								}
@@ -1771,36 +1771,36 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 					{
 						Jupiter::ReadableString *value;
 
-						value = table.get("Kills"_jrs);
+						value = table.get("KILLS"_jrs);
 						if (value != nullptr)
 							player->kills = value->asUnsignedInt();
 
-						value = table.get("Deaths"_jrs);
+						value = table.get("DEATHS"_jrs);
 						if (value != nullptr)
 							player->deaths = value->asUnsignedInt();
 
-						value = table.get("Score"_jrs);
+						value = table.get("SCORE"_jrs);
 						if (value != nullptr)
 							player->score = value->asDouble();
 
-						value = table.get("Credits"_jrs);
+						value = table.get("CREDITS"_jrs);
 						if (value != nullptr)
 							player->credits = value->asDouble();
 
-						value = table.get("Character"_jrs);
+						value = table.get("CHARACTER"_jrs);
 						if (value != nullptr)
 							player->character = *value;
 
-						value = table.get("Vehicle"_jrs);
+						value = table.get("VEHICLE"_jrs);
 						if (value != nullptr)
 							player->vehicle = *value;
 					};
-					Jupiter::ReadableString *value = table.get("PlayerLog"_jrs);
+					Jupiter::ReadableString *value = table.get("PLAYERLOG"_jrs);
 					if (value != nullptr)
 						parse(getPlayerOrAdd(Jupiter::ReferenceString::getToken(*value, 2, ','), Jupiter::ReferenceString::getToken(*value, 1, ',').substring(1).asInt(), RenX::getTeam(Jupiter::ReferenceString::getToken(*value, 0, ',')), true, 0ULL, Jupiter::ReferenceString::empty, Jupiter::ReferenceString::empty));
 					else
 					{
-						Jupiter::ReadableString *name = table.get("Name"_jrs);
+						Jupiter::ReadableString *name = table.get("NAME"_jrs);
 						value = table.get("ID"_jrs);
 
 						if (value != nullptr)
@@ -1810,16 +1810,16 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 							{
 								if (player->name.isEmpty())
 								{
-									player->name = table.get("Name"_jrs, Jupiter::ReferenceString::empty);
+									player->name = table.get("NAME"_jrs, Jupiter::ReferenceString::empty);
 									player->name.processEscapeSequences();
 								}
 
-								value = table.get("TeamNum"_jrs);
+								value = table.get("TEAMNUM"_jrs);
 								if (value != nullptr)
 									player->team = RenX::getTeam(value->asInt());
 								else
 								{
-									value = table.get("Team"_jrs);
+									value = table.get("TEAM"_jrs);
 									if (value != nullptr)
 										player->team = RenX::getTeam(*value);
 								}
@@ -1832,12 +1832,12 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 							RenX::PlayerInfo *player = getPlayerByName(*name);
 							if (player != nullptr)
 							{
-								value = table.get("TeamNum"_jrs);
+								value = table.get("TEAMNUM"_jrs);
 								if (value != nullptr)
 									player->team = RenX::getTeam(value->asInt());
 								else
 								{
-									value = table.get("Team"_jrs);
+									value = table.get("TEAM"_jrs);
 									if (value != nullptr)
 										player->team = RenX::getTeam(*value);
 								}

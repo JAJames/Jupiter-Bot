@@ -27,7 +27,7 @@
 
 using namespace Jupiter::literals;
 
-IRC_Bot::IRC_Bot(const Jupiter::Config *in_primary_section, const Jupiter::Config *in_secondary_section) : Client(in_primary_section, in_secondary_section)
+IRC_Bot::IRC_Bot(Jupiter::Config *in_primary_section, Jupiter::Config *in_secondary_section) : Client(in_primary_section, in_secondary_section)
 {
 	IRC_Bot::commandPrefix = this->readConfigValue("Prefix"_jrs);
 	
@@ -106,66 +106,64 @@ Jupiter::StringL IRC_Bot::getTriggers(Jupiter::ArrayList<IRCCommand> &cmds)
 
 void IRC_Bot::setCommandAccessLevels(IRCCommand *in_command)
 {
-	auto set_command_access_levels = [this, in_command](const Jupiter::ReadableString &section_name)
+	auto set_command_access_levels = [this, in_command](Jupiter::Config *in_section)
 	{
-		Jupiter::Config *section = serverManager->getConfig().getSection(section_name);
+		if (in_section == nullptr)
+			return;
 
-		if (section != nullptr)
+		Jupiter::Config *section = in_section->getSection("Commands"_jrs);
+
+		if (section == nullptr)
+			return;
+
+		auto read_section = [this, section, in_command](Jupiter::HashTable::Bucket::Entry &in_entry)
 		{
-			auto read_section = [this, section, in_command](Jupiter::HashTable::Bucket::Entry &in_entry)
+			size_t tmp_index;
+			Jupiter::ReferenceString tmp_key, tmp_sub_key;
+			IRCCommand *command;
+
+			tmp_index = in_entry.key.find('.');
+			if (tmp_index != Jupiter::INVALID_INDEX)
 			{
-				size_t tmp_index;
-				Jupiter::ReferenceString tmp_key, tmp_sub_key;
-				IRCCommand *command;
+				// non-default access assignment
 
-				tmp_index = in_entry.key.find('.');
-				if (tmp_index != Jupiter::INVALID_INDEX)
+				tmp_key.set(in_entry.key.ptr(), tmp_index);
+
+				tmp_sub_key = in_entry.key;
+				tmp_sub_key.shiftRight(tmp_index + 1);
+
+				if (tmp_sub_key.findi("Type."_jrs) == 0)
 				{
-					// non-default access assignment
+					tmp_sub_key.shiftRight(5); // shift beyond "Type."
 
-					tmp_key.set(in_entry.key.ptr(), tmp_index);
-
-					tmp_sub_key = in_entry.key;
-					tmp_sub_key.shiftRight(tmp_index + 1);
-
-					if (tmp_sub_key.findi("Type."_jrs) == 0)
-					{
-						tmp_sub_key.shiftRight(5); // shift beyond "Type."
-
-						command = this->getCommand(tmp_key);
-						if (command != nullptr && (in_command == nullptr || in_command == command))
-							command->setAccessLevel(tmp_sub_key.asInt(), in_entry.value.asInt());
-					}
-					else if (tmp_sub_key.findi("Channel."_jrs) == 0)
-					{
-						tmp_sub_key.shiftRight(8); // shift beyond "Channel."
-
-						// Assign access level to command (if command exists)
-						command = this->getCommand(tmp_key);
-						if (command != nullptr && (in_command == nullptr || in_command == command))
-							command->setAccessLevel(tmp_sub_key, in_entry.value.asInt());
-					}
-				}
-				else
-				{
-					// Assign access level to command (if command exists)
-					command = this->getCommand(in_entry.key);
+					command = this->getCommand(tmp_key);
 					if (command != nullptr && (in_command == nullptr || in_command == command))
-						command->setAccessLevel(in_entry.value.asInt());
+						command->setAccessLevel(tmp_sub_key.asInt(), in_entry.value.asInt());
 				}
-			};
-		}
+				else if (tmp_sub_key.findi("Channel."_jrs) == 0)
+				{
+					tmp_sub_key.shiftRight(8); // shift beyond "Channel."
+
+					// Assign access level to command (if command exists)
+					command = this->getCommand(tmp_key);
+					if (command != nullptr && (in_command == nullptr || in_command == command))
+						command->setAccessLevel(tmp_sub_key, in_entry.value.asInt());
+				}
+			}
+			else
+			{
+				// Assign access level to command (if command exists)
+				command = this->getCommand(in_entry.key);
+				if (command != nullptr && (in_command == nullptr || in_command == command))
+					command->setAccessLevel(in_entry.value.asInt());
+			}
+		};
+
+		section->getTable().callback(read_section);
 	};
 
-	const Jupiter::Config *section;
-	
-	section = this->getSecondaryConfigSection();
-	if (section != nullptr)
-		set_command_access_levels(section->getName() + "Commands"_jrs);
-
-	section = this->getPrimaryConfigSection();
-	if (section != nullptr)
-		set_command_access_levels(section->getName() + "Commands"_jrs);
+	set_command_access_levels(this->getSecondaryConfigSection());
+	set_command_access_levels(this->getPrimaryConfigSection());
 }
 
 void IRC_Bot::OnChat(const Jupiter::ReadableString &channel, const Jupiter::ReadableString &nick, const Jupiter::ReadableString &message)

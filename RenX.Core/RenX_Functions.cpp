@@ -490,7 +490,7 @@ const Jupiter::ReferenceString RenX::translateName(const Jupiter::ReadableString
 	if (obj.isEmpty())
 		return Jupiter::ReferenceString::empty;
 
-	Jupiter::ReferenceString iniTranslation = RenX::getCore()->getConfig().get(STRING_LITERAL_AS_REFERENCE("Name"), obj);
+	Jupiter::ReferenceString iniTranslation = RenX::getCore()->getConfig()["Name"_jrs].get(obj);
 	if (iniTranslation.isNotEmpty())
 		return iniTranslation;
 
