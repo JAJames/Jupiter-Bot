@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2015-2016 Jessica James.
+ * Copyright (C) 2015-2017 Jessica James.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -53,33 +53,23 @@ void ChannelRelayPlugin::OnChat(Jupiter::IRC::Client *server, const Jupiter::Rea
 		int type = chan->getType();
 		if (ChannelRelayPlugin::types.contains(type))
 		{
-			Jupiter::IRC::Client::Channel *tchan;
-			Jupiter::IRC::Client *tserver;
 			unsigned int count = server->getChannelCount();
 			unsigned int serverCount = serverManager->size();
 			char prefix = chan->getUserPrefix(nick);
-			auto str = prefix == 0 ? "<"_jrs + nick + "> "_jrs + message : "<"_js + prefix + nick + "> "_jrs + message;
-			while (count != 0)
+			Jupiter::String str = prefix == 0
+				? "<"_jrs + nick + "> "_jrs + message
+				: "<"_js + prefix + nick + "> "_jrs + message;
+
+			Jupiter::IRC::Client *irc_server;
+
+			auto relay_channels_callback = [irc_server, type, chan, &str](Jupiter::IRC::Client::ChannelTableType::Bucket::Entry &in_entry)
 			{
-				tchan = server->getChannel(--count);
-				if (tchan->getType() == type && chan != tchan)
-					server->sendMessage(tchan->getName(), str);
-			}
+				if (in_entry.value.getType() == type && &in_entry.value != chan)
+					irc_server->sendMessage(in_entry.value.getName(), str);
+			};
 
 			while (serverCount != 0)
-			{
-				tserver = serverManager->getServer(--serverCount);
-				if (tserver != server)
-				{
-					count = tserver->getChannelCount();
-					while (count != 0)
-					{
-						tchan = tserver->getChannel(--count);
-						if (tchan->getType() == type)
-							tserver->sendMessage(tchan->getName(), str);
-					}
-				}
-			}
+				serverManager->getServer(--serverCount)->getChannels().callback(relay_channels_callback);
 		}
 	}
 }

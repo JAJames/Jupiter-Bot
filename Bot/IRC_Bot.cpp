@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2013-2016 Jessica James.
+ * Copyright (C) 2013-2017 Jessica James.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -166,49 +166,45 @@ void IRC_Bot::setCommandAccessLevels(IRCCommand *in_command)
 	set_command_access_levels(this->getPrimaryConfigSection());
 }
 
-void IRC_Bot::OnChat(const Jupiter::ReadableString &channel, const Jupiter::ReadableString &nick, const Jupiter::ReadableString &message)
+void IRC_Bot::OnChat(const Jupiter::ReadableString &in_channel, const Jupiter::ReadableString &nick, const Jupiter::ReadableString &message)
 {
-	int chanIndex = this->getChannelIndex(channel);
-	if (chanIndex >= 0)
+	Channel *channel = this->getChannel(in_channel);
+	if (channel != nullptr && channel->getType() >= 0)
 	{
-		Channel *chan = this->getChannel(chanIndex);
-		if (chan->getType() >= 0)
+		Jupiter::ReferenceString msg = message;
+		while (msg.isNotEmpty() && isspace(msg[0]))
+			msg.shiftRight(1);
+
+		if (IRC_Bot::commandPrefix.size() <= msg.size())
 		{
-			Jupiter::ReferenceString msg = message;
-			while (msg.isNotEmpty() && isspace(msg[0]))
-				msg.shiftRight(1);
-
-			if (IRC_Bot::commandPrefix.size() <= msg.size())
+			bool matchesPrefix = true;
+			size_t i;
+			for (i = 0; i != IRC_Bot::commandPrefix.size(); i++)
 			{
-				bool matchesPrefix = true;
-				size_t i;
-				for (i = 0; i != IRC_Bot::commandPrefix.size(); i++)
+				if (toupper(msg.get(0)) != toupper(IRC_Bot::commandPrefix[i]))
 				{
-					if (toupper(msg.get(0)) != toupper(IRC_Bot::commandPrefix[i]))
-					{
-						matchesPrefix = false;
-						break;
-					}
-					msg.shiftRight(1);
+					matchesPrefix = false;
+					break;
 				}
+				msg.shiftRight(1);
+			}
 
-				if (matchesPrefix)
+			if (matchesPrefix)
+			{
+				Jupiter::ReferenceString command = Jupiter::ReferenceString::getWord(msg, 0, WHITESPACE);;
+				Jupiter::ReferenceString parameters = Jupiter::ReferenceString::gotoWord(msg, 1, WHITESPACE);
+				IRCCommand *cmd = IRC_Bot::getCommand(command);
+				if (cmd != nullptr)
 				{
-					Jupiter::ReferenceString command = Jupiter::ReferenceString::getWord(msg, 0, WHITESPACE);;
-					Jupiter::ReferenceString parameters = Jupiter::ReferenceString::gotoWord(msg, 1, WHITESPACE);
-					IRCCommand *cmd = IRC_Bot::getCommand(command);
-					if (cmd != nullptr)
-					{
-						IRCCommand::active_server = this;
-						int command_access = cmd->getAccessLevel(chan);
-						if (command_access < 0)
-							this->sendNotice(nick, "Error: Command disabled."_jrs);
-						else if (Jupiter::IRC::Client::getAccessLevel(channel, nick) < command_access)
-							this->sendNotice(nick, "Access Denied."_jrs);
-						else
-							cmd->trigger(this, channel, nick, parameters);
-						IRCCommand::active_server = IRCCommand::selected_server;
-					}
+					IRCCommand::active_server = this;
+					int command_access = cmd->getAccessLevel(channel);
+					if (command_access < 0)
+						this->sendNotice(nick, "Error: Command disabled."_jrs);
+					else if (Jupiter::IRC::Client::getAccessLevel(*channel, nick) < command_access)
+						this->sendNotice(nick, "Access Denied."_jrs);
+					else
+						cmd->trigger(this, in_channel, nick, parameters);
+					IRCCommand::active_server = IRCCommand::selected_server;
 				}
 			}
 		}

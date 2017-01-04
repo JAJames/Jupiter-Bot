@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2014-2016 Jessica James.
+ * Copyright (C) 2014-2017 Jessica James.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -3191,31 +3191,30 @@ void ModRequestGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *play
 	unsigned int channelCount;
 	unsigned int messageCount = 0;
 	Jupiter::String &fmtName = RenX::getFormattedPlayerName(player);
-	Jupiter::StringL msg = Jupiter::StringL::Format(IRCCOLOR "12[%.*s Request] " IRCCOLOR IRCBOLD "%.*s" IRCBOLD IRCCOLOR "07 has requested assistance in-game; please look in ", staff_word.size(), staff_word.ptr(), fmtName.size(), fmtName.ptr());
-	Jupiter::StringS msg2 = Jupiter::StringS::Format(IRCCOLOR "12[%.*s Request] " IRCCOLOR IRCBOLD "%.*s" IRCBOLD IRCCOLOR "07 has requested assistance in-game!" IRCCOLOR, staff_word.size(), staff_word.ptr(), fmtName.size(), fmtName.ptr());
-	for (size_t server_index = 0; server_index < serverCount; ++server_index)
+	Jupiter::StringL user_message = Jupiter::StringL::Format(IRCCOLOR "12[%.*s Request] " IRCCOLOR IRCBOLD "%.*s" IRCBOLD IRCCOLOR "07 has requested assistance in-game; please look in ", staff_word.size(), staff_word.ptr(), fmtName.size(), fmtName.ptr());
+	Jupiter::StringS channel_message = Jupiter::StringS::Format(IRCCOLOR "12[%.*s Request] " IRCCOLOR IRCBOLD "%.*s" IRCBOLD IRCCOLOR "07 has requested assistance in-game!" IRCCOLOR, staff_word.size(), staff_word.ptr(), fmtName.size(), fmtName.ptr());
+	
+	auto alert_message_callback = [this, source, server, &user_message, &channel_message, &messageCount](Jupiter::IRC::Client::ChannelTableType::Bucket::Entry &in_entry)
 	{
-		server = serverManager->getServer(server_index);
-		channelCount = server->getChannelCount();
-		for (unsigned int b = 0; b < channelCount; b++)
+		auto alert_message_user_callback = [server, &in_entry, &user_message, &messageCount](Jupiter::IRC::Client::Channel::UserTableType::Bucket::Entry &in_user_entry)
 		{
-			channel = server->getChannel(b);
-			if (source->isLogChanType(channel->getType()))
+			if (in_entry.value.getUserPrefix(in_user_entry.value) != 0 && in_user_entry.value.getNickname().equals(server->getNickname()) == false)
 			{
-				server->sendMessage(channel->getName(), msg2);
-				msg += channel->getName();
-				for (unsigned int c = 0; c < channel->getUserCount(); c++)
-				{
-					if (channel->getUserPrefix(c) != 0 && channel->getUser(c)->getNickname().equals(server->getNickname()) == false)
-					{
-						server->sendMessage(channel->getUser(c)->getUser()->getNickname(), msg);
-						messageCount++;
-					}
-				}
-				msg -= channel->getName().size();
+				server->sendMessage(in_user_entry.value.getUser()->getNickname(), user_message);
+				++messageCount;
 			}
+		};
+
+		if (source->isAdminLogChanType(in_entry.value.getType()))
+		{
+			server->sendMessage(in_entry.value.getName(), channel_message);
+
+			user_message += in_entry.value.getName();
+			in_entry.value.getUsers().callback(alert_message_user_callback);
+			user_message -= in_entry.value.getName().size();
 		}
-	}
+	};
+	
 	source->sendMessage(player, Jupiter::StringS::Format("A total of %u %.*ss have been notified of your assistance request.", messageCount, staff_word.size(), staff_word.ptr()));
 }
 

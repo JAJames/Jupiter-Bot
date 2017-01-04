@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2014-2016 Jessica James.
+ * Copyright (C) 2014-2017 Jessica James.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -252,28 +252,30 @@ Jupiter::GenericCommand::ResponseLine *DebugInfoGenericCommand::trigger(const Ju
 	else
 		return new Jupiter::GenericCommand::ResponseLine("Error: No IRC server is currently selected."_jrs, GenericCommand::DisplayType::PublicError);
 
-	Jupiter::IRC::Client::Channel *chan;
-	Jupiter::IRC::Client::User *user;
 	Jupiter::GenericCommand::ResponseLine *ret = new Jupiter::GenericCommand::ResponseLine("Prefixes: "_jrs + server->getPrefixes(), GenericCommand::DisplayType::PublicSuccess);
 	Jupiter::GenericCommand::ResponseLine *line = new Jupiter::GenericCommand::ResponseLine("Prefix Modes: "_jrs + server->getPrefixModes(), GenericCommand::DisplayType::PublicSuccess);
 	ret->next = line;
 	line->next = new Jupiter::GenericCommand::ResponseLine(Jupiter::StringS::Format("Outputting data for %u channels...", server->getChannelCount()), GenericCommand::DisplayType::PublicSuccess);
 	line = line->next;
-	for (unsigned int index = 0; index < server->getChannelCount(); ++index)
+
+	auto debug_callback = [&line](Jupiter::IRC::Client::ChannelTableType::Bucket::Entry &in_entry)
 	{
-		chan = server->getChannel(index);
-		if (chan != nullptr)
+		line->next = new Jupiter::GenericCommand::ResponseLine(Jupiter::StringS::Format("Channel %.*s - Type: %d", in_entry.value.getName().size(), in_entry.value.getName().ptr(), in_entry.value.getType()), GenericCommand::DisplayType::PublicSuccess);
+		line = line->next;
+
+		auto debug_user_callback = [&line, &in_entry](Jupiter::IRC::Client::Channel::UserTableType::Bucket::Entry &in_user_entry)
 		{
-			line->next = new Jupiter::GenericCommand::ResponseLine(Jupiter::StringS::Format("Channel %.*s - Type: %d", chan->getName().size(), chan->getName().ptr(), chan->getType()), GenericCommand::DisplayType::PublicSuccess);
+			Jupiter::IRC::Client::User *user = in_user_entry.value.getUser();
+			line->next = new Jupiter::GenericCommand::ResponseLine(Jupiter::StringS::Format("User %.*s!%.*s@%.*s (prefix: %c) of channel %.*s (of %u shared)", user->getNickname().size(), user->getNickname().ptr(), user->getUsername().size(), user->getUsername().ptr(), user->getHostname().size(), user->getHostname().ptr(), in_entry.value.getUserPrefix(in_user_entry.value) ? in_entry.value.getUserPrefix(in_user_entry.value) : ' ', in_entry.value.getName().size(), in_entry.value.getName().ptr(), user->getChannelCount()), GenericCommand::DisplayType::PublicSuccess);
 			line = line->next;
-			for (unsigned int j = 0; j != chan->getUserCount(); ++j)
-			{
-				user = chan->getUser(j)->getUser();
-				line->next = new Jupiter::GenericCommand::ResponseLine(Jupiter::StringS::Format("User %.*s!%.*s@%.*s (prefix: %c) of channel %.*s (of %u shared)", user->getNickname().size(), user->getNickname().ptr(), user->getUsername().size(), user->getUsername().ptr(), user->getHostname().size(), user->getHostname().ptr(), chan->getUserPrefix(j) ? chan->getUserPrefix(j) : ' ', chan->getName().size(), chan->getName().ptr(), user->getChannelCount()), GenericCommand::DisplayType::PublicSuccess);
-				line = line->next;
-			}
-		}
-	}
+		};
+
+		in_entry.value.getUsers().callback(debug_user_callback);
+	};
+
+	for (unsigned int index = 0; index < server->getChannelCount(); ++index)
+		server->getChannels().callback(debug_callback);
+
 	return ret;
 }
 

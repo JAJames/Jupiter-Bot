@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2014-2016 Jessica James.
+ * Copyright (C) 2014-2017 Jessica James.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -625,28 +625,32 @@ void RenX::Server::banCheck(RenX::PlayerInfo *player)
 		{
 			unsigned int serverCount = serverManager->size();
 			IRC_Bot *server;
-			Jupiter::IRC::Client::Channel *channel;
-			unsigned int channelCount;
 			Jupiter::String &fmtName = RenX::getFormattedPlayerName(player);
-			Jupiter::StringL msg = Jupiter::StringL::Format(IRCCOLOR "04[Alert] " IRCCOLOR IRCBOLD "%.*s" IRCBOLD IRCCOLOR " is marked for monitoring by %.*s for: \"%.*s\". Please keep an eye on them in ", fmtName.size(), fmtName.ptr(), last_to_expire[6]->banner.size(), last_to_expire[6]->banner.ptr(), last_to_expire[6]->reason.size(), last_to_expire[6]->reason.ptr());
-			Jupiter::StringS msg2 = Jupiter::StringS::Format(IRCCOLOR "04[Alert] " IRCCOLOR IRCBOLD "%.*s" IRCBOLD IRCCOLOR " is marked for monitoring by %.*s for: \"%.*s\"." IRCCOLOR, fmtName.size(), fmtName.ptr(), last_to_expire[6]->banner.size(), last_to_expire[6]->banner.ptr(), last_to_expire[6]->reason.size(), last_to_expire[6]->reason.ptr());
-			for (unsigned int a = 0; a < serverCount; a++)
+			Jupiter::StringL user_message = Jupiter::StringL::Format(IRCCOLOR "04[Alert] " IRCCOLOR IRCBOLD "%.*s" IRCBOLD IRCCOLOR " is marked for monitoring by %.*s for: \"%.*s\". Please keep an eye on them in ", fmtName.size(), fmtName.ptr(), last_to_expire[6]->banner.size(), last_to_expire[6]->banner.ptr(), last_to_expire[6]->reason.size(), last_to_expire[6]->reason.ptr());
+			Jupiter::StringS channel_message = Jupiter::StringS::Format(IRCCOLOR "04[Alert] " IRCCOLOR IRCBOLD "%.*s" IRCBOLD IRCCOLOR " is marked for monitoring by %.*s for: \"%.*s\"." IRCCOLOR, fmtName.size(), fmtName.ptr(), last_to_expire[6]->banner.size(), last_to_expire[6]->banner.ptr(), last_to_expire[6]->reason.size(), last_to_expire[6]->reason.ptr());
+
+			auto alert_message_callback = [this, server, &user_message, &channel_message](Jupiter::IRC::Client::ChannelTableType::Bucket::Entry &in_entry)
 			{
-				server = serverManager->getServer(a);
-				channelCount = server->getChannelCount();
-				for (unsigned int b = 0; b < channelCount; b++)
+				auto alert_message_user_callback = [server, &in_entry, &user_message](Jupiter::IRC::Client::Channel::UserTableType::Bucket::Entry &in_user_entry)
 				{
-					channel = server->getChannel(b);
-					if (this->isAdminLogChanType(channel->getType()))
-					{
-						server->sendMessage(channel->getName(), msg2);
-						msg += channel->getName();
-						for (unsigned int c = 0; c < channel->getUserCount(); c++)
-							if (channel->getUserPrefix(c) != 0 && channel->getUser(c)->getNickname().equals(server->getNickname()) == false)
-								server->sendMessage(channel->getUser(c)->getUser()->getNickname(), msg);
-						msg -= channel->getName().size();
-					}
+					if (in_entry.value.getUserPrefix(in_user_entry.value) != 0 && in_user_entry.value.getNickname().equals(server->getNickname()) == false)
+						server->sendMessage(in_user_entry.value.getUser()->getNickname(), user_message);
+				};
+
+				if (this->isAdminLogChanType(in_entry.value.getType()))
+				{
+					server->sendMessage(in_entry.value.getName(), channel_message);
+
+					user_message += in_entry.value.getName();
+					in_entry.value.getUsers().callback(alert_message_user_callback);
+					user_message -= in_entry.value.getName().size();
 				}
+			};
+
+			for (size_t server_index = 0; server_index < serverManager->size(); ++server_index)
+			{
+				server = serverManager->getServer(server_index);
+				server->getChannels().callback(alert_message_callback);
 			}
 		}
 	}

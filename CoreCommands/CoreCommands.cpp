@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2014-2016 Jessica James.
+ * Copyright (C) 2014-2017 Jessica James.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -70,18 +70,17 @@ void HelpIRCCommand::create()
 	this->addTrigger("help"_jrs);
 }
 
-void HelpIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &channel, const Jupiter::ReadableString &nick, const Jupiter::ReadableString &parameters)
+void HelpIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &in_channel, const Jupiter::ReadableString &nick, const Jupiter::ReadableString &parameters)
 {
-	int cIndex = source->getChannelIndex(channel);
-	if (cIndex >= 0)
+	Jupiter::IRC::Client::Channel *channel = source->getChannel(in_channel);
+	if (channel != nullptr)
 	{
-		Jupiter::IRC::Client::Channel *chan = source->getChannel(cIndex);
-		int access = source->getAccessLevel(channel, nick);
+		int access = source->getAccessLevel(*channel, nick);
 		if (parameters == nullptr)
 		{
 			for (int i = 0; i <= access; i++)
 			{
-				Jupiter::ArrayList<IRCCommand> cmds = source->getAccessCommands(chan, i);
+				Jupiter::ArrayList<IRCCommand> cmds = source->getAccessCommands(channel, i);
 				if (cmds.size() != 0)
 				{
 					Jupiter::StringL &triggers = source->getTriggers(cmds);
@@ -96,7 +95,7 @@ void HelpIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &cha
 			IRCCommand *cmd = source->getCommand(Jupiter::ReferenceString::getWord(parameters, 0, WHITESPACE));
 			if (cmd)
 			{
-				int command_access = cmd->getAccessLevel(chan);
+				int command_access = cmd->getAccessLevel(channel);
 
 				if (command_access < 0)
 					source->sendNotice(nick, "Error: Command disabled."_jrs);
