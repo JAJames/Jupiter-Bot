@@ -623,7 +623,6 @@ void RenX::Server::banCheck(RenX::PlayerInfo *player)
 		}
 		if (last_to_expire[6] != nullptr) // Alert
 		{
-			unsigned int serverCount = serverManager->size();
 			IRC_Bot *server;
 			Jupiter::String &fmtName = RenX::getFormattedPlayerName(player);
 			Jupiter::StringL user_message = Jupiter::StringL::Format(IRCCOLOR "04[Alert] " IRCCOLOR IRCBOLD "%.*s" IRCBOLD IRCCOLOR " is marked for monitoring by %.*s for: \"%.*s\". Please keep an eye on them in ", fmtName.size(), fmtName.ptr(), last_to_expire[6]->banner.size(), last_to_expire[6]->banner.ptr(), last_to_expire[6]->reason.size(), last_to_expire[6]->reason.ptr());
@@ -1098,7 +1097,7 @@ RenX::GameCommand *RenX::Server::getCommand(const Jupiter::ReadableString &trigg
 	return nullptr;
 }
 
-unsigned int RenX::Server::getCommandCount() const
+size_t RenX::Server::getCommandCount() const
 {
 	return RenX::Server::commands.size();
 }
@@ -1928,7 +1927,7 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 
 				if (guid_token.size() == 32U)
 				{
-					this->map.guid[0] = guid_token.substring(0U, 16U).asUnsignedLongLong(16);
+					this->map.guid[0] = guid_token.substring(size_t{ 0 }, 16U).asUnsignedLongLong(16);
 					this->map.guid[1] = guid_token.substring(16U).asUnsignedLongLong(16);
 				}
 			}
@@ -1944,7 +1943,7 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 					const Jupiter::ReferenceString guid_token = tokens.getToken(11);
 					if (guid_token.size() == 32U)
 					{
-						this->map.guid[0] = guid_token.substring(0U, 16U).asUnsignedLongLong(16);
+						this->map.guid[0] = guid_token.substring(size_t{ 0 }, 16U).asUnsignedLongLong(16);
 						this->map.guid[1] = guid_token.substring(16U).asUnsignedLongLong(16);
 					}
 				}
@@ -2013,7 +2012,7 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 					if (guid_token.size() == 32U)
 					{
 						RenX::Map *map = new RenX::Map(in_map);
-						map->guid[0] = guid_token.substring(0U, 16U).asUnsignedLongLong(16);
+						map->guid[0] = guid_token.substring(size_t{ 0 }, 16U).asUnsignedLongLong(16);
 						map->guid[1] = guid_token.substring(16U).asUnsignedLongLong(16);
 						this->maps.add(map);
 					}
@@ -3435,7 +3434,7 @@ void RenX::Server::wipePlayers()
 
 	while (RenX::Server::players.size() != 0)
 	{
-		player = RenX::Server::players.remove(0U);
+		player = RenX::Server::players.remove(size_t{ 0 });
 		for (size_t index = 0; index < xPlugins.size(); ++index)
 			xPlugins.get(index)->RenX_OnPlayerDelete(this, player);
 

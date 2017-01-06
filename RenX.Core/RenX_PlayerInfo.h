@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2014-2016 Jessica James.
+ * Copyright (C) 2014-2017 Jessica James.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -70,8 +70,8 @@ namespace RenX
 		unsigned short ping = 0;
 		double score = 0.0f;
 		double credits = 0.0f;
-		unsigned int global_rank = 0;
-		unsigned int local_rank = 0;
+		size_t global_rank = 0;
+		size_t local_rank = 0;
 		unsigned int kills = 0;
 		unsigned int deaths = 0;
 		unsigned int suicides = 0;

@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2014-2016 Jessica James.
+ * Copyright (C) 2014-2017 Jessica James.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -72,16 +72,19 @@ RenX::Core::~Core()
 	RenX::Core::servers.emptyAndDelete();
 }
 
-unsigned int RenX::Core::send(int type, const Jupiter::ReadableString &msg)
+size_t RenX::Core::send(int type, const Jupiter::ReadableString &msg)
 {
-	unsigned int r = 0;
+	size_t result = 0;
 	RenX::Server *server;
+
 	for (size_t i = 0; i != RenX::Core::servers.size(); i++)
 	{
 		server = RenX::Core::getServer(i);
-		if (server->isLogChanType(type) && server->send(msg) > 0) r++;
+		if (server->isLogChanType(type) && server->send(msg) > 0)
+			++result;
 	}
-	return r;
+
+	return result;
 }
 
 void RenX::Core::addServer(RenX::Server *server)
@@ -89,16 +92,16 @@ void RenX::Core::addServer(RenX::Server *server)
 	RenX::Core::servers.add(server);
 }
 
-int RenX::Core::getServerIndex(RenX::Server *server)
+size_t RenX::Core::getServerIndex(RenX::Server *server)
 {
-	size_t i = RenX::Core::servers.size();
-	while (i != 0)
-		if (server == RenX::Core::servers.get(--i))
-			return i;
-	return -1;
+	for (size_t index = 0; index != RenX::Core::servers.size(); ++index)
+		if (server == RenX::Core::servers.get(index))
+			return index;
+
+	return Jupiter::INVALID_INDEX;
 }
 
-RenX::Server *RenX::Core::getServer(unsigned int index)
+RenX::Server *RenX::Core::getServer(size_t index)
 {
 	return RenX::Core::servers.get(index);
 }
@@ -126,23 +129,28 @@ void RenX::Core::removeServer(unsigned int index)
 	delete RenX::Core::servers.remove(index);
 }
 
-int RenX::Core::removeServer(RenX::Server *server)
+size_t RenX::Core::removeServer(RenX::Server *server)
 {
-	int i = RenX::Core::getServerIndex(server);
-	if (i >= 0) delete RenX::Core::servers.remove(i);
-	return i;
+	size_t index = RenX::Core::getServerIndex(server);
+	
+	if (index != Jupiter::INVALID_INDEX)
+		delete RenX::Core::servers.remove(index);
+
+	return index;
 }
 
 bool RenX::Core::hasServer(RenX::Server *server)
 {
-	size_t i = RenX::Core::servers.size();
-	while (i != 0)
-		if (server == RenX::Core::servers.get(--i))
+	size_t index = RenX::Core::servers.size();
+	
+	while (index != 0)
+		if (server == RenX::Core::servers.get(--index))
 			return true;
+
 	return false;
 }
 
-unsigned int RenX::Core::getServerCount()
+size_t RenX::Core::getServerCount()
 {
 	return RenX::Core::servers.size();
 }
@@ -157,10 +165,11 @@ Jupiter::Config &RenX::Core::getCommandsFile()
 	return RenX::Core::commandsFile;
 }
 
-int RenX::Core::addCommand(RenX::GameCommand *command)
+size_t RenX::Core::addCommand(RenX::GameCommand *command)
 {
-	for (size_t i = 0; i != RenX::Core::servers.size(); ++i)
-		RenX::Core::servers.get(i)->addCommand(command->copy());
+	for (size_t index = 0; index != RenX::Core::servers.size(); ++index)
+		RenX::Core::servers.get(index)->addCommand(command->copy());
+
 	return RenX::Core::servers.size();
 }
 

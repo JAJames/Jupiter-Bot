@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2014-2016 Jessica James.
+ * Copyright (C) 2014-2017 Jessica James.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -73,7 +73,7 @@ namespace RenX
 		* @param data Command to send.
 		* @return Number of servers sent to on success, less than or equal to 0 otherwise.
 		*/
-		unsigned int send(int type, const Jupiter::ReadableString &data);
+		size_t send(int type, const Jupiter::ReadableString &data);
 
 		/**
 		* @brief Adds a server to the server list.
@@ -87,7 +87,7 @@ namespace RenX
 		*
 		* @return Index of the server if it exists, -1 otherwise.
 		*/
-		int getServerIndex(RenX::Server *server);
+		size_t getServerIndex(RenX::Server *server);
 
 		/**
 		* @brief Fetches a server based on its index.
@@ -95,7 +95,7 @@ namespace RenX
 		* @param index Index of the server
 		* @return Server located at the specified index.
 		*/
-		RenX::Server *getServer(unsigned int index);
+		RenX::Server *getServer(size_t index);
 
 		/**
 		* @brief Fetches the list of servers
@@ -126,7 +126,7 @@ namespace RenX
 		* @param server Server to be removed.
 		* @return Index of the server removed.
 		*/
-		int removeServer(RenX::Server *server);
+		size_t removeServer(RenX::Server *server);
 
 		/**
 		* @brief Checks is a server is in the server list.
@@ -141,7 +141,7 @@ namespace RenX
 		*
 		* @return Number of servers.
 		*/
-		unsigned int getServerCount();
+		size_t getServerCount();
 
 		/**
 		* @brief Fetches the Renegade-X plugins currently loaded.
@@ -163,7 +163,7 @@ namespace RenX
 		* @param command Command to copy.
 		* @return Number of commands added.
 		*/
-		int addCommand(GameCommand *command);
+		size_t addCommand(GameCommand *command);
 
 		/**
 		* @brief Performs a ban check on every player on each server, and kicks as appropriate.

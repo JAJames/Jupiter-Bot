@@ -1,17 +1,34 @@
 @ECHO OFF
-if NOT "%2" == "-scr" ECHO Copyright (C) 2014-2016 Jessica James. All rights reserved.
+if NOT "%1" == "-scr" ECHO Copyright (C) 2014-2017 Jessica James. All rights reserved.
 ECHO.
 
+SET Platform=Win32
+SET NoArgs=False
+
+if "%1" == "" SET NoArgs=True
+
+:ParseParams:
+if "%1" == "-platform" (
+	SET Platform=%2
+	SHIFT /1
+	GOTO ParseParamsCondition
+)
 if "%1" == "/?" GOTO Help
 if "%1" == "-help" GOTO Help
 if "%1" == "--help" GOTO Help
 if "%1" == "-clean" GOTO CleanUp
 if "%1" == "-binary" GOTO BinaryCopy
 if "%1" == "-source" GOTO SourceCopy
-CALL %0 -clean -scr
-CALL %0 -binary -scr
-CALL %0 -source -scr
-if "%1" == "" GOTO Done
+
+:ParseParamsCondition:
+SHIFT /1
+if NOT "%1" == "" GOTO ParseParams
+:EndParseParams:
+
+CALL %0 -scr -platform %Platform% -clean
+CALL %0 -scr -platform %Platform% -binary
+CALL %0 -scr -platform %Platform% -source
+if %NoArgs% == "True" GOTO Done
 GOTO EOF
 
 :Help:
@@ -44,17 +61,17 @@ DEL /F /Q "..\Jupiter Bot.zip"
 GOTO EOF
 
 :BinaryCopy:
-ROBOCOPY "Release\\" "..\Jupiter Bot Binaries\\" *.dll *.exe /S /xf Tester.exe
+ROBOCOPY "%Platform%\Release\\" "..\Jupiter Bot Binaries\\" *.dll *.exe /S /xf Tester.exe
 ROBOCOPY "Configs\\" "..\Jupiter Bot Binaries\Configs\\" *
 ROBOCOPY ".\\" "..\Jupiter Bot Binaries\\" *.ini *.txt LICENSE
 "C:\Program Files\WinRAR\WinRAR.exe" a -r "..\Jupiter Bot Binaries.zip" "..\Jupiter Bot Binaries"
 GOTO EOF
 
 :SourceCopy:
-ROBOCOPY ".\\" "..\Jupiter Bot Source\\" *.* /S /XD Release
-ROBOCOPY "Release\\" "..\Jupiter Bot Source\Release\\" *.dll *.exe /S
-ROBOCOPY "Configs\\" "..\Jupiter Bot Source\Configs\\" *.ini
-ROBOCOPY ".\\" "..\Jupiter Bot Source\\" *.ini *.txt
+ROBOCOPY ".\\" "..\Jupiter Bot Source\\" *.* /S /XD Win32 x64 .*
+ROBOCOPY "%Platform%\Release\\" "..\Jupiter Bot Source\%Platform%\Release\\" *.dll *.exe /S
+ROBOCOPY "Configs\\" "..\Jupiter Bot Source\Configs\\" *
+ROBOCOPY ".\\" "..\Jupiter Bot Source\\" *.ini *.txt LICENSE
 "C:\Program Files\WinRAR\WinRAR.exe" a -r "..\Jupiter Bot.zip" "..\Jupiter Bot Source"
 GOTO EOF
 

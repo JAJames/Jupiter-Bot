@@ -418,19 +418,19 @@ void PlayersIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &
 				Jupiter::StringL *outString;
 				while (gStrings.size() != 0)
 				{
-					outString = gStrings.remove(0U);
+					outString = gStrings.remove(size_t{ 0 });
 					source->sendMessage(channel, *outString);
 					delete outString;
 				}
 				while (nStrings.size() != 0)
 				{
-					outString = nStrings.remove(0U);
+					outString = nStrings.remove(size_t{ 0 });
 					source->sendMessage(channel, *outString);
 					delete outString;
 				}
 				while (oStrings.size() != 0)
 				{
-					outString = oStrings.remove(0U);
+					outString = oStrings.remove(size_t{ 0 });
 					source->sendMessage(channel, *outString);
 					delete outString;
 				}

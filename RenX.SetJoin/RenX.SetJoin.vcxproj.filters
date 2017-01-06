@@ -15,17 +15,6 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <Library Include="..\Release\Plugins\RenX.Core.lib">
-      <Filter>Resource Files</Filter>
-    </Library>
-    <Library Include="..\Release\Bot.lib">
-      <Filter>Resource Files</Filter>
-    </Library>
-    <Library Include="..\Release\Jupiter.lib">
-      <Filter>Resource Files</Filter>
-    </Library>
-  </ItemGroup>
-  <ItemGroup>
     <ClInclude Include="RenX_SetJoin.h">
       <Filter>Header Files</Filter>
     </ClInclude>

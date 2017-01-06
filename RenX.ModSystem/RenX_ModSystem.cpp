@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2014-2016 Jessica James.
+ * Copyright (C) 2014-2017 Jessica James.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -350,7 +350,7 @@ RenX_ModSystemPlugin::~RenX_ModSystemPlugin()
 			}
 	}
 	while (RenX_ModSystemPlugin::groups.size() != 0)
-		delete RenX_ModSystemPlugin::groups.remove(0U);
+		delete RenX_ModSystemPlugin::groups.remove(size_t{ 0 });
 }
 
 void RenX_ModSystemPlugin::RenX_OnPlayerCreate(RenX::Server *server, const RenX::PlayerInfo *player)
@@ -427,7 +427,7 @@ int RenX_ModSystemPlugin::OnRehash()
 	RenX::Plugin::OnRehash();
 
 	while (RenX_ModSystemPlugin::groups.size() != 0)
-		delete RenX_ModSystemPlugin::groups.remove(0U);
+		delete RenX_ModSystemPlugin::groups.remove(size_t{ 0 });
 
 	return this->initialize() ? 0 : -1;
 }

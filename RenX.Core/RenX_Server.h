@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2014-2016 Jessica James.
+ * Copyright (C) 2014-2017 Jessica James.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -816,7 +816,7 @@ namespace RenX
 		*
 		* @return Number of commands in the command list.
 		*/
-		unsigned int getCommandCount() const;
+		size_t getCommandCount() const;
 
 		/**
 		* @brief Finds and triggers a matching GameCommand with the given parameters

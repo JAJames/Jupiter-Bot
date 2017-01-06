@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2014-2015 Jessica James.
+ * Copyright (C) 2014-2017 Jessica James.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -42,17 +42,19 @@ RenX::GameCommand::GameCommand()
 RenX::GameCommand::~GameCommand()
 {
 	RenX::Core *core = RenX::getCore();
-	for (int a = RenX::GameMasterCommandList->size() - 1; a >= 0; a--)
+	for (size_t command_index = 0; command_index != RenX::GameMasterCommandList->size(); ++command_index)
 	{
-		if (RenX::GameMasterCommandList->get(a) == this)
+		if (RenX::GameMasterCommandList->get(command_index) == this)
 		{
 			RenX::Server *server;
-			for (int b = core->getServerCount() - 1; b >= 0; b--)
+			for (size_t server_index = 0; server_index != core->getServerCount(); ++server_index)
 			{
-				server = core->getServer(b);
-				if (server != nullptr) server->removeCommand(this->getTrigger());
+				server = core->getServer(server_index);
+				if (server != nullptr)
+					server->removeCommand(this->getTrigger());
 			}
-			RenX::GameMasterCommandList->remove(a);
+
+			RenX::GameMasterCommandList->remove(command_index);
 			break;
 		}
 	}
