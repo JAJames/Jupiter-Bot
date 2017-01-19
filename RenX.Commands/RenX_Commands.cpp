@@ -3187,8 +3187,6 @@ void ModRequestGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *play
 	const Jupiter::ReadableString &staff_word = pluginInstance.getStaffTitle();
 	size_t serverCount = serverManager->size();
 	IRC_Bot *server;
-	Jupiter::IRC::Client::Channel *channel;
-	unsigned int channelCount;
 	unsigned int messageCount = 0;
 	Jupiter::String &fmtName = RenX::getFormattedPlayerName(player);
 	Jupiter::StringL user_message = Jupiter::StringL::Format(IRCCOLOR "12[%.*s Request] " IRCCOLOR IRCBOLD "%.*s" IRCBOLD IRCCOLOR "07 has requested assistance in-game; please look in ", staff_word.size(), staff_word.ptr(), fmtName.size(), fmtName.ptr());
