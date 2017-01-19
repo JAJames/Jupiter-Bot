@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2013-2016 Jessica James.
+ * Copyright (C) 2013-2017 Jessica James.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -45,12 +45,11 @@ namespace Jupiter { class Config; }
 
 namespace Jupiter
 {
-
 	/** Application config file */
-	extern Jupiter::Config *g_config;
+	JUPITER_BOT_API extern Jupiter::Config *g_config;
 
 	/** Application start time */
-	extern std::chrono::steady_clock::time_point g_start_time;
+	JUPITER_BOT_API extern std::chrono::steady_clock::time_point g_start_time;
 }
 
 #endif // __cplusplus

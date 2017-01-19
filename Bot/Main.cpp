@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2013-2016 Jessica James.
+ * Copyright (C) 2013-2017 Jessica James.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -192,9 +192,9 @@ int main(int argc, const char **args)
 	printf("Initialization completed in %f milliseconds." ENDL, static_cast<double>(std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::steady_clock::now() - Jupiter::g_start_time).count()) / 1000.0 );
 
 	if (consoleCommands->size() > 0)
-		printf("%u Console Commands have been initialized%s" ENDL, consoleCommands->size(), getConsoleCommand("help"_jrs) == nullptr ? "." : "; type \"help\" for more information.");
+		printf("%zu Console Commands have been initialized%s" ENDL, consoleCommands->size(), getConsoleCommand("help"_jrs) == nullptr ? "." : "; type \"help\" for more information.");
 	if (IRCMasterCommandList->size() > 0)
-		printf("%u IRC Commands have been loaded into the master list." ENDL, IRCMasterCommandList->size());
+		printf("%zu IRC Commands have been loaded into the master list." ENDL, IRCMasterCommandList->size());
 
 	while (1)
 	{

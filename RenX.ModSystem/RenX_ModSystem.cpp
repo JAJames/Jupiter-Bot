@@ -770,11 +770,11 @@ void DelIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &chan
 
 							while (bucket_itr != bucket_end)
 							{
-								for (auto entry_itr = bucket_itr->m_entries.getHead(); entry_itr != nullptr; entry_itr = entry_itr->next)
+								for (auto entry_itr = bucket_itr->m_entries.begin(); entry_itr != bucket_itr->m_entries.end(); ++entry_itr)
 								{
-									if (entry_itr->data->value.get("Name"_jrs).equalsi(parameters))
+									if (entry_itr->value.get("Name"_jrs).equalsi(parameters))
 									{
-										if (pluginInstance.modsFile.remove(entry_itr->data->key))
+										if (pluginInstance.modsFile.remove(entry_itr->key))
 											source->sendNotice(nick, "Player has been removed from the moderator list."_jrs);
 										else
 											source->sendNotice(nick, "Error: Unknown error occurred."_jrs);
