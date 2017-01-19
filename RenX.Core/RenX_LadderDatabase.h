@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2015-2016 Jessica James.
+ * Copyright (C) 2015-2017 Jessica James.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -20,9 +20,9 @@
 #define _RENX_LADDERDATABASE_H_HEADER
 
 #include <chrono>
+#include <forward_list>
 #include "Jupiter/Database.h"
 #include "Jupiter/String.h"
-#include "Jupiter/SLList.h"
 #include "Jupiter/ArrayList.h"
 #include "RenX.h"
 
@@ -128,8 +128,8 @@ namespace RenX
 		* @param max Maximum number of entries to return
 		* @return List containing entries with matching names.
 		*/
-		Jupiter::SLList<Entry> getPlayerEntriesByPartName(const Jupiter::ReadableString &name, size_t max) const;
-		Jupiter::SLList<std::pair<Entry, size_t>> getPlayerEntriesAndIndexByPartName(const Jupiter::ReadableString &name, size_t max) const;
+		std::forward_list<Entry> getPlayerEntriesByPartName(const Jupiter::ReadableString &name, size_t max) const;
+		std::forward_list<std::pair<Entry, size_t>> getPlayerEntriesAndIndexByPartName(const Jupiter::ReadableString &name, size_t max) const;
 
 		/**
 		* @brief Fetches a ladder entry at a specified index

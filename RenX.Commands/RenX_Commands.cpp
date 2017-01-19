@@ -16,8 +16,8 @@
  * Written by Jessica James <jessica.aj@outlook.com>
  */
 
+#include <forward_list>
 #include "Jupiter/Functions.h"
-#include "Jupiter/SLList.h"
 #include "IRC_Bot.h"
 #include "RenX_Commands.h"
 #include "RenX_Core.h"
@@ -505,9 +505,9 @@ void PlayerTableIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableStri
 			noServers = false;
 			if (server->players.size() != server->getBotCount())
 			{
-				Jupiter::SLList<RenX::PlayerInfo> gPlayers;
-				Jupiter::SLList<RenX::PlayerInfo> nPlayers;
-				Jupiter::SLList<RenX::PlayerInfo> oPlayers;
+				std::forward_list<RenX::PlayerInfo *> gPlayers;
+				std::forward_list<RenX::PlayerInfo *> nPlayers;
+				std::forward_list<RenX::PlayerInfo *> oPlayers;
 
 				STRING_LITERAL_AS_NAMED_REFERENCE(NICK_COL_HEADER, "Nickname");
 				size_t maxNickLen = 8;
@@ -536,13 +536,13 @@ void PlayerTableIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableStri
 						switch (player->team)
 						{
 						case RenX::TeamType::GDI:
-							gPlayers.add(player);
+							gPlayers.push_front(player);
 							break;
 						case RenX::TeamType::Nod:
-							nPlayers.add(player);
+							nPlayers.push_front(player);
 							break;
 						default:
-							oPlayers.add(player);
+							oPlayers.push_front(player);
 							break;
 						}
 					}
@@ -572,14 +572,14 @@ void PlayerTableIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableStri
 						source->sendMessage(channel, Jupiter::StringS::Format(IRCCOLOR "%.*s%*.*s" IRCCOLOR " " IRCCOLOR "03|" IRCCOLOR " %*d " IRCCOLOR "03|" IRCCOLOR " %*.0f " IRCCOLOR "03|" IRCCOLOR " %*.0f", color.size(), color.ptr(), maxNickLen, player->name.size(), player->name.ptr(), idColLen, player->id, scoreColLen, player->score, creditColLen, player->credits));
 				};
 
-				for (Jupiter::SLList<RenX::PlayerInfo>::Node *node = gPlayers.getNode(0); node != nullptr; node = node->next)
-					output_player(node->data, gTeamColor);
+				for (auto node = gPlayers.begin(); node != gPlayers.end(); ++node)
+					output_player(*node, gTeamColor);
 
-				for (Jupiter::SLList<RenX::PlayerInfo>::Node *node = nPlayers.getNode(0); node != nullptr; node = node->next)
-					output_player(node->data, nTeamColor);
+				for (auto node = nPlayers.begin(); node != nPlayers.end(); ++node)
+					output_player(*node, nTeamColor);
 
-				for (Jupiter::SLList<RenX::PlayerInfo>::Node *node = oPlayers.getNode(0); node != nullptr; node = node->next)
-					output_player(node->data, oTeamColor);
+				for (auto node = oPlayers.begin(); node != oPlayers.end(); ++node)
+					output_player(*node, oTeamColor);
 			}
 			else source->sendMessage(channel, STRING_LITERAL_AS_REFERENCE("No players are in-game."));
 		}
@@ -683,10 +683,10 @@ void BuildingInfoIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableStr
 	{
 		int type = chan->getType();
 		bool seenStrip;
-		Jupiter::SLList<Jupiter::String> gStrings;
-		Jupiter::SLList<Jupiter::String> nStrings;
-		Jupiter::SLList<Jupiter::String> oStrings;
-		Jupiter::SLList<Jupiter::String> cStrings;
+		std::forward_list<Jupiter::String *> gStrings;
+		std::forward_list<Jupiter::String *> nStrings;
+		std::forward_list<Jupiter::String *> oStrings;
+		std::forward_list<Jupiter::String *> cStrings;
 		Jupiter::String *str = nullptr;
 		RenX::BuildingInfo *building;
 		for (unsigned int i = 0; i != RenX::getCore()->getServerCount(); i++)
@@ -707,36 +707,42 @@ void BuildingInfoIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableStr
 					}
 					str = new Jupiter::String(pluginInstance.getBuildingInfoFormat());
 					RenX::processTags(*str, server, nullptr, nullptr, building);
+
 					if (building->capturable)
-						cStrings.add(str);
+						cStrings.push_front(str);
 					else if (building->team == RenX::TeamType::GDI)
-						gStrings.add(str);
+						gStrings.push_front(str);
 					else if (building->team == RenX::TeamType::Nod)
-						nStrings.add(str);
+						nStrings.push_front(str);
 					else
-						oStrings.add(str);
+						oStrings.push_front(str);
 				}
-				while (gStrings.size() != 0)
+
+				while (gStrings.empty() == false)
 				{
-					str = gStrings.remove(0);
+					str = gStrings.front();
+					gStrings.pop_front();
 					source->sendMessage(channel, *str);
 					delete str;
 				}
-				while (nStrings.size() != 0)
+				while (nStrings.empty() == false)
 				{
-					str = nStrings.remove(0);
+					str = nStrings.front();
+					nStrings.pop_front();
 					source->sendMessage(channel, *str);
 					delete str;
 				}
-				while (oStrings.size() != 0)
+				while (oStrings.empty() == false)
 				{
-					str = oStrings.remove(0);
+					str = oStrings.front();
+					oStrings.pop_front();
 					source->sendMessage(channel, *str);
 					delete str;
 				}
-				while (cStrings.size() != 0)
+				while (cStrings.empty() == false)
 				{
-					str = cStrings.remove(0);
+					str = cStrings.front();
+					cStrings.pop_front();
 					source->sendMessage(channel, *str);
 					delete str;
 				}

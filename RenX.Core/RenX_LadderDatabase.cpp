@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2015-2016 Jessica James.
+ * Copyright (C) 2015-2017 Jessica James.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -248,41 +248,41 @@ std::pair<RenX::LadderDatabase::Entry *, size_t> RenX::LadderDatabase::getPlayer
 	return std::pair<RenX::LadderDatabase::Entry *, size_t>(nullptr, Jupiter::INVALID_INDEX);
 }
 
-Jupiter::SLList<RenX::LadderDatabase::Entry> RenX::LadderDatabase::getPlayerEntriesByPartName(const Jupiter::ReadableString &name, size_t max) const
+std::forward_list<RenX::LadderDatabase::Entry> RenX::LadderDatabase::getPlayerEntriesByPartName(const Jupiter::ReadableString &name, size_t max) const
 {
-	Jupiter::SLList<RenX::LadderDatabase::Entry> list;
+	std::forward_list<RenX::LadderDatabase::Entry> list;
 	if (max == 0)
 	{
 		for (RenX::LadderDatabase::Entry *itr = RenX::LadderDatabase::head; itr != nullptr; itr = itr->next)
 			if (itr->most_recent_name.findi(name) != Jupiter::INVALID_INDEX)
-				list.add(new RenX::LadderDatabase::Entry(*itr));
+				list.emplace_front(*itr);
 	}
 	else
 		for (RenX::LadderDatabase::Entry *itr = RenX::LadderDatabase::head; itr != nullptr; itr = itr->next)
 			if (itr->most_recent_name.findi(name) != Jupiter::INVALID_INDEX)
 			{
-				list.add(new RenX::LadderDatabase::Entry(*itr));
+				list.emplace_front(*itr);
 				if (--max == 0)
 					return list;
 			}
 	return list;
 }
 
-Jupiter::SLList<std::pair<RenX::LadderDatabase::Entry, size_t>> RenX::LadderDatabase::getPlayerEntriesAndIndexByPartName(const Jupiter::ReadableString &name, size_t max) const
+std::forward_list<std::pair<RenX::LadderDatabase::Entry, size_t>> RenX::LadderDatabase::getPlayerEntriesAndIndexByPartName(const Jupiter::ReadableString &name, size_t max) const
 {
-	Jupiter::SLList<std::pair<RenX::LadderDatabase::Entry, size_t>> list;
+	std::forward_list<std::pair<RenX::LadderDatabase::Entry, size_t>> list;
 	size_t index = 0;
 	if (max == 0)
 	{
 		for (RenX::LadderDatabase::Entry *itr = RenX::LadderDatabase::head; itr != nullptr; itr = itr->next, ++index)
 			if (itr->most_recent_name.findi(name) != Jupiter::INVALID_INDEX)
-				list.add(new std::pair<RenX::LadderDatabase::Entry, size_t>(*itr, index));
+				list.emplace_front(*itr, index);
 	}
 	else
 		for (RenX::LadderDatabase::Entry *itr = RenX::LadderDatabase::head; itr != nullptr; itr = itr->next, ++index)
 			if (itr->most_recent_name.findi(name) != Jupiter::INVALID_INDEX)
 			{
-				list.add(new std::pair<RenX::LadderDatabase::Entry, size_t>(*itr, index));
+				list.emplace_front(*itr, index);
 				if (--max)
 					return list;
 			}

@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2015-2016 Jessica James.
+ * Copyright (C) 2015-2017 Jessica James.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -124,20 +124,21 @@ Jupiter::GenericCommand::ResponseLine *LadderGenericCommand::trigger(const Jupit
 		return new Jupiter::GenericCommand::ResponseLine(FormatLadderResponse(entry, rank), GenericCommand::DisplayType::PublicSuccess);
 	}
 	
-	Jupiter::SLList<std::pair<RenX::LadderDatabase::Entry, size_t>> list = RenX::default_ladder_database->getPlayerEntriesAndIndexByPartName(parameters, pluginInstance.getMaxLadderCommandPartNameOutput());
-	if (list.size() == 0)
+	std::forward_list<std::pair<RenX::LadderDatabase::Entry, size_t>> list = RenX::default_ladder_database->getPlayerEntriesAndIndexByPartName(parameters, pluginInstance.getMaxLadderCommandPartNameOutput());
+	if (list.empty())
 		return new Jupiter::GenericCommand::ResponseLine("Error: Player not found"_jrs, GenericCommand::DisplayType::PrivateError);
 
-	std::pair<RenX::LadderDatabase::Entry, size_t> *pair = list.remove(0);
-	Jupiter::GenericCommand::ResponseLine *response_head = new Jupiter::GenericCommand::ResponseLine(FormatLadderResponse(std::addressof(pair->first), pair->second + 1), GenericCommand::DisplayType::PrivateSuccess);
+	std::pair<RenX::LadderDatabase::Entry, size_t> &head_pair = list.front();
+	Jupiter::GenericCommand::ResponseLine *response_head = new Jupiter::GenericCommand::ResponseLine(FormatLadderResponse(std::addressof(head_pair.first), head_pair.second + 1), GenericCommand::DisplayType::PrivateSuccess);
 	Jupiter::GenericCommand::ResponseLine *response_end = response_head;
-	delete pair;
-	while (list.size() != 0)
+	list.pop_front();
+
+	while (list.empty() == false)
 	{
-		pair = list.remove(0);
-		response_end->next = new Jupiter::GenericCommand::ResponseLine(FormatLadderResponse(std::addressof(pair->first), pair->second + 1), GenericCommand::DisplayType::PrivateSuccess);
+		std::pair<RenX::LadderDatabase::Entry, size_t> &pair = list.front();
+		response_end->next = new Jupiter::GenericCommand::ResponseLine(FormatLadderResponse(std::addressof(pair.first), pair.second + 1), GenericCommand::DisplayType::PrivateSuccess);
 		response_end = response_end->next;
-		delete pair;
+		list.pop_front();
 	}
 	return response_head;
 }
