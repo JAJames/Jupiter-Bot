@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2015-2016 Jessica James.
+ * Copyright (C) 2015-2017 Jessica James.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -20,9 +20,9 @@
 
 using namespace Jupiter::literals;
 
-HTTPServerPlugin::HTTPServerPlugin()
+bool HTTPServerPlugin::initialize()
 {
-	HTTPServerPlugin::server.bind(this->config.get("BindAddress"_jrs, "0.0.0.0"_jrs), this->config.get<uint16_t>("BindPort"_jrs, 80));
+	return HTTPServerPlugin::server.bind(this->config.get("BindAddress"_jrs, "0.0.0.0"_jrs), this->config.get<uint16_t>("BindPort"_jrs, 80));
 }
 
 int HTTPServerPlugin::think()

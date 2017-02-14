@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2016 Jessica James.
+ * Copyright (C) 2016-2017 Jessica James.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -113,7 +113,7 @@ namespace RenX
 		* @param player Data of the player to be exempted
 		* @param length Duration of the exempt
 		*/
-		void add(RenX::Server *server, const RenX::PlayerInfo *player, const Jupiter::ReadableString &setter, std::chrono::seconds length, uint8_t flags);
+		void add(RenX::Server &server, const RenX::PlayerInfo &player, const Jupiter::ReadableString &setter, std::chrono::seconds length, uint8_t flags);
 
 		/**
 		* @brief Adds an exemption entry for a set of player information and immediately writes it to the database.
@@ -159,7 +159,7 @@ namespace RenX
 		*
 		* @param player Player to check exemption flags for
 		*/
-		void exemption_check(RenX::PlayerInfo *player);
+		void exemption_check(RenX::PlayerInfo &player);
 
 		/**
 		* @brief Fetches the version of the database file.

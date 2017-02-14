@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2014-2016 Jessica James.
+ * Copyright (C) 2014-2017 Jessica James.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -857,12 +857,12 @@ void RenX::initTranslations(Jupiter::Config &translationsFile)
 	unknownWinTypePlainTranslation = translationsFile["WinTypePlain"_jrs].get("Unknown"_jrs, "Unknown"_jrs);
 }
 
-Jupiter::String RenX::getFormattedPlayerName(const RenX::PlayerInfo *player)
+Jupiter::String RenX::getFormattedPlayerName(const RenX::PlayerInfo &player)
 {
-	Jupiter::String r = player->formatNamePrefix;
+	Jupiter::String r = player.formatNamePrefix;
 	r += IRCCOLOR;
-	r += RenX::getTeamColor(player->team);
-	r += player->name;
+	r += RenX::getTeamColor(player.team);
+	r += player.name;
 	return r;
 }
 
@@ -871,30 +871,38 @@ Jupiter::StringS RenX::formatGUID(const RenX::Map &map)
 	return Jupiter::StringS::Format("%.16llX%.16llX", map.guid[0], map.guid[1]);
 }
 
-std::chrono::milliseconds RenX::getServerTime(const RenX::PlayerInfo *player)
+std::chrono::milliseconds RenX::getServerTime(const RenX::PlayerInfo &player)
 {
-	return std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - player->joinTime);
+	return std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - player.joinTime);
 }
 
-Jupiter::StringS RenX::default_uuid_func(RenX::PlayerInfo *player)
+Jupiter::StringS RenX::default_uuid_func(RenX::PlayerInfo &player)
 {
-	if (player->steamid != 0U)
-		return Jupiter::StringS::Format("0x%.16llX", player->steamid);
+	if (player.steamid != 0U)
+		return Jupiter::StringS::Format("0x%.16llX", player.steamid);
+
 	return Jupiter::StringS();
 }
 
-double RenX::getKillDeathRatio(const RenX::PlayerInfo *player, bool includeSuicides)
+double RenX::getKillDeathRatio(const RenX::PlayerInfo &player, bool includeSuicides)
 {
-	double deaths = player->deaths;
-	if (includeSuicides == false) deaths -= player->suicides;
-	if (deaths == 0) deaths = 1;
-	return ((double)player->kills) / deaths;
+	double deaths = player.deaths;
+
+	if (includeSuicides == false)
+		deaths -= player.suicides;
+
+	if (deaths == 0)
+		deaths = 1;
+
+	return static_cast<double>(player.kills) / deaths;
 }
 
-double RenX::getHeadshotKillRatio(const RenX::PlayerInfo *player)
+double RenX::getHeadshotKillRatio(const RenX::PlayerInfo &player)
 {
-	if (player->kills == 0) return 0;
-	return ((double)player->headshots) / ((double)player->kills);
+	if (player.kills == 0)
+		return 0;
+
+	return static_cast<double>(player.headshots) / static_cast<double>(player.kills);
 }
 
 Jupiter::String RenX::escapifyRCON(const Jupiter::ReadableString &str)

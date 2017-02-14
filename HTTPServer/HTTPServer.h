@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2015-2016 Jessica James.
+ * Copyright (C) 2015-2017 Jessica James.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -53,7 +53,7 @@
 class HTTPSERVER_API HTTPServerPlugin : public Jupiter::Plugin
 {
 public:
-	HTTPServerPlugin();
+	virtual bool initialize() override;
 	Jupiter::HTTP::Server server;
 
 public: // Jupiter::Plugin

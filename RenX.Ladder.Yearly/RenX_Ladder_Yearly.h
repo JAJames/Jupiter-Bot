@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2016 Jessica James.
+ * Copyright (C) 2016-2017 Jessica James.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -34,6 +34,6 @@ private:
 	RenX::LadderDatabase database;
 };
 
-void OnPreUpdateLadder(RenX::LadderDatabase &database, RenX::Server *server, const RenX::TeamType &team);
+void OnPreUpdateLadder(RenX::LadderDatabase &database, RenX::Server &server, const RenX::TeamType &team);
 
 #endif // _RENX_LADDER_ALL_TIME

@@ -104,7 +104,7 @@ int main(int argc, const char **args)
 	SetConsoleOutputCP(65001);
 #endif // _WIN32
 
-	srand(static_cast<unsigned int>(std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count()));
+	srand(static_cast<unsigned int>(std::chrono::system_clock::now().time_since_epoch().count()));
 	puts(Jupiter::copyright);
 	const char *configFileName = "Config.ini";
 

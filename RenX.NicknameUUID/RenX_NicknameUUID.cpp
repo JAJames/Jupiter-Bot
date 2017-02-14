@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2015 Jessica James.
+ * Copyright (C) 2015-2017 Jessica James.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -23,9 +23,9 @@
 #include "RenX_Functions.h"
 #include "RenX_NicknameUUID.h"
 
-Jupiter::StringS calc_uuid(RenX::PlayerInfo *player)
+Jupiter::StringS calc_uuid(RenX::PlayerInfo &player)
 {
-	return player->name;
+	return player.name;
 }
 
 RenX_NicknameUUIDPlugin::RenX_NicknameUUIDPlugin()
@@ -44,9 +44,9 @@ RenX_NicknameUUIDPlugin::~RenX_NicknameUUIDPlugin()
 		core.getServer(--index)->setUUIDFunction(RenX::default_uuid_func);
 }
 
-void RenX_NicknameUUIDPlugin::RenX_OnServerCreate(RenX::Server *server)
+void RenX_NicknameUUIDPlugin::RenX_OnServerCreate(RenX::Server &server)
 {
-	server->setUUIDFunction(calc_uuid);
+	server.setUUIDFunction(calc_uuid);
 }
 
 // Plugin instantiation and entry point.

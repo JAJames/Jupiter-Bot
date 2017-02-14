@@ -1,5 +1,5 @@
 /**
-* Copyright (C) 2016 Jessica James.
+* Copyright (C) 2016-2017 Jessica James.
 *
 * Permission to use, copy, modify, and/or distribute this software for any
 * purpose with or without fee is hereby granted, provided that the above
@@ -106,9 +106,9 @@ void RenX::ExemptionDatabase::write(RenX::ExemptionDatabase::Entry *entry, FILE 
 	fgetpos(file, std::addressof(RenX::ExemptionDatabase::eof));
 }
 
-void RenX::ExemptionDatabase::add(RenX::Server *server, const RenX::PlayerInfo *player, const Jupiter::ReadableString &setter, std::chrono::seconds length, uint8_t flags)
+void RenX::ExemptionDatabase::add(RenX::Server &, const RenX::PlayerInfo &player, const Jupiter::ReadableString &setter, std::chrono::seconds length, uint8_t flags)
 {
-	RenX::ExemptionDatabase::add(player->ip32, 32U, player->steamid, setter, length, flags);
+	RenX::ExemptionDatabase::add(player.ip32, 32U, player.steamid, setter, length, flags);
 }
 
 void RenX::ExemptionDatabase::add(uint32_t ip, uint8_t prefix_length, uint64_t steamid, const Jupiter::ReadableString &setter, std::chrono::seconds length, uint8_t flags)
@@ -146,7 +146,7 @@ bool RenX::ExemptionDatabase::deactivate(size_t index)
 	return false;
 }
 
-void RenX::ExemptionDatabase::exemption_check(RenX::PlayerInfo *player)
+void RenX::ExemptionDatabase::exemption_check(RenX::PlayerInfo &player)
 {
 	RenX::ExemptionDatabase::Entry *entry;
 	uint32_t netmask;
@@ -159,9 +159,9 @@ void RenX::ExemptionDatabase::exemption_check(RenX::PlayerInfo *player)
 			if (entry->length == std::chrono::seconds::zero() || entry->timestamp + entry->length < std::chrono::system_clock::now())
 			{
 				netmask = Jupiter_prefix_length_to_netmask(entry->prefix_length);
-				if ((player->steamid != 0 && entry->steamid == player->steamid) // SteamID exemption
-					|| (player->ip32 != 0U && (player->ip32 & netmask) == (entry->ip & netmask))) // IP address exemption
-					player->exemption_flags |= entry->flags;
+				if ((player.steamid != 0 && entry->steamid == player.steamid) // SteamID exemption
+					|| (player.ip32 != 0U && (player.ip32 & netmask) == (entry->ip & netmask))) // IP address exemption
+					player.exemption_flags |= entry->flags;
 			}
 			else
 				RenX::ExemptionDatabase::deactivate(index);

@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2014-2016 Jessica James.
+ * Copyright (C) 2014-2017 Jessica James.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -88,14 +88,14 @@ int RenX_ExtraLoggingPlugin::think()
 	return 0;
 }
 
-void RenX_ExtraLoggingPlugin::RenX_OnRaw(RenX::Server *server, const Jupiter::ReadableString &raw)
+void RenX_ExtraLoggingPlugin::RenX_OnRaw(RenX::Server &server, const Jupiter::ReadableString &raw)
 {
 	if (RenX_ExtraLoggingPlugin::printToConsole)
 	{
 		if (RenX_ExtraLoggingPlugin::filePrefix.isNotEmpty())
 		{
 			Jupiter::StringS cPrefix = RenX_ExtraLoggingPlugin::filePrefix;
-			RenX::processTags(cPrefix, server);
+			RenX::processTags(cPrefix, &server);
 			cPrefix.print(stdout);
 			fputc(' ', stdout);
 		}
@@ -107,7 +107,7 @@ void RenX_ExtraLoggingPlugin::RenX_OnRaw(RenX::Server *server, const Jupiter::Re
 		if (RenX_ExtraLoggingPlugin::filePrefix.isNotEmpty())
 		{
 			Jupiter::StringS fPrefix = RenX_ExtraLoggingPlugin::filePrefix;
-			RenX::processTags(fPrefix, server);
+			RenX::processTags(fPrefix, &server);
 			fPrefix.print(RenX_ExtraLoggingPlugin::file);
 			fputc(' ', RenX_ExtraLoggingPlugin::file);
 		}

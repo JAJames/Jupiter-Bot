@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2014-2016 Jessica James.
+ * Copyright (C) 2014-2017 Jessica James.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -26,30 +26,30 @@
 #include "RenX_GameCommand.h"
 
 /** Adds a recommendation to the player's medal data */
-void addRec(const RenX::PlayerInfo *player, int amount = 1);
+void addRec(const RenX::PlayerInfo &player, int amount = 1);
 
 /** Adds a noob to the player's medal data */
-void addNoob(const RenX::PlayerInfo *player, int amount = 1);
+void addNoob(const RenX::PlayerInfo &player, int amount = 1);
 
 /** Fetches a player's recommendation count */
-unsigned long getRecs(const RenX::PlayerInfo *player);
+unsigned long getRecs(const RenX::PlayerInfo &player);
 
 /** Fetches a player's noob count */
-unsigned long getNoobs(const RenX::PlayerInfo *player);
+unsigned long getNoobs(const RenX::PlayerInfo &player);
 
 /** Calculates a player's worth (recs - noobs) */
-int getWorth(const RenX::PlayerInfo *player);
+int getWorth(const RenX::PlayerInfo &player);
 
 class RenX_MedalsPlugin : public RenX::Plugin
 {
 public: // RenX::Plugin
 	void RenX_SanitizeTags(Jupiter::StringType &fmt) override;
 	void RenX_ProcessTags(Jupiter::StringType &msg, const RenX::Server *server, const RenX::PlayerInfo *player, const RenX::PlayerInfo *victim, const RenX::BuildingInfo *building) override;
-	void RenX_OnPlayerCreate(RenX::Server *server, const RenX::PlayerInfo *player) override;
-	void RenX_OnPlayerDelete(RenX::Server *server, const RenX::PlayerInfo *player) override;
-	void RenX_OnJoin(RenX::Server *server, const RenX::PlayerInfo *player) override;
-	void RenX_OnGameOver(RenX::Server *server, RenX::WinType winType, const RenX::TeamType &team, int gScore, int nScore) override;
-	void RenX_OnDestroy(RenX::Server *server, const RenX::PlayerInfo *player, const Jupiter::ReadableString &objectName, const RenX::TeamType &objectTeam, const Jupiter::ReadableString &damageType, RenX::ObjectType type) override;
+	void RenX_OnPlayerCreate(RenX::Server &server, const RenX::PlayerInfo &player) override;
+	void RenX_OnPlayerDelete(RenX::Server &server, const RenX::PlayerInfo &player) override;
+	void RenX_OnJoin(RenX::Server &server, const RenX::PlayerInfo &player) override;
+	void RenX_OnGameOver(RenX::Server &server, RenX::WinType winType, const RenX::TeamType &team, int gScore, int nScore) override;
+	void RenX_OnDestroy(RenX::Server &server, const RenX::PlayerInfo &player, const Jupiter::ReadableString &objectName, const RenX::TeamType &objectTeam, const Jupiter::ReadableString &damageType, RenX::ObjectType type) override;
 	~RenX_MedalsPlugin();
 
 public: // Jupiter::Plugin

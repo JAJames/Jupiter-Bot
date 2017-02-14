@@ -44,23 +44,23 @@ inline bool togglePhasing(RenX::Server *server)
 	return togglePhasing(server, !server->varData[RxCommandsSection].get<bool>("phasing"_jrs, false));
 }
 
-inline void onDie(RenX::Server *server, const RenX::PlayerInfo *player)
+inline void onDie(RenX::Server &server, const RenX::PlayerInfo &player)
 {
-	if (player->isBot && server->varData[RxCommandsSection].get<bool>("phasing"_jrs, false))
-		server->kickPlayer(player, Jupiter::StringS::empty);
+	if (player.isBot && server.varData[RxCommandsSection].get<bool>("phasing"_jrs, false))
+		server.kickPlayer(player, Jupiter::StringS::empty);
 }
 
-void RenX_CommandsPlugin::RenX_OnSuicide(RenX::Server *server, const RenX::PlayerInfo *player, const Jupiter::ReadableString &)
+void RenX_CommandsPlugin::RenX_OnSuicide(RenX::Server &server, const RenX::PlayerInfo &player, const Jupiter::ReadableString &)
 {
 	onDie(server, player);
 }
 
-void RenX_CommandsPlugin::RenX_OnKill(RenX::Server *server, const RenX::PlayerInfo *, const RenX::PlayerInfo *victim, const Jupiter::ReadableString &)
+void RenX_CommandsPlugin::RenX_OnKill(RenX::Server &server, const RenX::PlayerInfo &, const RenX::PlayerInfo &victim, const Jupiter::ReadableString &)
 {
 	onDie(server, victim);
 }
 
-void RenX_CommandsPlugin::RenX_OnDie(RenX::Server *server, const RenX::PlayerInfo *player, const Jupiter::ReadableString &)
+void RenX_CommandsPlugin::RenX_OnDie(RenX::Server &server, const RenX::PlayerInfo &player, const Jupiter::ReadableString &)
 {
 	onDie(server, player);
 }
@@ -254,7 +254,7 @@ void PMsgIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &cha
 				{
 					player = server->getPlayerByPartName(name);
 					if (player != nullptr)
-						server->sendMessage(player, msg);
+						server->sendMessage(*player, msg);
 					else source->sendNotice(nick, Jupiter::StringS::Format("Error: Player \"%.*s\" not found.", name.size(), name.ptr()));
 				}
 			}
@@ -349,9 +349,9 @@ void PlayersIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &
 				}
 
 				// End string containers
-				Jupiter::DLList<Jupiter::String> gStrings;
-				Jupiter::DLList<Jupiter::String> nStrings;
-				Jupiter::DLList<Jupiter::String> oStrings;
+				std::list<Jupiter::String *> gStrings;
+				std::list<Jupiter::String *> nStrings;
+				std::list<Jupiter::String *> oStrings;
 
 				Jupiter::StringL *gCurrent = nullptr;
 				Jupiter::StringL *nCurrent = nullptr;
@@ -367,72 +367,75 @@ void PlayersIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &
 				unsigned int nBots = 0;
 				unsigned int oBots = 0;
 
-				for (Jupiter::DLList<RenX::PlayerInfo>::Node *node = server->players.getNode(0); node != nullptr; node = node->next)
+				for (auto node = server->players.begin(); node != server->players.end(); ++node)
 				{
-					if (node->data != nullptr)
-					{
-						Jupiter::String &name = RenX::getFormattedPlayerName(node->data);
-						if (name.size() > STRING_LENGTH - 32) continue; // Name will be too long to send.
+					Jupiter::String &name = RenX::getFormattedPlayerName(*node);
+					if (name.size() > STRING_LENGTH - 32) continue; // Name will be too long to send.
 
-						switch (node->data->team)
+					switch (node->team)
+					{
+					case RenX::TeamType::Nod:
+						if (nCurrent == nullptr || nCurrent->size() + name.size() > STRING_LENGTH)
 						{
-						case RenX::TeamType::Nod:
-							if (nCurrent == nullptr || nCurrent->size() + name.size() > STRING_LENGTH)
-							{
-								nCurrent = new Jupiter::StringL(STRING_LENGTH);
-								nCurrent->format(IRCCOLOR "%.*s[%.*s]: " IRCBOLD "%.*s" IRCBOLD, nTeamColor.size(), nTeamColor.ptr(), nTeam.size(), nTeam.ptr(), name.size(), name.ptr());
-								nStrings.add(nCurrent);
-							}
-							else nCurrent->aformat(IRCCOLOR ", " IRCBOLD "%.*s" IRCBOLD, name.size(), name.ptr());
-							nTotal++;
-							if (node->data->isBot)
-								nBots++;
-							break;
-						case RenX::TeamType::GDI:
-							if (gCurrent == nullptr || gCurrent->size() + name.size() > STRING_LENGTH)
-							{
-								gCurrent = new Jupiter::StringL(STRING_LENGTH);
-								gCurrent->format(IRCCOLOR "%.*s[%.*s]: " IRCBOLD "%.*s" IRCBOLD, gTeamColor.size(), gTeamColor.ptr(), gTeam.size(), gTeam.ptr(), name.size(), name.ptr());
-								gStrings.add(gCurrent);
-							}
-							else gCurrent->aformat(IRCCOLOR ", " IRCBOLD "%.*s" IRCBOLD, name.size(), name.ptr());
-							gTotal++;
-							if (node->data->isBot)
-								gBots++;
-							break;
-						default:
-							if (oCurrent == nullptr || oCurrent->size() + name.size() > STRING_LENGTH)
-							{
-								oCurrent = new Jupiter::StringL(STRING_LENGTH);
-								oCurrent->format(IRCCOLOR "%.*s[%.*s]: " IRCBOLD "%.*s" IRCBOLD, oTeamColor.size(), oTeamColor.ptr(), oTeam.size(), oTeam.ptr(), name.size(), name.ptr());
-								oStrings.add(oCurrent);
-							}
-							else oCurrent->aformat(IRCCOLOR ", " IRCBOLD "%.*s" IRCBOLD, name.size(), name.ptr());
-							oTotal++;
-							if (node->data->isBot)
-								oBots++;
-							break;
+							nCurrent = new Jupiter::StringL(STRING_LENGTH);
+							nCurrent->format(IRCCOLOR "%.*s[%.*s]: " IRCBOLD "%.*s" IRCBOLD, nTeamColor.size(), nTeamColor.ptr(), nTeam.size(), nTeam.ptr(), name.size(), name.ptr());
+							nStrings.push_back(nCurrent);
 						}
+						else nCurrent->aformat(IRCCOLOR ", " IRCBOLD "%.*s" IRCBOLD, name.size(), name.ptr());
+						nTotal++;
+						if (node->isBot)
+							nBots++;
+						break;
+					case RenX::TeamType::GDI:
+						if (gCurrent == nullptr || gCurrent->size() + name.size() > STRING_LENGTH)
+						{
+							gCurrent = new Jupiter::StringL(STRING_LENGTH);
+							gCurrent->format(IRCCOLOR "%.*s[%.*s]: " IRCBOLD "%.*s" IRCBOLD, gTeamColor.size(), gTeamColor.ptr(), gTeam.size(), gTeam.ptr(), name.size(), name.ptr());
+							gStrings.push_back(gCurrent);
+						}
+						else gCurrent->aformat(IRCCOLOR ", " IRCBOLD "%.*s" IRCBOLD, name.size(), name.ptr());
+						gTotal++;
+						if (node->isBot)
+							gBots++;
+						break;
+					default:
+						if (oCurrent == nullptr || oCurrent->size() + name.size() > STRING_LENGTH)
+						{
+							oCurrent = new Jupiter::StringL(STRING_LENGTH);
+							oCurrent->format(IRCCOLOR "%.*s[%.*s]: " IRCBOLD "%.*s" IRCBOLD, oTeamColor.size(), oTeamColor.ptr(), oTeam.size(), oTeam.ptr(), name.size(), name.ptr());
+							oStrings.push_back(oCurrent);
+						}
+						else oCurrent->aformat(IRCCOLOR ", " IRCBOLD "%.*s" IRCBOLD, name.size(), name.ptr());
+						oTotal++;
+						if (node->isBot)
+							oBots++;
+						break;
 					}
 				}
 				Jupiter::StringL *outString;
 				while (gStrings.size() != 0)
 				{
-					outString = gStrings.remove(size_t{ 0 });
+					outString = gStrings.front();
 					source->sendMessage(channel, *outString);
+
 					delete outString;
+					gStrings.pop_front();
 				}
 				while (nStrings.size() != 0)
 				{
-					outString = nStrings.remove(size_t{ 0 });
+					outString = nStrings.front();
 					source->sendMessage(channel, *outString);
+
 					delete outString;
+					nStrings.pop_front();
 				}
 				while (oStrings.size() != 0)
 				{
-					outString = oStrings.remove(size_t{ 0 });
+					outString = oStrings.front();
 					source->sendMessage(channel, *outString);
+
 					delete outString;
+					oStrings.pop_front();
 				}
 
 				Jupiter::StringL out;
@@ -516,9 +519,9 @@ void PlayerTableIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableStri
 				double highCredits = 9999999.0;
 
 				RenX::PlayerInfo *player;
-				for (Jupiter::DLList<RenX::PlayerInfo>::Node *node = server->players.getNode(0); node != nullptr; node = node->next)
+				for (auto node = server->players.begin(); node != server->players.end(); ++node)
 				{
-					player = node->data;
+					player = &*node;
 					if (player != nullptr && player->isBot == false)
 					{
 						if (player->name.size() > maxNickLen)
@@ -612,12 +615,10 @@ void PlayerInfoIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableStrin
 	if (chan != nullptr)
 	{
 		int type = chan->getType();
-		RenX::PlayerInfo *player;
 		Jupiter::StringL msg;
 		RenX::Server *server;
 		const Jupiter::ReadableString &player_info_format = source->getAccessLevel(channel, nick) > 1 ? pluginInstance.getAdminPlayerInfoFormat() : pluginInstance.getPlayerInfoFormat();
 		size_t index = 0;
-		Jupiter::DLList<RenX::PlayerInfo>::Node *node;
 
 		if (parameters.isEmpty()) // List all players
 			while (index != RenX::getCore()->getServerCount())
@@ -625,11 +626,10 @@ void PlayerInfoIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableStrin
 				server = RenX::getCore()->getServer(index++);
 				if (server->isLogChanType(type) && server->players.size() != 0)
 				{
-					for (node = server->players.getNode(0); node != nullptr; node = node->next)
+					for (auto node = server->players.begin(); node != server->players.end(); ++node)
 					{
-						player = node->data;
 						msg = player_info_format;
-						RenX::processTags(msg, server, player);
+						RenX::processTags(msg, server, &*node);
 						source->sendMessage(channel, msg);
 					}
 				}
@@ -640,13 +640,12 @@ void PlayerInfoIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableStrin
 				server = RenX::getCore()->getServer(index++);
 				if (server->isLogChanType(type) && server->players.size() != 0)
 				{
-					for (Jupiter::DLList<RenX::PlayerInfo>::Node *node = server->players.getNode(0); node != nullptr; node = node->next)
+					for (auto node = server->players.begin(); node != server->players.end(); ++node)
 					{
-						player = node->data;
-						if (player->name.findi(parameters) != Jupiter::INVALID_INDEX)
+						if (node->name.findi(parameters) != Jupiter::INVALID_INDEX)
 						{
 							msg = player_info_format;
-							RenX::processTags(msg, server, player);
+							RenX::processTags(msg, server, &*node);
 							source->sendMessage(channel, msg);
 						}
 					}
@@ -951,29 +950,29 @@ void SteamIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &ch
 	if (chan != nullptr)
 	{
 		int type = chan->getType();
-		RenX::PlayerInfo *player;
 		if (parameters.isNotEmpty())
 		{
 			Jupiter::StringL msg;
 			for (unsigned int i = 0; i != RenX::getCore()->getServerCount(); i++)
 			{
 				RenX::Server *server = RenX::getCore()->getServer(i);
-				if (server->isLogChanType(type) && server->players.size() != 0)
+				if (server->isLogChanType(type))
 				{
-					for (Jupiter::DLList<RenX::PlayerInfo>::Node *node = server->players.getNode(0); node != nullptr; node = node->next)
+					for (auto node = server->players.begin(); node != server->players.end(); ++node)
 					{
-						player = node->data;
-						if (player->name.findi(parameters) != Jupiter::INVALID_INDEX)
+						if (node->name.findi(parameters) != Jupiter::INVALID_INDEX)
 						{
-							Jupiter::String &playerName = RenX::getFormattedPlayerName(player);
-							msg.format(IRCCOLOR "03[Steam] " IRCCOLOR "%.*s (ID: %d) ", playerName.size(), playerName.ptr(), player->id);
-							if (player->steamid != 0)
+							Jupiter::String &playerName = RenX::getFormattedPlayerName(*node);
+							msg.format(IRCCOLOR "03[Steam] " IRCCOLOR "%.*s (ID: %d) ", playerName.size(), playerName.ptr(), node->id);
+							if (node->steamid != 0)
 							{
 								msg += "is using steam ID " IRCBOLD;
-								msg += server->formatSteamID(player);
-								msg.aformat(IRCBOLD "; Steam Profile: " IRCBOLD "https://steamcommunity.com/profiles/%llu" IRCBOLD, player->steamid);
+								msg += server->formatSteamID(*node);
+								msg.aformat(IRCBOLD "; Steam Profile: " IRCBOLD "https://steamcommunity.com/profiles/%llu" IRCBOLD, node->steamid);
 							}
-							else msg += "is not using steam.";
+							else
+								msg += "is not using steam.";
+
 							source->sendMessage(channel, msg);
 						}
 					}
@@ -989,23 +988,24 @@ void SteamIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &ch
 			for (unsigned int i = 0; i != RenX::getCore()->getServerCount(); i++)
 			{
 				RenX::Server *server = RenX::getCore()->getServer(i);
-				if (server->isLogChanType(type) && server->players.size() != 0)
+				if (server->isLogChanType(type))
 				{
 					total = 0;
 					realPlayers = 0;
-					for (Jupiter::DLList<RenX::PlayerInfo>::Node *node = server->players.getNode(0); node != nullptr; node = node->next)
+					for (auto node = server->players.begin(); node != server->players.end(); ++node)
 					{
-						player = node->data;
-						if (player->isBot == false)
+						if (node->isBot == false)
 						{
 							realPlayers++;
-							if (player->steamid != 0)
+							if (node->steamid != 0)
 								total++;
 						}
 					}
+
 					if (realPlayers != 0)
 						source->sendMessage(channel, Jupiter::StringS::Format("%.2f%% (%u/%u) of players are using Steam.", ((double)total * 100) / ((double)realPlayers), total, realPlayers));
-					else source->sendMessage(channel, STRING_LITERAL_AS_REFERENCE("No players are in-game."));
+					else
+						source->sendMessage(channel, STRING_LITERAL_AS_REFERENCE("No players are in-game."));
 				}
 			}
 		}
@@ -1038,20 +1038,18 @@ void KillDeathRatioIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableS
 		if (chan != nullptr)
 		{
 			int type = chan->getType();
-			RenX::PlayerInfo *player;
 			Jupiter::StringL msg;
 			for (unsigned int i = 0; i != RenX::getCore()->getServerCount(); i++)
 			{
 				RenX::Server *server = RenX::getCore()->getServer(i);
 				if (server->isLogChanType(type) && server->players.size() != 0)
 				{
-					for (Jupiter::DLList<RenX::PlayerInfo>::Node *node = server->players.getNode(0); node != nullptr; node = node->next)
+					for (auto node = server->players.begin(); node != server->players.end(); ++node)
 					{
-						player = node->data;
-						if (player->name.findi(parameters) != Jupiter::INVALID_INDEX)
+						if (node->name.findi(parameters) != Jupiter::INVALID_INDEX)
 						{
-							Jupiter::String &playerName = RenX::getFormattedPlayerName(player);
-							msg.format(IRCBOLD "%.*s" IRCBOLD IRCCOLOR ": Kills: %u - Deaths: %u - KDR: %.2f", playerName.size(), playerName.ptr(), player->kills, player->deaths, static_cast<double>(player->kills) / (player->deaths == 0 ? 1.0f : static_cast<double>(player->deaths)));
+							Jupiter::String &playerName = RenX::getFormattedPlayerName(*node);
+							msg.format(IRCBOLD "%.*s" IRCBOLD IRCCOLOR ": Kills: %u - Deaths: %u - KDR: %.2f", playerName.size(), playerName.ptr(), node->kills, node->deaths, static_cast<double>(node->kills) / (node->deaths == 0 ? 1.0f : static_cast<double>(node->deaths)));
 							source->sendMessage(channel, msg);
 						}
 					}
@@ -1128,7 +1126,6 @@ void ModsIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &cha
 		if (chan != nullptr)
 		{
 			int type = chan->getType();
-			RenX::PlayerInfo *player;
 			Jupiter::StringL msg;
 			const Jupiter::ReadableString &staff_word = pluginInstance.getStaffTitle();
 			for (unsigned int i = 0; i != RenX::getCore()->getServerCount(); i++)
@@ -1139,16 +1136,15 @@ void ModsIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &cha
 					msg = "";
 					if (server->players.size() != 0)
 					{
-						for (Jupiter::DLList<RenX::PlayerInfo>::Node *node = server->players.getNode(0); node != nullptr; node = node->next)
+						for (auto node = server->players.begin(); node != server->players.end(); ++node)
 						{
-							player = node->data;
-							if (player->isBot == false && (player->adminType.isNotEmpty() || (player->access != 0 && (player->gamePrefix.isNotEmpty() || player->formatNamePrefix.isNotEmpty()))))
+							if (node->isBot == false && (node->adminType.isNotEmpty() || (node->access != 0 && (node->gamePrefix.isNotEmpty() || node->formatNamePrefix.isNotEmpty()))))
 							{
 								if (msg.isNotEmpty())
 									msg += ", ";
 								else msg += staff_word + "s in-game: "_jrs;
-								msg += player->gamePrefix;
-								msg += player->name;
+								msg += node->gamePrefix;
+								msg += node->name;
 							}
 						}
 					}
@@ -1428,8 +1424,8 @@ void MuteIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &cha
 					player = server->getPlayerByPartName(parameters);
 					if (player != nullptr)
 					{
-						server->mute(player);
-						source->sendMessage(channel, RenX::getFormattedPlayerName(player) + STRING_LITERAL_AS_REFERENCE(IRCCOLOR " has been muted."));
+						server->mute(*player);
+						source->sendMessage(channel, RenX::getFormattedPlayerName(*player) + STRING_LITERAL_AS_REFERENCE(IRCCOLOR " has been muted."));
 					}
 					else
 						source->sendNotice(nick, STRING_LITERAL_AS_REFERENCE("Error: Player not found."));
@@ -1477,8 +1473,8 @@ void UnMuteIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &c
 					player = server->getPlayerByPartName(parameters);
 					if (player != nullptr)
 					{
-						server->unmute(player);
-						source->sendMessage(channel, RenX::getFormattedPlayerName(player) + STRING_LITERAL_AS_REFERENCE(IRCCOLOR " has been unmuted."));
+						server->unmute(*player);
+						source->sendMessage(channel, RenX::getFormattedPlayerName(*player) + STRING_LITERAL_AS_REFERENCE(IRCCOLOR " has been unmuted."));
 					}
 					else
 						source->sendNotice(nick, STRING_LITERAL_AS_REFERENCE("Error: Player not found."));
@@ -1525,7 +1521,7 @@ void KillIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &cha
 					match = true;
 					player = server->getPlayerByPartName(parameters);
 					if (player != nullptr)
-						server->kill(player);
+						server->kill(*player);
 					else
 						source->sendNotice(nick, STRING_LITERAL_AS_REFERENCE("Error: Player not found."));
 				}
@@ -1572,8 +1568,8 @@ void DisarmIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &c
 					player = server->getPlayerByPartName(parameters);
 					if (player != nullptr)
 					{
-						if (server->disarm(player))
-							source->sendMessage(channel, STRING_LITERAL_AS_REFERENCE("All deployables (c4, beacons, etc) belonging to ") + RenX::getFormattedPlayerName(player) + STRING_LITERAL_AS_REFERENCE(IRCCOLOR " have been disarmed."));
+						if (server->disarm(*player))
+							source->sendMessage(channel, STRING_LITERAL_AS_REFERENCE("All deployables (c4, beacons, etc) belonging to ") + RenX::getFormattedPlayerName(*player) + STRING_LITERAL_AS_REFERENCE(IRCCOLOR " have been disarmed."));
 						else
 							source->sendMessage(channel, "Error: Server does not support disarms."_jrs);
 					}
@@ -1623,8 +1619,8 @@ void DisarmC4IRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString 
 					player = server->getPlayerByPartName(parameters);
 					if (player != nullptr)
 					{
-						if (server->disarmC4(player))
-							source->sendMessage(channel, STRING_LITERAL_AS_REFERENCE("All C4 belonging to ") + RenX::getFormattedPlayerName(player) + STRING_LITERAL_AS_REFERENCE(IRCCOLOR " have been disarmed."));
+						if (server->disarmC4(*player))
+							source->sendMessage(channel, STRING_LITERAL_AS_REFERENCE("All C4 belonging to ") + RenX::getFormattedPlayerName(*player) + STRING_LITERAL_AS_REFERENCE(IRCCOLOR " have been disarmed."));
 						else
 							source->sendMessage(channel, "Error: Server does not support disarms."_jrs);
 					}
@@ -1676,8 +1672,8 @@ void DisarmBeaconIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableStr
 					player = server->getPlayerByPartName(parameters);
 					if (player != nullptr)
 					{
-						if (server->disarmBeacon(player))
-							source->sendMessage(channel, STRING_LITERAL_AS_REFERENCE("All beacons belonging to ") + RenX::getFormattedPlayerName(player) + STRING_LITERAL_AS_REFERENCE(IRCCOLOR " have been disarmed."));
+						if (server->disarmBeacon(*player))
+							source->sendMessage(channel, STRING_LITERAL_AS_REFERENCE("All beacons belonging to ") + RenX::getFormattedPlayerName(*player) + STRING_LITERAL_AS_REFERENCE(IRCCOLOR " have been disarmed."));
 						else
 							source->sendMessage(channel, "Error: Server does not support disarms."_jrs);
 					}
@@ -1727,7 +1723,7 @@ void MineBanIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &
 					player = server->getPlayerByPartName(parameters);
 					if (player != nullptr)
 					{
-						server->mineBan(player);
+						server->mineBan(*player);
 						source->sendMessage(channel, STRING_LITERAL_AS_REFERENCE("Player can no longer place mines."));
 					}
 					else
@@ -1782,7 +1778,7 @@ void KickIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &cha
 						player = server->getPlayerByPartName(name);
 						if (player != nullptr)
 						{
-							server->kickPlayer(player, reason);
+							server->kickPlayer(*player, reason);
 							++kicks;
 						}
 					}
@@ -1983,7 +1979,7 @@ void TempBanIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &
 						player = server->getPlayerByPartName(name);
 						if (player != nullptr)
 						{
-							server->banPlayer(player, banner, reason, pluginInstance.getTBanTime());
+							server->banPlayer(*player, banner, reason, pluginInstance.getTBanTime());
 							kicks++;
 						}
 					}
@@ -2040,7 +2036,7 @@ void KickBanIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &
 						player = server->getPlayerByPartName(name);
 						if (player != nullptr)
 						{
-							server->banPlayer(player, banner, reason);
+							server->banPlayer(*player, banner, reason);
 							kicks++;
 						}
 					}
@@ -2426,9 +2422,9 @@ void BanExemptIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString
 						if (player != nullptr)
 						{
 							if (player->steamid != 0LL)
-								RenX::exemptionDatabase->add(server, player, setter, std::chrono::seconds::zero(), RenX::ExemptionDatabase::Entry::FLAG_TYPE_BAN);
+								RenX::exemptionDatabase->add(*server, *player, setter, std::chrono::seconds::zero(), RenX::ExemptionDatabase::Entry::FLAG_TYPE_BAN);
 							else
-								RenX::exemptionDatabase->add(server, player, setter, std::chrono::seconds::zero(), RenX::ExemptionDatabase::Entry::FLAG_TYPE_BAN | RenX::ExemptionDatabase::Entry::FLAG_USE_IP);
+								RenX::exemptionDatabase->add(*server, *player, setter, std::chrono::seconds::zero(), RenX::ExemptionDatabase::Entry::FLAG_TYPE_BAN | RenX::ExemptionDatabase::Entry::FLAG_USE_IP);
 							++exemptions;
 						}
 					}
@@ -2489,9 +2485,9 @@ void KickExemptIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableStrin
 						if (player != nullptr)
 						{
 							if (player->steamid != 0LL)
-								RenX::exemptionDatabase->add(server, player, setter, std::chrono::seconds::zero(), RenX::ExemptionDatabase::Entry::FLAG_TYPE_BAN | RenX::ExemptionDatabase::Entry::FLAG_TYPE_KICK);
+								RenX::exemptionDatabase->add(*server, *player, setter, std::chrono::seconds::zero(), RenX::ExemptionDatabase::Entry::FLAG_TYPE_BAN | RenX::ExemptionDatabase::Entry::FLAG_TYPE_KICK);
 							else
-								RenX::exemptionDatabase->add(server, player, setter, std::chrono::seconds::zero(), RenX::ExemptionDatabase::Entry::FLAG_TYPE_BAN | RenX::ExemptionDatabase::Entry::FLAG_TYPE_KICK | RenX::ExemptionDatabase::Entry::FLAG_USE_IP);
+								RenX::exemptionDatabase->add(*server, *player, setter, std::chrono::seconds::zero(), RenX::ExemptionDatabase::Entry::FLAG_TYPE_BAN | RenX::ExemptionDatabase::Entry::FLAG_TYPE_KICK | RenX::ExemptionDatabase::Entry::FLAG_USE_IP);
 							++exemptions;
 						}
 					}
@@ -2901,10 +2897,10 @@ void RefundIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &c
 					player = server->getPlayerByPartName(playerName);
 					if (player != nullptr)
 					{
-						if (server->giveCredits(player, credits))
+						if (server->giveCredits(*player, credits))
 						{
 							msg.format("You have been refunded %.0f credits by %.*s.", credits, nick.size(), nick.ptr());
-							server->sendMessage(player, msg);
+							server->sendMessage(*player, msg);
 							msg.format("%.*s has been refunded %.0f credits.", player->name.size(), player->name.ptr(), credits);
 						}
 						else
@@ -2948,20 +2944,18 @@ void TeamChangeIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableStrin
 		{
 			int type = chan->getType();
 			Jupiter::ReferenceString playerName = Jupiter::ReferenceString::getWord(parameters, 0, WHITESPACE);
-			RenX::PlayerInfo *player;
 			bool playerFound = false;
 			for (unsigned int i = 0; i != RenX::getCore()->getServerCount(); i++)
 			{
 				RenX::Server *server = RenX::getCore()->getServer(i);
 				if (server->isLogChanType(type) && server->players.size() != 0)
 				{
-					for (Jupiter::DLList<RenX::PlayerInfo>::Node *node = server->players.getNode(0); node != nullptr; node = node->next)
+					for (auto node = server->players.begin(); node != server->players.end(); ++node)
 					{
-						player = node->data;
-						if (player->name.findi(playerName) != Jupiter::INVALID_INDEX)
+						if (node->name.findi(playerName) != Jupiter::INVALID_INDEX)
 						{
 							playerFound = true;
-							if (server->changeTeam(player) == false)
+							if (server->changeTeam(*node) == false)
 								source->sendMessage(channel, STRING_LITERAL_AS_REFERENCE("Error: Server does not support team changing."));
 						}
 					}
@@ -3003,20 +2997,18 @@ void TeamChange2IRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableStri
 		{
 			int type = chan->getType();
 			Jupiter::ReferenceString playerName = Jupiter::ReferenceString::getWord(parameters, 0, WHITESPACE);
-			RenX::PlayerInfo *player;
 			bool playerFound = false;
 			for (unsigned int i = 0; i != RenX::getCore()->getServerCount(); i++)
 			{
 				RenX::Server *server = RenX::getCore()->getServer(i);
 				if (server->isLogChanType(type) && server->players.size() != 0)
 				{
-					for (Jupiter::DLList<RenX::PlayerInfo>::Node *node = server->players.getNode(0); node != nullptr; node = node->next)
+					for (auto node = server->players.begin(); node != server->players.end(); ++node)
 					{
-						player = node->data;
-						if (player->name.findi(playerName) != Jupiter::INVALID_INDEX)
+						if (node->name.findi(playerName) != Jupiter::INVALID_INDEX)
 						{
 							playerFound = true;
-							if (server->changeTeam(player, false) == false)
+							if (server->changeTeam(*node, false) == false)
 								source->sendMessage(channel, STRING_LITERAL_AS_REFERENCE("Error: Server does not support team changing."));
 						}
 					}
@@ -3076,16 +3068,17 @@ void HelpGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *player, co
 		}
 		return list;
 	};
+
 	if (parameters.wordCount(WHITESPACE) == 0)
 	{
 		for (int i = 0; i <= player->access; i++)
 		{
 			Jupiter::ReadableString &msg = getAccessCommands(i);
 			if (msg.isNotEmpty())
-				source->sendMessage(player, getAccessCommands(i));
+				source->sendMessage(*player, getAccessCommands(i));
 		}
 		if (cmdCount == 0)
-			source->sendMessage(player, STRING_LITERAL_AS_REFERENCE("No listed commands available."));
+			source->sendMessage(*player, STRING_LITERAL_AS_REFERENCE("No listed commands available."));
 	}
 	else
 	{
@@ -3093,12 +3086,12 @@ void HelpGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *player, co
 		if (cmd != nullptr)
 		{
 			if (player->access >= cmd->getAccessLevel())
-				source->sendMessage(player, cmd->getHelp(Jupiter::ReferenceString::gotoWord(parameters, 1, WHITESPACE)));
+				source->sendMessage(*player, cmd->getHelp(Jupiter::ReferenceString::gotoWord(parameters, 1, WHITESPACE)));
 			else
-				source->sendMessage(player, STRING_LITERAL_AS_REFERENCE("Access Denied."));
+				source->sendMessage(*player, STRING_LITERAL_AS_REFERENCE("Access Denied."));
 		}
 		else
-			source->sendMessage(player, STRING_LITERAL_AS_REFERENCE("Error: Command not found."));
+			source->sendMessage(*player, STRING_LITERAL_AS_REFERENCE("Error: Command not found."));
 	}
 }
 
@@ -3121,20 +3114,19 @@ void ModsGameCommand::create()
 
 void ModsGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *, const Jupiter::ReadableString &)
 {
-	RenX::PlayerInfo *player;
 	Jupiter::StringL msg;
 	const Jupiter::ReadableString &staff_word = pluginInstance.getStaffTitle();
-	for (Jupiter::DLList<RenX::PlayerInfo>::Node *node = source->players.getNode(0); node != nullptr; node = node->next)
+	for (auto node = source->players.begin(); node != source->players.end(); ++node)
 	{
-		player = node->data;
-		if (player->isBot == false && (player->adminType.isNotEmpty() || (player->access != 0 && (player->gamePrefix.isNotEmpty() || player->formatNamePrefix.isNotEmpty()))))
+		if (node->isBot == false && (node->adminType.isNotEmpty() || (node->access != 0 && (node->gamePrefix.isNotEmpty() || node->formatNamePrefix.isNotEmpty()))))
 		{
 			if (msg.isEmpty())
 				msg = staff_word + "s in-game: "_jrs;
 			else
 				msg += ", ";
-			msg += player->gamePrefix;
-			msg += player->name;
+
+			msg += node->gamePrefix;
+			msg += node->name;
 		}
 	}
 	if (msg.isEmpty())
@@ -3194,7 +3186,7 @@ void ModRequestGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *play
 	size_t serverCount = serverManager->size();
 	IRC_Bot *server;
 	unsigned int messageCount = 0;
-	Jupiter::String &fmtName = RenX::getFormattedPlayerName(player);
+	Jupiter::String &fmtName = RenX::getFormattedPlayerName(*player);
 	Jupiter::StringL user_message = Jupiter::StringL::Format(IRCCOLOR "12[%.*s Request] " IRCCOLOR IRCBOLD "%.*s" IRCBOLD IRCCOLOR "07 has requested assistance in-game; please look in ", staff_word.size(), staff_word.ptr(), fmtName.size(), fmtName.ptr());
 	Jupiter::StringS channel_message = Jupiter::StringS::Format(IRCCOLOR "12[%.*s Request] " IRCCOLOR IRCBOLD "%.*s" IRCBOLD IRCCOLOR "07 has requested assistance in-game!" IRCCOLOR, staff_word.size(), staff_word.ptr(), fmtName.size(), fmtName.ptr());
 	
@@ -3219,7 +3211,7 @@ void ModRequestGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *play
 		}
 	};
 	
-	source->sendMessage(player, Jupiter::StringS::Format("A total of %u %.*ss have been notified of your assistance request.", messageCount, staff_word.size(), staff_word.ptr()));
+	source->sendMessage(*player, Jupiter::StringS::Format("A total of %u %.*ss have been notified of your assistance request.", messageCount, staff_word.size(), staff_word.ptr()));
 }
 
 const Jupiter::ReadableString &ModRequestGameCommand::getHelp(const Jupiter::ReadableString &)
@@ -3244,17 +3236,17 @@ void KillGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *player, co
 	{
 		RenX::PlayerInfo *target = source->getPlayerByPartName(parameters);
 		if (target == nullptr)
-			source->sendMessage(player, STRING_LITERAL_AS_REFERENCE("Error: Player not found."));
+			source->sendMessage(*player, "Error: Player not found."_jrs);
 		else if (target->access >= player->access)
-			source->sendMessage(player, "Error: You can not kill higher level "_jrs + pluginInstance.getStaffTitle() + "s."_jrs);
+			source->sendMessage(*player, "Error: You can not kill higher level "_jrs + pluginInstance.getStaffTitle() + "s."_jrs);
 		else
 		{
-			source->kill(target);
-			source->sendMessage(player, STRING_LITERAL_AS_REFERENCE("Player has been killed."));
+			source->kill(*target);
+			source->sendMessage(*player, "Player has been killed."_jrs);
 		}
 	}
 	else
-		source->sendMessage(player, STRING_LITERAL_AS_REFERENCE("Error: Too few parameters. Syntax: kill <player>"));
+		source->sendMessage(*player, "Error: Too few parameters. Syntax: kill <player>"_jrs);
 }
 
 const Jupiter::ReadableString &KillGameCommand::getHelp(const Jupiter::ReadableString &)
@@ -3279,16 +3271,16 @@ void DisarmGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *player, 
 	{
 		RenX::PlayerInfo *target = source->getPlayerByPartName(parameters);
 		if (target == nullptr)
-			source->sendMessage(player, STRING_LITERAL_AS_REFERENCE("Error: Player not found."));
+			source->sendMessage(*player, "Error: Player not found."_jrs);
 		else if (target->access >= player->access)
-			source->sendMessage(player, "Error: You can not disarm higher level "_jrs + pluginInstance.getStaffTitle() + "s."_jrs);
-		else if (source->disarm(target) == false)
-			source->sendMessage(player, "Error: Server does not support disarms."_jrs);
+			source->sendMessage(*player, "Error: You can not disarm higher level "_jrs + pluginInstance.getStaffTitle() + "s."_jrs);
+		else if (source->disarm(*target) == false)
+			source->sendMessage(*player, "Error: Server does not support disarms."_jrs);
 		else
-			source->sendMessage(player, STRING_LITERAL_AS_REFERENCE("Player has been disarmed."));
+			source->sendMessage(*player, "Player has been disarmed."_jrs);
 	}
 	else
-		source->sendMessage(player, STRING_LITERAL_AS_REFERENCE("Error: Too few parameters. Syntax: disarm <player>"));
+		source->sendMessage(*player, "Error: Too few parameters. Syntax: disarm <player>"_jrs);
 }
 
 const Jupiter::ReadableString &DisarmGameCommand::getHelp(const Jupiter::ReadableString &)
@@ -3313,16 +3305,16 @@ void DisarmC4GameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *player
 	{
 		RenX::PlayerInfo *target = source->getPlayerByPartName(parameters);
 		if (target == nullptr)
-			source->sendMessage(player, STRING_LITERAL_AS_REFERENCE("Error: Player not found."));
+			source->sendMessage(*player, "Error: Player not found."_jrs);
 		else if (target->access >= player->access)
-			source->sendMessage(player, "Error: You can not disarm higher level "_jrs + pluginInstance.getStaffTitle() + "s."_jrs);
-		else if (source->disarmC4(target) == false)
-			source->sendMessage(player, "Error: Server does not support disarms."_jrs);
+			source->sendMessage(*player, "Error: You can not disarm higher level "_jrs + pluginInstance.getStaffTitle() + "s."_jrs);
+		else if (source->disarmC4(*target) == false)
+			source->sendMessage(*player, "Error: Server does not support disarms."_jrs);
 		else
-			source->sendMessage(player, STRING_LITERAL_AS_REFERENCE("Player has been disarmed."));
+			source->sendMessage(*player, "Player has been disarmed."_jrs);
 	}
 	else
-		source->sendMessage(player, STRING_LITERAL_AS_REFERENCE("Error: Too few parameters. Syntax: disarmc4 <player>"));
+		source->sendMessage(*player, "Error: Too few parameters. Syntax: disarmc4 <player>"_jrs);
 }
 
 const Jupiter::ReadableString &DisarmC4GameCommand::getHelp(const Jupiter::ReadableString &)
@@ -3349,16 +3341,16 @@ void DisarmBeaconGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *pl
 	{
 		RenX::PlayerInfo *target = source->getPlayerByPartName(parameters);
 		if (target == nullptr)
-			source->sendMessage(player, STRING_LITERAL_AS_REFERENCE("Error: Player not found."));
+			source->sendMessage(*player, "Error: Player not found."_jrs);
 		else if (target->access >= player->access)
-			source->sendMessage(player, "Error: You can not disarm higher level "_jrs + pluginInstance.getStaffTitle() + "s."_jrs);
-		else if (source->disarmBeacon(target) == false)
-			source->sendMessage(player, "Error: Server does not support disarms."_jrs);
+			source->sendMessage(*player, "Error: You can not disarm higher level "_jrs + pluginInstance.getStaffTitle() + "s."_jrs);
+		else if (source->disarmBeacon(*target) == false)
+			source->sendMessage(*player, "Error: Server does not support disarms."_jrs);
 		else
-			source->sendMessage(player, STRING_LITERAL_AS_REFERENCE("Player has been disarmed."));
+			source->sendMessage(*player, "Player has been disarmed."_jrs);
 	}
 	else
-		source->sendMessage(player, STRING_LITERAL_AS_REFERENCE("Error: Too few parameters. Syntax: disarmb <player>"));
+		source->sendMessage(*player, "Error: Too few parameters. Syntax: disarmb <player>"_jrs);
 }
 
 const Jupiter::ReadableString &DisarmBeaconGameCommand::getHelp(const Jupiter::ReadableString &)
@@ -3383,17 +3375,17 @@ void MineBanGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *player,
 	{
 		RenX::PlayerInfo *target = source->getPlayerByPartName(parameters);
 		if (target == nullptr)
-			source->sendMessage(player, STRING_LITERAL_AS_REFERENCE("Error: Player not found."));
+			source->sendMessage(*player, "Error: Player not found."_jrs);
 		else if (target->access >= player->access)
-			source->sendMessage(player, "Error: You can not mine-ban higher level "_jrs + pluginInstance.getStaffTitle() + "s."_jrs);
+			source->sendMessage(*player, "Error: You can not mine-ban higher level "_jrs + pluginInstance.getStaffTitle() + "s."_jrs);
 		else
 		{
-			source->mineBan(target);
-			source->sendMessage(player, STRING_LITERAL_AS_REFERENCE("Player can no longer place mines."));
+			source->mineBan(*target);
+			source->sendMessage(*player, "Player can no longer place mines."_jrs);
 		}
 	}
 	else
-		source->sendMessage(player, STRING_LITERAL_AS_REFERENCE("Error: Too few parameters. Syntax: mineban <player>"));
+		source->sendMessage(*player, "Error: Too few parameters. Syntax: mineban <player>"_jrs);
 }
 
 const Jupiter::ReadableString &MineBanGameCommand::getHelp(const Jupiter::ReadableString &)
@@ -3422,19 +3414,19 @@ void KickGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *player, co
 		Jupiter::StringS reason = parameters.wordCount(WHITESPACE) > 1 ? Jupiter::StringS::gotoWord(parameters, 1, WHITESPACE) : STRING_LITERAL_AS_REFERENCE("No reason");
 		RenX::PlayerInfo *target = source->getPlayerByPartName(name);
 		if (target == nullptr)
-			source->sendMessage(player, STRING_LITERAL_AS_REFERENCE("Error: Player not found."));
+			source->sendMessage(*player, "Error: Player not found."_jrs);
 		else if (player == target)
-			source->sendMessage(player, STRING_LITERAL_AS_REFERENCE("Error: You can not kick yourself."));
+			source->sendMessage(*player, "Error: You cannot kick yourself."_jrs);
 		else if (target->access >= player->access)
-			source->sendMessage(player, "Error: You can not kick higher level "_jrs + pluginInstance.getStaffTitle() + "s."_jrs);
+			source->sendMessage(*player, "Error: You can not kick higher level "_jrs + pluginInstance.getStaffTitle() + "s."_jrs);
 		else
 		{
-			source->kickPlayer(target, reason);
-			source->sendMessage(player, STRING_LITERAL_AS_REFERENCE("Player has been kicked from the game."));
+			source->kickPlayer(*target, reason);
+			source->sendMessage(*player, "Player has been kicked from the game."_jrs);
 		}
 	}
 	else
-		source->sendMessage(player, STRING_LITERAL_AS_REFERENCE("Error: Too few parameters. Syntax: kick <player> [Reason]"));
+		source->sendMessage(*player, "Error: Too few parameters. Syntax: kick <player> [Reason]"_jrs);
 }
 
 const Jupiter::ReadableString &KickGameCommand::getHelp(const Jupiter::ReadableString &)
@@ -3463,19 +3455,19 @@ void TempBanGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *player,
 		Jupiter::StringS reason = parameters.wordCount(WHITESPACE) > 1 ? Jupiter::StringS::gotoWord(parameters, 1, WHITESPACE) : STRING_LITERAL_AS_REFERENCE("No reason");
 		RenX::PlayerInfo *target = source->getPlayerByPartName(name);
 		if (target == nullptr)
-			source->sendMessage(player, STRING_LITERAL_AS_REFERENCE("Error: Player not found."));
+			source->sendMessage(*player, "Error: Player not found."_jrs);
 		else if (player == target)
-			source->sendMessage(player, STRING_LITERAL_AS_REFERENCE("Error: You can not ban yourself."));
+			source->sendMessage(*player, "Error: You can not ban yourself."_jrs);
 		else if (target->access >= player->access)
-			source->sendMessage(player, "Error: You can not ban higher level "_jrs + pluginInstance.getStaffTitle() + "s."_jrs);
+			source->sendMessage(*player, "Error: You can not ban higher level "_jrs + pluginInstance.getStaffTitle() + "s."_jrs);
 		else
 		{
-			source->banPlayer(target, player->name, reason, pluginInstance.getTBanTime());
-			source->sendMessage(player, STRING_LITERAL_AS_REFERENCE("Player has been temporarily banned and kicked from the game."));
+			source->banPlayer(*target, player->name, reason, pluginInstance.getTBanTime());
+			source->sendMessage(*player, "Player has been temporarily banned and kicked from the game."_jrs);
 		}
 	}
 	else
-		source->sendMessage(player, STRING_LITERAL_AS_REFERENCE("Error: Too few parameters. Syntax: tban <player> [Reason]"));
+		source->sendMessage(*player, "Error: Too few parameters. Syntax: tban <player> [Reason]"_jrs);
 }
 
 const Jupiter::ReadableString &TempBanGameCommand::getHelp(const Jupiter::ReadableString &)
@@ -3505,20 +3497,20 @@ void KickBanGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *player,
 		Jupiter::StringS reason = parameters.wordCount(WHITESPACE) > 1 ? Jupiter::StringS::gotoWord(parameters, 1, WHITESPACE) : STRING_LITERAL_AS_REFERENCE("No reason");
 		RenX::PlayerInfo *target = source->getPlayerByPartName(name);
 		if (target == nullptr)
-			source->sendMessage(player, STRING_LITERAL_AS_REFERENCE("Error: Player not found."));
+			source->sendMessage(*player, "Error: Player not found."_jrs);
 		else if (player == target)
-			source->sendMessage(player, STRING_LITERAL_AS_REFERENCE("Error: You can not ban yourself."));
+			source->sendMessage(*player, "Error: You can not ban yourself."_jrs);
 		else if (target->access >= player->access)
-			source->sendMessage(player, "Error: You can not ban higher level "_jrs + pluginInstance.getStaffTitle() + "s."_jrs);
+			source->sendMessage(*player, "Error: You can not ban higher level "_jrs + pluginInstance.getStaffTitle() + "s."_jrs);
 		else
 		{
-			source->banPlayer(target, player->name, reason);
-			source->sendMessage(player, STRING_LITERAL_AS_REFERENCE("Player has been banned and kicked from the game."));
+			source->banPlayer(*target, player->name, reason);
+			source->sendMessage(*player, "Player has been banned and kicked from the game."_jrs);
 			RenX::getCore()->banCheck();
 		}
 	}
 	else
-		source->sendMessage(player, STRING_LITERAL_AS_REFERENCE("Error: Too few parameters. Syntax: ban <player> [reason]"));
+		source->sendMessage(*player, "Error: Too few parameters. Syntax: ban <player> [reason]"_jrs);
 }
 
 const Jupiter::ReadableString &KickBanGameCommand::getHelp(const Jupiter::ReadableString &)
@@ -3568,7 +3560,7 @@ void AddBotsGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *player,
 	cmd += Jupiter::StringS::Format("%u", amount);
 
 	source->send(cmd);
-	source->sendMessage(player, Jupiter::StringS::Format("%u bots have been added to the server.", amount));
+	source->sendMessage(*player, Jupiter::StringS::Format("%u bots have been added to the server.", amount));
 }
 
 const Jupiter::ReadableString &AddBotsGameCommand::getHelp(const Jupiter::ReadableString &)
@@ -3593,7 +3585,7 @@ void KillBotsGameCommand::create()
 void KillBotsGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *player, const Jupiter::ReadableString &parameters)
 {
 	source->send(STRING_LITERAL_AS_REFERENCE("killbots"));
-	source->sendMessage(player, STRING_LITERAL_AS_REFERENCE("All bots have been removed from the server."));
+	source->sendMessage(*player, STRING_LITERAL_AS_REFERENCE("All bots have been removed from the server."));
 }
 
 const Jupiter::ReadableString &KillBotsGameCommand::getHelp(const Jupiter::ReadableString &)
@@ -3618,18 +3610,18 @@ void PhaseBotsGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *playe
 	if (parameters.isEmpty())
 	{
 		if (togglePhasing(source))
-			source->sendMessage(player, STRING_LITERAL_AS_REFERENCE("Bot phasing has been enabled."));
-		else source->sendMessage(player, STRING_LITERAL_AS_REFERENCE("Bot phasing has been disabled."));
+			source->sendMessage(*player, STRING_LITERAL_AS_REFERENCE("Bot phasing has been enabled."));
+		else source->sendMessage(*player, STRING_LITERAL_AS_REFERENCE("Bot phasing has been disabled."));
 	}
 	else if (parameters.equalsi("true") || parameters.equalsi("on") || parameters.equalsi("start") || parameters.equalsi("1"))
 	{
 		togglePhasing(source, true);
-		source->sendMessage(player, STRING_LITERAL_AS_REFERENCE("Bot phasing has been enabled."));
+		source->sendMessage(*player, STRING_LITERAL_AS_REFERENCE("Bot phasing has been enabled."));
 	}
 	else
 	{
 		togglePhasing(source, false);
-		source->sendMessage(player, STRING_LITERAL_AS_REFERENCE("Bot phasing has been disabled."));
+		source->sendMessage(*player, STRING_LITERAL_AS_REFERENCE("Bot phasing has been disabled."));
 	}
 }
 

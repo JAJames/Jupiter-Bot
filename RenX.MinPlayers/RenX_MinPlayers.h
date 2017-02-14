@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2015-2016 Jessica James.
+ * Copyright (C) 2015-2017 Jessica James.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -26,19 +26,19 @@
 class RenX_MinPlayersPlugin : public RenX::Plugin
 {
 public:
-	void RenX_OnMapStart(RenX::Server *server, const Jupiter::ReadableString &map) override;
-	void RenX_OnJoin(RenX::Server *server, const RenX::PlayerInfo *player) override;
-	void RenX_OnPart(RenX::Server *server, const RenX::PlayerInfo *player) override;
+	void RenX_OnMapStart(RenX::Server &server, const Jupiter::ReadableString &map) override;
+	void RenX_OnJoin(RenX::Server &server, const RenX::PlayerInfo &player) override;
+	void RenX_OnPart(RenX::Server &server, const RenX::PlayerInfo &player) override;
 
-	void RenX_OnSuicide(RenX::Server *server, const RenX::PlayerInfo *player, const Jupiter::ReadableString &damageType) override;
-	void RenX_OnKill(RenX::Server *server, const RenX::PlayerInfo *player, const RenX::PlayerInfo *victim, const Jupiter::ReadableString &damageType) override;
-	void RenX_OnKill(RenX::Server *server, const Jupiter::ReadableString &killer, const RenX::TeamType &killerTeam, const RenX::PlayerInfo *victim, const Jupiter::ReadableString &damageType) override;
-	void RenX_OnDie(RenX::Server *server, const RenX::PlayerInfo *player, const Jupiter::ReadableString &damageType) override;
+	void RenX_OnSuicide(RenX::Server &server, const RenX::PlayerInfo &player, const Jupiter::ReadableString &damageType) override;
+	void RenX_OnKill(RenX::Server &server, const RenX::PlayerInfo &player, const RenX::PlayerInfo &victim, const Jupiter::ReadableString &damageType) override;
+	void RenX_OnKill(RenX::Server &server, const Jupiter::ReadableString &killer, const RenX::TeamType &killerTeam, const RenX::PlayerInfo &victim, const Jupiter::ReadableString &damageType) override;
+	void RenX_OnDie(RenX::Server &server, const RenX::PlayerInfo &player, const Jupiter::ReadableString &damageType) override;
 
 	virtual bool initialize() override;
 
 private:
-	void AnyDeath(RenX::Server *server, const RenX::PlayerInfo *player);
+	void AnyDeath(RenX::Server &server, const RenX::PlayerInfo &player);
 	size_t phase_bots;
 
 	/** Configuration variables */

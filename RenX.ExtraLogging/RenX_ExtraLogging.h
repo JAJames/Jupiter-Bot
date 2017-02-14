@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2014-2016 Jessica James.
+ * Copyright (C) 2014-2017 Jessica James.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -26,7 +26,7 @@
 class RenX_ExtraLoggingPlugin : public RenX::Plugin
 {
 public: // RenX::Plugin
-	virtual void RenX_OnRaw(RenX::Server *server, const Jupiter::ReadableString &raw) override;
+	virtual void RenX_OnRaw(RenX::Server &server, const Jupiter::ReadableString &raw) override;
 
 public: // Jupiter::Plugin
 	virtual bool initialize() override;

@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2015-2016 Jessica James.
+ * Copyright (C) 2015-2017 Jessica James.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -26,7 +26,7 @@
 class RenX_HybridUUIDPlugin : public RenX::Plugin
 {
 public: // RenX::Plugin
-	void RenX_OnServerCreate(RenX::Server *server) override;
+	void RenX_OnServerCreate(RenX::Server &server) override;
 
 public: // Jupiter::Plugin
 	RenX_HybridUUIDPlugin();

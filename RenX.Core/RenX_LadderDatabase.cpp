@@ -474,20 +474,18 @@ void RenX::LadderDatabase::sort_entries()
 	RenX::LadderDatabase::last_sort = std::chrono::steady_clock::now();
 }
 
-void RenX::LadderDatabase::updateLadder(RenX::Server *server, const RenX::TeamType &team)
+void RenX::LadderDatabase::updateLadder(RenX::Server &server, const RenX::TeamType &team)
 {
-	if (server->players.size() != server->getBotCount())
+	if (server.players.size() != server.getBotCount())
 	{
 		// call the PreUpdateLadder event
 		if (this->OnPreUpdateLadder != nullptr)
 			this->OnPreUpdateLadder(*this, server, team);
 
 		// update player stats in memory
-		RenX::PlayerInfo *player;
 		RenX::LadderDatabase::Entry *entry;
-		for (Jupiter::DLList<RenX::PlayerInfo>::Node *node = server->players.getNode(0); node != nullptr; node = node->next)
+		for (auto player = server.players.begin(); player != server.players.end(); ++player)
 		{
-			player = node->data;
 			if (player->steamid != 0 && (player->ban_flags & RenX::BanDatabase::Entry::FLAG_TYPE_LADDER) == 0)
 			{
 				entry = RenX::LadderDatabase::getPlayerEntry(player->steamid);
@@ -507,7 +505,7 @@ void RenX::LadderDatabase::updateLadder(RenX::Server *server, const RenX::TeamTy
 				entry->total_building_kills += player->buildingKills;
 				entry->total_defence_kills += player->defenceKills;
 				entry->total_captures += player->captures;
-				entry->total_game_time += static_cast<uint32_t>(std::chrono::duration_cast<std::chrono::seconds>(server->getGameTime(player)).count());
+				entry->total_game_time += static_cast<uint32_t>(std::chrono::duration_cast<std::chrono::seconds>(server.getGameTime(*player)).count());
 				entry->total_beacon_placements += player->beaconPlacements;
 				entry->total_beacon_disarms += player->beaconDisarms;
 				entry->total_proxy_placements += player->proxy_placements;
@@ -523,7 +521,7 @@ void RenX::LadderDatabase::updateLadder(RenX::Server *server, const RenX::TeamTy
 					else if (team == RenX::TeamType::None)
 						++entry->total_gdi_ties;
 
-					entry->total_gdi_game_time += static_cast<uint32_t>(std::chrono::duration_cast<std::chrono::seconds>(server->getGameTime(player)).count());
+					entry->total_gdi_game_time += static_cast<uint32_t>(std::chrono::duration_cast<std::chrono::seconds>(server.getGameTime(*player)).count());
 					entry->total_gdi_score += static_cast<uint64_t>(player->score);
 					entry->total_gdi_beacon_placements += player->beaconPlacements;
 					entry->total_gdi_beacon_disarms += player->beaconDisarms;
@@ -543,7 +541,7 @@ void RenX::LadderDatabase::updateLadder(RenX::Server *server, const RenX::TeamTy
 					else if (team == RenX::TeamType::None)
 						++entry->total_nod_ties;
 
-					entry->total_nod_game_time += static_cast<uint32_t>(std::chrono::duration_cast<std::chrono::seconds>(server->getGameTime(player)).count());
+					entry->total_nod_game_time += static_cast<uint32_t>(std::chrono::duration_cast<std::chrono::seconds>(server.getGameTime(*player)).count());
 					entry->total_nod_score += static_cast<uint64_t>(player->score);
 					entry->total_nod_beacon_placements += player->beaconPlacements;
 					entry->total_nod_beacon_disarms += player->beaconDisarms;
@@ -576,7 +574,7 @@ void RenX::LadderDatabase::updateLadder(RenX::Server *server, const RenX::TeamTy
 				set_if_greater(entry->top_building_kills, player->buildingKills);
 				set_if_greater(entry->top_defence_kills, player->defenceKills);
 				set_if_greater(entry->top_captures, player->captures);
-				set_if_greater(entry->top_game_time, static_cast<uint32_t>(std::chrono::duration_cast<std::chrono::seconds>(server->getGameTime(player)).count()));
+				set_if_greater(entry->top_game_time, static_cast<uint32_t>(std::chrono::duration_cast<std::chrono::seconds>(server.getGameTime(*player)).count()));
 				set_if_greater(entry->top_beacon_placements, player->beaconPlacements);
 				set_if_greater(entry->top_beacon_disarms, player->beaconDisarms);
 				set_if_greater(entry->top_proxy_placements, player->proxy_placements);
@@ -600,12 +598,12 @@ void RenX::LadderDatabase::updateLadder(RenX::Server *server, const RenX::TeamTy
 
 		if (RenX::LadderDatabase::output_times)
 		{
-			Jupiter::StringS str = Jupiter::StringS::Format("Ladder: %u entries sorted in %f seconds; Database written in %f seconds." ENDL,
+			Jupiter::StringS str = Jupiter::StringS::Format("Ladder: %zu entries sorted in %f seconds; Database written in %f seconds." ENDL,
 				RenX::LadderDatabase::getEntries(),
 				static_cast<double>(sort_duration.count()) * (static_cast<double>(std::chrono::steady_clock::duration::period::num) / static_cast<double>(std::chrono::steady_clock::duration::period::den) * static_cast<double>(std::chrono::seconds::duration::period::den / std::chrono::seconds::duration::period::num)),
 				static_cast<double>(write_duration.count()) * (static_cast<double>(std::chrono::steady_clock::duration::period::num) / static_cast<double>(std::chrono::steady_clock::duration::period::den) * static_cast<double>(std::chrono::seconds::duration::period::den / std::chrono::seconds::duration::period::num)));
 			str.println(stdout);
-			server->sendLogChan(str);
+			server.sendLogChan(str);
 		}
 	}
 }

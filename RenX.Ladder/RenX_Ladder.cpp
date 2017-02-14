@@ -45,33 +45,33 @@ bool RenX_LadderPlugin::initialize()
 	return true;
 }
 
-void RenX_LadderPlugin::RenX_OnServerFullyConnected(RenX::Server *server)
+void RenX_LadderPlugin::RenX_OnServerFullyConnected(RenX::Server &server)
 {
-	if (this->only_pure == false || server->isPure())
-		server->setRanked(true);
+	if (this->only_pure == false || server.isPure())
+		server.setRanked(true);
 }
 
 /** Wait until the client list has been updated to update the ladder */
 
-void RenX_LadderPlugin::RenX_OnGameOver(RenX::Server *server, RenX::WinType winType, const RenX::TeamType &team, int gScore, int nScore)
+void RenX_LadderPlugin::RenX_OnGameOver(RenX::Server &server, RenX::WinType winType, const RenX::TeamType &team, int gScore, int nScore)
 {
-	if (server->isRanked() && server->isReliable() && server->players.size() != server->getBotCount())
+	if (server.isRanked() && server.isReliable() && server.players.size() != server.getBotCount())
 	{
 		char chr = static_cast<char>(team);
-		server->varData[this->name].set("t"_jrs, Jupiter::ReferenceString(&chr, 1));
-		server->varData[this->name].set("w"_jrs, "1"_jrs);
-		server->updateClientList();
+		server.varData[this->name].set("t"_jrs, Jupiter::ReferenceString(&chr, 1));
+		server.varData[this->name].set("w"_jrs, "1"_jrs);
+		server.updateClientList();
 	}
 }
 
-void RenX_LadderPlugin::RenX_OnCommand(RenX::Server *server, const Jupiter::ReadableString &)
+void RenX_LadderPlugin::RenX_OnCommand(RenX::Server &server, const Jupiter::ReadableString &)
 {
-	if (server->getCurrentRCONCommand().equalsi("clientvarlist"_jrs))
+	if (server.getCurrentRCONCommand().equalsi("clientvarlist"_jrs))
 	{
-		if (server->varData[this->name].get("w"_jrs, "0"_jrs).equals("1"))
+		if (server.varData[this->name].get("w"_jrs, "0"_jrs).equals("1"))
 		{
-			server->varData[this->name].set("w"_jrs, "0"_jrs);
-			RenX::TeamType team = static_cast<RenX::TeamType>(server->varData[this->name].get("t"_jrs, "\0"_jrs).get(0));
+			server.varData[this->name].set("w"_jrs, "0"_jrs);
+			RenX::TeamType team = static_cast<RenX::TeamType>(server.varData[this->name].get("t"_jrs, "\0"_jrs).get(0));
 			for (size_t index = 0; index != RenX::ladder_databases.size(); ++index)
 				RenX::ladder_databases.get(index)->updateLadder(server, team);
 		}
@@ -172,13 +172,13 @@ void LadderGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *player, 
 				if (pair.first != nullptr)
 					source->sendMessage(FormatLadderResponse(pair.first, pair.second + 1));
 				else
-					source->sendMessage(player, "Error: You have no ladder data. Get started by sticking around until the end of the match!"_jrs);
+					source->sendMessage(*player, "Error: You have no ladder data. Get started by sticking around until the end of the match!"_jrs);
 			}
 			else
-				source->sendMessage(player, "Error: No default ladder database specified."_jrs);
+				source->sendMessage(*player, "Error: No default ladder database specified."_jrs);
 		}
 		else
-			source->sendMessage(player, "Error: You have no ladder data, because you're not using Steam."_jrs);
+			source->sendMessage(*player, "Error: You have no ladder data, because you're not using Steam."_jrs);
 	}
 	else
 	{
@@ -186,7 +186,7 @@ void LadderGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *player, 
 		Jupiter::GenericCommand::ResponseLine *ptr;
 		while (response != nullptr)
 		{
-			source->sendMessage(player, response->response);
+			source->sendMessage(*player, response->response);
 			ptr = response;
 			response = response->next;
 			delete ptr;

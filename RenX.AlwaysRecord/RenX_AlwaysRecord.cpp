@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2015 Jessica James.
+ * Copyright (C) 2015-2017 Jessica James.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -21,9 +21,9 @@
 
 using namespace Jupiter::literals;
 
-void RenX_AlwaysRecord::RenX_OnMapStart(RenX::Server *server, const Jupiter::ReadableString &)
+void RenX_AlwaysRecord::RenX_OnMapStart(RenX::Server &server, const Jupiter::ReadableString &)
 {
-	server->send("demorec"_jrs);
+	server.send("demorec"_jrs);
 }
 
 // Plugin instantiation and entry point.

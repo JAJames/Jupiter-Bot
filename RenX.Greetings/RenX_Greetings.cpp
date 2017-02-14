@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2014-2015 Jessica James.
+ * Copyright (C) 2014-2017 Jessica James.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -24,21 +24,21 @@
 
 using namespace Jupiter::literals;
 
-void RenX_GreetingsPlugin::RenX_OnJoin(RenX::Server *server, const RenX::PlayerInfo *player)
+void RenX_GreetingsPlugin::RenX_OnJoin(RenX::Server &server, const RenX::PlayerInfo &player)
 {
 	auto sendMessage = [&](const Jupiter::ReadableString &m)
 	{
 		Jupiter::String msg = m;
 
 		RenX::sanitizeTags(msg);
-		RenX::processTags(msg, server, player);
+		RenX::processTags(msg, &server, &player);
 
 		if (this->sendPrivate)
-			server->sendMessage(player, msg);
+			server.sendMessage(player, msg);
 		else
-			server->sendMessage(msg);
+			server.sendMessage(msg);
 	};
-	if (player->isBot == false && server->isMatchInProgress())
+	if (player.isBot == false && server.isMatchInProgress())
 	{
 		switch (RenX_GreetingsPlugin::sendMode)
 		{

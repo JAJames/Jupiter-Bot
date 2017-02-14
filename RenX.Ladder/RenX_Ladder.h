@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2015-2016 Jessica James.
+ * Copyright (C) 2015-2017 Jessica James.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -36,9 +36,9 @@ class RenX_LadderPlugin : public RenX::Plugin
 {
 public:
 	virtual bool initialize() override;
-	void RenX_OnServerFullyConnected(RenX::Server *server) override;
-	void RenX_OnGameOver(RenX::Server *server, RenX::WinType winType, const RenX::TeamType &team, int gScore, int nScore) override;
-	void RenX_OnCommand(RenX::Server *server, const Jupiter::ReadableString &) override;
+	void RenX_OnServerFullyConnected(RenX::Server &server) override;
+	void RenX_OnGameOver(RenX::Server &server, RenX::WinType winType, const RenX::TeamType &team, int gScore, int nScore) override;
+	void RenX_OnCommand(RenX::Server &server, const Jupiter::ReadableString &) override;
 
 	size_t getMaxLadderCommandPartNameOutput() const;
 

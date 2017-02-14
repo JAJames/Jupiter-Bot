@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2016 Jessica James.
+ * Copyright (C) 2016-2017 Jessica James.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -29,18 +29,18 @@ public: // RenX_ServerListPlugin
 	Jupiter::ReadableString *getServerListJSON();
 	Jupiter::ReadableString *getServerListGame();
 
-	void addServerToServerList(RenX::Server *server);
+	void addServerToServerList(RenX::Server &server);
 	void updateServerList();
 
 	virtual bool initialize() override;
 	~RenX_ServerListPlugin();
 
 public: // RenX::Plugin
-	void RenX_OnServerFullyConnected(RenX::Server *server) override;
-	void RenX_OnServerDisconnect(RenX::Server *server, RenX::DisconnectReason reason) override;
-	void RenX_OnJoin(RenX::Server *server, const RenX::PlayerInfo *player) override;
-	void RenX_OnPart(RenX::Server *server, const RenX::PlayerInfo *player) override;
-	void RenX_OnMapLoad(RenX::Server *server, const Jupiter::ReadableString &map) override;
+	void RenX_OnServerFullyConnected(RenX::Server &server) override;
+	void RenX_OnServerDisconnect(RenX::Server &server, RenX::DisconnectReason reason) override;
+	void RenX_OnJoin(RenX::Server &server, const RenX::PlayerInfo &player) override;
+	void RenX_OnPart(RenX::Server &server, const RenX::PlayerInfo &player) override;
+	void RenX_OnMapLoad(RenX::Server &server, const Jupiter::ReadableString &map) override;
 
 private:
 	Jupiter::StringS server_list_json, server_list_game;

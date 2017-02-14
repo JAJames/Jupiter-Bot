@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2014-2016 Jessica James.
+ * Copyright (C) 2014-2017 Jessica James.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -166,21 +166,21 @@ void RenX::BanDatabase::write(RenX::BanDatabase::Entry *entry, FILE *file)
 	fgetpos(file, std::addressof(RenX::BanDatabase::eof));
 }
 
-void RenX::BanDatabase::add(RenX::Server *server, const RenX::PlayerInfo *player, const Jupiter::ReadableString &banner, const Jupiter::ReadableString &reason, std::chrono::seconds length, uint16_t flags)
+void RenX::BanDatabase::add(RenX::Server *server, const RenX::PlayerInfo &player, const Jupiter::ReadableString &banner, const Jupiter::ReadableString &reason, std::chrono::seconds length, uint16_t flags)
 {
 	Entry *entry = new Entry();
 	entry->set_active();
 	entry->flags |= flags;
 	entry->timestamp = std::chrono::system_clock::now();
 	entry->length = length;
-	entry->steamid = player->steamid;
-	entry->ip = player->ip32;
+	entry->steamid = player.steamid;
+	entry->ip = player.ip32;
 	entry->prefix_length = 32U;
-	entry->hwid = player->hwid;
-	if (player->rdns_thread.joinable())
-		player->rdns_thread.join();
-	entry->rdns = player->rdns;
-	entry->name = player->name;
+	entry->hwid = player.hwid;
+	if (player.rdns_thread.joinable())
+		player.rdns_thread.join();
+	entry->rdns = player.rdns;
+	entry->name = player.name;
 	entry->banner = banner;
 	entry->reason = reason;
 
@@ -188,7 +188,7 @@ void RenX::BanDatabase::add(RenX::Server *server, const RenX::PlayerInfo *player
 	Jupiter::String pluginData;
 	Jupiter::ArrayList<RenX::Plugin> &xPlugins = *RenX::getCore()->getPlugins();
 	for (size_t i = 0; i < xPlugins.size(); i++)
-		if (xPlugins.get(i)->RenX_OnBan(server, player, pluginData))
+		if (xPlugins.get(i)->RenX_OnBan(*server, player, pluginData))
 			entry->varData.set(xPlugins.get(i)->getName(), pluginData);
 
 	entries.add(entry);

@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2014-2016 Jessica James.
+ * Copyright (C) 2014-2017 Jessica James.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -41,15 +41,17 @@ int RenX_ExcessiveHeadshotsPlugin::OnRehash()
 	return this->initialize() ? 0 : -1;
 }
 
-void RenX_ExcessiveHeadshotsPlugin::RenX_OnKill(RenX::Server *server, const RenX::PlayerInfo *player, const RenX::PlayerInfo *victim, const Jupiter::ReadableString &damageType)
+void RenX_ExcessiveHeadshotsPlugin::RenX_OnKill(RenX::Server &server, const RenX::PlayerInfo &player, const RenX::PlayerInfo &victim, const Jupiter::ReadableString &damageType)
 {
-	if (player->kills < 3) return;
+	if (player.kills < 3)
+		return;
+
 	if (damageType.equals("Rx_DmgType_Headshot"_jrs))
 	{
 		unsigned int flags = 0;
-		std::chrono::milliseconds game_time = server->getGameTime(player);
-		double kps = game_time == std::chrono::milliseconds::zero() ? static_cast<double>(player->kills) : static_cast<double>(player->kills) / static_cast<double>(game_time.count());
-		if (player->kills >= RenX_ExcessiveHeadshotsPlugin::minKills) flags++;
+		std::chrono::milliseconds game_time = server.getGameTime(player);
+		double kps = game_time == std::chrono::milliseconds::zero() ? static_cast<double>(player.kills) : static_cast<double>(player.kills) / static_cast<double>(game_time.count());
+		if (player.kills >= RenX_ExcessiveHeadshotsPlugin::minKills) flags++;
 		if (RenX::getHeadshotKillRatio(player) >= RenX_ExcessiveHeadshotsPlugin::ratio) flags++;
 		if (RenX::getKillDeathRatio(player) >= RenX_ExcessiveHeadshotsPlugin::minKD) flags++;
 		if (kps >= RenX_ExcessiveHeadshotsPlugin::minKPS) flags++;
@@ -58,10 +60,10 @@ void RenX_ExcessiveHeadshotsPlugin::RenX_OnKill(RenX::Server *server, const RenX
 
 		if (flags >= RenX_ExcessiveHeadshotsPlugin::minFlags)
 		{
-			server->banPlayer(player, "Jupiter Bot"_jrs, "Aimbot detected"_jrs);
-			server->sendPubChan(IRCCOLOR "13[Aimbot]" IRCCOLOR " %.*s was banned from the server! Kills: %u - Deaths: %u - Headshots: %u", player->name.size(), player->name.ptr(), player->kills, player->deaths, player->headshots);
-			const Jupiter::ReadableString &steamid = server->formatSteamID(player);
-			server->sendAdmChan(IRCCOLOR "13[Aimbot]" IRCCOLOR " %.*s was banned from the server! Kills: %u - Deaths: %u - Headshots: %u - IP: " IRCBOLD "%.*s" IRCBOLD " - Steam ID: " IRCBOLD "%.*s" IRCBOLD, player->name.size(), player->name.ptr(), player->kills, player->deaths, player->headshots, player->ip.size(), player->ip.ptr(), steamid.size(), steamid.ptr());
+			server.banPlayer(player, "Jupiter Bot"_jrs, "Aimbot detected"_jrs);
+			server.sendPubChan(IRCCOLOR "13[Aimbot]" IRCCOLOR " %.*s was banned from the server! Kills: %u - Deaths: %u - Headshots: %u", player.name.size(), player.name.ptr(), player.kills, player.deaths, player.headshots);
+			const Jupiter::ReadableString &steamid = server.formatSteamID(player);
+			server.sendAdmChan(IRCCOLOR "13[Aimbot]" IRCCOLOR " %.*s was banned from the server! Kills: %u - Deaths: %u - Headshots: %u - IP: " IRCBOLD "%.*s" IRCBOLD " - Steam ID: " IRCBOLD "%.*s" IRCBOLD, player.name.size(), player.name.ptr(), player.kills, player.deaths, player.headshots, player.ip.size(), player.ip.ptr(), steamid.size(), steamid.ptr());
 		}
 	}
 }

@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2014-2016 Jessica James.
+ * Copyright (C) 2014-2017 Jessica James.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -19,7 +19,6 @@
 #include <ctime>
 #include "Jupiter/Timer.h"
 #include "Jupiter/IRC_Client.h"
-#include "Jupiter/DLList.h"
 #include "RenX_Medals.h"
 #include "RenX_Server.h"
 #include "RenX_PlayerInfo.h"
@@ -42,25 +41,25 @@ bool RenX_MedalsPlugin::initialize()
 RenX_MedalsPlugin::~RenX_MedalsPlugin()
 {
 	RenX::Core *core = RenX::getCore();
-	unsigned int sCount = core->getServerCount();
+	size_t sCount = core->getServerCount();
 	RenX::Server *server;
-	RenX::PlayerInfo *player;
-	for (unsigned int i = 0; i < sCount; i++)
+
+	for (size_t i = 0; i < sCount; i++)
 	{
 		server = core->getServer(i);
 		if (server->players.size() != 0)
 		{
-			for (Jupiter::DLList<RenX::PlayerInfo>::Node *n = server->players.getNode(0); n != nullptr; n = n->next)
+			for (auto node = server->players.begin(); node != server->players.end(); ++node)
 			{
-				player = n->data;
-				if (player->uuid.isNotEmpty() && player->isBot == false)
+				if (node->uuid.isNotEmpty() && node->isBot == false)
 				{
-					RenX_MedalsPlugin::medalsFile[player->uuid].set("Recs"_jrs, player->varData[this->getName()].get("Recs"_jrs));
-					RenX_MedalsPlugin::medalsFile[player->uuid].set("Noobs"_jrs, player->varData[this->getName()].get("Noobs"_jrs));
+					RenX_MedalsPlugin::medalsFile[node->uuid].set("Recs"_jrs, node->varData[this->getName()].get("Recs"_jrs));
+					RenX_MedalsPlugin::medalsFile[node->uuid].set("Noobs"_jrs, node->varData[this->getName()].get("Noobs"_jrs));
 				}
 			}
 		}
 	}
+
 	RenX_MedalsPlugin::medalsFile.write(RenX_MedalsPlugin::medalsFileName);
 }
 
@@ -118,27 +117,27 @@ void RenX_MedalsPlugin::RenX_ProcessTags(Jupiter::StringType &msg, const RenX::S
 	}
 }
 
-void RenX_MedalsPlugin::RenX_OnPlayerCreate(RenX::Server *server, const RenX::PlayerInfo *player)
+void RenX_MedalsPlugin::RenX_OnPlayerCreate(RenX::Server &, const RenX::PlayerInfo &player)
 {
-	if (player->uuid.isNotEmpty() && player->isBot == false)
+	if (player.uuid.isNotEmpty() && player.isBot == false)
 	{
-		player->varData[this->getName()].set("Recs"_jrs, RenX_MedalsPlugin::medalsFile.get(player->uuid, "Recs"_jrs));
-		player->varData[this->getName()].set("Noobs"_jrs, RenX_MedalsPlugin::medalsFile.get(player->uuid, "Noobs"_jrs));
+		player.varData[this->getName()].set("Recs"_jrs, RenX_MedalsPlugin::medalsFile.get(player.uuid, "Recs"_jrs));
+		player.varData[this->getName()].set("Noobs"_jrs, RenX_MedalsPlugin::medalsFile.get(player.uuid, "Noobs"_jrs));
 	}
 }
 
-void RenX_MedalsPlugin::RenX_OnPlayerDelete(RenX::Server *server, const RenX::PlayerInfo *player)
+void RenX_MedalsPlugin::RenX_OnPlayerDelete(RenX::Server &, const RenX::PlayerInfo &player)
 {
-	if (player->uuid.isNotEmpty() && player->isBot == false)
+	if (player.uuid.isNotEmpty() && player.isBot == false)
 	{
-		RenX_MedalsPlugin::medalsFile[player->uuid].set("Recs"_jrs, player->varData[this->getName()].get("Recs"_jrs));
-		RenX_MedalsPlugin::medalsFile[player->uuid].set("Noobs"_jrs, player->varData[this->getName()].get("Noobs"_jrs));
+		RenX_MedalsPlugin::medalsFile[player.uuid].set("Recs"_jrs, player.varData[this->getName()].get("Recs"_jrs));
+		RenX_MedalsPlugin::medalsFile[player.uuid].set("Noobs"_jrs, player.varData[this->getName()].get("Noobs"_jrs));
 	}
 }
 
-void RenX_MedalsPlugin::RenX_OnJoin(RenX::Server *server, const RenX::PlayerInfo *player)
+void RenX_MedalsPlugin::RenX_OnJoin(RenX::Server &server, const RenX::PlayerInfo &player)
 {
-	if (player->uuid.isNotEmpty() && player->isBot == false && server->isMatchInProgress())
+	if (player.uuid.isNotEmpty() && player.isBot == false && server.isMatchInProgress())
 	{
 		int worth = getWorth(player);
 		Jupiter::Config *section = RenX_MedalsPlugin::config.getSection(RenX_MedalsPlugin::firstSection);
@@ -157,41 +156,36 @@ void RenX_MedalsPlugin::RenX_OnJoin(RenX::Server *server, const RenX::PlayerInfo
 				if (msg.isNotEmpty())
 				{
 					RenX::sanitizeTags(msg);
-					RenX::processTags(msg, server, player);
-					server->sendMessage(msg);
+					RenX::processTags(msg, &server, &player);
+					server.sendMessage(msg);
 				}
 			}
 		}
 	}
 }
 
-void RenX_MedalsPlugin::RenX_OnGameOver(RenX::Server *server, RenX::WinType winType, const RenX::TeamType &team, int gScore, int nScore)
+void RenX_MedalsPlugin::RenX_OnGameOver(RenX::Server &server, RenX::WinType winType, const RenX::TeamType &team, int gScore, int nScore)
 {
-	if (server->isReliable() && server->players.size() != server->getBotCount())
+	if (server.isReliable() && server.players.size() != server.getBotCount())
 	{
-		Jupiter::DLList<RenX::PlayerInfo>::Node *n = server->players.getNode(0);
-		RenX::PlayerInfo *pInfo = n->data;
-		RenX::PlayerInfo *bestScore = pInfo;
-		RenX::PlayerInfo *mostKills = pInfo;
-		RenX::PlayerInfo *mostVehicleKills = pInfo;
-		RenX::PlayerInfo *bestKD = pInfo;
+		RenX::PlayerInfo *bestScore = &server.players.front();
+		RenX::PlayerInfo *mostKills = &server.players.front();
+		RenX::PlayerInfo *mostVehicleKills = &server.players.front();
+		RenX::PlayerInfo *bestKD = &server.players.front();
 
-		while (n != nullptr)
+		for (auto node = server.players.begin(); node != server.players.end(); ++node)
 		{
-			pInfo = n->data;
-			if (pInfo->score > bestScore->score)
-				bestScore = pInfo;
+			if (node->score > bestScore->score)
+				bestScore = &*node;
 
-			if (pInfo->kills > mostKills->kills)
-				mostKills = pInfo;
+			if (node->kills > mostKills->kills)
+				mostKills = &*node;
 
-			if (pInfo->vehicleKills > mostVehicleKills->vehicleKills)
-				mostVehicleKills = pInfo;
+			if (node->vehicleKills > mostVehicleKills->vehicleKills)
+				mostVehicleKills = &*node;
 
-			if (RenX::getKillDeathRatio(pInfo) > RenX::getKillDeathRatio(bestKD))
-				bestKD = pInfo;
-
-			n = n->next;
+			if (RenX::getKillDeathRatio(*node) > RenX::getKillDeathRatio(*bestKD))
+				bestKD = &*node;
 		}
 
 		CongratPlayerData *congratPlayerData;
@@ -199,10 +193,10 @@ void RenX_MedalsPlugin::RenX_OnGameOver(RenX::Server *server, RenX::WinType winT
 		/** +1 for best score */
 		if (bestScore->uuid.isNotEmpty() && bestScore->isBot == false && bestScore->score > 0)
 		{
-			addRec(bestScore);
+			addRec(*bestScore);
 
 			congratPlayerData = new CongratPlayerData();
-			congratPlayerData->server = server;
+			congratPlayerData->server = &server;
 			congratPlayerData->playerName = bestScore->name;
 			congratPlayerData->type = 0;
 			new Jupiter::Timer(1, killCongratDelay, congratPlayer, congratPlayerData, false);
@@ -211,10 +205,10 @@ void RenX_MedalsPlugin::RenX_OnGameOver(RenX::Server *server, RenX::WinType winT
 		/** +1 for most kills */
 		if (mostKills->uuid.isNotEmpty() && mostKills->isBot == false && mostKills->kills > 0)
 		{
-			addRec(mostKills);
+			addRec(*mostKills);
 
 			congratPlayerData = new CongratPlayerData();
-			congratPlayerData->server = server;
+			congratPlayerData->server = &server;
 			congratPlayerData->playerName = mostKills->name;
 			congratPlayerData->type = 1;
 			new Jupiter::Timer(1, killCongratDelay, congratPlayer, congratPlayerData, false);
@@ -223,22 +217,22 @@ void RenX_MedalsPlugin::RenX_OnGameOver(RenX::Server *server, RenX::WinType winT
 		/** +1 for most Vehicle kills */
 		if (mostVehicleKills->uuid.isNotEmpty() && mostVehicleKills->isBot == false && mostVehicleKills->vehicleKills > 0)
 		{
-			addRec(mostVehicleKills);
+			addRec(*mostVehicleKills);
 
 			congratPlayerData = new CongratPlayerData();
-			congratPlayerData->server = server;
+			congratPlayerData->server = &server;
 			congratPlayerData->playerName = mostVehicleKills->name;
 			congratPlayerData->type = 2;
 			new Jupiter::Timer(1, vehicleKillCongratDelay, congratPlayer, congratPlayerData, false);
 		}
 
 		/** +1 for best K/D ratio */
-		if (bestKD->uuid.isNotEmpty() && bestKD->isBot == false && RenX::getKillDeathRatio(bestKD) > 1.0)
+		if (bestKD->uuid.isNotEmpty() && bestKD->isBot == false && RenX::getKillDeathRatio(*bestKD) > 1.0)
 		{
-			addRec(bestKD);
+			addRec(*bestKD);
 
 			congratPlayerData = new CongratPlayerData();
-			congratPlayerData->server = server;
+			congratPlayerData->server = &server;
 			congratPlayerData->playerName = bestKD->name;
 			congratPlayerData->type = 3;
 			new Jupiter::Timer(1, kdrCongratDelay, congratPlayer, congratPlayerData, false);
@@ -248,14 +242,14 @@ void RenX_MedalsPlugin::RenX_OnGameOver(RenX::Server *server, RenX::WinType winT
 	RenX_MedalsPlugin::medalsFile.write(medalsFileName);
 }
 
-void RenX_MedalsPlugin::RenX_OnDestroy(RenX::Server *server, const RenX::PlayerInfo *player, const Jupiter::ReadableString &objectName, const RenX::TeamType &objectTeam, const Jupiter::ReadableString &damageType, RenX::ObjectType type)
+void RenX_MedalsPlugin::RenX_OnDestroy(RenX::Server &server, const RenX::PlayerInfo &player, const Jupiter::ReadableString &objectName, const RenX::TeamType &objectTeam, const Jupiter::ReadableString &damageType, RenX::ObjectType type)
 {
 	if (type == RenX::ObjectType::Building)
 	{
 		addRec(player);
 
 		const Jupiter::ReadableString &translated = RenX::translateName(objectName);
-		server->sendMessage(Jupiter::StringS::Format("%.*s has been recommended for destroying the %.*s!", player->name.size(), player->name.ptr(), translated.size(), translated.ptr()));
+		server.sendMessage(Jupiter::StringS::Format("%.*s has been recommended for destroying the %.*s!", player.name.size(), player.name.ptr(), translated.size(), translated.ptr()));
 	}
 }
 
@@ -284,17 +278,15 @@ void RenX_MedalsPlugin::init()
 	RenX::Core *core = RenX::getCore();
 	unsigned int sCount = core->getServerCount();
 	RenX::Server *server;
-	RenX::PlayerInfo *player;
 	for (unsigned int i = 0; i < sCount; i++)
 	{
 		server = core->getServer(i);
 		if (server->players.size() != server->getBotCount())
 		{
-			for (Jupiter::DLList<RenX::PlayerInfo>::Node *n = server->players.getNode(0); n != nullptr; n = n->next)
+			for (auto node = server->players.begin(); node != server->players.end(); ++node)
 			{
-				player = n->data;
-				player->varData[this->getName()].set("Recs"_jrs, RenX_MedalsPlugin::medalsFile[player->name].get("Recs"_jrs));
-				player->varData[this->getName()].set("Noobs"_jrs, RenX_MedalsPlugin::medalsFile[player->name].get("Noobs"_jrs));
+				node->varData[this->getName()].set("Recs"_jrs, RenX_MedalsPlugin::medalsFile[node->name].get("Recs"_jrs));
+				node->varData[this->getName()].set("Noobs"_jrs, RenX_MedalsPlugin::medalsFile[node->name].get("Noobs"_jrs));
 			}
 		}
 	}
@@ -325,25 +317,27 @@ void RecsGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *player, co
 		{
 			Jupiter::Config *section = pluginInstance.medalsFile.getSection(parameters);
 			if (section == nullptr)
-				source->sendMessage(player, "Error: Player not found! Syntax: recs [player]"_jrs);
+				source->sendMessage(*player, "Error: Player not found! Syntax: recs [player]"_jrs);
 			else
 			{
 				unsigned int recs = section->get<unsigned int>("Recs"_jrs);
 				unsigned int noobs = section->get<unsigned int>("Noobs"_jrs);
-				source->sendMessage(player, Jupiter::StringS::Format("[Archive] %.*s has %u and %u n00bs. Their worth: %d", section->getName().size(), section->getName().ptr(), recs, noobs, recs - noobs));
+				source->sendMessage(*player, Jupiter::StringS::Format("[Archive] %.*s has %u and %u n00bs. Their worth: %d", section->getName().size(), section->getName().ptr(), recs, noobs, recs - noobs));
 			}
 		}
 		else if (target->uuid.isEmpty())
-			source->sendMessage(player, "Error: Player is not using steam."_jrs);
+			source->sendMessage(*player, "Error: Player is not using steam."_jrs);
 		else if (target->isBot)
-			source->sendMessage(player, "Error: Bots do not have any recommendations."_jrs);
+			source->sendMessage(*player, "Error: Bots do not have any recommendations."_jrs);
 		else if (target == player)
 			RecsGameCommand::trigger(source, player, Jupiter::ReferenceString::empty);
-		else source->sendMessage(player, Jupiter::StringS::Format("%.*s has %lu and %lu n00bs. Their worth: %d", target->name.size(), target->name.ptr(), getRecs(target), getNoobs(target), getWorth(target)));
+		else
+			source->sendMessage(*player, Jupiter::StringS::Format("%.*s has %lu and %lu n00bs. Their worth: %d", target->name.size(), target->name.ptr(), getRecs(*target), getNoobs(*target), getWorth(*target)));
 	}
 	else if (player->uuid.isEmpty())
-		source->sendMessage(player, "Error: You are not using steam."_jrs);
-	else source->sendMessage(player, Jupiter::StringS::Format("%.*s, you have %lu recs and %lu n00bs. Your worth: %d", player->name.size(), player->name.ptr(), getRecs(player), getNoobs(player), getWorth(player)));
+		source->sendMessage(*player, "Error: You are not using steam."_jrs);
+	else
+		source->sendMessage(*player, Jupiter::StringS::Format("%.*s, you have %lu recs and %lu n00bs. Your worth: %d", player->name.size(), player->name.ptr(), getRecs(*player), getNoobs(*player), getWorth(*player)));
 }
 
 const Jupiter::ReadableString &RecsGameCommand::getHelp(const Jupiter::ReadableString &)
@@ -370,21 +364,21 @@ void RecGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *player, con
 		if (target == nullptr)
 			target = source->getPlayerByPartName(Jupiter::ReferenceString::getWord(parameters, 0, WHITESPACE));
 		if (target == nullptr)
-			source->sendMessage(player, "Error: Player not found! Syntax: rec <player>"_jrs);
+			source->sendMessage(*player, "Error: Player not found! Syntax: rec <player>"_jrs);
 		else if (target->uuid.isEmpty())
-			source->sendMessage(player, "Error: Player is not using steam."_jrs);
+			source->sendMessage(*player, "Error: Player is not using steam."_jrs);
 		else if (target->isBot)
-			source->sendMessage(player, "Error: Bots can not receive recommendations."_jrs);
+			source->sendMessage(*player, "Error: Bots can not receive recommendations."_jrs);
 		else if (target == player)
 		{
-			addNoob(player);
-			source->sendMessage(player, "You can't recommend yourself, you noob! (+1 noob)"_jrs);
+			addNoob(*player);
+			source->sendMessage(*player, "You can't recommend yourself, you noob! (+1 noob)"_jrs);
 		}
 		else if (player->varData["RenX.Medals"_jrs].get("gr"_jrs) != nullptr && player->adminType.isEmpty())
-			source->sendMessage(player, "You can only give one recommendation per game."_jrs);
+			source->sendMessage(*player, "You can only give one recommendation per game."_jrs);
 		else
 		{
-			addRec(target);
+			addRec(*target);
 			source->sendMessage(Jupiter::StringS::Format("%.*s has recommended %.*s!", player->name.size(), player->name.ptr(), target->name.size(), target->name.ptr()));
 			player->varData["RenX.Medals"_jrs].set("gr"_jrs, "1"_jrs);
 		}
@@ -416,16 +410,16 @@ void NoobGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *player, co
 		if (target == nullptr)
 			target = source->getPlayerByPartName(Jupiter::ReferenceString::getWord(parameters, 0, WHITESPACE));
 		if (target == nullptr)
-			source->sendMessage(player, "Error: Player not found! Syntax: noob [player]"_jrs);
+			source->sendMessage(*player, "Error: Player not found! Syntax: noob [player]"_jrs);
 		else if (target->uuid.isEmpty())
-			source->sendMessage(player, "Error: Player is not using steam."_jrs);
+			source->sendMessage(*player, "Error: Player is not using steam."_jrs);
 		else if (target->isBot)
-			source->sendMessage(player, "Error: Bots can not receive n00bs."_jrs);
+			source->sendMessage(*player, "Error: Bots can not receive n00bs."_jrs);
 		else if (player->varData["RenX.Medals"_jrs].get("gn"_jrs) != nullptr && player->adminType.isEmpty())
-			source->sendMessage(player, "You can only give one noob per game."_jrs);
+			source->sendMessage(*player, "You can only give one noob per game."_jrs);
 		else
 		{
-			addNoob(target);
+			addNoob(*target);
 			source->sendMessage(Jupiter::StringS::Format("%.*s has noob'd %.*s!", player->name.size(), player->name.ptr(), target->name.size(), target->name.ptr()));
 			player->varData["RenX.Medals"_jrs].set("gn"_jrs, "1"_jrs);
 		}
@@ -441,29 +435,29 @@ const Jupiter::ReadableString &NoobGameCommand::getHelp(const Jupiter::ReadableS
 
 GAME_COMMAND_INIT(NoobGameCommand)
 
-void addRec(const RenX::PlayerInfo *player, int amount)
+void addRec(const RenX::PlayerInfo &player, int amount)
 {
-	if (player->uuid.matchi("Player*") == false && player->isBot == false)
-		player->varData[pluginInstance.getName()].set("Recs"_jrs, Jupiter::StringS::Format("%u", getRecs(player) + amount));
+	if (player.uuid.matchi("Player*") == false && player.isBot == false)
+		player.varData[pluginInstance.getName()].set("Recs"_jrs, Jupiter::StringS::Format("%u", getRecs(player) + amount));
 }
 
-void addNoob(const RenX::PlayerInfo *player, int amount)
+void addNoob(const RenX::PlayerInfo &player, int amount)
 {
-	if (player->uuid.matchi("Player*") == false && player->isBot == false)
-		player->varData[pluginInstance.getName()].set("Noobs"_jrs, Jupiter::StringS::Format("%u", getNoobs(player) + amount));
+	if (player.uuid.matchi("Player*") == false && player.isBot == false)
+		player.varData[pluginInstance.getName()].set("Noobs"_jrs, Jupiter::StringS::Format("%u", getNoobs(player) + amount));
 }
 
-unsigned long getRecs(const RenX::PlayerInfo *player)
+unsigned long getRecs(const RenX::PlayerInfo &player)
 {
-	return player->varData[pluginInstance.getName()].get<unsigned long>("Recs"_jrs);
+	return player.varData[pluginInstance.getName()].get<unsigned long>("Recs"_jrs);
 }
 
-unsigned long getNoobs(const RenX::PlayerInfo *player)
+unsigned long getNoobs(const RenX::PlayerInfo &player)
 {
-	return player->varData[pluginInstance.getName()].get<unsigned long>("Noobs"_jrs);
+	return player.varData[pluginInstance.getName()].get<unsigned long>("Noobs"_jrs);
 }
 
-int getWorth(const RenX::PlayerInfo *player)
+int getWorth(const RenX::PlayerInfo &player)
 {
 	return getRecs(player) - getNoobs(player);
 }

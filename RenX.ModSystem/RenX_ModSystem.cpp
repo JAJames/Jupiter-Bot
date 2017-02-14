@@ -54,7 +54,9 @@ bool RenX_ModSystemPlugin::initialize()
 
 	while (groupName.isNotEmpty())
 	{
-		group = new ModGroup();
+		// Add group
+		groups.emplace_back();
+		group = &groups.back();
 		group->name = groupName;
 
 		groupName += dotLockSteam;
@@ -93,8 +95,7 @@ bool RenX_ModSystemPlugin::initialize()
 		group->gamePrefix = this->config.get(groupName);
 		groupName.truncate(dotGamePrefix.size());
 
-		RenX_ModSystemPlugin::groups.add(group);
-
+		// Next
 		groupName += dotNext;
 		groupName = this->config.get(groupName);
 	}
@@ -106,95 +107,95 @@ bool RenX_ModSystemPlugin::initialize()
 	{
 		server = core->getServer(--total);
 		if (server->players.size() != server->getBotCount())
-			for (Jupiter::DLList<RenX::PlayerInfo>::Node *n = server->players.getNode(0); n != nullptr; n = n->next)
-				RenX_ModSystemPlugin::auth(server, n->data, true);
+			for (auto node = server->players.begin(); node != server->players.end(); ++node)
+				RenX_ModSystemPlugin::auth(*server, *node, true);
 	}
 
 	return true;
 }
 
-unsigned int RenX_ModSystemPlugin::logoutAllMods(const RenX::Server *server)
+unsigned int RenX_ModSystemPlugin::logoutAllMods(RenX::Server &server)
 {
-	if (server->players.size() == 0)
+	if (server.players.size() == 0)
 		return 0;
 
 	unsigned int total = 0;
-	for (Jupiter::DLList<RenX::PlayerInfo>::Node *n = server->players.getNode(0); n != nullptr; n = n->next)
-		if (RenX_ModSystemPlugin::resetAccess(n->data))
+	for (auto node = server.players.begin(); node != server.players.end(); ++node)
+		if (RenX_ModSystemPlugin::resetAccess(*node))
 			total++;
 
 	return total;
 }
 
-bool RenX_ModSystemPlugin::resetAccess(RenX::PlayerInfo *player)
+bool RenX_ModSystemPlugin::resetAccess(RenX::PlayerInfo &player)
 {
-	int oAccess = player->access;
-	if (player->adminType.equals("administrator"))
+	int oAccess = player.access;
+	if (player.adminType.equals("administrator"))
 	{
 		ModGroup *group = RenX_ModSystemPlugin::getGroupByName(RenX_ModSystemPlugin::administratorGroup);
 		if (group == nullptr)
-			player->access = 2;
+			player.access = 2;
 		else
-			player->access = group->access;
+			player.access = group->access;
 	}
-	else if (player->adminType.equals("moderator"))
+	else if (player.adminType.equals("moderator"))
 	{
 		ModGroup *group = RenX_ModSystemPlugin::getGroupByName(RenX_ModSystemPlugin::moderatorGroup);
 		if (group == nullptr)
-			player->access = 1;
+			player.access = 1;
 		else
-			player->access = group->access;
+			player.access = group->access;
 	}
 	else if (groups.size() != 0)
-		player->access = groups.get(0)->access;
+		player.access = groups.front().access;
 	else
-		player->access = 0;
+		player.access = 0;
 
-	return player->access != oAccess;
+	return player.access != oAccess;
 }
 
-int RenX_ModSystemPlugin::auth(RenX::Server *server, const RenX::PlayerInfo *player, bool checkAuto, bool forceAuth) const
+int RenX_ModSystemPlugin::auth(RenX::Server &server, const RenX::PlayerInfo &player, bool checkAuto, bool forceAuth) const
 {
-	if (player->isBot)
+	if (player.isBot)
 		return 0;
 
-	ModGroup *group;
-	if (player->uuid.isNotEmpty())
+	const ModGroup *group;
+	if (player.uuid.isNotEmpty())
 	{
-		Jupiter::Config *section = this->config.getSection(player->uuid);
+		Jupiter::Config *section = this->config.getSection(player.uuid);
 		if (section != nullptr)
 		{
 			const Jupiter::ReadableString &groupName = section->get("Group"_jrs);
 
 			if (groupName.isEmpty())
-				group = RenX_ModSystemPlugin::groups.get(0);
+				group = &RenX_ModSystemPlugin::groups.front();
 			else
 			{
 				group = RenX_ModSystemPlugin::getGroupByName(groupName);
 				if (group == nullptr)
-					group = RenX_ModSystemPlugin::groups.get(0);
+					group = &RenX_ModSystemPlugin::groups.front();
 			}
 
 			auto sectionAuth = [&]
 			{
-				player->varData[this->name].set("Group"_jrs, group->name);
-				player->formatNamePrefix = section->get("Prefix"_jrs, group->prefix);
-				player->gamePrefix = section->get("GamePrefix"_jrs, group->gamePrefix);
-				player->access = section->get<int>("Access"_jrs, group->access);
-				if (player->access != 0)
+				player.varData[this->name].set("Group"_jrs, group->name);
+				player.formatNamePrefix = section->get("Prefix"_jrs, group->prefix);
+				player.gamePrefix = section->get("GamePrefix"_jrs, group->gamePrefix);
+				player.access = section->get<int>("Access"_jrs, group->access);
+				if (player.access != 0)
 				{
-					server->sendMessage(player, Jupiter::StringS::Format("You are now authenticated with access level %d; group: %.*s.", player->access, group->name.size(), group->name.ptr()));
-					if (server->isDevBot() && player->access > 1)
+					server.sendMessage(player, Jupiter::StringS::Format("You are now authenticated with access level %d; group: %.*s.", player.access, group->name.size(), group->name.ptr()));
+					if (server.isDevBot() && player.access > 1)
 					{
-						if (server->getVersion() >= 4)
-							server->sendData(Jupiter::StringS::Format("dset_dev %d\n", player->id));
+						if (server.getVersion() >= 4)
+							server.sendData(Jupiter::StringS::Format("dset_dev %d\n", player.id));
 						else
-							server->sendData(Jupiter::StringS::Format("d%d\n", player->id));
+							server.sendData(Jupiter::StringS::Format("d%d\n", player.id));
 					}
 				}
 				Jupiter::String playerName = RenX::getFormattedPlayerName(player);
-				server->sendLogChan(IRCCOLOR "03[Authentication] " IRCBOLD "%.*s" IRCBOLD IRCCOLOR " is now authenticated with access level %d; group: %.*s.", playerName.size(), playerName.ptr(), player->access, group->name.size(), group->name.ptr());
-				return player->access;
+				server.sendLogChan(IRCCOLOR "03[Authentication] " IRCBOLD "%.*s" IRCBOLD IRCCOLOR " is now authenticated with access level %d; group: %.*s.", playerName.size(), playerName.ptr(), player.access, group->name.size(), group->name.ptr());
+				return player.access;
 			};
 
 			if (forceAuth)
@@ -211,46 +212,46 @@ int RenX_ModSystemPlugin::auth(RenX::Server *server, const RenX::PlayerInfo *pla
 			const Jupiter::ReadableString &ip = section->get("LastIP"_jrs);
 			const Jupiter::ReadableString &name = section->get("Name"_jrs);
 
-			if ((lockSteam_l == false || player->steamid == steamid) && (lockIP_l == false || player->ip.equalsi(ip)) && (lockName_l == false || player->name.equalsi(name)))
+			if ((lockSteam_l == false || player.steamid == steamid) && (lockIP_l == false || player.ip.equalsi(ip)) && (lockName_l == false || player.name.equalsi(name)))
 			{
-				if (checkAuto == false || (autoAuthSteam_l && player->steamid == steamid) || (autoAuthIP_l && player->ip.equalsi(ip)))
+				if (checkAuto == false || (autoAuthSteam_l && player.steamid == steamid) || (autoAuthIP_l && player.ip.equalsi(ip)))
 					return sectionAuth();
 			}
 			else if (kickLockMismatch_l)
 			{
-				server->kickPlayer(player, "Moderator entry lock mismatch"_jrs);
+				server.kickPlayer(player, "Moderator entry lock mismatch"_jrs);
 				return -1;
 			}
 		}
 	}
 	group = this->getDefaultGroup();
 
-	player->varData[this->name].set("Group"_jrs, group->name);
-	player->formatNamePrefix = group->prefix;
-	player->gamePrefix = group->gamePrefix;
-	return player->access = group->access;
+	player.varData[this->name].set("Group"_jrs, group->name);
+	player.formatNamePrefix = group->prefix;
+	player.gamePrefix = group->gamePrefix;
+	return player.access = group->access;
 }
 
-void RenX_ModSystemPlugin::tempAuth(RenX::Server *server, const RenX::PlayerInfo *player, const ModGroup *group, bool notify) const
+void RenX_ModSystemPlugin::tempAuth(RenX::Server &server, const RenX::PlayerInfo &player, const ModGroup *group, bool notify) const
 {
 	if (group == nullptr)
 		group = this->getDefaultGroup();
 
-	player->varData[name].set("Group"_jrs, group->name);
-	player->formatNamePrefix = group->prefix;
-	player->gamePrefix = group->gamePrefix;
-	player->access = group->access;
+	player.varData[name].set("Group"_jrs, group->name);
+	player.formatNamePrefix = group->prefix;
+	player.gamePrefix = group->gamePrefix;
+	player.access = group->access;
 
 	if (notify)
-		server->sendMessage(player, Jupiter::StringS::Format("You have been authorized into group \"%.*s\", with access level %u.", group->name.size(), group->name.ptr(), player->access));
+		server.sendMessage(player, Jupiter::StringS::Format("You have been authorized into group \"%.*s\", with access level %u.", group->name.size(), group->name.ptr(), player.access));
 }
 
-bool RenX_ModSystemPlugin::set(RenX::PlayerInfo *player, RenX_ModSystemPlugin::ModGroup *group)
+bool RenX_ModSystemPlugin::set(RenX::PlayerInfo &player, RenX_ModSystemPlugin::ModGroup &group)
 {
-	bool r = this->config[player->uuid].set("Group"_jrs, group->name);
-	this->config[player->uuid].set("SteamID"_jrs, Jupiter::StringS::Format("%llu", player->steamid));
-	this->config[player->uuid].set("LastIP"_jrs, player->ip);
-	this->config[player->uuid].set("Name"_jrs, player->name);
+	bool r = this->config[player.uuid].set("Group"_jrs, group.name);
+	this->config[player.uuid].set("SteamID"_jrs, Jupiter::StringS::Format("%llu", player.steamid));
+	this->config[player.uuid].set("LastIP"_jrs, player.ip);
+	this->config[player.uuid].set("Name"_jrs, player.name);
 	this->config.write();
 
 	return r;
@@ -259,9 +260,9 @@ bool RenX_ModSystemPlugin::set(RenX::PlayerInfo *player, RenX_ModSystemPlugin::M
 RenX_ModSystemPlugin::ModGroup *RenX_ModSystemPlugin::getGroupByName(const Jupiter::ReadableString &name, ModGroup *defaultGroup) const
 {
 	if (RenX_ModSystemPlugin::groups.size() != 0)
-		for (Jupiter::DLList<ModGroup>::Node *n = groups.getNode(0); n != nullptr; n = n->next)
-			if (n->data->name.equalsi(name))
-				return n->data;
+		for (auto node = this->groups.begin(); node != this->groups.end(); ++node)
+			if (node->name.equalsi(name))
+				return const_cast<ModGroup *>(&*node);
 
 	return defaultGroup;
 }
@@ -269,9 +270,9 @@ RenX_ModSystemPlugin::ModGroup *RenX_ModSystemPlugin::getGroupByName(const Jupit
 RenX_ModSystemPlugin::ModGroup *RenX_ModSystemPlugin::getGroupByAccess(int access, ModGroup *defaultGroup) const
 {
 	if (RenX_ModSystemPlugin::groups.size() != 0)
-		for (Jupiter::DLList<ModGroup>::Node *n = groups.getNode(0); n != nullptr; n = n->next)
-			if (n->data->access == access)
-				return n->data;
+		for (auto node = this->groups.begin(); node != this->groups.end(); ++node)
+			if (node->access == access)
+				return const_cast<ModGroup *>(&*node);
 
 	return defaultGroup;
 }
@@ -279,9 +280,9 @@ RenX_ModSystemPlugin::ModGroup *RenX_ModSystemPlugin::getGroupByAccess(int acces
 RenX_ModSystemPlugin::ModGroup *RenX_ModSystemPlugin::getGroupByIndex(size_t index) const
 {
 	if (RenX_ModSystemPlugin::groups.size() != 0)
-		for (Jupiter::DLList<ModGroup>::Node *n = groups.getNode(0); n != nullptr; n = n->next)
+		for (auto node = this->groups.begin(); node != this->groups.end(); ++node)
 			if (index-- == 0)
-				return n->data;
+				return const_cast<ModGroup *>(&*node);
 
 	return nullptr;
 }
@@ -291,10 +292,11 @@ int RenX_ModSystemPlugin::getConfigAccess(const Jupiter::ReadableString &uuid) c
 	Jupiter::Config *section = this->config.getSection(uuid);
 
 	if (section == nullptr)
-		return RenX_ModSystemPlugin::groups.get(0)->access;
-
-	RenX_ModSystemPlugin::ModGroup *group = RenX_ModSystemPlugin::getGroupByName(section->get("Group"_jrs), groups.get(0));
-	return section->get<int>("Access"_jrs, group->access);
+		return RenX_ModSystemPlugin::groups.front().access;
+	//for (auto node = this->groups.begin(); node != this->groups.end(); ++node)
+	return section->get<int>("Access"_jrs,
+		RenX_ModSystemPlugin::getGroupByName(section->get("Group"_jrs),
+			const_cast<ModGroup *>(&groups.front()))->access);
 }
 
 size_t RenX_ModSystemPlugin::getGroupCount() const
@@ -304,7 +306,7 @@ size_t RenX_ModSystemPlugin::getGroupCount() const
 
 RenX_ModSystemPlugin::ModGroup *RenX_ModSystemPlugin::getDefaultGroup() const
 {
-	return RenX_ModSystemPlugin::groups.get(0);
+	return const_cast<ModGroup *>(&RenX_ModSystemPlugin::groups.front());
 }
 
 RenX_ModSystemPlugin::ModGroup *RenX_ModSystemPlugin::getDefaultATMGroup() const
@@ -327,85 +329,83 @@ RenX_ModSystemPlugin::~RenX_ModSystemPlugin()
 	RenX::Core *core = RenX::getCore();
 	unsigned int total = core->getServerCount();
 	RenX::Server *server;
-	RenX::PlayerInfo *player;
 	while (total != 0)
 	{
 		server = core->getServer(--total);
 		if (server->players.size() != server->getBotCount())
-			for (Jupiter::DLList<RenX::PlayerInfo>::Node *n = server->players.getNode(0); n != nullptr; n = n->next)
+			for (auto node = server->players.begin(); node != server->players.end(); ++node)
 			{
-				player = n->data;
-				if (player->isBot == false)
+				if (node->isBot == false)
 				{
-					player->varData[RenX_ModSystemPlugin::name].remove("Group"_jrs);
-					player->gamePrefix.truncate(player->gamePrefix.size());
-					player->formatNamePrefix.truncate(player->formatNamePrefix.size());
-					if (player->adminType.equals("administrator"))
-						player->access = 2;
-					else if (player->adminType.equals("moderator"))
-						player->access = 1;
+					node->varData[RenX_ModSystemPlugin::name].remove("Group"_jrs);
+					node->gamePrefix.truncate(node->gamePrefix.size());
+					node->formatNamePrefix.truncate(node->formatNamePrefix.size());
+					if (node->adminType.equals("administrator"))
+						node->access = 2;
+					else if (node->adminType.equals("moderator"))
+						node->access = 1;
 					else
-						player->access = 0;
+						node->access = 0;
 				}
 			}
 	}
-	while (RenX_ModSystemPlugin::groups.size() != 0)
-		delete RenX_ModSystemPlugin::groups.remove(size_t{ 0 });
+
+	RenX_ModSystemPlugin::groups.clear();
 }
 
-void RenX_ModSystemPlugin::RenX_OnPlayerCreate(RenX::Server *server, const RenX::PlayerInfo *player)
+void RenX_ModSystemPlugin::RenX_OnPlayerCreate(RenX::Server &server, const RenX::PlayerInfo &player)
 {
-	if (player->isBot == false)
+	if (player.isBot == false)
 		RenX_ModSystemPlugin::auth(server, player, true);
 }
 
-void RenX_ModSystemPlugin::RenX_OnPlayerDelete(RenX::Server *server, const RenX::PlayerInfo *player)
+void RenX_ModSystemPlugin::RenX_OnPlayerDelete(RenX::Server &server, const RenX::PlayerInfo &player)
 {
-	if (RenX_ModSystemPlugin::groups.size() != 0 && player->isBot == false && player->uuid.isNotEmpty())
+	if (RenX_ModSystemPlugin::groups.size() != 0 && player.isBot == false && player.uuid.isNotEmpty())
 	{
-		Jupiter::Config *section = this->config.getSection(player->uuid);
+		Jupiter::Config *section = this->config.getSection(player.uuid);
 		if (section != nullptr)
 		{
-			section->set("SteamID"_jrs, Jupiter::StringS::Format("%llu", player->steamid));
-			section->set("LastIP"_jrs, player->ip);
-			section->set("Name"_jrs, player->name);
+			section->set("SteamID"_jrs, Jupiter::StringS::Format("%llu", player.steamid));
+			section->set("LastIP"_jrs, player.ip);
+			section->set("Name"_jrs, player.name);
 		}
 	}
 }
 
-void RenX_ModSystemPlugin::RenX_OnIDChange(RenX::Server *server, const RenX::PlayerInfo *player, int oldID)
+void RenX_ModSystemPlugin::RenX_OnIDChange(RenX::Server &server, const RenX::PlayerInfo &player, int oldID)
 {
-	if (player->access != 0 && server->isDevBot())
-		server->sendData(Jupiter::StringS::Format("d%d\n", player->id));
+	if (player.access != 0 && server.isDevBot())
+		server.sendData(Jupiter::StringS::Format("d%d\n", player.id));
 }
 
-void RenX_ModSystemPlugin::RenX_OnAdminLogin(RenX::Server *server, const RenX::PlayerInfo *player)
+void RenX_ModSystemPlugin::RenX_OnAdminLogin(RenX::Server &server, const RenX::PlayerInfo &player)
 {
 	ModGroup *group = nullptr;
-	if (player->adminType.equals("administrator"))
+	if (player.adminType.equals("administrator"))
 		group = RenX_ModSystemPlugin::getGroupByName(RenX_ModSystemPlugin::administratorGroup);
-	else if (player->adminType.equals("moderator"))
+	else if (player.adminType.equals("moderator"))
 		group = RenX_ModSystemPlugin::getGroupByName(RenX_ModSystemPlugin::moderatorGroup);
 
-	if (group != nullptr && player->access < group->access)
-		player->access = group->access;
+	if (group != nullptr && player.access < group->access)
+		player.access = group->access;
 }
 
-void RenX_ModSystemPlugin::RenX_OnAdminGrant(RenX::Server *server, const RenX::PlayerInfo *player)
+void RenX_ModSystemPlugin::RenX_OnAdminGrant(RenX::Server &server, const RenX::PlayerInfo &player)
 {
 	RenX_ModSystemPlugin::RenX_OnAdminLogin(server, player);
 }
 
-void RenX_ModSystemPlugin::RenX_OnAdminLogout(RenX::Server *server, const RenX::PlayerInfo *player)
+void RenX_ModSystemPlugin::RenX_OnAdminLogout(RenX::Server &server, const RenX::PlayerInfo &player)
 {
 	ModGroup *group = nullptr;
-	int access = RenX_ModSystemPlugin::groups.size() == 0 ? 0 : RenX_ModSystemPlugin::groups.get(0)->access;
-	if (player->adminType.equals("administrator"))
+	int access = RenX_ModSystemPlugin::groups.size() == 0 ? 0 : RenX_ModSystemPlugin::groups.front().access;
+	if (player.adminType.equals("administrator"))
 	{
 		access = 2;
 		group = RenX_ModSystemPlugin::getGroupByName(RenX_ModSystemPlugin::administratorGroup);
 	}
-	else if (player->adminType.equals("moderator"))
+	else if (player.adminType.equals("moderator"))
 	{
 		access = 1;
 		group = RenX_ModSystemPlugin::getGroupByName(RenX_ModSystemPlugin::moderatorGroup);
@@ -413,22 +413,19 @@ void RenX_ModSystemPlugin::RenX_OnAdminLogout(RenX::Server *server, const RenX::
 	if (group != nullptr)
 		access = group->access;
 
-	if (player->access <= access)
+	if (player.access <= access)
 	{
 		if (RenX_ModSystemPlugin::groups.size() == 0)
-			player->access = 0;
+			player.access = 0;
 		else
-			player->access = RenX_ModSystemPlugin::groups.get(0)->access;
+			player.access = RenX_ModSystemPlugin::groups.front().access;
 	}
 }
 
 int RenX_ModSystemPlugin::OnRehash()
 {
 	RenX::Plugin::OnRehash();
-
-	while (RenX_ModSystemPlugin::groups.size() != 0)
-		delete RenX_ModSystemPlugin::groups.remove(size_t{ 0 });
-
+	RenX_ModSystemPlugin::groups.clear();
 	return this->initialize() ? 0 : -1;
 }
 
@@ -478,7 +475,7 @@ void AuthIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &cha
 						else
 						{
 							RenX_ModSystemPlugin::ModGroup *defaultGroup = pluginInstance.getDefaultGroup();
-							if (pluginInstance.auth(server, player) == -1)
+							if (pluginInstance.auth(*server, *player) == -1)
 								source->sendNotice(nick, "Error: Player failed to pass strict lock checks. Player kicked."_jrs);
 							else if (defaultGroup->name.equals(player->varData[pluginInstance.getName()].get("Group"_jrs)))
 								source->sendNotice(nick, "Error: Failed to authenticate player."_jrs);
@@ -541,7 +538,7 @@ void DeAuthIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &c
 						int cAccess = pluginInstance.getConfigAccess(player->uuid);
 						if (cAccess > uAccess && uAccess < static_cast<int>(source->getPrefixes().size()))
 							source->sendNotice(nick, "Error: Can't unauthenticate higher level moderators."_jrs);
-						else if (pluginInstance.resetAccess(player))
+						else if (pluginInstance.resetAccess(*player))
 							source->sendNotice(nick, "Player unauthenticated successfully."_jrs);
 						else
 							source->sendNotice(nick, "Error: Player not authenticated."_jrs);
@@ -600,7 +597,7 @@ void ATMIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &chan
 				}
 				else
 				{
-					group = pluginInstance.groups.get(index);
+					group = pluginInstance.getGroupByIndex(index);
 					if (group->access > source->getAccessLevel(channel, nick))
 					{
 						group = pluginInstance.getDefaultATMGroup();
@@ -628,7 +625,7 @@ void ATMIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &chan
 							source->sendNotice(nick, "Error: This command can not lower a player's access level."_jrs);
 						else
 						{
-							pluginInstance.tempAuth(server, player, group);
+							pluginInstance.tempAuth(*server, *player, group);
 							source->sendNotice(nick, "Player successfully temporarily authenticated."_jrs);
 						}
 					}
@@ -681,7 +678,7 @@ void AddIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &chan
 					source->sendNotice(nick, "Error: Invalid group index."_jrs);
 				else
 				{
-					group = pluginInstance.groups.get(index);
+					group = pluginInstance.getGroupByIndex(index);
 					playerName = playerName.gotoWord(1, WHITESPACE);
 				}
 			}
@@ -704,12 +701,12 @@ void AddIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &chan
 							source->sendNotice(nick, "Error: Player has no UUID."_jrs);
 						else
 						{
-							pluginInstance.resetAccess(player);
-							if (pluginInstance.set(player, group))
+							pluginInstance.resetAccess(*player);
+							if (pluginInstance.set(*player, *group))
 								source->sendNotice(nick, Jupiter::StringS::Format("%.*s has been added to group \"%.*s\"", player->name.size(), player->name.ptr(), group->name.size(), group->name.ptr()));
 							else
 								source->sendNotice(nick, Jupiter::StringS::Format("%.*s has been moved to group \"%.*s\"", player->name.size(), player->name.ptr(), group->name.size(), group->name.ptr()));
-							pluginInstance.auth(server, player, false, true);
+							pluginInstance.auth(*server, *player, false, true);
 						}
 					}
 				}
@@ -854,7 +851,7 @@ void ForceAuthIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString
 						else
 						{
 							RenX_ModSystemPlugin::ModGroup *defaultGroup = pluginInstance.getDefaultGroup();
-							pluginInstance.auth(server, player, false, true);
+							pluginInstance.auth(*server, *player, false, true);
 							if (defaultGroup->name.equals(player->varData[pluginInstance.getName()].get("Group"_jrs)))
 								source->sendNotice(nick, "Error: Failed to authenticate player."_jrs);
 							else
@@ -889,21 +886,19 @@ void ModListIRCCommand::create()
 
 void ModListIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &channel, const Jupiter::ReadableString &nick, const Jupiter::ReadableString &parameters)
 {
-	RenX_ModSystemPlugin::ModGroup *group;
 	Jupiter::String msg;
 	size_t msgBaseSize;
 	bool haveMods = false;
-	for (Jupiter::DLList<RenX_ModSystemPlugin::ModGroup>::Node *n = pluginInstance.groups.getHead(); n != nullptr; n = n->next)
+	for (auto node = pluginInstance.groups.begin(); node != pluginInstance.groups.end(); ++node)
 	{
-		group = n->data;
-		msg = group->prefix;
-		msg += group->name;
-		msg.aformat(IRCNORMAL " (Access: %d): ", group->access);
+		msg = node->prefix;
+		msg += node->name;
+		msg.aformat(IRCNORMAL " (Access: %d): ", node->access);
 		msgBaseSize = msg.size();
 
-		auto entry_callback = [&msg, group](Jupiter::Config::SectionHashTable::Bucket::Entry &in_entry)
+		auto entry_callback = [&msg, &node](Jupiter::Config::SectionHashTable::Bucket::Entry &in_entry)
 		{
-			if (in_entry.value.get("Group"_jrs).equalsi(group->name))
+			if (in_entry.value.get("Group"_jrs).equalsi(node->name))
 			{
 				msg += in_entry.value.get("Name"_jrs, in_entry.value.getName());
 				msg += ", "_jrs;
@@ -947,32 +942,32 @@ void AuthGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *player, co
 	{
 		RenX::PlayerInfo *target = source->getPlayerByPartName(parameters);
 		if (target == nullptr)
-			source->sendMessage(player, "Error: Player not found."_jrs);
+			source->sendMessage(*player, "Error: Player not found."_jrs);
 		else if (target == player)
-			source->sendMessage(player, "Error: You can not authenticate yourself."_jrs);
+			source->sendMessage(*player, "Error: You can not authenticate yourself."_jrs);
 		else
 		{
 			int cAccess = pluginInstance.getConfigAccess(target->uuid);
 			if (cAccess > player->access)
-				source->sendMessage(player, "Error: Can't authenticate higher level moderators."_jrs);
+				source->sendMessage(*player, "Error: Can't authenticate higher level moderators."_jrs);
 			else if (target->access == cAccess)
-				source->sendMessage(player, "Error: Player is already authenticated"_jrs);
+				source->sendMessage(*player, "Error: Player is already authenticated"_jrs);
 			else if (target->access > cAccess)
-				source->sendMessage(player, "Error: Player is already temporarily authenticated."_jrs);
+				source->sendMessage(*player, "Error: Player is already temporarily authenticated."_jrs);
 			else
 			{
 				RenX_ModSystemPlugin::ModGroup *defaultGroup = pluginInstance.getDefaultGroup();
-				if (pluginInstance.auth(source, player) == -1)
-					source->sendMessage(player, "Error: Player failed to pass strict lock checks. Player kicked."_jrs);
+				if (pluginInstance.auth(*source, *player) == -1)
+					source->sendMessage(*player, "Error: Player failed to pass strict lock checks. Player kicked."_jrs);
 				else if (defaultGroup->name.equals(player->varData[pluginInstance.getName()].get("Group"_jrs)))
-					source->sendMessage(player, "Error: Failed to authenticate player."_jrs);
+					source->sendMessage(*player, "Error: Failed to authenticate player."_jrs);
 				else
-					source->sendMessage(player, "Player authenticated successfully."_jrs);
+					source->sendMessage(*player, "Player authenticated successfully."_jrs);
 			}
 		}
 	}
 	else
-		source->sendMessage(player, "Error: Too few parameters. Syntax: auth <player>"_jrs);
+		source->sendMessage(*player, "Error: Too few parameters. Syntax: auth <player>"_jrs);
 }
 
 const Jupiter::ReadableString &AuthGameCommand::getHelp(const Jupiter::ReadableString &)
@@ -1003,19 +998,19 @@ void ATMGameCommand::trigger(RenX::Server *server, RenX::PlayerInfo *player, con
 			int index = parameters.asInt();
 
 			if (index < 0 || index >= static_cast<int>(pluginInstance.groups.size()))
-				server->sendMessage(player, "Warning: Invalid group index. Ingoring parameter..."_jrs);
+				server->sendMessage(*player, "Warning: Invalid group index. Ingoring parameter..."_jrs);
 			else if (index == 0)
 			{
-				server->sendMessage(player, "Error: Default group is not valid for this command. Use \"deauth\" to deauthorize a player."_jrs);
+				server->sendMessage(*player, "Error: Default group is not valid for this command. Use \"deauth\" to deauthorize a player."_jrs);
 				return;
 			}
 			else
 			{
-				group = pluginInstance.groups.get(index);
+				group = pluginInstance.getGroupByIndex(index);
 				if (group->access > player->access)
 				{
 					group = pluginInstance.getDefaultATMGroup();
-					server->sendMessage(player, "Warning: You can not authorize an access level higher than yourself. Ignoring parameter..."_jrs);
+					server->sendMessage(*player, "Warning: You can not authorize an access level higher than yourself. Ignoring parameter..."_jrs);
 				}
 				playerName = playerName.gotoWord(1, WHITESPACE);
 			}
@@ -1024,20 +1019,20 @@ void ATMGameCommand::trigger(RenX::Server *server, RenX::PlayerInfo *player, con
 		{
 			target = server->getPlayerByPartName(playerName);
 			if (target == nullptr)
-				server->sendMessage(player, "Error: Player not found."_jrs);
+				server->sendMessage(*player, "Error: Player not found."_jrs);
 			else if (target->access > group->access)
-				server->sendMessage(player, "Error: This command can not lower a player's access level."_jrs);
+				server->sendMessage(*player, "Error: This command can not lower a player's access level."_jrs);
 			else
 			{
-				pluginInstance.tempAuth(server, target, group);
-				server->sendMessage(player, "Player successfully temporarily authenticated."_jrs);
+				pluginInstance.tempAuth(*server, *target, group);
+				server->sendMessage(*player, "Player successfully temporarily authenticated."_jrs);
 			}
 		}
 		else
-			server->sendMessage(player, "Error: Invalid group."_jrs);
+			server->sendMessage(*player, "Error: Invalid group."_jrs);
 	}
 	else
-		server->sendMessage(player, "Error: Too few parameters. Syntax: auth <player>"_jrs);
+		server->sendMessage(*player, "Error: Too few parameters. Syntax: auth <player>"_jrs);
 }
 
 const Jupiter::ReadableString &ATMGameCommand::getHelp(const Jupiter::ReadableString &)
@@ -1063,31 +1058,31 @@ void ForceAuthGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *playe
 	{
 		RenX::PlayerInfo *target = source->getPlayerByPartName(parameters);
 		if (target == nullptr)
-			source->sendMessage(player, "Error: Player not found."_jrs);
+			source->sendMessage(*player, "Error: Player not found."_jrs);
 		else if (target == player)
-			source->sendMessage(player, "Error: You can not force-authenticate yourself."_jrs);
+			source->sendMessage(*player, "Error: You can not force-authenticate yourself."_jrs);
 		else
 		{
 			int cAccess = pluginInstance.getConfigAccess(target->uuid);
 			if (cAccess > player->access)
-				source->sendMessage(player, "Error: Can't authenticate higher level moderators."_jrs);
+				source->sendMessage(*player, "Error: Can't authenticate higher level moderators."_jrs);
 			else if (target->access == cAccess)
-				source->sendMessage(player, "Error: Player is already authenticated"_jrs);
+				source->sendMessage(*player, "Error: Player is already authenticated"_jrs);
 			else if (target->access > cAccess)
-				source->sendMessage(player, "Error: Player is already temporarily authenticated."_jrs);
+				source->sendMessage(*player, "Error: Player is already temporarily authenticated."_jrs);
 			else
 			{
 				RenX_ModSystemPlugin::ModGroup *defaultGroup = pluginInstance.getDefaultGroup();
-				pluginInstance.auth(source, player, false, true);
+				pluginInstance.auth(*source, *player, false, true);
 				if (defaultGroup->name.equals(player->varData[pluginInstance.getName()].get("Group"_jrs)))
-					source->sendMessage(player, "Error: Failed to authenticate player."_jrs);
+					source->sendMessage(*player, "Error: Failed to authenticate player."_jrs);
 				else
-					source->sendMessage(player, "Player authenticated successfully."_jrs);
+					source->sendMessage(*player, "Player authenticated successfully."_jrs);
 			}
 		}
 	}
 	else
-		source->sendMessage(player, "Error: Too few parameters. Syntax: fauth <player>"_jrs);
+		source->sendMessage(*player, "Error: Too few parameters. Syntax: fauth <player>"_jrs);
 }
 
 const Jupiter::ReadableString &ForceAuthGameCommand::getHelp(const Jupiter::ReadableString &)

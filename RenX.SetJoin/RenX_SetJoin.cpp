@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2014-2016 Jessica James.
+ * Copyright (C) 2014-2017 Jessica James.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -23,13 +23,13 @@
 
 using namespace Jupiter::literals;
 
-void RenX_SetJoinPlugin::RenX_OnJoin(RenX::Server *server, const RenX::PlayerInfo *player)
+void RenX_SetJoinPlugin::RenX_OnJoin(RenX::Server &server, const RenX::PlayerInfo &player)
 {
-	if (player->uuid.isNotEmpty() && server->isMatchInProgress())
+	if (player.uuid.isNotEmpty() && server.isMatchInProgress())
 	{
-		const Jupiter::ReadableString &setjoin = RenX_SetJoinPlugin::setjoin_file.get(player->uuid);
+		const Jupiter::ReadableString &setjoin = RenX_SetJoinPlugin::setjoin_file.get(player.uuid);
 		if (setjoin.isNotEmpty())
-			server->sendMessage(Jupiter::StringS::Format("[%.*s] %.*s", player->name.size(), player->name.ptr(), setjoin.size(), setjoin.ptr()));
+			server.sendMessage(Jupiter::StringS::Format("[%.*s] %.*s", player.name.size(), player.name.ptr(), setjoin.size(), setjoin.ptr()));
 	}
 }
 
@@ -49,11 +49,14 @@ void ViewJoinGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *player
 	if (player->uuid.isNotEmpty())
 	{
 		const Jupiter::ReadableString &setjoin = pluginInstance.setjoin_file.get(player->uuid);
+
 		if (setjoin.isNotEmpty())
-			source->sendMessage(player, Jupiter::StringS::Format("[%.*s] %.*s", player->name.size(), player->name.ptr(), setjoin.size(), setjoin.ptr()));
-		else source->sendMessage(player, "Error: No setjoin found."_jrs);
+			source->sendMessage(*player, Jupiter::StringS::Format("[%.*s] %.*s", player->name.size(), player->name.ptr(), setjoin.size(), setjoin.ptr()));
+		else
+			source->sendMessage(*player, "Error: No setjoin found."_jrs);
 	}
-	else source->sendMessage(player, "Error: A setjoin message requires steam."_jrs);
+	else
+		source->sendMessage(*player, "Error: A setjoin message requires steam."_jrs);
 }
 
 const Jupiter::ReadableString &ViewJoinGameCommand::getHelp(const Jupiter::ReadableString &)
@@ -77,11 +80,14 @@ void ShowJoinGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *player
 	if (player->uuid.isNotEmpty())
 	{
 		const Jupiter::ReadableString &setjoin = pluginInstance.setjoin_file.get(player->uuid);
+
 		if (setjoin.isNotEmpty())
 			source->sendMessage(Jupiter::StringS::Format("[%.*s] %.*s", player->name.size(), player->name.ptr(), setjoin.size(), setjoin.ptr()));
-		else source->sendMessage(player, "Error: No setjoin found."_jrs);
+		else
+			source->sendMessage(*player, "Error: No setjoin found."_jrs);
 	}
-	else source->sendMessage(player, "Error: A setjoin message requires steam."_jrs);
+	else
+		source->sendMessage(*player, "Error: A setjoin message requires steam."_jrs);
 }
 
 const Jupiter::ReadableString &ShowJoinGameCommand::getHelp(const Jupiter::ReadableString &)
@@ -107,10 +113,12 @@ void DelJoinGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *player,
 	if (player->uuid.isNotEmpty())
 	{
 		if (pluginInstance.setjoin_file.remove(player->uuid))
-			source->sendMessage(player, Jupiter::StringS::Format("%.*s, your join message has been removed.", player->name.size(), player->name.ptr()));
-		else source->sendMessage(player, "Error: Setjoin not found."_jrs);
+			source->sendMessage(*player, Jupiter::StringS::Format("%.*s, your join message has been removed.", player->name.size(), player->name.ptr()));
+		else
+			source->sendMessage(*player, "Error: Setjoin not found."_jrs);
 	}
-	else source->sendMessage(player, "Error: A setjoin message requires steam."_jrs);
+	else
+		source->sendMessage(*player, "Error: A setjoin message requires steam."_jrs);
 }
 
 const Jupiter::ReadableString &DelJoinGameCommand::getHelp(const Jupiter::ReadableString &)
@@ -137,11 +145,11 @@ void SetJoinGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *player,
 		{
 			pluginInstance.setjoin_file.set(player->uuid, parameters);
 			pluginInstance.setjoin_file.write();
-			source->sendMessage(player, Jupiter::StringS::Format("%.*s, your join message is now: %.*s", player->name.size(), player->name.ptr(), parameters.size(), parameters.ptr()));
+			source->sendMessage(*player, Jupiter::StringS::Format("%.*s, your join message is now: %.*s", player->name.size(), player->name.ptr(), parameters.size(), parameters.ptr()));
 		}
 		else DelJoinGameCommand_instance.trigger(source, player, parameters);
 	}
-	else source->sendMessage(player, "Error: A setjoin message requires steam."_jrs);
+	else source->sendMessage(*player, "Error: A setjoin message requires steam."_jrs);
 }
 
 const Jupiter::ReadableString &SetJoinGameCommand::getHelp(const Jupiter::ReadableString &)

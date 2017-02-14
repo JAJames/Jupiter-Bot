@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2015-2016 Jessica James.
+ * Copyright (C) 2015-2017 Jessica James.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -29,47 +29,47 @@ bool RenX_MinPlayersPlugin::initialize()
 	return true;
 }
 
-void RenX_MinPlayersPlugin::RenX_OnMapStart(RenX::Server *server, const Jupiter::ReadableString &map)
+void RenX_MinPlayersPlugin::RenX_OnMapStart(RenX::Server &server, const Jupiter::ReadableString &map)
 {
-	if (server->players.size() < RenX_MinPlayersPlugin::player_threshold)
-		server->send(Jupiter::StringS::Format("addbots %d", RenX_MinPlayersPlugin::player_threshold - server->players.size()));
+	if (server.players.size() < RenX_MinPlayersPlugin::player_threshold)
+		server.send(Jupiter::StringS::Format("addbots %d", RenX_MinPlayersPlugin::player_threshold - server.players.size()));
 }
 
-void RenX_MinPlayersPlugin::RenX_OnJoin(RenX::Server *server, const RenX::PlayerInfo *player)
+void RenX_MinPlayersPlugin::RenX_OnJoin(RenX::Server &server, const RenX::PlayerInfo &player)
 {
-	if (server->players.size() > RenX_MinPlayersPlugin::player_threshold && server->isMatchInProgress())
+	if (server.players.size() > RenX_MinPlayersPlugin::player_threshold && server.isMatchInProgress())
 		++RenX_MinPlayersPlugin::phase_bots;
 }
 
-void RenX_MinPlayersPlugin::RenX_OnPart(RenX::Server *server, const RenX::PlayerInfo *player)
+void RenX_MinPlayersPlugin::RenX_OnPart(RenX::Server &server, const RenX::PlayerInfo &player)
 {
-	if (server->isMatchInProgress() && server->players.size() <= player_threshold)
+	if (server.isMatchInProgress() && server.players.size() <= player_threshold)
 	{
-		switch (player->team)
+		switch (player.team)
 		{
 		case RenX::TeamType::GDI:
-			server->send("addredbots 1"_jrs);
+			server.send("addredbots 1"_jrs);
 			break;
 		case RenX::TeamType::Nod:
-			server->send("addbluebots 1"_jrs);
+			server.send("addbluebots 1"_jrs);
 			break;
 		case RenX::TeamType::None:
 			break;
 		default:
-			server->send("addbots 1"_jrs);
+			server.send("addbots 1"_jrs);
 			break;
 		}
 	}
 }
 
-void RenX_MinPlayersPlugin::AnyDeath(RenX::Server *server, const RenX::PlayerInfo *player)
+void RenX_MinPlayersPlugin::AnyDeath(RenX::Server &server, const RenX::PlayerInfo &player)
 {
-	if (RenX_MinPlayersPlugin::phase_bots != 0 && player->isBot && server->players.size() != 0)
+	if (RenX_MinPlayersPlugin::phase_bots != 0 && player.isBot && server.players.size() != 0)
 	{
 		size_t gdi_count = 0, nod_count = 0;
-		for (Jupiter::DLList<RenX::PlayerInfo>::Node *node = server->players.getNode(0); node != nullptr; node = node->next)
+		for (auto node = server.players.begin(); node != server.players.end(); ++node)
 		{
-			switch (node->data->team)
+			switch (node->team)
 			{
 			case RenX::TeamType::GDI:
 				++gdi_count;
@@ -84,44 +84,44 @@ void RenX_MinPlayersPlugin::AnyDeath(RenX::Server *server, const RenX::PlayerInf
 
 		if (gdi_count > nod_count)
 		{
-			if (player->team != RenX::TeamType::Nod)
+			if (player.team != RenX::TeamType::Nod)
 			{
-				server->kickPlayer(player, "Bot Phasing"_jrs);
+				server.kickPlayer(player, "Bot Phasing"_jrs);
 				--RenX_MinPlayersPlugin::phase_bots;
 			}
 		}
 		else if (nod_count > gdi_count)
 		{
-			if (player->team != RenX::TeamType::GDI)
+			if (player.team != RenX::TeamType::GDI)
 			{
-				server->kickPlayer(player, "Bot Phasing"_jrs);
+				server.kickPlayer(player, "Bot Phasing"_jrs);
 				--RenX_MinPlayersPlugin::phase_bots;
 			}
 		}
 		else
 		{
-			server->kickPlayer(player, "Bot Phasing"_jrs);
+			server.kickPlayer(player, "Bot Phasing"_jrs);
 			--RenX_MinPlayersPlugin::phase_bots;
 		}
 	}
 }
 
-void RenX_MinPlayersPlugin::RenX_OnSuicide(RenX::Server *server, const RenX::PlayerInfo *player, const Jupiter::ReadableString &damageType)
+void RenX_MinPlayersPlugin::RenX_OnSuicide(RenX::Server &server, const RenX::PlayerInfo &player, const Jupiter::ReadableString &damageType)
 {
 	this->AnyDeath(server, player);
 }
 
-void RenX_MinPlayersPlugin::RenX_OnKill(RenX::Server *server, const RenX::PlayerInfo *player, const RenX::PlayerInfo *victim, const Jupiter::ReadableString &damageType)
+void RenX_MinPlayersPlugin::RenX_OnKill(RenX::Server &server, const RenX::PlayerInfo &player, const RenX::PlayerInfo &victim, const Jupiter::ReadableString &damageType)
 {
 	this->AnyDeath(server, player);
 }
 
-void RenX_MinPlayersPlugin::RenX_OnKill(RenX::Server *server, const Jupiter::ReadableString &killer, const RenX::TeamType &killerTeam, const RenX::PlayerInfo *victim, const Jupiter::ReadableString &damageType)
+void RenX_MinPlayersPlugin::RenX_OnKill(RenX::Server &server, const Jupiter::ReadableString &killer, const RenX::TeamType &killerTeam, const RenX::PlayerInfo &victim, const Jupiter::ReadableString &damageType)
 {
 	this->AnyDeath(server, victim);
 }
 
-void RenX_MinPlayersPlugin::RenX_OnDie(RenX::Server *server, const RenX::PlayerInfo *player, const Jupiter::ReadableString &damageType)
+void RenX_MinPlayersPlugin::RenX_OnDie(RenX::Server &server, const RenX::PlayerInfo &player, const Jupiter::ReadableString &damageType)
 {
 	this->AnyDeath(server, player);
 }

@@ -24,10 +24,9 @@
  * @brief Defines the Server class.
  */
 
-#include <ctime>
 #include <chrono>
+#include <list>
 #include "Jupiter/TCPSocket.h"
-#include "Jupiter/DLList.h"
 #include "Jupiter/ArrayList.h"
 #include "Jupiter/String.h"
 #include "Jupiter/CString.h"
@@ -84,7 +83,7 @@ namespace RenX
 		virtual bool OnBadRehash(bool removed);
 
 	public: // RenX::Server
-		Jupiter::DLList<RenX::PlayerInfo> players; /** A list of players in the server */
+		std::list<RenX::PlayerInfo> players; /** A list of players in the server */
 		Jupiter::ArrayList<RenX::BuildingInfo> buildings; /** A list of buildings in the server */
 		Jupiter::ArrayList<Jupiter::StringS> mutators; /** A list of buildings the server is running */
 		Jupiter::ArrayList<RenX::Map> maps; /** A list of maps in the server's rotation */
@@ -244,7 +243,7 @@ namespace RenX
 		* @param message Message to send in-game.
 		* @return The number of bytes sent on success, less than or equal to zero otherwise.
 		*/
-		int sendMessage(const RenX::PlayerInfo *player, const Jupiter::ReadableString &message);
+		int sendMessage(const RenX::PlayerInfo &player, const Jupiter::ReadableString &message);
 
 		/**
 		* @brief Sends data to the server.
@@ -307,7 +306,7 @@ namespace RenX
 		* @param player Player to calculate game-time of.
 		* @return Time player has been playing.
 		*/
-		std::chrono::milliseconds getGameTime(const RenX::PlayerInfo *player) const;
+		std::chrono::milliseconds getGameTime(const RenX::PlayerInfo &player) const;
 
 		/**
 		* @brief Fetches the number of bots in the server.
@@ -355,7 +354,7 @@ namespace RenX
 		* @param player Player to fetch Steam ID from
 		* @return A player's formatted Steam ID on success, an empty string otherwise.
 		*/
-		Jupiter::StringS formatSteamID(const RenX::PlayerInfo *player) const;
+		Jupiter::StringS formatSteamID(const RenX::PlayerInfo &player) const;
 
 		/**
 		* @brief Formats a Steam ID into a readable string.
@@ -377,7 +376,7 @@ namespace RenX
 		*
 		* @param player Data of the player to kick.
 		*/
-		void kickPlayer(const RenX::PlayerInfo *player, const Jupiter::ReadableString &reason);
+		void kickPlayer(const RenX::PlayerInfo &player, const Jupiter::ReadableString &reason);
 
 		/**
 		* @brief Kicks a player from the server.
@@ -391,7 +390,7 @@ namespace RenX
 		*
 		* @param player Data of the player to kick.
 		*/
-		void forceKickPlayer(const RenX::PlayerInfo *player, const Jupiter::ReadableString &reason);
+		void forceKickPlayer(const RenX::PlayerInfo &player, const Jupiter::ReadableString &reason);
 
 		/**
 		* @brief Checks if any players are in the ban list, and kicks any players listed.
@@ -404,7 +403,7 @@ namespace RenX
 		*
 		* @param player Data of the player to check.
 		*/
-		void banCheck(RenX::PlayerInfo *player);
+		void banCheck(RenX::PlayerInfo &player);
 
 		/**
 		* @brief Bans a player from the server.
@@ -419,7 +418,7 @@ namespace RenX
 		* @param player Data of the player to ban.
 		* @param length Duration of the ban (0 for permanent).
 		*/
-		void banPlayer(const RenX::PlayerInfo *player, const Jupiter::ReadableString &banner, const Jupiter::ReadableString &reason, std::chrono::seconds length = std::chrono::seconds::zero());
+		void banPlayer(const RenX::PlayerInfo &player, const Jupiter::ReadableString &banner, const Jupiter::ReadableString &reason, std::chrono::seconds length = std::chrono::seconds::zero());
 
 		/**
 		* @brief Removes a player's data based on their ID number.
@@ -435,7 +434,7 @@ namespace RenX
 		* @param player Pointer to a player's data
 		* @return True if a player was removed, false otherwise.
 		*/
-		bool removePlayer(RenX::PlayerInfo *player);
+		bool removePlayer(RenX::PlayerInfo &player);
 
 		/**
 		* @brief Sends a full client list request.
@@ -533,14 +532,14 @@ namespace RenX
 		*
 		* @return True on success, false otherwise.
 		*/
-		bool mute(const RenX::PlayerInfo *player);
+		bool mute(const RenX::PlayerInfo &player);
 
 		/**
 		* @brief Allows a player to use the game chat.
 		*
 		* @return True on success, false otherwise.
 		*/
-		bool unmute(const RenX::PlayerInfo *player);
+		bool unmute(const RenX::PlayerInfo &player);
 
 		/**
 		* @brief Gives a player additional credits.
@@ -558,7 +557,7 @@ namespace RenX
 		* @param credits Credits to give to player
 		* @return True on success, false otherwise.
 		*/
-		bool giveCredits(RenX::PlayerInfo *player, double credits);
+		bool giveCredits(RenX::PlayerInfo &player, double credits);
 
 		/**
 		* @brief Kills a player.
@@ -574,7 +573,7 @@ namespace RenX
 		* @param player Player to kill
 		* @return True on success, false otherwise.
 		*/
-		bool kill(RenX::PlayerInfo *player);
+		bool kill(RenX::PlayerInfo &player);
 
 		/**
 		* @brief Disarms all of a player's deployed objects.
@@ -590,7 +589,7 @@ namespace RenX
 		* @param player Player to disarm
 		* @return True on success, false otherwise.
 		*/
-		bool disarm(RenX::PlayerInfo *player);
+		bool disarm(RenX::PlayerInfo &player);
 
 		/**
 		* @brief Disarms all of a player's deployed C4.
@@ -606,7 +605,7 @@ namespace RenX
 		* @param player Player to disarm
 		* @return True on success, false otherwise.
 		*/
-		bool disarmC4(RenX::PlayerInfo *player);
+		bool disarmC4(RenX::PlayerInfo &player);
 
 		/**
 		* @brief Disarms all of a player's deployed beacons.
@@ -622,7 +621,7 @@ namespace RenX
 		* @param player Player to disarm
 		* @return True on success, false otherwise.
 		*/
-		bool disarmBeacon(RenX::PlayerInfo *player);
+		bool disarmBeacon(RenX::PlayerInfo &player);
 
 		/**
 		* @brief Bans a player from mining in-game for 1 game (or until they disconnect).
@@ -638,7 +637,7 @@ namespace RenX
 		* @param player Player to mine-ban
 		* @return True on success, false otherwise.
 		*/
-		bool mineBan(RenX::PlayerInfo *player);
+		bool mineBan(RenX::PlayerInfo &player);
 
 		/**
 		* @brief Forces a player to change teams.
@@ -656,7 +655,7 @@ namespace RenX
 		* @param resetCredits True to reset the player's credits, false otherwise.
 		* @return True on success, false otherwise.
 		*/
-		bool changeTeam(RenX::PlayerInfo *player, bool resetCredits = true);
+		bool changeTeam(RenX::PlayerInfo &player, bool resetCredits = true);
 
 		/**
 		* @brief Fetches a server's IRC logging prefix.
@@ -825,7 +824,7 @@ namespace RenX
 		* @param parameters Parameters to pass to the command
 		* @return Command executed if a match is found, nullptr otherwise.
 		*/
-		RenX::GameCommand *triggerCommand(const Jupiter::ReadableString &trigger, RenX::PlayerInfo *player, const Jupiter::ReadableString &parameters);
+		RenX::GameCommand *triggerCommand(const Jupiter::ReadableString &trigger, RenX::PlayerInfo &player, const Jupiter::ReadableString &parameters);
 
 		/**
 		* @brief Adds a command to the server's game command list.
@@ -857,7 +856,7 @@ namespace RenX
 		* @param player Player to calculate UUID of
 		* @return UUID calculated from player.
 		*/
-		typedef Jupiter::StringS(*uuid_func)(RenX::PlayerInfo *player);
+		typedef Jupiter::StringS(*uuid_func)(RenX::PlayerInfo &player);
 
 		/**
 		* @brief Sets the player UUID calculation function.
@@ -880,7 +879,7 @@ namespace RenX
 		* @param player Player with UUID to change
 		* @param uuid Player's new UUID
 		*/
-		void setUUID(RenX::PlayerInfo *player, const Jupiter::ReadableString &uuid);
+		void setUUID(RenX::PlayerInfo &player, const Jupiter::ReadableString &uuid);
 
 		/**
 		* @brief Changes a player's UUID only if it is different than their current UUID
@@ -889,7 +888,7 @@ namespace RenX
 		* @param uuid Player's new UUID
 		* @return True if the UUIDs did not match, false otherwise.
 		*/
-		bool setUUIDIfDifferent(RenX::PlayerInfo *player, const Jupiter::ReadableString &uuid);
+		bool setUUIDIfDifferent(RenX::PlayerInfo &player, const Jupiter::ReadableString &uuid);
 
 		/**
 		* @brief Checks if reverse DNS resolution is occuring for players.

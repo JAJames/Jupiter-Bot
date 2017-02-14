@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2015 Jessica James.
+ * Copyright (C) 2015-2017 Jessica James.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -23,11 +23,13 @@
 #include "RenX_Functions.h"
 #include "RenX_HybridUUID.h"
 
-Jupiter::StringS calc_uuid(RenX::PlayerInfo *player)
+using namespace Jupiter::literals;
+
+Jupiter::StringS calc_uuid(RenX::PlayerInfo &player)
 {
-	if (player->steamid != 0U)
-		return Jupiter::StringS::Format("S%.16llX", player->steamid);
-	return Jupiter::StringS::Format("N%.*s", player->name.size(), player->name.ptr());
+	if (player.steamid != 0U)
+		return Jupiter::StringS::Format("S%.16llX", player.steamid);
+	return "N"_jrs + player.name;
 }
 
 RenX_HybridUUIDPlugin::RenX_HybridUUIDPlugin()
@@ -46,9 +48,9 @@ RenX_HybridUUIDPlugin::~RenX_HybridUUIDPlugin()
 		core.getServer(--index)->setUUIDFunction(RenX::default_uuid_func);
 }
 
-void RenX_HybridUUIDPlugin::RenX_OnServerCreate(RenX::Server *server)
+void RenX_HybridUUIDPlugin::RenX_OnServerCreate(RenX::Server &server)
 {
-	server->setUUIDFunction(calc_uuid);
+	server.setUUIDFunction(calc_uuid);
 }
 
 // Plugin instantiation and entry point.

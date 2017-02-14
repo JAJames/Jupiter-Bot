@@ -177,7 +177,7 @@ namespace RenX
 		* @param team Team which just won
 		* @param output_times True if the sort/write times should be output, false otherwise.
 		*/
-		void updateLadder(RenX::Server *server, const RenX::TeamType &team);
+		void updateLadder(RenX::Server &server, const RenX::TeamType &team);
 
 		/**
 		* @brief Erases all entries in the database.
@@ -223,7 +223,7 @@ namespace RenX
 		*/
 		~LadderDatabase();
 
-		typedef void PreUpdateLadderFunction(RenX::LadderDatabase &database, RenX::Server *server, const RenX::TeamType &team);
+		typedef void PreUpdateLadderFunction(RenX::LadderDatabase &database, RenX::Server &server, const RenX::TeamType &team);
 		PreUpdateLadderFunction *OnPreUpdateLadder = nullptr;
 
 	private:

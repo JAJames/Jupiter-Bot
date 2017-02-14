@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2014-2016 Jessica James.
+ * Copyright (C) 2014-2017 Jessica James.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -135,7 +135,7 @@ namespace RenX
 	* @param player Data of the player
 	* @return IRC-ready version of the player's name.
 	*/
-	RENX_API Jupiter::String getFormattedPlayerName(const RenX::PlayerInfo *player);
+	RENX_API Jupiter::String getFormattedPlayerName(const RenX::PlayerInfo &player);
 
 	/**
 	* @brief Creates a string containing a human-readable version of a map's GUID
@@ -151,7 +151,7 @@ namespace RenX
 	* @param player A player's data.
 	* @return Number of seconds a player has been in-game.
 	*/
-	RENX_API std::chrono::milliseconds getServerTime(const RenX::PlayerInfo *player);
+	RENX_API std::chrono::milliseconds getServerTime(const RenX::PlayerInfo &player);
 
 	/**
 	* @brief Calculates a player's UUID, based on their steam ID.
@@ -160,7 +160,7 @@ namespace RenX
 	* @param player Player to calculate UUID of
 	* @return UUID of the player based on their steam ID.
 	*/
-	RENX_API Jupiter::StringS default_uuid_func(RenX::PlayerInfo *player);
+	RENX_API Jupiter::StringS default_uuid_func(RenX::PlayerInfo &player);
 
 	/**
 	* @brief Calculates a player's Kill-Death ratio, based on their data.
@@ -170,7 +170,7 @@ namespace RenX
 	* @param includeSuicides True if suicides should be included in the death count, false otherwise.
 	* @return Player's Kill-Death ratio.
 	*/
-	RENX_API double getKillDeathRatio(const RenX::PlayerInfo *player, bool includeSuicides = true);
+	RENX_API double getKillDeathRatio(const RenX::PlayerInfo &player, bool includeSuicides = true);
 
 	/**
 	* @brief Calculates a player's Headshot-Kill ratio, based on their data.
@@ -179,7 +179,7 @@ namespace RenX
 	* @param player A player's data.
 	* @return Player's Headshot-Kill ratio.
 	*/
-	RENX_API double getHeadshotKillRatio(const RenX::PlayerInfo *player);
+	RENX_API double getHeadshotKillRatio(const RenX::PlayerInfo &player);
 
 	/**
 	* @brief Escapifies a string so that it can be safely transmitted over RCON.

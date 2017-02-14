@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2016 Jessica James.
+ * Copyright (C) 2016-2017 Jessica James.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -43,7 +43,7 @@ bool RenX_Ladder_Weekly_TimePlugin::initialize()
 // Plugin instantiation and entry point.
 RenX_Ladder_Weekly_TimePlugin pluginInstance;
 
-void OnPreUpdateLadder(RenX::LadderDatabase &database, RenX::Server *server, const RenX::TeamType &team)
+void OnPreUpdateLadder(RenX::LadderDatabase &database, RenX::Server &, const RenX::TeamType &)
 {
 	tm *tm_ptr = gmtime(std::addressof<const time_t>(time(0)));
 	if (pluginInstance.last_sorted_day != tm_ptr->tm_wday && tm_ptr->tm_wday == pluginInstance.reset_day)

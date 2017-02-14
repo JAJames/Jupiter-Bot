@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2015-2016 Jessica James.
+ * Copyright (C) 2015-2017 Jessica James.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -464,16 +464,16 @@ void TagsImp::processTags(Jupiter::StringType &msg, const RenX::Server *server, 
 		PROCESS_TAG(this->INTERNAL_SERVER_PREFIX_TAG, server->getPrefix());
 		if (player != nullptr)
 		{
-			PROCESS_TAG(this->INTERNAL_STEAM_TAG, server->formatSteamID(player));
+			PROCESS_TAG(this->INTERNAL_STEAM_TAG, server->formatSteamID(*player));
 		}
 		if (victim != nullptr)
 		{
-			PROCESS_TAG(this->INTERNAL_VICTIM_STEAM_TAG, server->formatSteamID(victim));
+			PROCESS_TAG(this->INTERNAL_VICTIM_STEAM_TAG, server->formatSteamID(*victim));
 		}
 	}
 	if (player != nullptr)
 	{
-		PROCESS_TAG(this->INTERNAL_NAME_TAG, RenX::getFormattedPlayerName(player));
+		PROCESS_TAG(this->INTERNAL_NAME_TAG, RenX::getFormattedPlayerName(*player));
 		PROCESS_TAG(this->INTERNAL_RAW_NAME_TAG, player->name);
 		PROCESS_TAG(this->INTERNAL_IP_TAG, player->ip);
 		PROCESS_TAG(this->INTERNAL_HWID_TAG, player->hwid);
@@ -519,7 +519,7 @@ void TagsImp::processTags(Jupiter::StringType &msg, const RenX::Server *server, 
 	}
 	if (victim != nullptr)
 	{
-		PROCESS_TAG(this->INTERNAL_VICTIM_NAME_TAG, RenX::getFormattedPlayerName(victim));
+		PROCESS_TAG(this->INTERNAL_VICTIM_NAME_TAG, RenX::getFormattedPlayerName(*victim));
 		PROCESS_TAG(this->INTERNAL_VICTIM_RAW_NAME_TAG, victim->name);
 		PROCESS_TAG(this->INTERNAL_VICTIM_IP_TAG, victim->ip);
 		PROCESS_TAG(this->INTERNAL_VICTIM_HWID_TAG, victim->hwid);

@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2014-2016 Jessica James.
+ * Copyright (C) 2014-2017 Jessica James.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -29,7 +29,7 @@ public:
 	Jupiter::Config &setjoin_file = Jupiter::Plugin::config;
 
 public: // RenX::Plugin
-	void RenX_OnJoin(RenX::Server *server, const RenX::PlayerInfo *player) override;
+	void RenX_OnJoin(RenX::Server &server, const RenX::PlayerInfo &player) override;
 };
 
 GENERIC_GAME_COMMAND(SetJoinGameCommand)

@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2016 Jessica James.
+ * Copyright (C) 2016-2017 Jessica James.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -215,61 +215,61 @@ constexpr const char *json_bool_as_cstring(bool in)
 	return in ? "true" : "false";
 }
 
-Jupiter::StringS server_as_json(const RenX::Server *server)
+Jupiter::StringS server_as_json(const RenX::Server &server)
 {
 	Jupiter::String server_json_block(128);
 
-	Jupiter::String server_name = jsonify(server->getName());
-	Jupiter::String server_map = jsonify(server->getMap().name);
-	Jupiter::String server_version = jsonify(server->getGameVersion());
+	Jupiter::String server_name = jsonify(server.getName());
+	Jupiter::String server_map = jsonify(server.getMap().name);
+	Jupiter::String server_version = jsonify(server.getGameVersion());
 
 	server_json_block.format(R"json({"Name":"%.*s","Current Map":"%.*s","Bots":%u,"Players":%u,"Game Version":"%.*s","Variables":{"Mine Limit":%d,"bSteamRequired":%s,"bPrivateMessageTeamOnly":%s,"bPassworded":%s,"bAllowPrivateMessaging":%s,"Player Limit":%d,"Vehicle Limit":%d,"bAutoBalanceTeams":%s,"Team Mode":%d,"bSpawnCrates":%s,"CrateRespawnAfterPickup":%f,"Time Limit":%d},"Port":%u,"IP":"%.*s")json",
 		server_name.size(), server_name.ptr(),
 		server_map.size(), server_map.ptr(),
-		server->getBotCount(),
-		server->players.size() - server->getBotCount(),
+		server.getBotCount(),
+		server.players.size() - server.getBotCount(),
 		server_version.size(), server_version.ptr(),
-		server->getMineLimit(),
-		json_bool_as_cstring(server->isSteamRequired()),
-		json_bool_as_cstring(server->isPrivateMessageTeamOnly()),
-		json_bool_as_cstring(server->isPassworded()),
-		json_bool_as_cstring(server->isPrivateMessagingEnabled()),
-		server->getPlayerLimit(),
-		server->getVehicleLimit(),
-		json_bool_as_cstring(server->getTeamMode() == 3),
-		server->getTeamMode(),
-		json_bool_as_cstring(server->isCratesEnabled()),
-		server->getCrateRespawnDelay(),
-		server->getTimeLimit(),
-		server->getPort(),
-		server->getSocketHostname().size(), server->getSocketHostname().ptr());
+		server.getMineLimit(),
+		json_bool_as_cstring(server.isSteamRequired()),
+		json_bool_as_cstring(server.isPrivateMessageTeamOnly()),
+		json_bool_as_cstring(server.isPassworded()),
+		json_bool_as_cstring(server.isPrivateMessagingEnabled()),
+		server.getPlayerLimit(),
+		server.getVehicleLimit(),
+		json_bool_as_cstring(server.getTeamMode() == 3),
+		server.getTeamMode(),
+		json_bool_as_cstring(server.isCratesEnabled()),
+		server.getCrateRespawnDelay(),
+		server.getTimeLimit(),
+		server.getPort(),
+		server.getSocketHostname().size(), server.getSocketHostname().ptr());
 
 	server_json_block += '}';
 
 	return server_json_block;
 }
 
-Jupiter::StringS server_as_game(const RenX::Server *server)
+Jupiter::StringS server_as_game(const RenX::Server &server)
 {
 	Jupiter::String server_game_block(256);
 
-	Jupiter::String server_name = sanitize_game(server->getName());
-	Jupiter::String server_map = sanitize_game(server->getMap().name);
-	Jupiter::String server_version = sanitize_game(server->getGameVersion());
+	Jupiter::String server_name = sanitize_game(server.getName());
+	Jupiter::String server_map = sanitize_game(server.getMap().name);
+	Jupiter::String server_version = sanitize_game(server.getGameVersion());
 	Jupiter::String server_levels;
 
 	RenX::Map *map;
 
-	if (server->maps.size() != 0)
+	if (server.maps.size() != 0)
 	{
-		map = server->maps.get(0);
+		map = server.maps.get(0);
 		server_levels = sanitize_game(RenX::formatGUID(*map));
 		server_levels += '=';
 		server_levels += sanitize_game(map->name);
 
-		for (size_t index = 1; index != server->maps.size(); ++index)
+		for (size_t index = 1; index != server.maps.size(); ++index)
 		{
-			map = server->maps.get(index);
+			map = server.maps.get(index);
 
 			server_levels += ';';
 			server_levels += sanitize_game(RenX::formatGUID(*map));
@@ -280,40 +280,40 @@ Jupiter::StringS server_as_game(const RenX::Server *server)
 
 	server_game_block.format("\n<@>%.*s~%.*s~%u~%s~%.*s~" "%d;%d;%d;%s;%d;%d;%d;%s;%s;%s;%.*s;%s" "~%u~%d~%s~%s~%.*s",
 		server_name.size(), server_name.ptr(),
-		server->getSocketHostname().size(), server->getSocketHostname().ptr(),
-		server->getPort(),
-		json_bool_as_cstring(server->isPassworded()),
+		server.getSocketHostname().size(), server.getSocketHostname().ptr(),
+		server.getPort(),
+		json_bool_as_cstring(server.isPassworded()),
 		server_map.size(), server_map.ptr(),
 		//START OPTIONS
-		server->getPlayerLimit(),
-		server->getVehicleLimit(),
-		server->getMineLimit(),
-		json_bool_as_cstring(server->isCratesEnabled()),
-		server->getGameType(),
-		server->getTeamMode(),
-		server->getTimeLimit(),
-		json_bool_as_cstring(server->isPrivateMessagingEnabled()),
-		json_bool_as_cstring(server->isPrivateMessageTeamOnly()),
-		json_bool_as_cstring(server->isSteamRequired()),
+		server.getPlayerLimit(),
+		server.getVehicleLimit(),
+		server.getMineLimit(),
+		json_bool_as_cstring(server.isCratesEnabled()),
+		server.getGameType(),
+		server.getTeamMode(),
+		server.getTimeLimit(),
+		json_bool_as_cstring(server.isPrivateMessagingEnabled()),
+		json_bool_as_cstring(server.isPrivateMessageTeamOnly()),
+		json_bool_as_cstring(server.isSteamRequired()),
 		server_version.size(), server_version.ptr(),
-		json_bool_as_cstring(server->isBotsEnabled()),
+		json_bool_as_cstring(server.isBotsEnabled()),
 		//END OPTIONS
-		server->players.size() - server->getBotCount(),
-		server->getPlayerLimit(),
-		json_bool_as_cstring(server->isRanked()),
-		json_bool_as_cstring(server->isMatchInProgress()),
+		server.players.size() - server.getBotCount(),
+		server.getPlayerLimit(),
+		json_bool_as_cstring(server.isRanked()),
+		json_bool_as_cstring(server.isMatchInProgress()),
 		server_levels.size(), server_levels.ptr());
 
 	return server_game_block;
 }
 
-Jupiter::StringS server_as_long_json(const RenX::Server *server)
+Jupiter::StringS server_as_long_json(const RenX::Server &server)
 {
 		Jupiter::String server_json_block(128);
 
-		Jupiter::String server_name = jsonify(server->getName());
-		Jupiter::String server_map = jsonify(server->getMap().name);
-		Jupiter::String server_version = jsonify(server->getGameVersion());
+		Jupiter::String server_name = jsonify(server.getName());
+		Jupiter::String server_map = jsonify(server.getMap().name);
+		Jupiter::String server_version = jsonify(server.getGameVersion());
 
 		server_json_block.format(R"json({
 		"Name": "%.*s",
@@ -340,44 +340,44 @@ Jupiter::StringS server_as_long_json(const RenX::Server *server)
 
 			server_name.size(), server_name.ptr(),
 			server_map.size(), server_map.ptr(),
-			server->getBotCount(),
-			server->players.size() - server->getBotCount(),
+			server.getBotCount(),
+			server.players.size() - server.getBotCount(),
 			server_version.size(), server_version.ptr(),
 
-			server->getMineLimit(),
-			json_bool_as_cstring(server->isSteamRequired()),
-			json_bool_as_cstring(server->isPrivateMessageTeamOnly()),
-			json_bool_as_cstring(server->isPassworded()),
-			json_bool_as_cstring(server->isPrivateMessagingEnabled()),
-			server->getPlayerLimit(),
-			server->getVehicleLimit(),
-			json_bool_as_cstring(server->getTeamMode() == 3),
-			server->getTeamMode(),
-			json_bool_as_cstring(server->isCratesEnabled()),
-			server->getCrateRespawnDelay(),
-			server->getTimeLimit(),
+			server.getMineLimit(),
+			json_bool_as_cstring(server.isSteamRequired()),
+			json_bool_as_cstring(server.isPrivateMessageTeamOnly()),
+			json_bool_as_cstring(server.isPassworded()),
+			json_bool_as_cstring(server.isPrivateMessagingEnabled()),
+			server.getPlayerLimit(),
+			server.getVehicleLimit(),
+			json_bool_as_cstring(server.getTeamMode() == 3),
+			server.getTeamMode(),
+			json_bool_as_cstring(server.isCratesEnabled()),
+			server.getCrateRespawnDelay(),
+			server.getTimeLimit(),
 
-			server->getPort(),
-			server->getSocketHostname().size(), server->getSocketHostname().ptr());
+			server.getPort(),
+			server.getSocketHostname().size(), server.getSocketHostname().ptr());
 
 
 		// Level Rotation
-		if (server->maps.size() != 0)
+		if (server.maps.size() != 0)
 		{
 			server_json_block += ",\n\t\t\"Levels\": ["_jrs;
 
 			server_json_block += "\n\t\t\t{\n\t\t\t\t\"Name\": \""_jrs;
-			server_json_block += jsonify(server->maps.get(0)->name);
+			server_json_block += jsonify(server.maps.get(0)->name);
 			server_json_block += "\",\n\t\t\t\t\"GUID\": \""_jrs;
-			server_json_block += RenX::formatGUID(*server->maps.get(0));
+			server_json_block += RenX::formatGUID(*server.maps.get(0));
 			server_json_block += "\"\n\t\t\t}"_jrs;
 
-			for (size_t index = 1; index != server->maps.size(); ++index)
+			for (size_t index = 1; index != server.maps.size(); ++index)
 			{
 				server_json_block += ",\n\t\t\t{\n\t\t\t\t\"Name\": \""_jrs;
-				server_json_block += jsonify(server->maps.get(index)->name);
+				server_json_block += jsonify(server.maps.get(index)->name);
 				server_json_block += "\",\n\t\t\t\t\"GUID\": \""_jrs;
-				server_json_block += RenX::formatGUID(*server->maps.get(index));
+				server_json_block += RenX::formatGUID(*server.maps.get(index));
 				server_json_block += "\"\n\t\t\t}"_jrs;
 			}
 
@@ -385,18 +385,18 @@ Jupiter::StringS server_as_long_json(const RenX::Server *server)
 		}
 
 		// Mutators
-		if (server->mutators.size() != 0)
+		if (server.mutators.size() != 0)
 		{
 			server_json_block += ",\n\t\t\"Mutators\": ["_jrs;
 
 			server_json_block += "\n\t\t\t{\n\t\t\t\t\"Name\": \""_jrs;
-			server_json_block += jsonify(*server->mutators.get(0));
+			server_json_block += jsonify(*server.mutators.get(0));
 			server_json_block += "\"\n\t\t\t}"_jrs;
 
-			for (size_t index = 1; index != server->mutators.size(); ++index)
+			for (size_t index = 1; index != server.mutators.size(); ++index)
 			{
 				server_json_block += ",\n\t\t\t{\n\t\t\t\t\"Name\": \""_jrs;
-				server_json_block += jsonify(*server->mutators.get(index));
+				server_json_block += jsonify(*server.mutators.get(index));
 				server_json_block += "\"\n\t\t\t}"_jrs;
 			}
 
@@ -404,33 +404,34 @@ Jupiter::StringS server_as_long_json(const RenX::Server *server)
 		}
 
 		// Player List
-		if (server->players.size() != 0 && server->players.size() != server->getBotCount())
+		if (server.players.size() != 0 && server.players.size() != server.getBotCount())
 		{
 			server_json_block += ",\n\t\t\"PlayerList\": ["_jrs;
 
-			size_t index = 0;
+			auto node = server.players.begin();
 
-			while (index != server->players.size())
+			while (node != server.players.end())
 			{
-				if (server->players.get(index)->isBot == false)
+				if (node->isBot == false)
 				{
 					server_json_block += "\n\t\t\t{\n\t\t\t\t\"Name\": \""_jrs;
-					server_json_block += jsonify(server->players.get(index)->name);
+					server_json_block += jsonify(node->name);
 					server_json_block += "\"\n\t\t\t}"_jrs;
 
-					++index;
+					++node;
 					break;
 				}
-				++index;
+
+				++node;
 			}
 
-			while (index != server->players.size())
+			while (node != server.players.end())
 			{
 				server_json_block += ",\n\t\t\t{\n\t\t\t\t\"Name\": \""_jrs;
-				server_json_block += jsonify(server->players.get(index)->name);
+				server_json_block += jsonify(node->name);
 				server_json_block += "\"\n\t\t\t}"_jrs;
 
-				++index;
+				++node;
 			}
 
 			server_json_block += "\n\t\t]"_jrs;
@@ -441,7 +442,7 @@ Jupiter::StringS server_as_long_json(const RenX::Server *server)
 		return server_json_block;
 }
 
-void RenX_ServerListPlugin::addServerToServerList(RenX::Server *server)
+void RenX_ServerListPlugin::addServerToServerList(RenX::Server &server)
 {
 	Jupiter::String server_json_block(256);
 
@@ -480,22 +481,22 @@ void RenX_ServerListPlugin::addServerToServerList(RenX::Server *server)
 
 	server_json_block = '{';
 
-	if (server->maps.size() != 0)
+	if (server.maps.size() != 0)
 	{
 		server_json_block += "\"Levels\":["_jrs;
 
 		server_json_block += "{\"Name\":\""_jrs;
-		server_json_block += jsonify(server->maps.get(0)->name);
+		server_json_block += jsonify(server.maps.get(0)->name);
 		server_json_block += "\",\"GUID\":\""_jrs;
-		server_json_block += RenX::formatGUID(*server->maps.get(0));
+		server_json_block += RenX::formatGUID(*server.maps.get(0));
 		server_json_block += "\"}"_jrs;
 
-		for (size_t index = 1; index != server->maps.size(); ++index)
+		for (size_t index = 1; index != server.maps.size(); ++index)
 		{
 			server_json_block += ",{\"Name\":\""_jrs;
-			server_json_block += jsonify(server->maps.get(index)->name);
+			server_json_block += jsonify(server.maps.get(index)->name);
 			server_json_block += "\",\"GUID\":\""_jrs;
-			server_json_block += RenX::formatGUID(*server->maps.get(index));
+			server_json_block += RenX::formatGUID(*server.maps.get(index));
 			server_json_block += "\"}"_jrs;
 		}
 
@@ -503,20 +504,20 @@ void RenX_ServerListPlugin::addServerToServerList(RenX::Server *server)
 	}
 
 	// Mutators
-	if (server->mutators.size() != 0)
+	if (server.mutators.size() != 0)
 	{
-		if (server->maps.size() != 0)
+		if (server.maps.size() != 0)
 			server_json_block += ","_jrs;
 		server_json_block += "\"Mutators\":["_jrs;
 
 		server_json_block += "{\"Name\":\""_jrs;
-		server_json_block += jsonify(*server->mutators.get(0));
+		server_json_block += jsonify(*server.mutators.get(0));
 		server_json_block += "\"}"_jrs;
 
-		for (size_t index = 1; index != server->mutators.size(); ++index)
+		for (size_t index = 1; index != server.mutators.size(); ++index)
 		{
 			server_json_block += ",{\"Name\":\""_jrs;
-			server_json_block += jsonify(*server->mutators.get(index));
+			server_json_block += jsonify(*server.mutators.get(index));
 			server_json_block += "\"}"_jrs;
 		}
 
@@ -524,33 +525,34 @@ void RenX_ServerListPlugin::addServerToServerList(RenX::Server *server)
 	}
 
 	// Player List
-	if (server->players.size() != 0 && server->players.size() != server->getBotCount())
+	if (server.players.size() != 0 && server.players.size() != server.getBotCount())
 	{
 		server_json_block += ",\"PlayerList\":["_jrs;
 
-		size_t index = 0;
+		auto node = server.players.begin();
 
-		while (index != server->players.size())
+		while (node != server.players.end())
 		{
-			if (server->players.get(index)->isBot == false)
+			if (node->isBot == false)
 			{
 				server_json_block += "{\"Name\":\""_jrs;
-				server_json_block += jsonify(server->players.get(index)->name);
+				server_json_block += jsonify(node->name);
 				server_json_block += "\"}"_jrs;
 
-				++index;
+				++node;
 				break;
 			}
-			++index;
+
+			++node;
 		}
 
-		while (index != server->players.size())
+		while (node != server.players.end())
 		{
 			server_json_block += ",{\"Name\":\""_jrs;
-			server_json_block += jsonify(server->players.get(index)->name);
+			server_json_block += jsonify(node->name);
 			server_json_block += "\"}"_jrs;
 
-			++index;
+			++node;
 		}
 
 		server_json_block += "]"_jrs;
@@ -558,7 +560,7 @@ void RenX_ServerListPlugin::addServerToServerList(RenX::Server *server)
 
 	server_json_block += '}';
 
-	server->varData[this->name].set("j"_jrs, server_json_block);
+	server.varData[this->name].set("j"_jrs, server_json_block);
 }
 
 void RenX_ServerListPlugin::updateServerList()
@@ -577,8 +579,8 @@ void RenX_ServerListPlugin::updateServerList()
 		server = servers.get(index);
 		if (server->isConnected() && server->isFullyConnected())
 		{
-			RenX_ServerListPlugin::server_list_json += server_as_json(server);
-			RenX_ServerListPlugin::server_list_game += server_as_game(server);
+			RenX_ServerListPlugin::server_list_json += server_as_json(*server);
+			RenX_ServerListPlugin::server_list_game += server_as_game(*server);
 
 			++index;
 			break;
@@ -591,9 +593,9 @@ void RenX_ServerListPlugin::updateServerList()
 		if (server->isConnected() && server->isFullyConnected())
 		{
 			RenX_ServerListPlugin::server_list_json += ',';
-			RenX_ServerListPlugin::server_list_json += server_as_json(server);
+			RenX_ServerListPlugin::server_list_json += server_as_json(*server);
 
-			RenX_ServerListPlugin::server_list_game += server_as_game(server);
+			RenX_ServerListPlugin::server_list_game += server_as_game(*server);
 		}
 		++index;
 	}
@@ -602,31 +604,31 @@ void RenX_ServerListPlugin::updateServerList()
 	RenX_ServerListPlugin::server_list_game += server_list_game_footer;
 }
 
-void RenX_ServerListPlugin::RenX_OnServerFullyConnected(RenX::Server *server)
+void RenX_ServerListPlugin::RenX_OnServerFullyConnected(RenX::Server &server)
 {
 	this->addServerToServerList(server);
 }
 
-void RenX_ServerListPlugin::RenX_OnServerDisconnect(RenX::Server *server, RenX::DisconnectReason)
+void RenX_ServerListPlugin::RenX_OnServerDisconnect(RenX::Server &server, RenX::DisconnectReason)
 {
 	this->updateServerList();
 
 	// remove from individual listing
-	server->varData[this->name].remove("j"_jrs);
+	server.varData[this->name].remove("j"_jrs);
 }
 
-void RenX_ServerListPlugin::RenX_OnJoin(RenX::Server *, const RenX::PlayerInfo *)
+void RenX_ServerListPlugin::RenX_OnJoin(RenX::Server &, const RenX::PlayerInfo &)
 {
 	this->updateServerList();
 }
 
-void RenX_ServerListPlugin::RenX_OnPart(RenX::Server *server, const RenX::PlayerInfo *)
+void RenX_ServerListPlugin::RenX_OnPart(RenX::Server &server, const RenX::PlayerInfo &)
 {
-	if (server->isTravelling() == false || server->isSeamless())
+	if (server.isTravelling() == false || server.isSeamless())
 		this->updateServerList();
 }
 
-void RenX_ServerListPlugin::RenX_OnMapLoad(RenX::Server *server, const Jupiter::ReadableString &map)
+void RenX_ServerListPlugin::RenX_OnMapLoad(RenX::Server &server, const Jupiter::ReadableString &map)
 {
 	this->updateServerList();
 }
@@ -656,7 +658,7 @@ Jupiter::ReadableString *handle_server_list_long_page(const Jupiter::ReadableStr
 		if (server->isConnected() && server->isFullyConnected())
 		{
 			*server_list_long_json += "\n\t"_jrs;
-			*server_list_long_json += server_as_long_json(server);
+			*server_list_long_json += server_as_long_json(*server);
 			++index;
 			break;
 		}
@@ -668,7 +670,7 @@ Jupiter::ReadableString *handle_server_list_long_page(const Jupiter::ReadableStr
 		if (server->isConnected() && server->isFullyConnected())
 		{
 			*server_list_long_json += ",\n\t"_jrs;
-			*server_list_long_json += server_as_long_json(server);
+			*server_list_long_json += server_as_long_json(*server);
 		}
 		++index;
 	}

@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2014-2016 Jessica James.
+ * Copyright (C) 2014-2017 Jessica James.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -143,7 +143,7 @@ namespace RenX
 		* @param player Data of the player to be banned
 		* @param length Duration of the ban
 		*/
-		void add(RenX::Server *server, const RenX::PlayerInfo *player, const Jupiter::ReadableString &banner, const Jupiter::ReadableString &reason, std::chrono::seconds length, uint16_t flags = RenX::BanDatabase::Entry::FLAG_TYPE_GAME);
+		void add(RenX::Server *server, const RenX::PlayerInfo &player, const Jupiter::ReadableString &banner, const Jupiter::ReadableString &reason, std::chrono::seconds length, uint16_t flags = RenX::BanDatabase::Entry::FLAG_TYPE_GAME);
 
 		/**
 		* @brief Adds a ban entry for a set of player information and immediately writes it to the database.
