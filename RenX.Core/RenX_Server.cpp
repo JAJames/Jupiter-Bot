@@ -499,7 +499,7 @@ void RenX::Server::banCheck(RenX::PlayerInfo &player)
 	uint32_t netmask;
 
 	RenX::BanDatabase::Entry *last_to_expire[7];
-	for (size_t index = 0; index != sizeof(last_to_expire); ++index)
+	for (size_t index = 0; index != sizeof(last_to_expire) / sizeof(RenX::BanDatabase::Entry *); ++index)
 		last_to_expire[index] = nullptr;
 
 	auto handle_type = [&entry, &last_to_expire](size_t index)

@@ -61,7 +61,7 @@ DEL /F /Q "..\Jupiter Bot.zip"
 GOTO EOF
 
 :BinaryCopy:
-ROBOCOPY "%Platform%\Release\\" "..\Jupiter Bot Binaries\\" *.dll *.exe /S /xf Tester.exe
+ROBOCOPY "bin\%Platform%\Release\\" "..\Jupiter Bot Binaries\\" *.dll *.exe /S /xf Tester.exe
 ROBOCOPY "Configs\\" "..\Jupiter Bot Binaries\Configs\\" *
 ROBOCOPY ".\\" "..\Jupiter Bot Binaries\\" *.ini *.txt LICENSE
 "C:\Program Files\WinRAR\WinRAR.exe" a -r "..\Jupiter Bot Binaries.zip" "..\Jupiter Bot Binaries"
@@ -69,7 +69,7 @@ GOTO EOF
 
 :SourceCopy:
 ROBOCOPY ".\\" "..\Jupiter Bot Source\\" *.* /S /XD Win32 x64 .*
-ROBOCOPY "%Platform%\Release\\" "..\Jupiter Bot Source\%Platform%\Release\\" *.dll *.exe /S
+ROBOCOPY "bin\%Platform%\Release\\" "..\Jupiter Bot Source\bin\%Platform%\Release\\" *.dll *.exe /S
 ROBOCOPY "Configs\\" "..\Jupiter Bot Source\Configs\\" *
 ROBOCOPY ".\\" "..\Jupiter Bot Source\\" *.ini *.txt LICENSE
 "C:\Program Files\WinRAR\WinRAR.exe" a -r "..\Jupiter Bot.zip" "..\Jupiter Bot Source"

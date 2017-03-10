@@ -160,3 +160,4 @@ $RECYCLE.BIN/
 
 # Visual Studio DB
 *.VC.db
+.vs/
