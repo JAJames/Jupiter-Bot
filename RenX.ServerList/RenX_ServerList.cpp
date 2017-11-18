@@ -52,7 +52,7 @@ Jupiter::String jsonify(const Jupiter::ReadableString &in_str)
 			result += '\"';
 		}
 		else if (*ptr < 0x20) // control characters
-			result.aformat("\\u00%x", *ptr);
+			result.aformat("\\u%04x", *ptr);
 		else if ((*ptr & 0x80) != 0) // UTF-8 sequence; copy to bypass above processing
 		{
 			result += *ptr;
@@ -105,7 +105,7 @@ Jupiter::String sanitize_game(const Jupiter::ReadableString &in_str)
 			result += '\"';
 		}
 		else if (*ptr < 0x20) // control characters
-			result.aformat("\\u00%x", *ptr);
+			result.aformat("\\u%04x", *ptr);
 		else if (*ptr == '~') // Game server list control character
 			result += "\\u007E"_jrs;
 		else if (*ptr == ';') // Game server list control character
