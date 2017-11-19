@@ -223,7 +223,7 @@ Jupiter::StringS server_as_json(const RenX::Server &server)
 	Jupiter::String server_map = jsonify(server.getMap().name);
 	Jupiter::String server_version = jsonify(server.getGameVersion());
 
-	server_json_block.format(R"json({"Name":"%.*s","Current Map":"%.*s","Bots":%u,"Players":%u,"Game Version":"%.*s","Variables":{"Mine Limit":%d,"bSteamRequired":%s,"bPrivateMessageTeamOnly":%s,"bPassworded":%s,"bAllowPrivateMessaging":%s,"Player Limit":%d,"Vehicle Limit":%d,"bAutoBalanceTeams":%s,"Team Mode":%d,"bSpawnCrates":%s,"CrateRespawnAfterPickup":%f,"Time Limit":%d},"Port":%u,"IP":"%.*s")json",
+	server_json_block.format(R"json({"Name":"%.*s","Current Map":"%.*s","Bots":%u,"Players":%u,"Game Version":"%.*s","Variables":{"Mine Limit":%d,"bSteamRequired":%s,"bPrivateMessageTeamOnly":%s,"bPassworded":%s,"bAllowPrivateMessaging":%s,"bRanked":%s,"Game Type":%d,"Player Limit":%d,"Vehicle Limit":%d,"bAutoBalanceTeams":%s,"Team Mode":%d,"bSpawnCrates":%s,"CrateRespawnAfterPickup":%f,"Time Limit":%d},"Port":%u,"IP":"%.*s")json",
 		server_name.size(), server_name.ptr(),
 		server_map.size(), server_map.ptr(),
 		server.getBotCount(),
@@ -234,6 +234,8 @@ Jupiter::StringS server_as_json(const RenX::Server &server)
 		json_bool_as_cstring(server.isPrivateMessageTeamOnly()),
 		json_bool_as_cstring(server.isPassworded()),
 		json_bool_as_cstring(server.isPrivateMessagingEnabled()),
+		json_bool_as_cstring(server.isRanked()),
+		server.getGameType(),
 		server.getPlayerLimit(),
 		server.getVehicleLimit(),
 		json_bool_as_cstring(server.getTeamMode() == 3),
