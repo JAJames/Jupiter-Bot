@@ -29,7 +29,8 @@ bool RenX_Ladder_Weekly_TimePlugin::initialize()
 	this->database.setName(this->config.get("DatabaseName"_jrs, "Weekly"_jrs));
 	this->database.setOutputTimes(this->config.get<bool>("OutputTimes"_jrs, false));
 
-	this->last_sorted_day = gmtime(std::addressof<const time_t>(time(0)))->tm_wday;
+	__time64_t tm_Time = time(0);
+	this->last_sorted_day = gmtime(std::addressof<const time_t>(tm_Time))->tm_wday;
 	this->reset_day = this->config.get<int>("ResetDay"_jrs);
 	this->database.OnPreUpdateLadder = OnPreUpdateLadder;
 
@@ -45,7 +46,8 @@ RenX_Ladder_Weekly_TimePlugin pluginInstance;
 
 void OnPreUpdateLadder(RenX::LadderDatabase &database, RenX::Server &, const RenX::TeamType &)
 {
-	tm *tm_ptr = gmtime(std::addressof<const time_t>(time(0)));
+	__time64_t tm_Time = time(0);
+	tm *tm_ptr = gmtime(std::addressof<const time_t>(tm_Time));
 	if (pluginInstance.last_sorted_day != tm_ptr->tm_wday && tm_ptr->tm_wday == pluginInstance.reset_day)
 		database.erase();
 	pluginInstance.last_sorted_day = tm_ptr->tm_wday;

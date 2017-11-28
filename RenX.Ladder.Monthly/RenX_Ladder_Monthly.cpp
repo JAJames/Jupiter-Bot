@@ -29,7 +29,9 @@ bool RenX_Ladder_Monthly_TimePlugin::initialize()
 	this->database.setName(this->config.get("DatabaseName"_jrs, "Monthly"_jrs));
 	this->database.setOutputTimes(this->config.get<bool>("OutputTimes"_jrs, false));
 
-	this->last_sorted_month = gmtime(std::addressof<const time_t>(time(0)))->tm_mon;
+	__time64_t tm_Time;
+	tm_Time = time(0);
+	this->last_sorted_month = gmtime(std::addressof<const time_t>(tm_Time))->tm_mon;
 	this->database.OnPreUpdateLadder = OnPreUpdateLadder;
 
 	// Force database to default, if desired
@@ -44,7 +46,8 @@ RenX_Ladder_Monthly_TimePlugin pluginInstance;
 
 void OnPreUpdateLadder(RenX::LadderDatabase &database, RenX::Server &, const RenX::TeamType &)
 {
-	tm *tm_ptr = gmtime(std::addressof<const time_t>(time(0)));
+	__time64_t tm_Time = time(0);
+	tm *tm_ptr = gmtime(std::addressof<const time_t>(tm_Time));
 	if (pluginInstance.last_sorted_month != tm_ptr->tm_mon)
 		database.erase();
 	pluginInstance.last_sorted_month = tm_ptr->tm_mon;

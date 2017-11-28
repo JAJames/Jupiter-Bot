@@ -557,9 +557,12 @@ void RenX::Server::banCheck(RenX::PlayerInfo &player)
 	}
 
 	char timeStr[256];
+	__time64_t tm_Time;
 	if (last_to_expire[0] != nullptr) // Game ban
 	{
-		strftime(timeStr, sizeof(timeStr), "%b %d %Y at %H:%M:%S", localtime(std::addressof<const time_t>(std::chrono::system_clock::to_time_t(last_to_expire[0]->timestamp + last_to_expire[0]->length))));
+		
+		tm_Time = std::chrono::system_clock::to_time_t(last_to_expire[0]->timestamp + last_to_expire[0]->length);
+		strftime(timeStr, sizeof(timeStr), "%b %d %Y at %H:%M:%S", localtime(std::addressof<const time_t>(tm_Time)));
 		if (last_to_expire[0]->length == std::chrono::seconds::zero())
 			this->forceKickPlayer(player, Jupiter::StringS::Format("You were permanently banned from %.*s on %s for: %.*s", RenX::Server::ban_from_str.size(), RenX::Server::ban_from_str.ptr(), timeStr, last_to_expire[0]->reason.size(), last_to_expire[0]->reason.ptr()));
 		else
@@ -571,7 +574,8 @@ void RenX::Server::banCheck(RenX::PlayerInfo &player)
 	{
 		if (last_to_expire[1] != nullptr) // Chat ban
 		{
-			strftime(timeStr, sizeof(timeStr), "%b %d %Y at %H:%M:%S", localtime(std::addressof<const time_t>(std::chrono::system_clock::to_time_t(last_to_expire[1]->timestamp + last_to_expire[1]->length))));
+			tm_Time = std::chrono::system_clock::to_time_t(last_to_expire[1]->timestamp + last_to_expire[1]->length);
+			strftime(timeStr, sizeof(timeStr), "%b %d %Y at %H:%M:%S", localtime(std::addressof<const time_t>(tm_Time)));
 			this->mute(player);
 			if (last_to_expire[1]->length == std::chrono::seconds::zero())
 				this->sendMessage(player, Jupiter::StringS::Format("You were permanently muted on this server on %s for: %.*s", timeStr, last_to_expire[1]->reason.size(), last_to_expire[1]->reason.ptr()));
@@ -582,7 +586,8 @@ void RenX::Server::banCheck(RenX::PlayerInfo &player)
 		}
 		else if (last_to_expire[2] != nullptr) // Bot ban
 		{
-			strftime(timeStr, sizeof(timeStr), "%b %d %Y at %H:%M:%S", localtime(std::addressof<const time_t>(std::chrono::system_clock::to_time_t(last_to_expire[2]->timestamp + last_to_expire[2]->length))));
+			tm_Time = std::chrono::system_clock::to_time_t(last_to_expire[2]->timestamp + last_to_expire[2]->length);
+			strftime(timeStr, sizeof(timeStr), "%b %d %Y at %H:%M:%S", localtime(std::addressof<const time_t>(tm_Time)));
 			if (last_to_expire[2]->length == std::chrono::seconds::zero())
 				this->sendMessage(player, Jupiter::StringS::Format("You were permanently bot-muted on this server on %s for: %.*s", timeStr, last_to_expire[2]->reason.size(), last_to_expire[2]->reason.ptr()));
 			else
@@ -590,7 +595,8 @@ void RenX::Server::banCheck(RenX::PlayerInfo &player)
 		}
 		if (last_to_expire[3] != nullptr) // Vote ban
 		{
-			strftime(timeStr, sizeof(timeStr), "%b %d %Y at %H:%M:%S", localtime(std::addressof<const time_t>(std::chrono::system_clock::to_time_t(last_to_expire[3]->timestamp + last_to_expire[3]->length))));
+			tm_Time = std::chrono::system_clock::to_time_t(last_to_expire[3]->timestamp + last_to_expire[3]->length);
+			strftime(timeStr, sizeof(timeStr), "%b %d %Y at %H:%M:%S", localtime(std::addressof<const time_t>(tm_Time)));
 			if (last_to_expire[3]->length == std::chrono::seconds::zero())
 				this->sendMessage(player, Jupiter::StringS::Format("You were permanently vote-muted on this server on %s for: %.*s", timeStr, last_to_expire[3]->reason.size(), last_to_expire[3]->reason.ptr()));
 			else
@@ -599,7 +605,8 @@ void RenX::Server::banCheck(RenX::PlayerInfo &player)
 		if (last_to_expire[4] != nullptr) // Mine ban
 		{
 			this->mineBan(player);
-			strftime(timeStr, sizeof(timeStr), "%b %d %Y at %H:%M:%S", localtime(std::addressof<const time_t>(std::chrono::system_clock::to_time_t(last_to_expire[4]->timestamp + last_to_expire[4]->length))));
+			tm_Time = std::chrono::system_clock::to_time_t(last_to_expire[4]->timestamp + last_to_expire[4]->length);
+			strftime(timeStr, sizeof(timeStr), "%b %d %Y at %H:%M:%S", localtime(std::addressof<const time_t>(tm_Time)));
 			if (last_to_expire[4]->length == std::chrono::seconds::zero())
 				this->sendMessage(player, Jupiter::StringS::Format("You were permanently mine-banned on this server on %s for: %.*s", timeStr, last_to_expire[4]->reason.size(), last_to_expire[4]->reason.ptr()));
 			else
@@ -607,7 +614,8 @@ void RenX::Server::banCheck(RenX::PlayerInfo &player)
 		}
 		if (last_to_expire[5] != nullptr) // Ladder ban
 		{
-			strftime(timeStr, sizeof(timeStr), "%b %d %Y at %H:%M:%S", localtime(std::addressof<const time_t>(std::chrono::system_clock::to_time_t(last_to_expire[5]->timestamp + last_to_expire[5]->length))));
+			tm_Time = std::chrono::system_clock::to_time_t(last_to_expire[5]->timestamp + last_to_expire[5]->length);
+			strftime(timeStr, sizeof(timeStr), "%b %d %Y at %H:%M:%S", localtime(std::addressof<const time_t>(tm_Time)));
 			if (last_to_expire[5]->length == std::chrono::seconds::zero())
 				this->sendMessage(player, Jupiter::StringS::Format("You were permanently ladder-banned on this server on %s for: %.*s", timeStr, last_to_expire[5]->reason.size(), last_to_expire[5]->reason.ptr()));
 			else
