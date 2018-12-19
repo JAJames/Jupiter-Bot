@@ -450,7 +450,7 @@ void RenX_ServerListPlugin::addServerToServerList(RenX::Server &server)
 
 	// append to server_list_json
 
-	if (RenX_ServerListPlugin::server_list_json.isEmpty())
+	if (RenX_ServerListPlugin::server_list_json.size() <= 2)
 	{
 		RenX_ServerListPlugin::server_list_json = '[';
 		RenX_ServerListPlugin::server_list_json += server_as_json(server);
@@ -533,17 +533,15 @@ void RenX_ServerListPlugin::addServerToServerList(RenX::Server &server)
 
 		auto node = server.players.begin();
 
-		while (node != server.players.end())
+		if (node != server.players.end())
 		{
-			if (node->isBot == false)
-			{
-				server_json_block += "{\"Name\":\""_jrs;
-				server_json_block += jsonify(node->name);
-				server_json_block += "\"}"_jrs;
-
-				++node;
-				break;
-			}
+			server_json_block += "{\"Name\":\""_jrs;
+			server_json_block += jsonify(node->name);
+			server_json_block += "\", \"isBot\":"_jrs;
+			server_json_block += json_bool_as_cstring(node->isBot);
+			server_json_block += ", \"Team\":"_jrs;
+			server_json_block.aformat("%d", static_cast<int>(node->team));
+			server_json_block += "}"_jrs;
 
 			++node;
 		}
@@ -552,7 +550,11 @@ void RenX_ServerListPlugin::addServerToServerList(RenX::Server &server)
 		{
 			server_json_block += ",{\"Name\":\""_jrs;
 			server_json_block += jsonify(node->name);
-			server_json_block += "\"}"_jrs;
+			server_json_block += "\", \"isBot\":"_jrs;
+			server_json_block += json_bool_as_cstring(node->isBot);
+			server_json_block += ", \"Team\":"_jrs;
+			server_json_block.aformat("%d", static_cast<int>(node->team));
+			server_json_block += "}"_jrs;
 
 			++node;
 		}
@@ -571,7 +573,7 @@ void RenX_ServerListPlugin::updateServerList()
 	size_t index = 0;
 	RenX::Server *server;
 
-	// regenerate server_list_json and server_list_Game
+	// regenerate server_list_json and server_list_Game 
 
 	RenX_ServerListPlugin::server_list_json = '[';
 	RenX_ServerListPlugin::server_list_game = server_list_game_header;
