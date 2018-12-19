@@ -24,12 +24,13 @@ using namespace Jupiter::literals;
 
 bool RenX_Ladder_Yearly_TimePlugin::initialize()
 {
+	time_t current_time = time(0);
 	// Load database
 	this->database.process_file(this->config.get("LadderDatabase"_jrs, "Ladder.Yearly.db"_jrs));
 	this->database.setName(this->config.get("DatabaseName"_jrs, "Yearly"_jrs));
 	this->database.setOutputTimes(this->config.get<bool>("OutputTimes"_jrs, false));
 
-	this->last_sorted_year = gmtime(std::addressof<const time_t>(time(0)))->tm_year;
+	this->last_sorted_year = gmtime(&current_time)->tm_year;
 	this->database.OnPreUpdateLadder = OnPreUpdateLadder;
 
 	// Force database to default, if desired
@@ -44,7 +45,8 @@ RenX_Ladder_Yearly_TimePlugin pluginInstance;
 
 void OnPreUpdateLadder(RenX::LadderDatabase &database, RenX::Server &, const RenX::TeamType &)
 {
-	tm *tm_ptr = gmtime(std::addressof<const time_t>(time(0)));
+	time_t current_time = time(0);
+	tm *tm_ptr = gmtime(&current_time);
 	if (pluginInstance.last_sorted_year != tm_ptr->tm_year)
 		database.erase();
 	pluginInstance.last_sorted_year = tm_ptr->tm_year;
