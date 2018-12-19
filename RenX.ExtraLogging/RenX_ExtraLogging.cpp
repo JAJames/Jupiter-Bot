@@ -25,7 +25,8 @@ using namespace Jupiter::literals;
 
 RenX_ExtraLoggingPlugin::RenX_ExtraLoggingPlugin()
 {
-	RenX_ExtraLoggingPlugin::day = localtime(std::addressof<const time_t>(time(nullptr)))->tm_yday;
+    time_t current_time = time(nullptr);
+    RenX_ExtraLoggingPlugin::day = localtime(&current_time)->tm_yday;
 }
 
 RenX_ExtraLoggingPlugin::~RenX_ExtraLoggingPlugin()
@@ -76,7 +77,8 @@ int RenX_ExtraLoggingPlugin::think()
 {
 	if (RenX_ExtraLoggingPlugin::file != nullptr && RenX_ExtraLoggingPlugin::newDayFmt.isNotEmpty())
 	{
-		int currentDay = localtime(std::addressof<const time_t>(time(nullptr)))->tm_yday;
+		time_t current_time = time(nullptr);
+		int currentDay = localtime(&current_time)->tm_yday;
 		if (currentDay != RenX_ExtraLoggingPlugin::day)
 		{
 			RenX_ExtraLoggingPlugin::day = currentDay;

@@ -1883,8 +1883,9 @@ void BanSearchIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString
 				entry = entries.get(i);
 				if (isMatch(type))
 				{
+					time_t current_time = std::chrono::system_clock::to_time_t(entry->timestamp);
 					Jupiter::StringS &ip_str = Jupiter::Socket::ntop4(entry->ip);
-					strftime(timeStr, sizeof(timeStr), "%b %d %Y, %H:%M:%S", localtime(std::addressof<const time_t>(std::chrono::system_clock::to_time_t(entry->timestamp))));
+					strftime(timeStr, sizeof(timeStr), "%b %d %Y, %H:%M:%S", localtime(&current_time));
 
 					if ((entry->flags & 0x7FFF) == 0)
 						types = " NULL;"_jrs;
@@ -2347,8 +2348,9 @@ void ExemptionSearchIRCCommand::trigger(IRC_Bot *source, const Jupiter::Readable
 				entry = entries.get(i);
 				if (isMatch(type))
 				{
+					time_t current_time = std::chrono::system_clock::to_time_t(entry->timestamp);
 					Jupiter::StringS &ip_str = Jupiter::Socket::ntop4(entry->ip);
-					strftime(timeStr, sizeof(timeStr), "%b %d %Y, %H:%M:%S", localtime(std::addressof<const time_t>(std::chrono::system_clock::to_time_t(entry->timestamp))));
+					strftime(timeStr, sizeof(timeStr), "%b %d %Y, %H:%M:%S", localtime(&current_time));
 
 					if ((entry->flags & 0xFF) == 0)
 						types = " NULL;"_jrs;
