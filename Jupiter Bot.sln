@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.26228.4
+VisualStudioVersion = 15.0.26228.9
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Bot", "Bot\Bot.vcxproj", "{C188871B-5F32-4946-B301-24CA2EBB275D}"
 	ProjectSection(ProjectDependencies) = postProject
@@ -238,6 +238,10 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Commands", "Commands", "{963CB590-B810-4DEE-8AA2-01077634616C}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Bot", "Bot", "{434670E6-C23F-4C53-B77F-64ABAB831AF3}"
+	ProjectSection(SolutionItems) = preProject
+		Jupiter Bot.props = Jupiter Bot.props
+		Plugin.props = Plugin.props
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
