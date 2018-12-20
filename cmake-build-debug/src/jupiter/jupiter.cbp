@@ -1,0 +1,270 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CodeBlocks_project_file>
+	<FileVersion major="1" minor="6"/>
+	<Project>
+		<Option title="jupiter"/>
+		<Option makefile_is_custom="1"/>
+		<Option compiler="gcc"/>
+		<Option virtualFolders="CMake Files\;CMake Files\src\;CMake Files\src\jupiter\;CMake Files\src\jupiter\build\;CMake Files\src\jupiter\src\;CMake Files\src\jupiter\src\common\;CMake Files\src\Bot\;CMake Files\src\Bot\src\;CMake Files\src\Plugins\;CMake Files\src\Plugins\ChannelRelay\;CMake Files\src\Plugins\CoreCommands\;CMake Files\src\Plugins\ExtraCommands\;CMake Files\src\Plugins\FunCommands\;CMake Files\src\Plugins\HTTPServer\;CMake Files\src\Plugins\IRC.Core\;CMake Files\src\Plugins\PluginManager\;CMake Files\src\Plugins\SetJoin\;CMake Files\src\Plugins\RenX\;CMake Files\src\Plugins\RenX\RenX.Core\;CMake Files\src\Plugins\RenX\RenX.AlwaysRecord\;CMake Files\src\Plugins\RenX\RenX.Announcements\;CMake Files\src\Plugins\RenX\RenX.Commands\;CMake Files\src\Plugins\RenX\RenX.ExcessiveHeadshots\;CMake Files\src\Plugins\RenX\RenX.ExtraLogging\;CMake Files\src\Plugins\RenX\RenX.Greetings\;CMake Files\src\Plugins\RenX\RenX.HybridUUID\;CMake Files\src\Plugins\RenX\RenX.IRCJoin\;CMake Files\src\Plugins\RenX\RenX.Ladder\;CMake Files\src\Plugins\RenX\RenX.Ladder.All-Time\;CMake Files\src\Plugins\RenX\RenX.Ladder.Daily\;CMake Files\src\Plugins\RenX\RenX.Ladder.Monthly\;CMake Files\src\Plugins\RenX\RenX.Ladder.Web\;CMake Files\src\Plugins\RenX\RenX.Ladder.Weekly\;CMake Files\src\Plugins\RenX\RenX.Ladder.Yearly\;CMake Files\src\Plugins\RenX\RenX.Listen\;CMake Files\src\Plugins\RenX\RenX.Logging\;CMake Files\src\Plugins\RenX\RenX.Medals\;CMake Files\src\Plugins\RenX\RenX.MinPlayers\;CMake Files\src\Plugins\RenX\RenX.ModSystem\;CMake Files\src\Plugins\RenX\RenX.NicknameUUID\;CMake Files\src\Plugins\RenX\RenX.Plugin.Template\;CMake Files\src\Plugins\RenX\RenX.ServerList\;CMake Files\src\Plugins\RenX\RenX.SetJoin\;CMake Files\src\Plugins\RenX\RenX.Warn\;CMake Files\build\;CMake Files\build\GNU\;"/>
+		<Build>
+			<Target title="all">
+				<Option working_dir="/mnt/c/dev/Projects/Jupiter Bot/cmake-build-debug/src/jupiter"/>
+				<Option type="4"/>
+				<MakeCommands>
+					<Build command="/usr/bin/make -j12 -f &quot;/mnt/c/dev/Projects/Jupiter\ Bot/cmake-build-debug/src/jupiter/Makefile&quot;  VERBOSE=1 all"/>
+					<CompileFile command="/usr/bin/make -j12 -f &quot;/mnt/c/dev/Projects/Jupiter\ Bot/cmake-build-debug/src/jupiter/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j12 -f &quot;/mnt/c/dev/Projects/Jupiter\ Bot/cmake-build-debug/src/jupiter/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j12 -f &quot;/mnt/c/dev/Projects/Jupiter\ Bot/cmake-build-debug/src/jupiter/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="jupiter">
+				<Option output="/mnt/c/dev/Projects/Jupiter Bot/cmake-build-debug/src/jupiter/src/common/libjupiter.so" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="/mnt/c/dev/Projects/Jupiter Bot/cmake-build-debug/src/jupiter/src/common"/>
+				<Option object_output="./"/>
+				<Option type="3"/>
+				<Option compiler="gcc"/>
+				<Compiler>
+					<Add directory="/mnt/c/dev/Projects/Jupiter Bot/src/jupiter/src/common/../include"/>
+					<Add directory="/mnt/c/dev/Projects/Jupiter Bot/src/jupiter/src/common/../include/Jupiter"/>
+					<Add directory="/usr/include/c++/8"/>
+					<Add directory="/usr/include/x86_64-linux-gnu/c++/8"/>
+					<Add directory="/usr/include/c++/8/backward"/>
+					<Add directory="/usr/lib/gcc/x86_64-linux-gnu/8/include"/>
+					<Add directory="/usr/local/include"/>
+					<Add directory="/usr/lib/gcc/x86_64-linux-gnu/8/include-fixed"/>
+					<Add directory="/usr/include/x86_64-linux-gnu"/>
+					<Add directory="/usr/include"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="/usr/bin/make -j12 -f &quot;/mnt/c/dev/Projects/Jupiter\ Bot/cmake-build-debug/src/jupiter/src/common/Makefile&quot;  VERBOSE=1 jupiter"/>
+					<CompileFile command="/usr/bin/make -j12 -f &quot;/mnt/c/dev/Projects/Jupiter\ Bot/cmake-build-debug/src/jupiter/src/common/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j12 -f &quot;/mnt/c/dev/Projects/Jupiter\ Bot/cmake-build-debug/src/jupiter/src/common/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j12 -f &quot;/mnt/c/dev/Projects/Jupiter\ Bot/cmake-build-debug/src/jupiter/src/common/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="jupiter/fast">
+				<Option output="/mnt/c/dev/Projects/Jupiter Bot/cmake-build-debug/src/jupiter/src/common/libjupiter.so" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="/mnt/c/dev/Projects/Jupiter Bot/cmake-build-debug/src/jupiter/src/common"/>
+				<Option object_output="./"/>
+				<Option type="3"/>
+				<Option compiler="gcc"/>
+				<Compiler>
+					<Add directory="/mnt/c/dev/Projects/Jupiter Bot/src/jupiter/src/common/../include"/>
+					<Add directory="/mnt/c/dev/Projects/Jupiter Bot/src/jupiter/src/common/../include/Jupiter"/>
+					<Add directory="/usr/include/c++/8"/>
+					<Add directory="/usr/include/x86_64-linux-gnu/c++/8"/>
+					<Add directory="/usr/include/c++/8/backward"/>
+					<Add directory="/usr/lib/gcc/x86_64-linux-gnu/8/include"/>
+					<Add directory="/usr/local/include"/>
+					<Add directory="/usr/lib/gcc/x86_64-linux-gnu/8/include-fixed"/>
+					<Add directory="/usr/include/x86_64-linux-gnu"/>
+					<Add directory="/usr/include"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="/usr/bin/make -j12 -f &quot;/mnt/c/dev/Projects/Jupiter\ Bot/cmake-build-debug/src/jupiter/src/common/Makefile&quot;  VERBOSE=1 jupiter/fast"/>
+					<CompileFile command="/usr/bin/make -j12 -f &quot;/mnt/c/dev/Projects/Jupiter\ Bot/cmake-build-debug/src/jupiter/src/common/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j12 -f &quot;/mnt/c/dev/Projects/Jupiter\ Bot/cmake-build-debug/src/jupiter/src/common/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j12 -f &quot;/mnt/c/dev/Projects/Jupiter\ Bot/cmake-build-debug/src/jupiter/src/common/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+		</Build>
+		<Unit filename="/mnt/c/dev/Projects/Jupiter Bot/src/jupiter/src/common/Base64.cpp">
+			<Option target="jupiter"/>
+		</Unit>
+		<Unit filename="/mnt/c/dev/Projects/Jupiter Bot/src/jupiter/src/common/Command.cpp">
+			<Option target="jupiter"/>
+		</Unit>
+		<Unit filename="/mnt/c/dev/Projects/Jupiter Bot/src/jupiter/src/common/Config.cpp">
+			<Option target="jupiter"/>
+		</Unit>
+		<Unit filename="/mnt/c/dev/Projects/Jupiter Bot/src/jupiter/src/common/DataBuffer.cpp">
+			<Option target="jupiter"/>
+		</Unit>
+		<Unit filename="/mnt/c/dev/Projects/Jupiter Bot/src/jupiter/src/common/Database.cpp">
+			<Option target="jupiter"/>
+		</Unit>
+		<Unit filename="/mnt/c/dev/Projects/Jupiter Bot/src/jupiter/src/common/File.cpp">
+			<Option target="jupiter"/>
+		</Unit>
+		<Unit filename="/mnt/c/dev/Projects/Jupiter Bot/src/jupiter/src/common/Functions.c">
+			<Option target="jupiter"/>
+		</Unit>
+		<Unit filename="/mnt/c/dev/Projects/Jupiter Bot/src/jupiter/src/common/GenericCommand.cpp">
+			<Option target="jupiter"/>
+		</Unit>
+		<Unit filename="/mnt/c/dev/Projects/Jupiter Bot/src/jupiter/src/common/HTTP_Server.cpp">
+			<Option target="jupiter"/>
+		</Unit>
+		<Unit filename="/mnt/c/dev/Projects/Jupiter Bot/src/jupiter/src/common/Hash.cpp">
+			<Option target="jupiter"/>
+		</Unit>
+		<Unit filename="/mnt/c/dev/Projects/Jupiter Bot/src/jupiter/src/common/INIConfig.cpp">
+			<Option target="jupiter"/>
+		</Unit>
+		<Unit filename="/mnt/c/dev/Projects/Jupiter Bot/src/jupiter/src/common/IRC_Client.cpp">
+			<Option target="jupiter"/>
+		</Unit>
+		<Unit filename="/mnt/c/dev/Projects/Jupiter Bot/src/jupiter/src/common/Jupiter.cpp">
+			<Option target="jupiter"/>
+		</Unit>
+		<Unit filename="/mnt/c/dev/Projects/Jupiter Bot/src/jupiter/src/common/Plugin.cpp">
+			<Option target="jupiter"/>
+		</Unit>
+		<Unit filename="/mnt/c/dev/Projects/Jupiter Bot/src/jupiter/src/common/Rehash.cpp">
+			<Option target="jupiter"/>
+		</Unit>
+		<Unit filename="/mnt/c/dev/Projects/Jupiter Bot/src/jupiter/src/common/SecureSocket.cpp">
+			<Option target="jupiter"/>
+		</Unit>
+		<Unit filename="/mnt/c/dev/Projects/Jupiter Bot/src/jupiter/src/common/Socket.cpp">
+			<Option target="jupiter"/>
+		</Unit>
+		<Unit filename="/mnt/c/dev/Projects/Jupiter Bot/src/jupiter/src/common/TCPSocket.cpp">
+			<Option target="jupiter"/>
+		</Unit>
+		<Unit filename="/mnt/c/dev/Projects/Jupiter Bot/src/jupiter/src/common/Timer.cpp">
+			<Option target="jupiter"/>
+		</Unit>
+		<Unit filename="/mnt/c/dev/Projects/Jupiter Bot/src/jupiter/src/common/UDPSocket.cpp">
+			<Option target="jupiter"/>
+		</Unit>
+		<Unit filename="/mnt/c/dev/Projects/Jupiter Bot/CMakeLists.txt">
+			<Option virtualFolder="CMake Files\"/>
+		</Unit>
+		<Unit filename="/mnt/c/dev/Projects/Jupiter Bot/src/CMakeLists.txt">
+			<Option virtualFolder="CMake Files\src\"/>
+		</Unit>
+		<Unit filename="/mnt/c/dev/Projects/Jupiter Bot/src/jupiter/CMakeLists.txt">
+			<Option virtualFolder="CMake Files\src\jupiter\"/>
+		</Unit>
+		<Unit filename="/mnt/c/dev/Projects/Jupiter Bot/src/jupiter/build/CMakeLists.txt">
+			<Option virtualFolder="CMake Files\src\jupiter\build\"/>
+		</Unit>
+		<Unit filename="/mnt/c/dev/Projects/Jupiter Bot/src/jupiter/src/CMakeLists.txt">
+			<Option virtualFolder="CMake Files\src\jupiter\src\"/>
+		</Unit>
+		<Unit filename="/mnt/c/dev/Projects/Jupiter Bot/src/jupiter/src/common/CMakeLists.txt">
+			<Option virtualFolder="CMake Files\src\jupiter\src\common\"/>
+		</Unit>
+		<Unit filename="/mnt/c/dev/Projects/Jupiter Bot/src/Bot/CMakeLists.txt">
+			<Option virtualFolder="CMake Files\src\Bot\"/>
+		</Unit>
+		<Unit filename="/mnt/c/dev/Projects/Jupiter Bot/src/Bot/src/CMakeLists.txt">
+			<Option virtualFolder="CMake Files\src\Bot\src\"/>
+		</Unit>
+		<Unit filename="/mnt/c/dev/Projects/Jupiter Bot/src/Plugins/CMakeLists.txt">
+			<Option virtualFolder="CMake Files\src\Plugins\"/>
+		</Unit>
+		<Unit filename="/mnt/c/dev/Projects/Jupiter Bot/src/Plugins/ChannelRelay/CMakeLists.txt">
+			<Option virtualFolder="CMake Files\src\Plugins\ChannelRelay\"/>
+		</Unit>
+		<Unit filename="/mnt/c/dev/Projects/Jupiter Bot/src/Plugins/CoreCommands/CMakeLists.txt">
+			<Option virtualFolder="CMake Files\src\Plugins\CoreCommands\"/>
+		</Unit>
+		<Unit filename="/mnt/c/dev/Projects/Jupiter Bot/src/Plugins/ExtraCommands/CMakeLists.txt">
+			<Option virtualFolder="CMake Files\src\Plugins\ExtraCommands\"/>
+		</Unit>
+		<Unit filename="/mnt/c/dev/Projects/Jupiter Bot/src/Plugins/FunCommands/CMakeLists.txt">
+			<Option virtualFolder="CMake Files\src\Plugins\FunCommands\"/>
+		</Unit>
+		<Unit filename="/mnt/c/dev/Projects/Jupiter Bot/src/Plugins/HTTPServer/CMakeLists.txt">
+			<Option virtualFolder="CMake Files\src\Plugins\HTTPServer\"/>
+		</Unit>
+		<Unit filename="/mnt/c/dev/Projects/Jupiter Bot/src/Plugins/IRC.Core/CMakeLists.txt">
+			<Option virtualFolder="CMake Files\src\Plugins\IRC.Core\"/>
+		</Unit>
+		<Unit filename="/mnt/c/dev/Projects/Jupiter Bot/src/Plugins/PluginManager/CMakeLists.txt">
+			<Option virtualFolder="CMake Files\src\Plugins\PluginManager\"/>
+		</Unit>
+		<Unit filename="/mnt/c/dev/Projects/Jupiter Bot/src/Plugins/SetJoin/CMakeLists.txt">
+			<Option virtualFolder="CMake Files\src\Plugins\SetJoin\"/>
+		</Unit>
+		<Unit filename="/mnt/c/dev/Projects/Jupiter Bot/src/Plugins/RenX/CMakeLists.txt">
+			<Option virtualFolder="CMake Files\src\Plugins\RenX\"/>
+		</Unit>
+		<Unit filename="/mnt/c/dev/Projects/Jupiter Bot/src/Plugins/RenX/RenX.Core/CMakeLists.txt">
+			<Option virtualFolder="CMake Files\src\Plugins\RenX\RenX.Core\"/>
+		</Unit>
+		<Unit filename="/mnt/c/dev/Projects/Jupiter Bot/src/Plugins/RenX/RenX.AlwaysRecord/CMakeLists.txt">
+			<Option virtualFolder="CMake Files\src\Plugins\RenX\RenX.AlwaysRecord\"/>
+		</Unit>
+		<Unit filename="/mnt/c/dev/Projects/Jupiter Bot/src/Plugins/RenX/RenX.Announcements/CMakeLists.txt">
+			<Option virtualFolder="CMake Files\src\Plugins\RenX\RenX.Announcements\"/>
+		</Unit>
+		<Unit filename="/mnt/c/dev/Projects/Jupiter Bot/src/Plugins/RenX/RenX.Commands/CMakeLists.txt">
+			<Option virtualFolder="CMake Files\src\Plugins\RenX\RenX.Commands\"/>
+		</Unit>
+		<Unit filename="/mnt/c/dev/Projects/Jupiter Bot/src/Plugins/RenX/RenX.ExcessiveHeadshots/CMakeLists.txt">
+			<Option virtualFolder="CMake Files\src\Plugins\RenX\RenX.ExcessiveHeadshots\"/>
+		</Unit>
+		<Unit filename="/mnt/c/dev/Projects/Jupiter Bot/src/Plugins/RenX/RenX.ExtraLogging/CMakeLists.txt">
+			<Option virtualFolder="CMake Files\src\Plugins\RenX\RenX.ExtraLogging\"/>
+		</Unit>
+		<Unit filename="/mnt/c/dev/Projects/Jupiter Bot/src/Plugins/RenX/RenX.Greetings/CMakeLists.txt">
+			<Option virtualFolder="CMake Files\src\Plugins\RenX\RenX.Greetings\"/>
+		</Unit>
+		<Unit filename="/mnt/c/dev/Projects/Jupiter Bot/src/Plugins/RenX/RenX.HybridUUID/CMakeLists.txt">
+			<Option virtualFolder="CMake Files\src\Plugins\RenX\RenX.HybridUUID\"/>
+		</Unit>
+		<Unit filename="/mnt/c/dev/Projects/Jupiter Bot/src/Plugins/RenX/RenX.IRCJoin/CMakeLists.txt">
+			<Option virtualFolder="CMake Files\src\Plugins\RenX\RenX.IRCJoin\"/>
+		</Unit>
+		<Unit filename="/mnt/c/dev/Projects/Jupiter Bot/src/Plugins/RenX/RenX.Ladder/CMakeLists.txt">
+			<Option virtualFolder="CMake Files\src\Plugins\RenX\RenX.Ladder\"/>
+		</Unit>
+		<Unit filename="/mnt/c/dev/Projects/Jupiter Bot/src/Plugins/RenX/RenX.Ladder.All-Time/CMakeLists.txt">
+			<Option virtualFolder="CMake Files\src\Plugins\RenX\RenX.Ladder.All-Time\"/>
+		</Unit>
+		<Unit filename="/mnt/c/dev/Projects/Jupiter Bot/src/Plugins/RenX/RenX.Ladder.Daily/CMakeLists.txt">
+			<Option virtualFolder="CMake Files\src\Plugins\RenX\RenX.Ladder.Daily\"/>
+		</Unit>
+		<Unit filename="/mnt/c/dev/Projects/Jupiter Bot/src/Plugins/RenX/RenX.Ladder.Monthly/CMakeLists.txt">
+			<Option virtualFolder="CMake Files\src\Plugins\RenX\RenX.Ladder.Monthly\"/>
+		</Unit>
+		<Unit filename="/mnt/c/dev/Projects/Jupiter Bot/src/Plugins/RenX/RenX.Ladder.Web/CMakeLists.txt">
+			<Option virtualFolder="CMake Files\src\Plugins\RenX\RenX.Ladder.Web\"/>
+		</Unit>
+		<Unit filename="/mnt/c/dev/Projects/Jupiter Bot/src/Plugins/RenX/RenX.Ladder.Weekly/CMakeLists.txt">
+			<Option virtualFolder="CMake Files\src\Plugins\RenX\RenX.Ladder.Weekly\"/>
+		</Unit>
+		<Unit filename="/mnt/c/dev/Projects/Jupiter Bot/src/Plugins/RenX/RenX.Ladder.Yearly/CMakeLists.txt">
+			<Option virtualFolder="CMake Files\src\Plugins\RenX\RenX.Ladder.Yearly\"/>
+		</Unit>
+		<Unit filename="/mnt/c/dev/Projects/Jupiter Bot/src/Plugins/RenX/RenX.Listen/CMakeLists.txt">
+			<Option virtualFolder="CMake Files\src\Plugins\RenX\RenX.Listen\"/>
+		</Unit>
+		<Unit filename="/mnt/c/dev/Projects/Jupiter Bot/src/Plugins/RenX/RenX.Logging/CMakeLists.txt">
+			<Option virtualFolder="CMake Files\src\Plugins\RenX\RenX.Logging\"/>
+		</Unit>
+		<Unit filename="/mnt/c/dev/Projects/Jupiter Bot/src/Plugins/RenX/RenX.Medals/CMakeLists.txt">
+			<Option virtualFolder="CMake Files\src\Plugins\RenX\RenX.Medals\"/>
+		</Unit>
+		<Unit filename="/mnt/c/dev/Projects/Jupiter Bot/src/Plugins/RenX/RenX.MinPlayers/CMakeLists.txt">
+			<Option virtualFolder="CMake Files\src\Plugins\RenX\RenX.MinPlayers\"/>
+		</Unit>
+		<Unit filename="/mnt/c/dev/Projects/Jupiter Bot/src/Plugins/RenX/RenX.ModSystem/CMakeLists.txt">
+			<Option virtualFolder="CMake Files\src\Plugins\RenX\RenX.ModSystem\"/>
+		</Unit>
+		<Unit filename="/mnt/c/dev/Projects/Jupiter Bot/src/Plugins/RenX/RenX.NicknameUUID/CMakeLists.txt">
+			<Option virtualFolder="CMake Files\src\Plugins\RenX\RenX.NicknameUUID\"/>
+		</Unit>
+		<Unit filename="/mnt/c/dev/Projects/Jupiter Bot/src/Plugins/RenX/RenX.Plugin.Template/CMakeLists.txt">
+			<Option virtualFolder="CMake Files\src\Plugins\RenX\RenX.Plugin.Template\"/>
+		</Unit>
+		<Unit filename="/mnt/c/dev/Projects/Jupiter Bot/src/Plugins/RenX/RenX.ServerList/CMakeLists.txt">
+			<Option virtualFolder="CMake Files\src\Plugins\RenX\RenX.ServerList\"/>
+		</Unit>
+		<Unit filename="/mnt/c/dev/Projects/Jupiter Bot/src/Plugins/RenX/RenX.SetJoin/CMakeLists.txt">
+			<Option virtualFolder="CMake Files\src\Plugins\RenX\RenX.SetJoin\"/>
+		</Unit>
+		<Unit filename="/mnt/c/dev/Projects/Jupiter Bot/src/Plugins/RenX/RenX.Warn/CMakeLists.txt">
+			<Option virtualFolder="CMake Files\src\Plugins\RenX\RenX.Warn\"/>
+		</Unit>
+		<Unit filename="/mnt/c/dev/Projects/Jupiter Bot/build/CMakeLists.txt">
+			<Option virtualFolder="CMake Files\build\"/>
+		</Unit>
+		<Unit filename="/mnt/c/dev/Projects/Jupiter Bot/build/GNU/CMakeLists.txt">
+			<Option virtualFolder="CMake Files\build\GNU\"/>
+		</Unit>
+	</Project>
+</CodeBlocks_project_file>

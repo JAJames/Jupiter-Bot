@@ -1,0 +1,1037 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="CMakeRunConfigurationManager" shouldGenerate="true" shouldDeleteObsolete="true">
+    <generated>
+      <config projectName="jupiter_bot" targetName="CoreCommands" />
+      <config projectName="jupiter_bot" targetName="RenX.HybridUUID" />
+      <config projectName="jupiter_bot" targetName="HTTPServer" />
+      <config projectName="jupiter_bot" targetName="FunCommands" />
+      <config projectName="jupiter_bot" targetName="RenX.Ladder.Weekly" />
+      <config projectName="jupiter_bot" targetName="RenX.Ladder.All-Time" />
+      <config projectName="jupiter_bot" targetName="RenX.Commands" />
+      <config projectName="jupiter_bot" targetName="RenX.SetJoin" />
+      <config projectName="jupiter_bot" targetName="RenX.Core" />
+      <config projectName="jupiter_bot" targetName="RenX.Warn" />
+      <config projectName="jupiter_bot" targetName="RenX.NicknameUUID" />
+      <config projectName="jupiter_bot" targetName="RenX.Ladder.Monthly" />
+      <config projectName="jupiter_bot" targetName="RenX.ExcessiveHeadshots" />
+      <config projectName="jupiter_bot" targetName="SetJoin" />
+      <config projectName="jupiter_bot" targetName="RenX.Listen" />
+      <config projectName="jupiter_bot" targetName="RenX.ServerList" />
+      <config projectName="jupiter_bot" targetName="ChannelRelay" />
+      <config projectName="jupiter_bot" targetName="RenX.IRCJoin" />
+      <config projectName="jupiter_bot" targetName="RenX.ModSystem" />
+      <config projectName="jupiter_bot" targetName="IRC_Core" />
+      <config projectName="jupiter_bot" targetName="RenX.Ladder.Yearly" />
+      <config projectName="jupiter_bot" targetName="RenX.AlwaysRecord" />
+      <config projectName="jupiter_bot" targetName="RenX.MinPlayers" />
+      <config projectName="jupiter_bot" targetName="RenX.Medals" />
+      <config projectName="jupiter_bot" targetName="RenX.Logging" />
+      <config projectName="jupiter_bot" targetName="RenX.Ladder.Daily" />
+      <config projectName="jupiter_bot" targetName="RenX.Announcements" />
+      <config projectName="jupiter_bot" targetName="ExtraCommands" />
+      <config projectName="jupiter_bot" targetName="jupiter" />
+      <config projectName="jupiter_bot" targetName="Bot" />
+      <config projectName="jupiter_bot" targetName="PluginManager" />
+      <config projectName="jupiter_bot" targetName="RenX.Plugin.Template" />
+      <config projectName="jupiter_bot" targetName="RenX.ExtraLogging" />
+      <config projectName="jupiter_bot" targetName="RenX.Ladder" />
+      <config projectName="jupiter_bot" targetName="RenX.Greetings" />
+      <config projectName="jupiter_bot" targetName="RenX.Ladder.Web" />
+    </generated>
+  </component>
+  <component name="CMakeSettings">
+    <configurations>
+      <configuration PROFILE_NAME="Debug" CONFIG_NAME="Debug" />
+    </configurations>
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="c4c0b4a6-052f-42f1-a398-7fff944876bb" name="Default Changelist" comment="">
+      <change afterPath="$PROJECT_DIR$/src/Plugins/ChannelRelay/CMakeLists.txt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/Plugins/CoreCommands/CMakeLists.txt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/Plugins/RenX/CMakeLists.txt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/Plugins/RenX/RenX.AlwaysRecord/CMakeLists.txt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/Plugins/RenX/RenX.Core/CMakeLists.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.gitmodules" beforeDir="false" afterPath="$PROJECT_DIR$/.gitmodules" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.vs/config/applicationhost.config" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Bot/Bot.vcxproj" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Bot/Bot.vcxproj.filters" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Bot/Console_Command.cpp" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Bot/Console_Command.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Bot/IRC_Bot.cpp" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Bot/IRC_Bot.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Bot/IRC_Command.cpp" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Bot/IRC_Command.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Bot/Jupiter_Bot.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Bot/Main.cpp" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Bot/ServerManager.cpp" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Bot/ServerManager.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/ChannelRelay/ChannelRelay.cpp" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/ChannelRelay/ChannelRelay.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/ChannelRelay/ChannelRelay.vcxproj" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/ChannelRelay/ChannelRelay.vcxproj.filters" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/CoreCommands/CoreCommands.cpp" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/CoreCommands/CoreCommands.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/CoreCommands/CoreCommands.vcxproj" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/CoreCommands/CoreCommands.vcxproj.filters" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/ExtraCommands/ExtraCommands.cpp" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/ExtraCommands/ExtraCommands.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/ExtraCommands/ExtraCommands.vcxproj" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/ExtraCommands/ExtraCommands.vcxproj.filters" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/FunCommands/FunCommands.cpp" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/FunCommands/FunCommands.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/FunCommands/FunCommands.vcxproj" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/FunCommands/FunCommands.vcxproj.filters" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/HTTPServer/HTTPServer.cpp" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/HTTPServer/HTTPServer.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/HTTPServer/HTTPServer.vcxproj" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/HTTPServer/HTTPServer.vcxproj.filters" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/IRC.Core/IRC.Core.vcxproj" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/IRC.Core/IRC.Core.vcxproj.filters" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/IRC.Core/IRC_Core.cpp" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/IRC.Core/IRC_Core.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Jupiter" beforeDir="false" afterPath="$PROJECT_DIR$/src/Jupiter" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Jupiter Bot.sln" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plugin.Example/Example.cpp" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plugin.Example/Example.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plugin.Example/Plugin.Example.vcxproj" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plugin.Example/Plugin.Example.vcxproj.filters" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plugin.Template/Example.cpp" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plugin.Template/Example.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plugin.Template/Plugin.Template.vcxproj" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plugin.Template/Plugin.Template.vcxproj.filters" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/PluginManager/PluginManager.cpp" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/PluginManager/PluginManager.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/PluginManager/PluginManager.vcxproj" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/PluginManager/PluginManager.vcxproj.filters" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/RenX.AlwaysRecord/RenX.AlwaysRecord.vcxproj" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/RenX.AlwaysRecord/RenX.AlwaysRecord.vcxproj.filters" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/RenX.AlwaysRecord/RenX_AlwaysRecord.cpp" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/RenX.AlwaysRecord/RenX_AlwaysRecord.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/RenX.Announcements/RenX.Announcements.vcxproj" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/RenX.Announcements/RenX.Announcements.vcxproj.filters" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/RenX.Announcements/RenX_Announcements.cpp" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/RenX.Announcements/RenX_Announcements.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/RenX.Commands/RenX.Commands.vcxproj" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/RenX.Commands/RenX.Commands.vcxproj.filters" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/RenX.Commands/RenX_Commands.cpp" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/RenX.Commands/RenX_Commands.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/RenX.Core/RenX.Core.vcxproj" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/RenX.Core/RenX.Core.vcxproj.filters" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/RenX.Core/RenX.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/RenX.Core/RenX_BanDatabase.cpp" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/RenX.Core/RenX_BanDatabase.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/RenX.Core/RenX_BuildingInfo.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/RenX.Core/RenX_Core.cpp" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/RenX.Core/RenX_Core.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/RenX.Core/RenX_ExemptionDatabase.cpp" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/RenX.Core/RenX_ExemptionDatabase.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/RenX.Core/RenX_Functions.cpp" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/RenX.Core/RenX_Functions.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/RenX.Core/RenX_GameCommand.cpp" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/RenX.Core/RenX_GameCommand.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/RenX.Core/RenX_LadderDatabase.cpp" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/RenX.Core/RenX_LadderDatabase.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/RenX.Core/RenX_Map.cpp" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/RenX.Core/RenX_Map.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/RenX.Core/RenX_PlayerInfo.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/RenX.Core/RenX_Plugin.cpp" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/RenX.Core/RenX_Plugin.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/RenX.Core/RenX_Server.cpp" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/RenX.Core/RenX_Server.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/RenX.Core/RenX_Tags.cpp" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/RenX.Core/RenX_Tags.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/RenX.Core/RenX_TeamInfo.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/RenX.ExcessiveHeadshots/ExcessiveHeadshots.cpp" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/RenX.ExcessiveHeadshots/ExcessiveHeadshots.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/RenX.ExcessiveHeadshots/RenX.ExcessiveHeadshots.vcxproj" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/RenX.ExcessiveHeadshots/RenX.ExcessiveHeadshots.vcxproj.filters" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/RenX.ExtraLogging/RenX.ExtraLogging.vcxproj" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/RenX.ExtraLogging/RenX.ExtraLogging.vcxproj.filters" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/RenX.ExtraLogging/RenX_ExtraLogging.cpp" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/RenX.ExtraLogging/RenX_ExtraLogging.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/RenX.Greetings/RenX.Greetings.vcxproj" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/RenX.Greetings/RenX.Greetings.vcxproj.filters" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/RenX.Greetings/RenX_Greetings.cpp" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/RenX.Greetings/RenX_Greetings.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/RenX.HybridUUID/RenX.HybridUUID.vcxproj" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/RenX.HybridUUID/RenX.HybridUUID.vcxproj.filters" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/RenX.HybridUUID/RenX_HybridUUID.cpp" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/RenX.HybridUUID/RenX_HybridUUID.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/RenX.IRCJoin/RenX.IRCJoin.vcxproj" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/RenX.IRCJoin/RenX.IRCJoin.vcxproj.filters" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/RenX.IRCJoin/RenX_IRCJoin.cpp" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/RenX.IRCJoin/RenX_IRCJoin.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/RenX.Ladder.All-Time/RenX.Ladder.All-Time.vcxproj" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/RenX.Ladder.All-Time/RenX.Ladder.All-Time.vcxproj.filters" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/RenX.Ladder.All-Time/RenX_Ladder_All_Time.cpp" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/RenX.Ladder.All-Time/RenX_Ladder_All_Time.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/RenX.Ladder.Daily/RenX.Ladder.Daily.vcxproj" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/RenX.Ladder.Daily/RenX.Ladder.Daily.vcxproj.filters" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/RenX.Ladder.Daily/RenX_Ladder_Daily.cpp" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/RenX.Ladder.Daily/RenX_Ladder_Daily.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/RenX.Ladder.Monthly/RenX.Ladder.Monthly.vcxproj" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/RenX.Ladder.Monthly/RenX.Ladder.Monthly.vcxproj.filters" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/RenX.Ladder.Monthly/RenX_Ladder_Monthly.cpp" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/RenX.Ladder.Monthly/RenX_Ladder_Monthly.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/RenX.Ladder.Web/RenX.Ladder.Web.vcxproj" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/RenX.Ladder.Web/RenX.Ladder.Web.vcxproj.filters" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/RenX.Ladder.Web/RenX_Ladder_Web.cpp" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/RenX.Ladder.Web/RenX_Ladder_Web.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/RenX.Ladder.Weekly/RenX.Ladder.Weekly.vcxproj" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/RenX.Ladder.Weekly/RenX.Ladder.Weekly.vcxproj.filters" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/RenX.Ladder.Weekly/RenX_Ladder_Weekly.cpp" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/RenX.Ladder.Weekly/RenX_Ladder_Weekly.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/RenX.Ladder.Yearly/RenX.Ladder.Yearly.vcxproj" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/RenX.Ladder.Yearly/RenX.Ladder.Yearly.vcxproj.filters" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/RenX.Ladder.Yearly/RenX_Ladder_Yearly.cpp" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/RenX.Ladder.Yearly/RenX_Ladder_Yearly.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/RenX.Ladder/RenX.Ladder.vcxproj" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/RenX.Ladder/RenX.Ladder.vcxproj.filters" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/RenX.Ladder/RenX_Ladder.cpp" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/RenX.Ladder/RenX_Ladder.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/RenX.Listen/RenX.Listen.vcxproj" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/RenX.Listen/RenX.Listen.vcxproj.filters" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/RenX.Listen/RenX_Listen.cpp" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/RenX.Listen/RenX_Listen.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/RenX.Logging/RenX.Logging.vcxproj" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/RenX.Logging/RenX.Logging.vcxproj.filters" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/RenX.Logging/RenX_Logging.cpp" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/RenX.Logging/RenX_Logging.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/RenX.Medals/RenX.Medals.vcxproj" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/RenX.Medals/RenX.Medals.vcxproj.filters" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/RenX.Medals/RenX_Medals.cpp" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/RenX.Medals/RenX_Medals.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/RenX.MinPlayers/RenX.MinPlayers.vcxproj" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/RenX.MinPlayers/RenX.MinPlayers.vcxproj.filters" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/RenX.MinPlayers/RenX_MinPlayers.cpp" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/RenX.MinPlayers/RenX_MinPlayers.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/RenX.ModSystem/RenX.ModSystem.vcxproj" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/RenX.ModSystem/RenX.ModSystem.vcxproj.filters" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/RenX.ModSystem/RenX_ModSystem.cpp" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/RenX.ModSystem/RenX_ModSystem.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/RenX.Net/RenX.Net.vcxproj" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/RenX.Net/RenX.Net.vcxproj.filters" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/RenX.Net/RenX_Net.cpp" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/RenX.Net/RenX_Net.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/RenX.NicknameUUID/RenX.NicknameUUID.vcxproj" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/RenX.NicknameUUID/RenX.NicknameUUID.vcxproj.filters" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/RenX.NicknameUUID/RenX_NicknameUUID.cpp" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/RenX.NicknameUUID/RenX_NicknameUUID.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/RenX.Plugin.Template/Example.cpp" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/RenX.Plugin.Template/Example.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/RenX.Plugin.Template/RenX.Plugin.Template.vcxproj" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/RenX.Plugin.Template/RenX.Plugin.Template.vcxproj.filters" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/RenX.ServerList/RenX.ServerList.vcxproj" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/RenX.ServerList/RenX.ServerList.vcxproj.filters" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/RenX.ServerList/RenX_ServerList.cpp" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/RenX.ServerList/RenX_ServerList.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/RenX.SetJoin/RenX.SetJoin.vcxproj" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/RenX.SetJoin/RenX.SetJoin.vcxproj.filters" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/RenX.SetJoin/RenX_SetJoin.cpp" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/RenX.SetJoin/RenX_SetJoin.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/RenX.Warn/RenX.Warn.vcxproj" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/RenX.Warn/RenX.Warn.vcxproj.filters" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/RenX.Warn/RenX_Warn.cpp" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/RenX.Warn/RenX_Warn.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/SetJoin/SetJoin.cpp" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/SetJoin/SetJoin.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/SetJoin/SetJoin.vcxproj" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/SetJoin/SetJoin.vcxproj.filters" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Jupiter/src/include/Jupiter/HTTP_QueryString.h" beforeDir="false" afterPath="$PROJECT_DIR$/src/Jupiter/src/include/Jupiter/HTTP_QueryString.h" afterDir="false" />
+    </list>
+    <ignored path="$PROJECT_DIR$/cmake-build-debug/" />
+    <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="ExecutionTargetManager" SELECTED_TARGET="CMakeBuildProfile:Debug" />
+  <component name="FileEditorManager">
+    <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
+      <file pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/.gitignore">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="68">
+              <caret line="4" lean-forward="true" selection-start-line="4" selection-end-line="4" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+    </leaf>
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="CMakeLists.txt" />
+      </list>
+    </option>
+  </component>
+  <component name="FindInProjectRecents">
+    <findStrings>
+      <find>#include &quot;Jupiter/String.h&quot;</find>
+      <find>thread</find>
+      <find>add_library</find>
+      <find>_EXPORTS</find>
+      <find>target_compile_definitions</find>
+      <find>OpenSSL::</find>
+      <find>jupiter_bot</find>
+      <find>extern &quot;C&quot; __declspec(dllexport)</find>
+      <find>AlwaysRecord</find>
+      <find>DLList</find>
+      <find>isMatch</find>
+      <find>Jupiter::StringS::gotoWord(parameters, 1, WHITESPACE)</find>
+      <find>Jupiter::StringS reason = parameters.wordCount(WHITESPACE) &gt; 1 ? Jupiter::StringS::gotoWord(parameters, 1, WHITESPACE) : STRING_LITERAL_AS_REFERENCE(&quot;No reason&quot;);</find>
+    </findStrings>
+    <replaceStrings>
+      <replace />
+      <replace>#include &quot;Jupiter/String.hpp&quot;</replace>
+      <replace>extern &quot;C&quot; JUPITER_EXPORT</replace>
+    </replaceStrings>
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="IdeDocumentHistory">
+    <option name="CHANGED_PATHS">
+      <list>
+        <option value="$PROJECT_DIR$/src/Bot/src/CMakeLists.txt" />
+        <option value="$PROJECT_DIR$/src/Bot/include/Jupiter_Bot.h" />
+        <option value="$PROJECT_DIR$/src/Plugins/ChannelRelay/ChannelRelay.cpp" />
+        <option value="$PROJECT_DIR$/src/Plugins/CoreCommands/CMakeLists.txt" />
+        <option value="$PROJECT_DIR$/src/Jupiter/src/common/CMakeLists.txt" />
+        <option value="$PROJECT_DIR$/CMakeLists.txt" />
+        <option value="$PROJECT_DIR$/src/Plugins/CoreCommands/CoreCommands.cpp" />
+        <option value="$PROJECT_DIR$/src/CMakeLists.txt" />
+        <option value="$PROJECT_DIR$/src/Plugins/ExtraCommands/CMakeLists.txt" />
+        <option value="$PROJECT_DIR$/src/Plugins/FunCommands/CMakeLists.txt" />
+        <option value="$PROJECT_DIR$/src/Plugins/IRC.Core/CMakeLists.txt" />
+        <option value="$PROJECT_DIR$/src/Plugins/Plugin.Example/CMakeLists.txt" />
+        <option value="$PROJECT_DIR$/src/Plugins/Plugin.Template/CMakeLists.txt" />
+        <option value="$PROJECT_DIR$/src/Plugins/PluginManager/CMakeLists.txt" />
+        <option value="$PROJECT_DIR$/src/Plugins/SetJoin/CMakeLists.txt" />
+        <option value="$PROJECT_DIR$/src/Plugins/HTTPServer/HTTPServer.h" />
+        <option value="$PROJECT_DIR$/src/Plugins/RenX/RenX.Core/RenX.h" />
+        <option value="$PROJECT_DIR$/src/Plugins/RenX/RenX.Core/RenX_Server.cpp" />
+        <option value="$PROJECT_DIR$/src/Plugins/CMakeLists.txt" />
+        <option value="$PROJECT_DIR$/src/Plugins/RenX/RenX.AlwaysRecord/CMakeLists.txt" />
+        <option value="$PROJECT_DIR$/src/Plugins/RenX/RenX.Core/CMakeLists.txt" />
+        <option value="$PROJECT_DIR$/src/Plugins/RenX/RenX.Announcements/CMakeLists.txt" />
+        <option value="$PROJECT_DIR$/src/Plugins/RenX/RenX.Commands/CMakeLists.txt" />
+        <option value="$PROJECT_DIR$/src/Plugins/RenX/RenX.ExcessiveHeadshots/CMakeLists.txt" />
+        <option value="$PROJECT_DIR$/src/Plugins/RenX/RenX.ExtraLogging/CMakeLists.txt" />
+        <option value="$PROJECT_DIR$/src/Plugins/RenX/RenX.Greetings/CMakeLists.txt" />
+        <option value="$PROJECT_DIR$/src/Plugins/RenX/RenX.HybridUUID/CMakeLists.txt" />
+        <option value="$PROJECT_DIR$/src/Plugins/RenX/RenX.IRCJoin/CMakeLists.txt" />
+        <option value="$PROJECT_DIR$/src/Plugins/RenX/RenX.Ladder/CMakeLists.txt" />
+        <option value="$PROJECT_DIR$/src/Plugins/RenX/RenX.Ladder.All-Time/CMakeLists.txt" />
+        <option value="$PROJECT_DIR$/src/Plugins/RenX/RenX.Ladder.Daily/CMakeLists.txt" />
+        <option value="$PROJECT_DIR$/src/Plugins/RenX/RenX.Ladder.Monthly/CMakeLists.txt" />
+        <option value="$PROJECT_DIR$/src/Plugins/RenX/RenX.Ladder.Weekly/CMakeLists.txt" />
+        <option value="$PROJECT_DIR$/src/Plugins/RenX/RenX.Ladder.Yearly/CMakeLists.txt" />
+        <option value="$PROJECT_DIR$/src/Plugins/RenX/RenX.Listen/CMakeLists.txt" />
+        <option value="$PROJECT_DIR$/src/Plugins/RenX/RenX.Logging/CMakeLists.txt" />
+        <option value="$PROJECT_DIR$/src/Plugins/RenX/RenX.Medals/CMakeLists.txt" />
+        <option value="$PROJECT_DIR$/src/Plugins/RenX/RenX.MinPlayers/CMakeLists.txt" />
+        <option value="$PROJECT_DIR$/src/Plugins/RenX/RenX.ModSystem/CMakeLists.txt" />
+        <option value="$PROJECT_DIR$/src/Plugins/RenX/RenX.Net/CMakeLists.txt" />
+        <option value="$PROJECT_DIR$/src/Plugins/RenX/RenX.NicknameUUID/CMakeLists.txt" />
+        <option value="$PROJECT_DIR$/src/Plugins/RenX/RenX.Plugin.Template/CMakeLists.txt" />
+        <option value="$PROJECT_DIR$/src/Plugins/RenX/RenX.SetJoin/CMakeLists.txt" />
+        <option value="$PROJECT_DIR$/src/Plugins/RenX/RenX.Warn/CMakeLists.txt" />
+        <option value="$PROJECT_DIR$/src/Jupiter/src/include/Jupiter/HTTP_QueryString.h" />
+        <option value="$PROJECT_DIR$/src/Plugins/HTTPServer/CMakeLists.txt" />
+        <option value="$PROJECT_DIR$/src/Plugins/RenX/RenX.Ladder.Web/CMakeLists.txt" />
+        <option value="$PROJECT_DIR$/src/Plugins/RenX/CMakeLists.txt" />
+        <option value="$PROJECT_DIR$/src/Plugins/RenX/RenX.ServerList/CMakeLists.txt" />
+        <option value="$PROJECT_DIR$/src/Plugins/RenX/RenX.Commands/RenX_Commands.cpp" />
+        <option value="$PROJECT_DIR$/.gitignore" />
+      </list>
+    </option>
+  </component>
+  <component name="ProjectFrameBounds" extendedState="6">
+    <option name="x" value="669" />
+    <option name="y" value="153" />
+    <option name="width" value="1401" />
+    <option name="height" value="1002" />
+  </component>
+  <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
+  <component name="ProjectView">
+    <navigator proportions="" version="1">
+      <foldersAlwaysOnTop value="true" />
+    </navigator>
+    <panes>
+      <pane id="Scope" />
+      <pane id="ProjectPane">
+        <subPane>
+          <expand>
+            <path>
+              <item name="jupiter_bot" type="b2602c69:ProjectViewProjectNode" />
+              <item name="Jupiter Bot" type="462c0819:PsiDirectoryNode" />
+            </path>
+          </expand>
+          <select />
+        </subPane>
+      </pane>
+    </panes>
+  </component>
+  <component name="PropertiesComponent">
+    <property name="WebServerToolWindowFactoryState" value="true" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$" />
+    <property name="nodejs_interpreter_path.stuck_in_default_project" value="undefined stuck path" />
+    <property name="nodejs_npm_path_reset_for_default_project" value="true" />
+  </component>
+  <component name="RecentsManager">
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="C:\dev\Projects\Jupiter Bot\src\Plugins\CoreCommands" />
+    </key>
+  </component>
+  <component name="RunDashboard">
+    <option name="ruleStates">
+      <list>
+        <RuleState>
+          <option name="name" value="ConfigurationTypeDashboardGroupingRule" />
+        </RuleState>
+        <RuleState>
+          <option name="name" value="StatusDashboardGroupingRule" />
+        </RuleState>
+      </list>
+    </option>
+  </component>
+  <component name="RunManager" selected="Application.Bot (All)">
+    <configuration name="Bot (All)" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="jupiter_bot" RUN_TARGET_NAME="Bot" EXPLICIT_BUILD_TARGET_NAME="all">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="Bot" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="jupiter_bot" TARGET_NAME="Bot" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="jupiter_bot" RUN_TARGET_NAME="Bot">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="ChannelRelay" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="jupiter_bot" TARGET_NAME="ChannelRelay" CONFIG_NAME="Debug">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="CoreCommands" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="jupiter_bot" TARGET_NAME="CoreCommands" CONFIG_NAME="Debug">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="ExtraCommands" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="jupiter_bot" TARGET_NAME="ExtraCommands" CONFIG_NAME="Debug">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="FunCommands" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="jupiter_bot" TARGET_NAME="FunCommands" CONFIG_NAME="Debug">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="HTTPServer" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="jupiter_bot" TARGET_NAME="HTTPServer" CONFIG_NAME="Debug">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="IRC_Core" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="jupiter_bot" TARGET_NAME="IRC_Core" CONFIG_NAME="Debug">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="PluginManager" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="jupiter_bot" TARGET_NAME="PluginManager" CONFIG_NAME="Debug">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="RenX.AlwaysRecord" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="jupiter_bot" TARGET_NAME="RenX.AlwaysRecord" CONFIG_NAME="Debug">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="RenX.Announcements" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="jupiter_bot" TARGET_NAME="RenX.Announcements" CONFIG_NAME="Debug">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="RenX.Commands" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="jupiter_bot" TARGET_NAME="RenX.Commands" CONFIG_NAME="Debug">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="RenX.Core" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="jupiter_bot" TARGET_NAME="RenX.Core" CONFIG_NAME="Debug">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="RenX.ExcessiveHeadshots" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="jupiter_bot" TARGET_NAME="RenX.ExcessiveHeadshots" CONFIG_NAME="Debug">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="RenX.ExtraLogging" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="jupiter_bot" TARGET_NAME="RenX.ExtraLogging" CONFIG_NAME="Debug">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="RenX.Greetings" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="jupiter_bot" TARGET_NAME="RenX.Greetings" CONFIG_NAME="Debug">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="RenX.HybridUUID" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="jupiter_bot" TARGET_NAME="RenX.HybridUUID" CONFIG_NAME="Debug">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="RenX.IRCJoin" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="jupiter_bot" TARGET_NAME="RenX.IRCJoin" CONFIG_NAME="Debug">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="RenX.Ladder" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="jupiter_bot" TARGET_NAME="RenX.Ladder" CONFIG_NAME="Debug">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="RenX.Ladder.All-Time" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="jupiter_bot" TARGET_NAME="RenX.Ladder.All-Time" CONFIG_NAME="Debug">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="RenX.Ladder.Daily" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="jupiter_bot" TARGET_NAME="RenX.Ladder.Daily" CONFIG_NAME="Debug">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="RenX.Ladder.Monthly" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="jupiter_bot" TARGET_NAME="RenX.Ladder.Monthly" CONFIG_NAME="Debug">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="RenX.Ladder.Web" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="jupiter_bot" TARGET_NAME="RenX.Ladder.Web" CONFIG_NAME="Debug">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="RenX.Ladder.Weekly" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="jupiter_bot" TARGET_NAME="RenX.Ladder.Weekly" CONFIG_NAME="Debug">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="RenX.Ladder.Yearly" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="jupiter_bot" TARGET_NAME="RenX.Ladder.Yearly" CONFIG_NAME="Debug">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="RenX.Listen" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="jupiter_bot" TARGET_NAME="RenX.Listen" CONFIG_NAME="Debug">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="RenX.Logging" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="jupiter_bot" TARGET_NAME="RenX.Logging" CONFIG_NAME="Debug">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="RenX.Medals" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="jupiter_bot" TARGET_NAME="RenX.Medals" CONFIG_NAME="Debug">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="RenX.MinPlayers" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="jupiter_bot" TARGET_NAME="RenX.MinPlayers" CONFIG_NAME="Debug">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="RenX.ModSystem" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="jupiter_bot" TARGET_NAME="RenX.ModSystem" CONFIG_NAME="Debug">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="RenX.NicknameUUID" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="jupiter_bot" TARGET_NAME="RenX.NicknameUUID" CONFIG_NAME="Debug">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="RenX.Plugin.Template" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="jupiter_bot" TARGET_NAME="RenX.Plugin.Template" CONFIG_NAME="Debug">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="RenX.ServerList" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="jupiter_bot" TARGET_NAME="RenX.ServerList" CONFIG_NAME="Debug">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="RenX.SetJoin" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="jupiter_bot" TARGET_NAME="RenX.SetJoin" CONFIG_NAME="Debug">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="RenX.Warn" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="jupiter_bot" TARGET_NAME="RenX.Warn" CONFIG_NAME="Debug">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="SetJoin" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="jupiter_bot" TARGET_NAME="SetJoin" CONFIG_NAME="Debug">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="jupiter" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="jupiter_bot" TARGET_NAME="jupiter" CONFIG_NAME="Debug">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <list>
+      <item itemvalue="Application.Bot (All)" />
+      <item itemvalue="Application.Bot" />
+      <item itemvalue="Application.jupiter" />
+      <item itemvalue="Application.ChannelRelay" />
+      <item itemvalue="Application.CoreCommands" />
+      <item itemvalue="Application.ExtraCommands" />
+      <item itemvalue="Application.FunCommands" />
+      <item itemvalue="Application.HTTPServer" />
+      <item itemvalue="Application.IRC_Core" />
+      <item itemvalue="Application.PluginManager" />
+      <item itemvalue="Application.RenX.AlwaysRecord" />
+      <item itemvalue="Application.RenX.Announcements" />
+      <item itemvalue="Application.RenX.Commands" />
+      <item itemvalue="Application.RenX.Core" />
+      <item itemvalue="Application.RenX.ExcessiveHeadshots" />
+      <item itemvalue="Application.RenX.ExtraLogging" />
+      <item itemvalue="Application.RenX.Greetings" />
+      <item itemvalue="Application.RenX.HybridUUID" />
+      <item itemvalue="Application.RenX.IRCJoin" />
+      <item itemvalue="Application.RenX.Ladder.All-Time" />
+      <item itemvalue="Application.RenX.Ladder.Daily" />
+      <item itemvalue="Application.RenX.Ladder.Monthly" />
+      <item itemvalue="Application.RenX.Ladder.Web" />
+      <item itemvalue="Application.RenX.Ladder.Weekly" />
+      <item itemvalue="Application.RenX.Ladder.Yearly" />
+      <item itemvalue="Application.RenX.Ladder" />
+      <item itemvalue="Application.RenX.Listen" />
+      <item itemvalue="Application.RenX.Logging" />
+      <item itemvalue="Application.RenX.Medals" />
+      <item itemvalue="Application.RenX.MinPlayers" />
+      <item itemvalue="Application.RenX.ModSystem" />
+      <item itemvalue="Application.RenX.NicknameUUID" />
+      <item itemvalue="Application.RenX.Plugin.Template" />
+      <item itemvalue="Application.RenX.ServerList" />
+      <item itemvalue="Application.RenX.SetJoin" />
+      <item itemvalue="Application.RenX.Warn" />
+      <item itemvalue="Application.SetJoin" />
+    </list>
+  </component>
+  <component name="SvnConfiguration">
+    <configuration />
+  </component>
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="c4c0b4a6-052f-42f1-a398-7fff944876bb" name="Default Changelist" comment="" />
+      <created>1545266923568</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1545266923568</updated>
+      <workItem from="1545266924797" duration="5477000" />
+      <workItem from="1545272891454" duration="3975000" />
+    </task>
+    <servers />
+  </component>
+  <component name="TimeTrackingManager">
+    <option name="totallyTimeSpent" value="9452000" />
+  </component>
+  <component name="ToolWindowManager">
+    <frame x="-7" y="-7" width="2575" height="1424" extended-state="6" />
+    <editor active="true" />
+    <layout>
+      <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.11172962" />
+      <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
+      <window_info id="Favorites" order="2" side_tool="true" />
+      <window_info anchor="bottom" id="Message" order="0" />
+      <window_info anchor="bottom" id="Find" order="1" />
+      <window_info anchor="bottom" id="Run" order="2" weight="0.32972136" />
+      <window_info anchor="bottom" id="Debug" order="3" weight="0.4" />
+      <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
+      <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
+      <window_info anchor="bottom" id="TODO" order="6" />
+      <window_info anchor="bottom" id="Database Changes" order="7" />
+      <window_info anchor="bottom" id="Messages" order="8" sideWeight="0.4998012" visible="true" weight="0.25773993" />
+      <window_info anchor="bottom" id="Terminal" order="9" />
+      <window_info anchor="bottom" id="Event Log" order="10" sideWeight="0.50019526" side_tool="true" weight="0.32395437" />
+      <window_info anchor="bottom" id="Version Control" order="11" />
+      <window_info anchor="bottom" id="CMake" order="12" sideWeight="0.49980476" weight="0.33436534" />
+      <window_info anchor="right" id="Commander" order="0" weight="0.4" />
+      <window_info anchor="right" id="Ant Build" order="1" weight="0.25" />
+      <window_info anchor="right" content_ui="combo" id="Hierarchy" order="2" weight="0.25" />
+      <window_info anchor="right" id="Remote Host" order="3" />
+      <window_info anchor="right" id="Database" order="4" />
+    </layout>
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="1" />
+  </component>
+  <component name="editorHistoryManager">
+    <entry file="file://$PROJECT_DIR$/src/Plugins/PluginManager/PluginManager.h">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="357">
+          <caret line="21" column="9" lean-forward="true" selection-start-line="21" selection-start-column="9" selection-end-line="21" selection-end-column="9" />
+          <folding>
+            <element signature="e#909#936#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/Plugins/SetJoin/CMakeLists.txt">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="51">
+          <caret line="3" selection-start-line="3" selection-end-line="3" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/Plugins/HTTPServer/HTTPServer.cpp">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="306">
+          <caret line="18" selection-start-line="18" selection-end-line="18" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/Plugins/PluginManager/CMakeLists.txt">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="51">
+          <caret line="3" lean-forward="true" selection-start-line="3" selection-end-line="3" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/Plugins/Plugin.Template/CMakeLists.txt">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="34">
+          <caret line="2" column="15" selection-start-line="2" selection-start-column="15" selection-end-line="2" selection-end-column="15" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/Plugins/Plugin.Example/CMakeLists.txt">
+      <provider selected="true" editor-type-id="text-editor">
+        <state>
+          <caret column="25" selection-start-column="25" selection-end-column="25" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/Plugins/IRC.Core/CMakeLists.txt">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="34">
+          <caret line="2" column="16" selection-start-line="2" selection-start-column="16" selection-end-line="2" selection-end-column="16" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/Plugins/HTTPServer/HTTPServer.h">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="493">
+          <caret line="29" column="32" selection-start-line="29" selection-start-column="32" selection-end-line="29" selection-end-column="32" />
+          <folding>
+            <element signature="e#1229#1266#0" expanded="true" />
+            <element signature="e#1422#1474#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/Plugins/RenX/RenX.Core/RenX.h">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="323">
+          <caret line="28" column="24" selection-start-line="28" selection-start-column="12" selection-end-line="28" selection-end-column="24" />
+          <folding>
+            <element signature="e#1066#1097#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/Plugins/RenX/RenX.Core/RenX_Server.cpp">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="507">
+          <caret line="627" lean-forward="true" selection-start-line="627" selection-end-line="627" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/Plugins/CMakeLists.txt">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="34">
+          <caret line="2" column="39" selection-start-line="2" selection-start-column="36" selection-end-line="2" selection-end-column="39" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/Plugins/RenX/RenX.AlwaysRecord/RenX_AlwaysRecord.h">
+      <provider selected="true" editor-type-id="text-editor" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/Plugins/RenX/RenX.AlwaysRecord/RenX_AlwaysRecord.cpp">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="306">
+          <caret line="18" column="9" selection-start-line="18" selection-start-column="9" selection-end-line="18" selection-end-column="9" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/Plugins/RenX/RenX.AlwaysRecord/CMakeLists.txt">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="34">
+          <caret line="2" column="28" selection-start-line="2" selection-start-column="28" selection-end-line="2" selection-end-column="28" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/Plugins/RenX/RenX.Core/CMakeLists.txt">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="459">
+          <caret line="27" column="21" selection-start-line="27" selection-start-column="21" selection-end-line="27" selection-end-column="21" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/Plugins/RenX/RenX.Commands/CMakeLists.txt">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="34">
+          <caret line="2" column="21" selection-start-line="2" selection-start-column="21" selection-end-line="2" selection-end-column="21" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/Plugins/RenX/RenX.Announcements/CMakeLists.txt">
+      <provider selected="true" editor-type-id="text-editor">
+        <state>
+          <caret column="34" selection-start-column="21" selection-end-column="34" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/Plugins/RenX/RenX.ExcessiveHeadshots/CMakeLists.txt">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="34">
+          <caret line="2" column="23" selection-start-line="2" selection-start-column="23" selection-end-line="2" selection-end-column="23" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/Plugins/RenX/RenX.ExtraLogging/CMakeLists.txt">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="34">
+          <caret line="2" column="25" selection-start-line="2" selection-start-column="25" selection-end-line="2" selection-end-column="25" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/Plugins/RenX/RenX.Greetings/CMakeLists.txt">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="34">
+          <caret line="2" column="22" selection-start-line="2" selection-start-column="22" selection-end-line="2" selection-end-column="22" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/Plugins/RenX/RenX.HybridUUID/CMakeLists.txt">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="34">
+          <caret line="2" column="23" selection-start-line="2" selection-start-column="23" selection-end-line="2" selection-end-column="23" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/Plugins/RenX/RenX.Ladder.All-Time/CMakeLists.txt">
+      <provider selected="true" editor-type-id="text-editor">
+        <state>
+          <caret column="28" selection-start-column="28" selection-end-column="28" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/Plugins/RenX/RenX.Ladder/CMakeLists.txt">
+      <provider selected="true" editor-type-id="text-editor">
+        <state>
+          <caret column="27" lean-forward="true" selection-start-column="27" selection-end-column="27" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/Plugins/RenX/RenX.IRCJoin/CMakeLists.txt">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="34">
+          <caret line="2" column="20" selection-start-line="2" selection-start-column="20" selection-end-line="2" selection-end-column="20" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/Plugins/RenX/RenX.Ladder.Daily/CMakeLists.txt">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="34">
+          <caret line="2" column="27" selection-start-line="2" selection-start-column="27" selection-end-line="2" selection-end-column="27" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/Plugins/RenX/RenX.Ladder.Monthly/CMakeLists.txt">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="34">
+          <caret line="2" column="29" selection-start-line="2" selection-start-column="29" selection-end-line="2" selection-end-column="29" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/Plugins/RenX/RenX.Ladder.Web/RenX_Ladder_Web.h">
+      <provider selected="true" editor-type-id="text-editor" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/Plugins/RenX/RenX.Ladder.Weekly/CMakeLists.txt">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="34">
+          <caret line="2" column="28" selection-start-line="2" selection-start-column="28" selection-end-line="2" selection-end-column="28" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/Plugins/RenX/RenX.Ladder.Yearly/CMakeLists.txt">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="34">
+          <caret line="2" column="28" selection-start-line="2" selection-start-column="28" selection-end-line="2" selection-end-column="28" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/Plugins/RenX/RenX.Listen/CMakeLists.txt">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="34">
+          <caret line="2" column="21" selection-start-line="2" selection-start-column="21" selection-end-line="2" selection-end-column="21" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/Plugins/RenX/RenX.Logging/CMakeLists.txt">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="34">
+          <caret line="2" column="20" selection-start-line="2" selection-start-column="20" selection-end-line="2" selection-end-column="20" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/Plugins/RenX/RenX.Medals/CMakeLists.txt">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="34">
+          <caret line="2" column="19" selection-start-line="2" selection-start-column="19" selection-end-line="2" selection-end-column="19" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/Plugins/RenX/RenX.MinPlayers/CMakeLists.txt">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="34">
+          <caret line="2" column="23" selection-start-line="2" selection-start-column="23" selection-end-line="2" selection-end-column="23" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/Plugins/RenX/RenX.ModSystem/CMakeLists.txt">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="34">
+          <caret line="2" column="22" selection-start-line="2" selection-start-column="22" selection-end-line="2" selection-end-column="22" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/Plugins/RenX/RenX.Net/CMakeLists.txt">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="34">
+          <caret line="2" column="16" selection-start-line="2" selection-start-column="16" selection-end-line="2" selection-end-column="16" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/Plugins/RenX/RenX.NicknameUUID/CMakeLists.txt">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="34">
+          <caret line="2" column="25" selection-start-line="2" selection-start-column="25" selection-end-line="2" selection-end-column="25" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/Plugins/RenX/RenX.Plugin.Template/CMakeLists.txt">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="34">
+          <caret line="2" column="17" selection-start-line="2" selection-start-column="17" selection-end-line="2" selection-end-column="17" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/Plugins/RenX/RenX.SetJoin/CMakeLists.txt">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="34">
+          <caret line="2" column="20" selection-start-line="2" selection-start-column="20" selection-end-line="2" selection-end-column="20" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/Plugins/RenX/RenX.Warn/CMakeLists.txt">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="34">
+          <caret line="2" column="20" selection-start-line="2" selection-start-column="20" selection-end-line="2" selection-end-column="20" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/Plugins/RenX/RenX.Net/RenX_Net.cpp">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="306">
+          <caret line="18" selection-start-line="18" selection-end-line="18" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/Plugins/RenX/RenX.Net/RenX_Net.h">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="591">
+          <caret line="81" column="19" selection-start-line="81" selection-start-column="13" selection-end-line="81" selection-end-column="19" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/Plugins/RenX/CMakeLists.txt">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="561">
+          <caret line="33" column="35" lean-forward="true" selection-start-line="33" selection-start-column="35" selection-end-line="33" selection-end-column="35" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/Plugins/RenX/RenX.ServerList/CMakeLists.txt">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="85">
+          <caret line="5" column="19" selection-start-line="5" selection-start-column="19" selection-end-line="5" selection-end-column="19" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/Plugins/RenX/RenX.Commands/RenX_Commands.cpp">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="531">
+          <caret line="3549" column="1" lean-forward="true" selection-start-line="3549" selection-start-column="1" selection-end-line="3549" selection-end-column="1" />
+          <folding>
+            <element signature="e#839#862#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/Plugins/RenX/RenX.ServerList/RenX_ServerList.cpp">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="311">
+          <caret line="21" column="9" selection-start-line="21" selection-start-column="9" selection-end-line="21" selection-end-column="9" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/Plugins/RenX/RenX.Ladder.Web/RenX_Ladder_Web.cpp">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="303">
+          <caret line="21" column="9" selection-start-line="21" selection-start-column="9" selection-end-line="21" selection-end-column="9" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/Plugins/RenX/RenX.Ladder.Web/CMakeLists.txt">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="68">
+          <caret line="4" selection-start-line="4" selection-end-line="5" selection-end-column="19" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/Plugins/HTTPServer/CMakeLists.txt">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="119">
+          <caret line="7" column="47" selection-start-line="7" selection-start-column="47" selection-end-line="7" selection-end-column="47" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/Jupiter/src/include/Jupiter/HTTP_QueryString.h">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="311">
+          <caret line="21" column="20" selection-start-line="21" selection-start-column="20" selection-end-line="21" selection-end-column="20" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/.gitmodules">
+      <provider selected="true" editor-type-id="text-editor" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/.gitignore">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="68">
+          <caret line="4" lean-forward="true" selection-start-line="4" selection-end-line="4" />
+        </state>
+      </provider>
+    </entry>
+  </component>
+</project>
