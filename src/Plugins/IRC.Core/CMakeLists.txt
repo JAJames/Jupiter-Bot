@@ -1,3 +1,3 @@
-add_plugin(IRC_Core
+add_plugin(IRC.Core
         IRC_Core.cpp
         IRC_Core.h)

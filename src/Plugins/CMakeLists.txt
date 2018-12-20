@@ -1,3 +1,6 @@
+# Setup output paths
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin/Plugins)
+
 macro(add_plugin target)
     add_library(${target} SHARED ${ARGN})
     target_link_libraries(${target} Bot)

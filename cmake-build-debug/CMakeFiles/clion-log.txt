@@ -1,5 +1,0 @@
-/usr/bin/cmake -DCMAKE_BUILD_TYPE=Debug -DCMAKE_C_COMPILER=/usr/bin/gcc-8 -DCMAKE_CXX_COMPILER=/usr/bin/g++-8 -G "CodeBlocks - Unix Makefiles" "/mnt/c/dev/Projects/Jupiter Bot"
--- No compiler-specific settings set; CMAKE_CXX_COMPILER_ID: GNU
--- Configuring done
--- Generating done
--- Build files have been written to: /mnt/c/dev/Projects/Jupiter Bot/cmake-build-debug

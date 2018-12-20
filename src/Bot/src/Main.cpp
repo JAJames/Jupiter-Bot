@@ -68,19 +68,18 @@ void inputLoop()
 {
 	char input[INPUT_BUFFER_SIZE];
 	size_t input_length;
-	while (ftell(stdin) != -1) // This can be expanded later to check for EBADF specifically.
+	while (ftell(stdin) != -1 || errno != EBADF)
 	{
 		fgets(input, sizeof(input), stdin);
 		input_length = strcspn(input, "\r\n");
 
 	check_input_processing:
 
-		console_input.input_mutex.lock();
+		std::lock_guard<std::mutex> guard(console_input.input_mutex);
 		if (console_input.awaiting_processing == false)
 		{
 			console_input.input.set(input, input_length);
 			console_input.awaiting_processing = true;
-			console_input.input_mutex.unlock();
 		}
 		else // User input received before previous input was processed.
 		{
@@ -139,7 +138,7 @@ int main(int argc, const char **args)
 	double time_taken = static_cast<double>(std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::steady_clock::now() - load_start).count()) / 1000.0;
 
 	printf("Config loaded (%fms)." ENDL, time_taken);
-	
+
 	if (plugins_directory.isEmpty())
 		plugins_directory = o_config.get("PluginsDirectory"_jrs);
 
@@ -177,7 +176,7 @@ int main(int argc, const char **args)
 			load_start = std::chrono::steady_clock::now();
 			load_success = Jupiter::Plugin::load(plugin) != nullptr;
 			time_taken = static_cast<double>(std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::steady_clock::now() - load_start).count()) / 1000.0;
-			
+
 			if (load_success)
 				printf("\"%.*s\" loaded successfully (%fms)." ENDL, plugin.size(), plugin.ptr(), time_taken);
 			else
@@ -205,7 +204,7 @@ int main(int argc, const char **args)
 			else
 				++index;
 		Jupiter::Timer::check();
-		
+
 		if (console_input.input_mutex.try_lock())
 		{
 			if (console_input.awaiting_processing)
