@@ -19,7 +19,6 @@
 #include <cstring>
 #include "Jupiter/Functions.h"
 #include "Jupiter/Socket.h"
-#include "Jupiter/CString.h"
 #include "FunCommands.h"
 #include "IRC_Bot.h"
 
@@ -167,14 +166,14 @@ Jupiter::GenericCommand::ResponseLine *ResolveGenericCommand::trigger(const Jupi
 	Jupiter::ReferenceString command = Jupiter::ReferenceString::getWord(parameters, 0, WHITESPACE);
 	if (command.equalsi("hostname"_jrs) || command.equalsi("host"_jrs))
 	{
-		Jupiter::ReferenceString resolved = Jupiter::Socket::resolveHostname(Jupiter::CStringS::gotoWord(parameters, 1, WHITESPACE).c_str(), 0);
+		Jupiter::ReferenceString resolved = Jupiter::Socket::resolveHostname(static_cast<std::string>(Jupiter::ReferenceString::gotoWord(parameters, 1, WHITESPACE)).c_str(), 0);
 		if (resolved.isEmpty())
 			return new Jupiter::GenericCommand::ResponseLine("Error: Unable to resolve."_jrs, GenericCommand::DisplayType::PublicError);
 		return new Jupiter::GenericCommand::ResponseLine(resolved, GenericCommand::DisplayType::PublicSuccess);
 	}
 	else if (command.equalsi("ip"_jrs))
 	{
-		Jupiter::ReferenceString resolved = Jupiter::Socket::resolveAddress(Jupiter::CStringS::gotoWord(parameters, 1, WHITESPACE).c_str(), 0);
+		Jupiter::ReferenceString resolved = Jupiter::Socket::resolveAddress(static_cast<std::string>(Jupiter::ReferenceString::gotoWord(parameters, 1, WHITESPACE)).c_str(), 0);
 		if (resolved.isEmpty())
 			return new Jupiter::GenericCommand::ResponseLine("Error: Unable to resolve."_jrs, GenericCommand::DisplayType::PublicError);
 		return new Jupiter::GenericCommand::ResponseLine(resolved, GenericCommand::DisplayType::PublicSuccess);

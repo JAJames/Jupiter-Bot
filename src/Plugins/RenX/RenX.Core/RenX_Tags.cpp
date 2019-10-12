@@ -58,8 +58,8 @@ bool TagsImp::initialize()
 	TagsImp::bar_width = config[configSection].get<int>("BarWidth"_jrs, 19);
 
 	/** Global formats */
-	this->dateFmt = config[configSection].get("DateFormat"_jrs, "%A, %B %d, %Y"_jrs);
-	this->timeFmt = config[configSection].get("TimeFormat"_jrs, "%H:%M:%S"_jrs);;
+	this->dateFmt = static_cast<std::string>(config[configSection].get("DateFormat"_jrs, "%A, %B %d, %Y"_jrs));
+	this->timeFmt = static_cast<std::string>(config[configSection].get("TimeFormat"_jrs, "%H:%M:%S"_jrs));
 
 	/** Internal message tags */
 
@@ -457,9 +457,9 @@ void TagsImp::processTags(Jupiter::StringType &msg, const RenX::Server *server, 
 		PROCESS_TAG(this->INTERNAL_SERVER_NAME_TAG, server->getName());
 		PROCESS_TAG(this->INTERNAL_MAP_TAG, server->getMap().name);
 		PROCESS_TAG(this->INTERNAL_MAP_GUID_TAG, RenX::formatGUID(server->getMap()));
-		PROCESS_TAG(this->INTERNAL_SERVER_HOSTNAME_TAG, server->getHostname());
+		PROCESS_TAG(this->INTERNAL_SERVER_HOSTNAME_TAG, Jupiter::ReferenceString(server->getHostname().c_str()));
 		PROCESS_TAG(this->INTERNAL_SERVER_PORT_TAG, Jupiter::StringS::Format("%u", server->getPort()));
-		PROCESS_TAG(this->INTERNAL_SOCKET_HOSTNAME_TAG, server->getSocketHostname());
+		PROCESS_TAG(this->INTERNAL_SOCKET_HOSTNAME_TAG, Jupiter::ReferenceString(server->getSocketHostname().c_str()));
 		PROCESS_TAG(this->INTERNAL_SOCKET_PORT_TAG, Jupiter::StringS::Format("%u", server->getSocketPort()));
 		PROCESS_TAG(this->INTERNAL_SERVER_PREFIX_TAG, server->getPrefix());
 		if (player != nullptr)

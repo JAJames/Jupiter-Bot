@@ -174,7 +174,7 @@ uint8_t RenX::ExemptionDatabase::getVersion() const
 	return RenX::ExemptionDatabase::write_version;
 }
 
-const Jupiter::ReadableString &RenX::ExemptionDatabase::getFileName() const
+const std::string &RenX::ExemptionDatabase::getFileName() const
 {
 	return RenX::ExemptionDatabase::filename;
 }
@@ -186,7 +186,7 @@ const Jupiter::ArrayList<RenX::ExemptionDatabase::Entry> &RenX::ExemptionDatabas
 
 bool RenX::ExemptionDatabase::initialize()
 {
-	RenX::ExemptionDatabase::filename = RenX::getCore()->getConfig().get("ExemptionDB"_jrs, "Exemptions.db"_jrs);
+	RenX::ExemptionDatabase::filename = static_cast<std::string>(RenX::getCore()->getConfig().get("ExemptionDB"_jrs, "Exemptions.db"_jrs));
 	return this->process_file(filename);
 }
 

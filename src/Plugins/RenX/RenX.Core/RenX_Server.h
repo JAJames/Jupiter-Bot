@@ -29,7 +29,6 @@
 #include "Jupiter/TCPSocket.h"
 #include "Jupiter/ArrayList.h"
 #include "Jupiter/String.hpp"
-#include "Jupiter/CString.h"
 #include "Jupiter/Config.h"
 #include "Jupiter/Thinker.h"
 #include "Jupiter/Rehash.h"
@@ -699,7 +698,7 @@ namespace RenX
 		*
 		* @return String containing the hostname of the server.
 		*/
-		const Jupiter::ReadableString &getHostname() const;
+		const std::string &getHostname() const;
 
 		/**
 		* @brief Fetches the port of a server.
@@ -713,7 +712,7 @@ namespace RenX
 		*
 		* @return String containing the hostname of the server.
 		*/
-		const Jupiter::ReadableString &getSocketHostname() const;
+		const std::string &getSocketHostname() const;
 
 		/**
 		* @brief Fetches the port from the server socket.
@@ -1082,8 +1081,8 @@ namespace RenX
 		std::chrono::milliseconds buildingUpdateRate;
 		std::chrono::milliseconds pingRate;
 		std::chrono::milliseconds pingTimeoutThreshold;
-		Jupiter::CStringS clientHostname;
-		Jupiter::CStringS hostname;
+		std::string clientHostname;
+		std::string hostname;
 		Jupiter::StringS pass;
 		Jupiter::StringS configSection;
 		Jupiter::StringS rules;

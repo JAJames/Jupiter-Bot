@@ -53,7 +53,6 @@ void ChannelRelayPlugin::OnChat(Jupiter::IRC::Client *server, const Jupiter::Rea
 		int type = chan->getType();
 		if (ChannelRelayPlugin::types.contains(type))
 		{
-			unsigned int count = server->getChannelCount();
 			unsigned int serverCount = serverManager->size();
 			char prefix = chan->getUserPrefix(nick);
 			Jupiter::String str;
@@ -64,16 +63,14 @@ void ChannelRelayPlugin::OnChat(Jupiter::IRC::Client *server, const Jupiter::Rea
 				str = "<"_js + prefix + nick + "> "_jrs + message;
 			}
 
-			Jupiter::IRC::Client *irc_server;
-
-			auto relay_channels_callback = [irc_server, type, chan, &str](Jupiter::IRC::Client::ChannelTableType::Bucket::Entry &in_entry)
-			{
-				if (in_entry.value.getType() == type && &in_entry.value != chan)
-					irc_server->sendMessage(in_entry.value.getName(), str);
-			};
-
-			while (serverCount != 0)
-				serverManager->getServer(--serverCount)->getChannels().callback(relay_channels_callback);
+			while (serverCount != 0) {
+				auto server = serverManager->getServer(--serverCount);
+				for (auto& channel : server->getChannels()) {
+					if (channel.second.getType() == type && &channel.second != chan) {
+						server->sendMessage(channel.second.getName(), str);
+					}
+				}
+			}
 		}
 	}
 }

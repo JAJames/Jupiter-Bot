@@ -244,7 +244,7 @@ Jupiter::StringS server_as_json(const RenX::Server &server)
 		server.getCrateRespawnDelay(),
 		server.getTimeLimit(),
 		server.getPort(),
-		server.getSocketHostname().size(), server.getSocketHostname().ptr());
+		server.getSocketHostname().size(), server.getSocketHostname().c_str());
 
 	server_json_block += '}';
 
@@ -282,7 +282,7 @@ Jupiter::StringS server_as_game(const RenX::Server &server)
 
 	server_game_block.format("\n<@>%.*s~%.*s~%u~%s~%.*s~" "%d;%d;%d;%s;%d;%d;%d;%s;%s;%s;%.*s;%s" "~%u~%d~%s~%s~%.*s",
 		server_name.size(), server_name.ptr(),
-		server.getSocketHostname().size(), server.getSocketHostname().ptr(),
+		server.getSocketHostname().size(), server.getSocketHostname().c_str(),
 		server.getPort(),
 		json_bool_as_cstring(server.isPassworded()),
 		server_map.size(), server_map.ptr(),
@@ -360,7 +360,7 @@ Jupiter::StringS server_as_long_json(const RenX::Server &server)
 			server.getTimeLimit(),
 
 			server.getPort(),
-			server.getSocketHostname().size(), server.getSocketHostname().ptr());
+			server.getSocketHostname().size(), server.getSocketHostname().c_str());
 
 
 		// Level Rotation
@@ -698,8 +698,8 @@ Jupiter::ReadableString *handle_server_page(const Jupiter::ReadableString &query
 
 	if (html_form_response.table.size() != 0)
 	{
-		address = html_form_response.table.get("ip"_jrs, address);
-		port = html_form_response.table.getCast<int>("port"_jrs, port);
+		address = html_form_response.tableGet("ip"_jrs, address);
+		port = html_form_response.tableGetCast<int>("port"_jrs, port);
 	}
 
 	// search for server
@@ -712,7 +712,7 @@ Jupiter::ReadableString *handle_server_page(const Jupiter::ReadableString &query
 			return new Jupiter::ReferenceString();
 
 		server = servers.get(index);
-		if (server->getSocketHostname().equals(address) && server->getPort() == port)
+		if (address.equals(server->getSocketHostname()) && server->getPort() == port)
 			break;
 
 		++index;

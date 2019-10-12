@@ -162,7 +162,7 @@ namespace RenX
 		/**
 		* @brief Writes the current ladder data to the disk.
 		*/
-		void write(const Jupiter::CStringType &filename);
+		void write(const std::string &filename);
 		void write(const char *filename);
 
 		/**

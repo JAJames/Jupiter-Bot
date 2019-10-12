@@ -321,7 +321,7 @@ void RenX::LadderDatabase::append(RenX::LadderDatabase::Entry *entry)
 	RenX::LadderDatabase::end = entry;
 }
 
-void RenX::LadderDatabase::write(const Jupiter::CStringType &filename)
+void RenX::LadderDatabase::write(const std::string &filename)
 {
 	return RenX::LadderDatabase::write(filename.c_str());
 }

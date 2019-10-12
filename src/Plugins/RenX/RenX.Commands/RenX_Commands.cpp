@@ -1267,7 +1267,7 @@ void ReconnectIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString
 			if (server->isLogChanType(type))
 			{
 				if (server->reconnect(RenX::DisconnectReason::Triggered)) msg.set("Connection established");
-				else msg.format("[RenX] ERROR: Failed to connect to %.*s on port %u." ENDL, server->getHostname().size(), server->getHostname().ptr(), server->getPort());
+				else msg.format("[RenX] ERROR: Failed to connect to %.*s on port %u." ENDL, server->getHostname().size(), server->getHostname().c_str(), server->getPort());
 				source->sendMessage(channel, msg);
 			}
 		}
@@ -2104,7 +2104,7 @@ void AddBanIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &c
 			{
 				size_t index = 0;
 				Jupiter::ReferenceString name;
-				Jupiter::CStringS ip_str;
+				std::string ip_str;
 				uint32_t ip = 0U;
 				uint8_t prefix_length = 32U;
 				uint64_t steamid = 0U;
@@ -2138,7 +2138,7 @@ void AddBanIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &c
 							return;
 						}
 
-						ip_str = Jupiter::ReferenceString::getWord(parameters, index++, ADDBAN_WHITESPACE);
+						ip_str = static_cast<std::string>(Jupiter::ReferenceString::getWord(parameters, index++, ADDBAN_WHITESPACE));
 					}
 					else if (word.equalsi("Steam"_jrs) || word.equalsi("SteamID"_jrs))
 					{
@@ -2217,13 +2217,13 @@ void AddBanIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &c
 					flags = RenX::BanDatabase::Entry::FLAG_TYPE_GAME;
 
 				index = ip_str.find('/');
-				if (index != JUPITER_INVALID_INDEX)
+				if (index != std::string::npos)
 				{
 					Jupiter::ReferenceString prefix_length_str(ip_str.c_str() + index + 1);
 					prefix_length = prefix_length_str.asUnsignedInt();
 					if (prefix_length == 0)
 						prefix_length = 32U;
-					ip_str.truncate(prefix_length_str.size() + 1);
+					ip_str.erase(index);
 				}
 				ip = Jupiter::Socket::pton4(ip_str.c_str());
 
@@ -2555,7 +2555,7 @@ void AddExemptionIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableStr
 			else
 			{
 				size_t index = 0;
-				Jupiter::CStringS ip_str;
+				std::string ip_str;
 				uint32_t ip = 0U;
 				uint8_t prefix_length = 32U;
 				uint64_t steamid = 0U;
@@ -2576,7 +2576,7 @@ void AddExemptionIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableStr
 							return;
 						}
 
-						ip_str = Jupiter::ReferenceString::getWord(parameters, index++, ADDEXEMPTION_WHITESPACE);
+						ip_str = static_cast<std::string>(Jupiter::ReferenceString::getWord(parameters, index++, ADDEXEMPTION_WHITESPACE));
 					}
 					else if (word.equalsi("Steam"_jrs) || word.equalsi("SteamID"_jrs))
 					{
@@ -2613,16 +2613,16 @@ void AddExemptionIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableStr
 				if (flags == 0)
 					flags = RenX::ExemptionDatabase::Entry::FLAG_TYPE_BAN;
 
-				if (ip_str.isNotEmpty())
+				if (!ip_str.empty())
 				{
 					index = ip_str.find('/');
-					if (index != JUPITER_INVALID_INDEX)
+					if (index != std::string::npos)
 					{
 						Jupiter::ReferenceString prefix_length_str(ip_str.c_str() + index + 1);
 						prefix_length = prefix_length_str.asUnsignedInt();
 						if (prefix_length == 0)
 							prefix_length = 32U;
-						ip_str.truncate(prefix_length_str.size() + 1);
+						ip_str.erase(index);
 					}
 					ip = Jupiter::Socket::pton4(ip_str.c_str());
 
@@ -3204,8 +3204,8 @@ void ModRequestGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *play
 	Jupiter::String fmtName = RenX::getFormattedPlayerName(*player);
 	Jupiter::StringL user_message = Jupiter::StringL::Format(IRCCOLOR "12[%.*s Request] " IRCCOLOR IRCBOLD "%.*s" IRCBOLD IRCCOLOR "07 has requested assistance in-game; please look in ", staff_word.size(), staff_word.ptr(), fmtName.size(), fmtName.ptr());
 	Jupiter::StringS channel_message = Jupiter::StringS::Format(IRCCOLOR "12[%.*s Request] " IRCCOLOR IRCBOLD "%.*s" IRCBOLD IRCCOLOR "07 has requested assistance in-game!" IRCCOLOR, staff_word.size(), staff_word.ptr(), fmtName.size(), fmtName.ptr());
-	
-	auto alert_message_callback = [this, source, server, &user_message, &channel_message, &messageCount](Jupiter::IRC::Client::ChannelTableType::Bucket::Entry &in_entry)
+
+	/*auto alert_message_callback = [this, source, server, &user_message, &channel_message, &messageCount](Jupiter::IRC::Client::ChannelTableType::Bucket::Entry &in_entry)
 	{
 		auto alert_message_user_callback = [server, &in_entry, &user_message, &messageCount](Jupiter::IRC::Client::Channel::UserTableType::Bucket::Entry &in_user_entry)
 		{
@@ -3224,7 +3224,7 @@ void ModRequestGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *play
 			in_entry.value.getUsers().callback(alert_message_user_callback);
 			user_message -= in_entry.value.getName().size();
 		}
-	};
+	};*/
 	
 	source->sendMessage(*player, Jupiter::StringS::Format("A total of %u %.*ss have been notified of your assistance request.", messageCount, staff_word.size(), staff_word.ptr()));
 }

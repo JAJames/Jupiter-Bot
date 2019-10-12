@@ -322,7 +322,7 @@ void RecsGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *player, co
 			{
 				unsigned int recs = section->get<unsigned int>("Recs"_jrs);
 				unsigned int noobs = section->get<unsigned int>("Noobs"_jrs);
-				source->sendMessage(*player, Jupiter::StringS::Format("[Archive] %.*s has %u and %u n00bs. Their worth: %d", section->getName().size(), section->getName().ptr(), recs, noobs, recs - noobs));
+				source->sendMessage(*player, Jupiter::StringS::Format("[Archive] %.*s has %u and %u n00bs. Their worth: %d", section->getName().size(), section->getName().c_str(), recs, noobs, recs - noobs));
 			}
 		}
 		else if (target->uuid.isEmpty())

@@ -23,7 +23,6 @@
 #include <chrono>
 #include "Jupiter/Database.h"
 #include "Jupiter/String.hpp"
-#include "Jupiter/CString.h"
 #include "Jupiter/ArrayList.h"
 #include "RenX.h"
 
@@ -173,7 +172,7 @@ namespace RenX
 		*
 		* @return Database file name
 		*/
-		const Jupiter::ReadableString &getFileName() const;
+		const std::string &getFileName() const;
 
 		/**
 		* @brief Fetches the list of exemption entries.
@@ -191,7 +190,7 @@ namespace RenX
 		uint8_t read_version = write_version;
 		fpos_t eof;
 
-		Jupiter::CStringS filename;
+		std::string filename;
 		Jupiter::ArrayList<RenX::ExemptionDatabase::Entry> entries;
 	};
 

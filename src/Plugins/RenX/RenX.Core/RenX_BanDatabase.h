@@ -20,9 +20,9 @@
 #define _RENX_BANDATABASE_H_HEADER
 
 #include <cstdint>
+#include <unordered_map>
 #include "Jupiter/Database.h"
 #include "Jupiter/String.hpp"
-#include "Jupiter/CString.h"
 #include "Jupiter/ArrayList.h"
 #include "RenX.h"
 
@@ -79,6 +79,8 @@ namespace RenX
 		*/
 		struct RENX_API Entry
 		{
+			using VarDataTableType = std::unordered_map<Jupiter::StringS, Jupiter::StringS, Jupiter::default_hash_function>;
+
 			fpos_t pos; /** Position of the entry in the database */
 			uint16_t flags /** Flags affecting this ban entry (See below for flags) */ = 0x00;
 			std::chrono::system_clock::time_point timestamp /** Time the ban was created */;
@@ -91,7 +93,7 @@ namespace RenX
 			Jupiter::StringS name /** Name of the banned player */;
 			Jupiter::StringS banner /** Name of the user who initiated the ban */;
 			Jupiter::StringS reason /** Reason the player was banned */;
-			Jupiter::HashTable varData; /** Variable entry data */
+			VarDataTableType varData; /** Variable entry data */
 
 			static const uint16_t FLAG_ACTIVE = 0x8000U;
 			static const uint16_t FLAG_USE_RDNS = 0x4000U;
@@ -199,7 +201,7 @@ namespace RenX
 		*
 		* @return Database file name
 		*/
-		const Jupiter::ReadableString &getFileName() const;
+		const std::string &getFileName() const;
 
 		/**
 		* @brief Fetches the list of ban entries.
@@ -217,7 +219,7 @@ namespace RenX
 		uint8_t read_version = write_version;
 		fpos_t eof;
 
-		Jupiter::CStringS filename;
+		std::string filename;
 		Jupiter::ArrayList<RenX::BanDatabase::Entry> entries;
 	};
 

@@ -207,7 +207,7 @@ public:
 	/**
 	* @brief Copy constructor for the GenericCommandWrapperIRCCommand class
 	*/
-	GenericCommandWrapperIRCCommand(GenericCommandWrapperIRCCommand &in_command);
+	GenericCommandWrapperIRCCommand(const GenericCommandWrapperIRCCommand &in_command);
 
 	/**
 	* @brief Wrapper constructor for the GenericCommandWrapperIRCCommand class

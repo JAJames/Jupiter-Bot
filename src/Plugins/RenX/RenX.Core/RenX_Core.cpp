@@ -58,7 +58,7 @@ bool RenX::Core::initialize()
 
 		if (server->connect() == false)
 		{
-			fprintf(stderr, "[RenX] ERROR: Failed to connect to %.*s on port %u. Error code: %d" ENDL, server->getHostname().size(), server->getHostname().ptr(), server->getPort(), Jupiter::Socket::getLastError());
+			fprintf(stderr, "[RenX] ERROR: Failed to connect to %.*s on port %u. Error code: %d" ENDL, server->getHostname().size(), server->getHostname().c_str(), server->getPort(), Jupiter::Socket::getLastError());
 			delete server;
 		}
 		else RenX::Core::addServer(server);

@@ -116,20 +116,19 @@ void IRC_Bot::setCommandAccessLevels(IRCCommand *in_command)
 		if (section == nullptr)
 			return;
 
-		auto read_section = [this, section, in_command](Jupiter::HashTable::Bucket::Entry &in_entry)
-		{
+		for (auto& entry : section->getTable()) {
 			size_t tmp_index;
 			Jupiter::ReferenceString tmp_key, tmp_sub_key;
 			IRCCommand *command;
 
-			tmp_index = in_entry.key.find('.');
+			tmp_index = entry.first.find('.');
 			if (tmp_index != Jupiter::INVALID_INDEX)
 			{
 				// non-default access assignment
 
-				tmp_key.set(in_entry.key.ptr(), tmp_index);
+				tmp_key.set(entry.first.ptr(), tmp_index);
 
-				tmp_sub_key = in_entry.key;
+				tmp_sub_key = entry.first;
 				tmp_sub_key.shiftRight(tmp_index + 1);
 
 				if (tmp_sub_key.findi("Type."_jrs) == 0)
@@ -138,7 +137,7 @@ void IRC_Bot::setCommandAccessLevels(IRCCommand *in_command)
 
 					command = this->getCommand(tmp_key);
 					if (command != nullptr && (in_command == nullptr || in_command == command))
-						command->setAccessLevel(tmp_sub_key.asInt(), in_entry.value.asInt());
+						command->setAccessLevel(tmp_sub_key.asInt(), entry.second.asInt());
 				}
 				else if (tmp_sub_key.findi("Channel."_jrs) == 0)
 				{
@@ -147,19 +146,17 @@ void IRC_Bot::setCommandAccessLevels(IRCCommand *in_command)
 					// Assign access level to command (if command exists)
 					command = this->getCommand(tmp_key);
 					if (command != nullptr && (in_command == nullptr || in_command == command))
-						command->setAccessLevel(tmp_sub_key, in_entry.value.asInt());
+						command->setAccessLevel(tmp_sub_key, entry.second.asInt());
 				}
 			}
 			else
 			{
 				// Assign access level to command (if command exists)
-				command = this->getCommand(in_entry.key);
+				command = this->getCommand(entry.first);
 				if (command != nullptr && (in_command == nullptr || in_command == command))
-					command->setAccessLevel(in_entry.value.asInt());
+					command->setAccessLevel(entry.second.asInt());
 			}
 		};
-
-		section->getTable().callback(read_section);
 	};
 
 	set_command_access_levels(this->getSecondaryConfigSection());

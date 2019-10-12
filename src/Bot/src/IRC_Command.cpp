@@ -130,7 +130,7 @@ void IRCCommand::create()
 
 /** GenericCommandWrapperIRCCommand */
 
-GenericCommandWrapperIRCCommand::GenericCommandWrapperIRCCommand(GenericCommandWrapperIRCCommand &in_command) : IRCCommand(in_command)
+GenericCommandWrapperIRCCommand::GenericCommandWrapperIRCCommand(const GenericCommandWrapperIRCCommand &in_command) : IRCCommand(in_command)
 {
 	GenericCommandWrapperIRCCommand::m_command = in_command.m_command;
 

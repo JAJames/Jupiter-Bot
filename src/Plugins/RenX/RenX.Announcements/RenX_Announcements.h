@@ -23,7 +23,6 @@
 #include "Jupiter/Timer.h"
 #include "Jupiter/File.h"
 #include "Jupiter/String.hpp"
-#include "Jupiter/CString.h"
 #include "Jupiter/Reference_String.h"
 #include "RenX_Plugin.h"
 

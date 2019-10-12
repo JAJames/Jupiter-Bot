@@ -25,7 +25,6 @@
  */
 
 #include "Jupiter/String.hpp"
-#include "Jupiter/CString.h"
 #include "RenX.h"
 #include "RenX_LadderDatabase.h"
 
@@ -52,8 +51,8 @@ namespace RenX
 		virtual bool initialize();
 
 		/** Global formats */
-		Jupiter::CStringS dateFmt;
-		Jupiter::CStringS timeFmt;
+		std::string dateFmt;
+		std::string timeFmt;
 
 		/** Global tags */
 		Jupiter::StringS INTERNAL_DATE_TAG;

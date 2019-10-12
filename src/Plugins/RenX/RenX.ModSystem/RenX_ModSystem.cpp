@@ -762,23 +762,15 @@ void DelIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &chan
 							source->sendNotice(nick, "Player has been removed from the moderator list."_jrs);
 						else
 						{
-							auto bucket_itr = pluginInstance.modsFile.getSections().begin();
-							auto bucket_end = pluginInstance.modsFile.getSections().end();
-
-							while (bucket_itr != bucket_end)
+							for (auto& section : pluginInstance.modsFile.getSections())
 							{
-								for (auto entry_itr = bucket_itr->m_entries.begin(); entry_itr != bucket_itr->m_entries.end(); ++entry_itr)
-								{
-									if (entry_itr->value.get("Name"_jrs).equalsi(parameters))
-									{
-										if (pluginInstance.modsFile.remove(entry_itr->key))
-											source->sendNotice(nick, "Player has been removed from the moderator list."_jrs);
-										else
-											source->sendNotice(nick, "Error: Unknown error occurred."_jrs);
+								if (section.second.get("Name"_jrs).equalsi(parameters)) {
+									if (pluginInstance.modsFile.remove(section.first))
+										source->sendNotice(nick, "Player has been removed from the moderator list."_jrs);
+									else
+										source->sendNotice(nick, "Error: Unknown error occurred."_jrs);
 
-										bucket_itr = bucket_end;
-										return;
-									}
+									return;
 								}
 							}
 
@@ -896,16 +888,13 @@ void ModListIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &
 		msg.aformat(IRCNORMAL " (Access: %d): ", node->access);
 		msgBaseSize = msg.size();
 
-		auto entry_callback = [&msg, &node](Jupiter::Config::SectionHashTable::Bucket::Entry &in_entry)
-		{
-			if (in_entry.value.get("Group"_jrs).equalsi(node->name))
+		for (auto& section : pluginInstance.modsFile.getSections()) {
+			if (section.second.get("Group"_jrs).equalsi(node->name))
 			{
-				msg += in_entry.value.get("Name"_jrs, in_entry.value.getName());
+				msg += section.second.get("Name"_jrs, section.second.getName());
 				msg += ", "_jrs;
 			}
-		};
-
-		pluginInstance.modsFile.getSections().callback(entry_callback);
+		}
 
 		if (msg.size() != msgBaseSize)
 		{

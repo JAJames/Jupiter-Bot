@@ -17,7 +17,6 @@
  */
 
 #include "Jupiter/IRC_Client.h"
-#include "Jupiter/CString.h"
 #include "RenX_Listen.h"
 #include "RenX_Core.h"
 #include "RenX_Server.h"
@@ -35,7 +34,7 @@ bool RenX_ListenPlugin::initialize()
 	const Jupiter::ReadableString &address = this->config.get("Address"_jrs, "0.0.0.0"_jrs);
 	RenX_ListenPlugin::serverSection = this->config.get("ServerSection"_jrs, this->getName());
 
-	return RenX_ListenPlugin::socket.bind(Jupiter::CStringS(address).c_str(), port, true) && RenX_ListenPlugin::socket.setBlocking(false);
+	return RenX_ListenPlugin::socket.bind(static_cast<std::string>(address).c_str(), port, true) && RenX_ListenPlugin::socket.setBlocking(false);
 }
 
 int RenX_ListenPlugin::think()
@@ -45,8 +44,8 @@ int RenX_ListenPlugin::think()
 	{
 		sock->setBlocking(false);
 		RenX::Server *server = new RenX::Server(std::move(*sock), RenX_ListenPlugin::serverSection);
-		printf("Incoming server connected from %.*s:%u" ENDL, server->getSocketHostname().size(), server->getSocketHostname().ptr(), server->getSocketPort());
-		server->sendLogChan("Incoming server connected from " IRCCOLOR "12%.*s:%u", server->getSocketHostname().size(), server->getSocketHostname().ptr(), server->getSocketPort());
+		printf("Incoming server connected from %.*s:%u" ENDL, server->getSocketHostname().size(), server->getSocketHostname().c_str(), server->getSocketPort());
+		server->sendLogChan("Incoming server connected from " IRCCOLOR "12%.*s:%u", server->getSocketHostname().size(), server->getSocketHostname().c_str(), server->getSocketPort());
 		RenX::getCore()->addServer(server);
 		delete sock;
 	}
@@ -65,7 +64,7 @@ int RenX_ListenPlugin::OnRehash()
 	{
 		puts("Notice: The Renegade-X listening socket has been changed!");
 		RenX_ListenPlugin::socket.close();
-		return RenX_ListenPlugin::socket.bind(Jupiter::CStringS(address).c_str(), port, true) == false || RenX_ListenPlugin::socket.setBlocking(false) == false;
+		return RenX_ListenPlugin::socket.bind(static_cast<std::string>(address).c_str(), port, true) == false || RenX_ListenPlugin::socket.setBlocking(false) == false;
 	}
 	return 0;
 }

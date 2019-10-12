@@ -258,23 +258,17 @@ Jupiter::GenericCommand::ResponseLine *DebugInfoGenericCommand::trigger(const Ju
 	line->next = new Jupiter::GenericCommand::ResponseLine(Jupiter::StringS::Format("Outputting data for %u channels...", server->getChannelCount()), GenericCommand::DisplayType::PublicSuccess);
 	line = line->next;
 
-	auto debug_callback = [&line](Jupiter::IRC::Client::ChannelTableType::Bucket::Entry &in_entry)
-	{
-		line->next = new Jupiter::GenericCommand::ResponseLine(Jupiter::StringS::Format("Channel %.*s - Type: %d", in_entry.value.getName().size(), in_entry.value.getName().ptr(), in_entry.value.getType()), GenericCommand::DisplayType::PublicSuccess);
+	for (auto& channel_pair : server->getChannels()) {
+		auto& channel = channel_pair.second;
+		line->next = new Jupiter::GenericCommand::ResponseLine(Jupiter::StringS::Format("Channel %.*s - Type: %d", channel.getName().size(), channel.getName().ptr(), channel.getType()), GenericCommand::DisplayType::PublicSuccess);
 		line = line->next;
 
-		auto debug_user_callback = [&line, &in_entry](Jupiter::IRC::Client::Channel::UserTableType::Bucket::Entry &in_user_entry)
-		{
-			Jupiter::IRC::Client::User *user = in_user_entry.value.getUser();
-			line->next = new Jupiter::GenericCommand::ResponseLine(Jupiter::StringS::Format("User %.*s!%.*s@%.*s (prefix: %c) of channel %.*s (of %u shared)", user->getNickname().size(), user->getNickname().ptr(), user->getUsername().size(), user->getUsername().ptr(), user->getHostname().size(), user->getHostname().ptr(), in_entry.value.getUserPrefix(in_user_entry.value) ? in_entry.value.getUserPrefix(in_user_entry.value) : ' ', in_entry.value.getName().size(), in_entry.value.getName().ptr(), user->getChannelCount()), GenericCommand::DisplayType::PublicSuccess);
+		for (auto& user_pair : channel.getUsers()) {
+			Jupiter::IRC::Client::User *user = user_pair.second.getUser();
+			line->next = new Jupiter::GenericCommand::ResponseLine(Jupiter::StringS::Format("User %.*s!%.*s@%.*s (prefix: %c) of channel %.*s (of %u shared)", user->getNickname().size(), user->getNickname().ptr(), user->getUsername().size(), user->getUsername().ptr(), user->getHostname().size(), user->getHostname().ptr(), channel.getUserPrefix(user_pair.second) ? channel.getUserPrefix(user_pair.second) : ' ', channel.getName().size(), channel.getName().ptr(), user->getChannelCount()), GenericCommand::DisplayType::PublicSuccess);
 			line = line->next;
 		};
-
-		in_entry.value.getUsers().callback(debug_user_callback);
 	};
-
-	for (unsigned int index = 0; index < server->getChannelCount(); ++index)
-		server->getChannels().callback(debug_callback);
 
 	return ret;
 }

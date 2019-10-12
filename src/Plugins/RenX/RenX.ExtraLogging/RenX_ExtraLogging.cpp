@@ -51,13 +51,13 @@ bool RenX_ExtraLoggingPlugin::initialize()
 	RenX_ExtraLoggingPlugin::consolePrefix = this->config.get("ConsolePrefix"_jrs, RenX_ExtraLoggingPlugin::filePrefix);
 	RenX_ExtraLoggingPlugin::newDayFmt = this->config.get("NewDayFormat"_jrs, Jupiter::StringS::Format("Time: %.*s %.*s", RenX::tags->timeTag.size(), RenX::tags->timeTag.ptr(), RenX::tags->dateTag.size(), RenX::tags->dateTag.ptr()));
 	RenX_ExtraLoggingPlugin::printToConsole = this->config.get<bool>("PrintToConsole"_jrs, true);
-	const Jupiter::CStringS logFile = this->config.get("LogFile"_jrs);
+	const std::string logFile = static_cast<std::string>(this->config.get("LogFile"_jrs));
 
 	RenX::sanitizeTags(RenX_ExtraLoggingPlugin::filePrefix);
 	RenX::sanitizeTags(RenX_ExtraLoggingPlugin::consolePrefix);
 	RenX::sanitizeTags(RenX_ExtraLoggingPlugin::newDayFmt);
 
-	if (logFile.isNotEmpty())
+	if (!logFile.empty())
 	{
 		RenX_ExtraLoggingPlugin::file = fopen(logFile.c_str(), "a+b");
 		if (RenX_ExtraLoggingPlugin::file != nullptr && RenX_ExtraLoggingPlugin::newDayFmt.isNotEmpty())
