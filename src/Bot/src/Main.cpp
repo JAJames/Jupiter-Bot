@@ -19,6 +19,7 @@
 #include <cstdlib>
 #include <cstdio>
 #include <cstring>
+#include <csignal>
 #include <exception>
 #include <thread>
 #include <mutex>
@@ -94,6 +95,10 @@ int main(int argc, const char **args)
 	std::thread inputThread(inputLoop);
 	Jupiter::ReferenceString command, plugins_directory, configs_directory;
 	size_t index;
+
+#if defined SIGPIPE
+	std::signal(SIGPIPE, SIG_IGN);
+#endif // SIGPIPE
 
 #if defined _WIN32
 	// Sets console to UTF-8
