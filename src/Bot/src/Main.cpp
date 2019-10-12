@@ -66,19 +66,17 @@ void onExit()
 
 void inputLoop()
 {
-	char input[INPUT_BUFFER_SIZE];
-	size_t input_length;
+	std::string input;
 	while (ftell(stdin) != -1 || errno != EBADF)
 	{
-		fgets(input, sizeof(input), stdin);
-		input_length = strcspn(input, "\r\n");
+		std::getline(std::cin, input);
 
 	check_input_processing:
 
 		std::lock_guard<std::mutex> guard(console_input.input_mutex);
 		if (console_input.awaiting_processing == false)
 		{
-			console_input.input.set(input, input_length);
+			console_input.input = input;
 			console_input.awaiting_processing = true;
 		}
 		else // User input received before previous input was processed.
@@ -210,11 +208,11 @@ int main(int argc, const char **args)
 			if (console_input.awaiting_processing)
 			{
 				console_input.awaiting_processing = false;
-				command = console_input.input.getWord(0, WHITESPACE);
+				command = Jupiter::ReferenceString::getWord(console_input.input, 0, WHITESPACE);
 
 				ConsoleCommand *cmd = getConsoleCommand(command);
 				if (cmd != nullptr)
-					cmd->trigger(console_input.input.gotoWord(1, WHITESPACE));
+					cmd->trigger(Jupiter::ReferenceString::gotoWord(console_input.input, 1, WHITESPACE));
 				else
 					printf("Error: Command \"%.*s\" not found." ENDL, command.size(), command.ptr());
 			}
