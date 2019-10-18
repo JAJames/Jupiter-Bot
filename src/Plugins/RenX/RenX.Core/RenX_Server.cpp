@@ -1433,7 +1433,7 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 		Jupiter::ReferenceString idToken = Jupiter::ReferenceString::getToken(data, 1, ',');
 		name = Jupiter::ReferenceString::gotoToken(data, 2, ',');
 		team = RenX::getTeam(Jupiter::ReferenceString::getToken(data, 0, ','));
-		if (idToken.get(0) == 'b')
+		if (idToken.isNotEmpty() && idToken.get(0) == 'b')
 		{
 			idToken.shiftRight(1);
 			isBot = true;
@@ -1444,6 +1444,12 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 	};
 	auto getPlayerOrAdd = [&](const Jupiter::ReadableString &name, int id, RenX::TeamType team, bool isBot, uint64_t steamid, const Jupiter::ReadableString &ip, const Jupiter::ReadableString &hwid)
 	{
+		if (id == 0) {
+			// Bad parse; return null player
+			static RenX::PlayerInfo s_null_player;
+			return &s_null_player;
+		}
+
 		RenX::PlayerInfo *player = this->getPlayer(id);
 		if (player == nullptr)
 		{
@@ -1528,9 +1534,12 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 
 		return player;
 	};
-	auto parseGetPlayerOrAdd = [&parsePlayerData, &getPlayerOrAdd](const Jupiter::ReadableString &token)
+	auto parseGetPlayerOrAdd = [&parsePlayerData, &getPlayerOrAdd, this](const Jupiter::ReadableString &token)
 	{
 		PARSE_PLAYER_DATA_P(token);
+		if (id == 0) {
+			sendAdmChan(IRCCOLOR "04[Error]" IRCCOLOR" Failed to parse player token: %.*s", token.size(), token.ptr());
+		}
 		return getPlayerOrAdd(name, id, team, isBot, 0U, Jupiter::ReferenceString::empty, Jupiter::ReferenceString::empty);
 	};
 	auto gotoToken = [&line, &tokens, this](size_t index)
