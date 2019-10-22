@@ -173,7 +173,9 @@ void RenX::BanDatabase::add(RenX::Server *server, const RenX::PlayerInfo &player
 	entry->steamid = player.steamid;
 	entry->ip = player.ip32;
 	entry->prefix_length = 32U;
-	entry->hwid = player.hwid;
+	if (player.hwid.span('0') != player.hwid.size()) {
+		entry->hwid = player.hwid;
+	}
 	if (player.rdns_thread.joinable())
 		player.rdns_thread.join();
 	entry->rdns = player.rdns;

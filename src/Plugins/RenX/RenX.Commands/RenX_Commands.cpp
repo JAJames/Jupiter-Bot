@@ -2008,6 +2008,65 @@ const Jupiter::ReadableString &TempBanIRCCommand::getHelp(const Jupiter::Readabl
 
 IRC_COMMAND_INIT(TempBanIRCCommand)
 
+// TempChatBan IRC Command
+
+void TempChatBanIRCCommand::create()
+{
+	this->addTrigger(STRING_LITERAL_AS_REFERENCE("tchatban"));
+	this->addTrigger(STRING_LITERAL_AS_REFERENCE("tcban"));
+	this->addTrigger(STRING_LITERAL_AS_REFERENCE("tempchatban"));
+	this->addTrigger(STRING_LITERAL_AS_REFERENCE("tcb"));
+	this->setAccessLevel(3);
+}
+
+void TempChatBanIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &channel, const Jupiter::ReadableString &nick, const Jupiter::ReadableString &parameters)
+{
+	if (parameters.isNotEmpty())
+	{
+		Jupiter::IRC::Client::Channel *chan = source->getChannel(channel);
+		if (chan != nullptr)
+		{
+			Jupiter::ArrayList<RenX::Server> servers = RenX::getCore()->getServers(chan->getType());
+			if (servers.size() != 0)
+			{
+				RenX::PlayerInfo *player;
+				RenX::Server *server;
+				unsigned int mutes = 0;
+				Jupiter::ReferenceString name = Jupiter::ReferenceString::getWord(parameters, 0, WHITESPACE);
+				Jupiter::ReferenceString reason = parameters.wordCount(WHITESPACE) > 1 ? Jupiter::ReferenceString::gotoWord(parameters, 1, WHITESPACE) : "No reason"_jrs;
+				Jupiter::String banner(nick.size() + 4);
+				banner += nick;
+				banner += "@IRC";
+				for (size_t i = 0; i != servers.size(); i++)
+				{
+					server = servers.get(i);
+					if (server != nullptr)
+					{
+						player = server->getPlayerByPartName(name);
+						if (player != nullptr)
+						{
+							server->mute(*player);
+							RenX::banDatabase->add(server, *player, banner, reason, pluginInstance.getTBanTime(), RenX::BanDatabase::Entry::FLAG_TYPE_CHAT);
+							mutes++;
+						}
+					}
+				}
+				source->sendMessage(channel, Jupiter::StringS::Format("%u players chat banned.", mutes));
+			}
+			else source->sendMessage(channel, STRING_LITERAL_AS_REFERENCE("Error: Channel not attached to any connected Renegade X servers."));
+		}
+	}
+	else source->sendNotice(nick, STRING_LITERAL_AS_REFERENCE("Error: Too Few Parameters. Syntax: TempChatBan <Player> [Reason]"));
+}
+
+const Jupiter::ReadableString &TempChatBanIRCCommand::getHelp(const Jupiter::ReadableString &)
+{
+	static STRING_LITERAL_AS_NAMED_REFERENCE(defaultHelp, "Mutes and temporarily chat bans a player from the game. Syntax: TempChatBan <Player> [Reason]");
+	return defaultHelp;
+}
+
+IRC_COMMAND_INIT(TempChatBanIRCCommand)
+
 // KickBan IRC Command
 
 void KickBanIRCCommand::create()
@@ -3463,7 +3522,7 @@ GAME_COMMAND_INIT(KickGameCommand)
 void TempBanGameCommand::create()
 {
 	this->addTrigger(STRING_LITERAL_AS_REFERENCE("tban"));
-	this->addTrigger(STRING_LITERAL_AS_REFERENCE("tempbank"));
+	this->addTrigger(STRING_LITERAL_AS_REFERENCE("tempban"));
 	this->addTrigger(STRING_LITERAL_AS_REFERENCE("tb"));
 	this->setAccessLevel(1);
 }
@@ -3504,6 +3563,55 @@ const Jupiter::ReadableString &TempBanGameCommand::getHelp(const Jupiter::Readab
 }
 
 GAME_COMMAND_INIT(TempBanGameCommand)
+
+// TempChatBan Game Command
+
+void TempChatBanGameCommand::create()
+{
+	this->addTrigger(STRING_LITERAL_AS_REFERENCE("tchatban"));
+	this->addTrigger(STRING_LITERAL_AS_REFERENCE("tcban"));
+	this->addTrigger(STRING_LITERAL_AS_REFERENCE("tempchatban"));
+	this->addTrigger(STRING_LITERAL_AS_REFERENCE("tcb"));
+	this->setAccessLevel(1);
+}
+
+void TempChatBanGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *player, const Jupiter::ReadableString &parameters)
+{
+	if (parameters.isNotEmpty())
+	{
+		Jupiter::StringS name = Jupiter::StringS::getWord(parameters, 0, WHITESPACE);
+		Jupiter::StringS reason;
+		if (parameters.wordCount(WHITESPACE) > 1) {
+			reason = Jupiter::StringS::gotoWord(parameters, 1, WHITESPACE);
+		}
+		else {
+			reason = STRING_LITERAL_AS_REFERENCE("No reason");
+		}
+		RenX::PlayerInfo *target = source->getPlayerByPartName(name);
+		if (target == nullptr)
+			source->sendMessage(*player, "Error: Player not found."_jrs);
+		else if (player == target)
+			source->sendMessage(*player, "Error: You can not ban yourself."_jrs);
+		else if (target->access >= player->access)
+			source->sendMessage(*player, "Error: You can not ban higher level "_jrs + pluginInstance.getStaffTitle() + "s."_jrs);
+		else
+		{
+			source->mute(*target);
+			RenX::banDatabase->add(source, *target, player->name, reason, pluginInstance.getTBanTime(), RenX::BanDatabase::Entry::FLAG_TYPE_CHAT);
+			source->sendMessage(*player, "Player has been temporarily muted and chat banned from the game."_jrs);
+		}
+	}
+	else
+		source->sendMessage(*player, "Error: Too few parameters. Syntax: tchatban <player> [Reason]"_jrs);
+}
+
+const Jupiter::ReadableString &TempChatBanGameCommand::getHelp(const Jupiter::ReadableString &)
+{
+	static STRING_LITERAL_AS_NAMED_REFERENCE(defaultHelp, "Mutes and temporarily chat bans a player from the game. Syntax: tchatban <player> [Reason]");
+	return defaultHelp;
+}
+
+GAME_COMMAND_INIT(TempChatBanGameCommand)
 
 // KickBan Game Command
 
