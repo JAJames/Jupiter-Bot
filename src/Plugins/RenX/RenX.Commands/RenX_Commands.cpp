@@ -3517,6 +3517,52 @@ const Jupiter::ReadableString &KickGameCommand::getHelp(const Jupiter::ReadableS
 
 GAME_COMMAND_INIT(KickGameCommand)
 
+// Mute Game Command
+
+void MuteGameCommand::create()
+{
+	this->addTrigger(STRING_LITERAL_AS_REFERENCE("mute"));
+	this->setAccessLevel(1);
+}
+
+void MuteGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *player, const Jupiter::ReadableString &parameters)
+{
+	if (parameters.isNotEmpty())
+	{
+		Jupiter::StringS name = Jupiter::StringS::getWord(parameters, 0, WHITESPACE);
+		Jupiter::StringS reason;
+		if (parameters.wordCount(WHITESPACE) > 1) {
+			reason = Jupiter::StringS::gotoWord(parameters, 1, WHITESPACE);
+		}
+		else {
+			reason = STRING_LITERAL_AS_REFERENCE("No reason");
+		}
+		RenX::PlayerInfo *target = source->getPlayerByPartName(name);
+		if (target == nullptr)
+			source->sendMessage(*player, "Error: Player not found."_jrs);
+		else if (player == target)
+			source->sendMessage(*player, "Error: You cannot mute yourself."_jrs);
+		else if (target->access >= player->access)
+			source->sendMessage(*player, "Error: You can not mute higher level "_jrs + pluginInstance.getStaffTitle() + "s."_jrs);
+		else
+		{
+			source->mute(*target);
+			source->sendMessage(*target, "You have been muted for: "_jrs + reason);
+			source->sendMessage(*player, "Player has been muted from chat."_jrs);
+		}
+	}
+	else
+		source->sendMessage(*player, "Error: Too few parameters. Syntax: mute <player> [Reason]"_jrs);
+}
+
+const Jupiter::ReadableString &MuteGameCommand::getHelp(const Jupiter::ReadableString &)
+{
+	static STRING_LITERAL_AS_NAMED_REFERENCE(defaultHelp, "Mutes a player from chat. Syntax: mute <player> [Reason]");
+	return defaultHelp;
+}
+
+GAME_COMMAND_INIT(MuteGameCommand)
+
 // TempBan Game Command
 
 void TempBanGameCommand::create()
