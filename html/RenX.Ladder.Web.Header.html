@@ -1,0 +1,147 @@
+
+<!DOCTYPE html>
+
+<html lang="en">
+	<head>
+		<meta charset="UTF-8">
+		<meta name="description" content="Renegade X Leaderboard">
+		<meta name="keywords" content="Renegade,Renegade X,Leaderboard,Ladder,Rank">
+		<title>Renegade X Leaderboard</title>
+		<link rel="icon" type="image/ico" href="//renegade-x.com/favicon.ico" />
+		<link rel="stylesheet" href="//renegade-x.com/styles/stylesheet.css">
+		<script src="//renegade-x.com/includes/leaderboard/sorttable.js"></script>
+		<style>
+div#leaderboard {
+	width: 750px;
+	margin: 0 auto;
+	position: relative;
+}
+table {
+	margin: 0 auto;
+}
+span.leaderboard-page {
+	margin: 0 3px;
+	padding: 2px;
+	border: 1px solid #545454;
+}
+#leaderboard-paging {
+	margin-top: 10px;
+}
+#leaderboard-paging span {
+	display: inline-block;
+	margin-top: 10px;
+}
+input.leaderboard-button {
+	padding: 3px;
+}
+input.leaderboard-search-input {
+	margin-right: 5px;
+	padding: 3px;
+}
+form.leaderboard-search {
+	display: inline-block;
+	position: relative;
+	left: 2.5%;
+}
+form.database-select-form {
+	display: inline-block;
+	position: absolute;
+	right: 5%;
+}
+select.database-select {
+	background-color: rgba(53,186,255,.2);
+	border: 1px solid rgba(53,186,255,.2);
+	color: #fff;
+	padding: 3px;
+	padding-right: 8px;
+	margin-right: 5px;
+}
+
+
+
+table.leaderboard {
+	margin: 0 auto;
+	position: relative;
+	border: 2px solid rgba(53,186,255,.2);
+	width: 95%;
+	border-spacing: 0;
+}
+table.leaderboard tr {
+	border-top:1px solid #fff;
+}
+table.leaderboard tr:hover {
+	background-color: #545454;
+}
+table.leaderboard th {
+	border-left: none;
+	border-right: none;
+	text-align: center;
+	padding-top: 4px;
+	padding-bottom: 4px;
+}
+th.header-col-a {
+	background-color: rgba(53,186,255,.1);
+}
+th.header-col-b {
+	background-color: rgba(53,186,255,.15);
+}
+table.leaderboard td {
+	text-align: center;
+	padding-left: 5px;
+	padding-right: 5px;
+	padding-top: 3px;
+	padding-bottom: 3px;
+}
+td.data-col-a {
+	background-color: rgba(53,186,255,.05);
+}
+td.data-col-b {
+	background-color: rgba(53,186,255,.1);
+}
+h2.leaderboard-table-head {
+	margin: 0 auto;
+	position: relative;
+	width: 95%;
+	border-spacing: 0;
+	margin-top: 10px;
+	
+	border-left: none;
+	border-right: none;
+	text-align: center;
+	padding-top: 5px;
+	padding-bottom: 4px;
+	
+	background-color: rgba(53,186,255,.2);
+}
+
+table.sortable th:not(.sorttable_nosort) { 
+    cursor: pointer;
+}
+table.sortable th:not(.sorttable_sorted):not(.sorttable_sorted_reverse):not(.sorttable_nosort):after { 
+    content: " \25B4\25BE" 
+}
+		</style>
+	</head>
+
+	<body>
+		<div id="wrapper">
+			<header>
+				<a href="//renegade-x.com">
+					<img src="//renegade-x.com/images/logo_min.png" alt="Renegade X logo">
+				</a>
+				<nav>
+					<ul>
+						<li><a href="//renegade-x.com">Home</a></li>
+						<li><a href="//wiki.renegade-x.com/">Wiki</a></li>
+						<li><a href="//renegade-x.com/forums/">Forums</a></li>
+						<li><a href="/">Leaderboard</a></li>
+						<li id="lastchild"><a href="//renegade-x.com/files/"><strong>Downloads</strong></a></li>
+					</ul>
+				</nav>
+			</header>
+			<div id="leaderboard">
+				<section class="main">
+					<div class="topleftcorner"></div>
+					<div class="toprightcorner"></div>
+					<div class="bottomleftcorner"></div>
+					<div class="bottomrightcorner"></div>
