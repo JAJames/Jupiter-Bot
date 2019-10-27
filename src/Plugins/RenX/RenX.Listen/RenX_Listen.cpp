@@ -60,7 +60,7 @@ int RenX_ListenPlugin::OnRehash()
 	const Jupiter::ReadableString &address = this->config.get("Address"_jrs, "0.0.0.0"_jrs);
 	RenX_ListenPlugin::serverSection = this->config.get("ServerSection"_jrs, this->getName());
 
-	if (port != RenX_ListenPlugin::socket.getRemotePort() || address.equals(RenX_ListenPlugin::socket.getRemoteHostname()) == false)
+	if (port != RenX_ListenPlugin::socket.getBoundPort() || address.equals(RenX_ListenPlugin::socket.getBoundHostname()) == false)
 	{
 		puts("Notice: The Renegade-X listening socket has been changed!");
 		RenX_ListenPlugin::socket.close();
