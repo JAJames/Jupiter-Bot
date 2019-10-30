@@ -228,6 +228,14 @@ namespace RenX
 		int send(const Jupiter::ReadableString &command);
 
 		/**
+		 * @brief Sends text over the socket
+		 *
+		 * @param text Text to send
+		 * @return The number of bytes sent on success, less than or equal to zero otherwise.
+		 */
+		 int sendSocket(const Jupiter::ReadableString &text);
+
+		/**
 		* @brief Sends an in-game message to the server.
 		*
 		* @param message Message to send in-game.
@@ -1007,6 +1015,7 @@ namespace RenX
 	private:
 		void init(const Jupiter::Config &config);
 		void wipePlayers();
+		void startPing();
 
 		/** Tracking variables */
 		bool gameover_when_empty = false;
@@ -1049,6 +1058,7 @@ namespace RenX
 		std::chrono::steady_clock::time_point lastClientListUpdate = std::chrono::steady_clock::now();
 		std::chrono::steady_clock::time_point lastBuildingListUpdate = std::chrono::steady_clock::now();
 		std::chrono::steady_clock::time_point lastActivity = std::chrono::steady_clock::now();
+		std::chrono::steady_clock::time_point lastSendActivity = std::chrono::steady_clock::now();
 		std::chrono::steady_clock::time_point gameover_time;
 		Jupiter::String lastLine;
 		Jupiter::StringS rconUser;

@@ -113,11 +113,8 @@ int RenX::Server::think()
 		{
 			cycle_player_rdns();
 
-			if (RenX::Server::awaitingPong == false && std::chrono::steady_clock::now() - RenX::Server::lastActivity >= RenX::Server::pingRate)
-			{
-				RenX::Server::lastActivity = std::chrono::steady_clock::now();
-				RenX::Server::sock.send("cping\n"_jrs);
-				RenX::Server::awaitingPong = true;
+			if (RenX::Server::awaitingPong == false && std::chrono::steady_clock::now() - RenX::Server::lastActivity >= RenX::Server::pingRate) {
+				startPing();
 			}
 		}
 		else // This is a serious error
@@ -139,6 +136,7 @@ int RenX::Server::think()
 			return 0;
 		}
 
+		// Updating client and building lists, if there is a game in progress and it's time for an update
 		if (RenX::Server::rconVersion >= 3 && RenX::Server::players.size() != 0)
 		{
 			if (RenX::Server::clientUpdateRate != std::chrono::milliseconds::zero() && std::chrono::steady_clock::now() > RenX::Server::lastClientListUpdate + RenX::Server::clientUpdateRate)
@@ -148,10 +146,16 @@ int RenX::Server::think()
 				RenX::Server::updateBuildingList();
 		}
 
+		// Trigger gameover, if one is pending
 		if (RenX::Server::gameover_pending && RenX::Server::gameover_time < std::chrono::steady_clock::now())
 		{
 			this->gameover();
 			RenX::Server::gameover_pending = false;
+		}
+
+		// Trigger ping if we haven't sent anything over the socket in a while, to prevent the server from disconnecting
+		if (RenX::Server::awaitingPong == false && std::chrono::steady_clock::now() - RenX::Server::lastSendActivity >= RenX::Server::pingRate) {
+			startPing();
 		}
 	}
 	return 0;
@@ -275,7 +279,13 @@ bool RenX::Server::isPure() const
 
 int RenX::Server::send(const Jupiter::ReadableString &command)
 {
-	return RenX::Server::sock.send("c"_jrs + RenX::escapifyRCON(command) + '\n');
+	return RenX::Server::sendSocket("c"_jrs + RenX::escapifyRCON(command) + '\n');
+}
+
+int RenX::Server::sendSocket(const Jupiter::ReadableString &text)
+{
+	lastSendActivity = std::chrono::steady_clock::now();
+	return sock.send(text);
 }
 
 int RenX::Server::sendMessage(const Jupiter::ReadableString &message)
@@ -287,21 +297,21 @@ int RenX::Server::sendMessage(const Jupiter::ReadableString &message)
 		if (RenX::Server::players.size() != 0)
 			for (auto node = this->players.begin(); node != this->players.end(); ++node)
 				if (node->isBot == false)
-					r += RenX::Server::sock.send(Jupiter::StringS::Format("chostprivatesay pid%d %.*s\n", node->id, msg.size(), msg.ptr()));
+					r += RenX::Server::sendSocket(Jupiter::StringS::Format("chostprivatesay pid%d %.*s\n", node->id, msg.size(), msg.ptr()));
 		return r;
 	}
 	else
-		return RenX::Server::sock.send("chostsay "_jrs + msg + '\n');
+		return RenX::Server::sendSocket("chostsay "_jrs + msg + '\n');
 }
 
 int RenX::Server::sendMessage(const RenX::PlayerInfo &player, const Jupiter::ReadableString &message)
 {
-	return RenX::Server::sock.send("chostprivatesay pid"_jrs + Jupiter::StringS::Format("%d ", player.id) + RenX::escapifyRCON(message) + '\n');
+	return RenX::Server::sendSocket("chostprivatesay pid"_jrs + Jupiter::StringS::Format("%d ", player.id) + RenX::escapifyRCON(message) + '\n');
 }
 
 int RenX::Server::sendData(const Jupiter::ReadableString &data)
 {
-	return RenX::Server::sock.send(data);
+	return RenX::Server::sendSocket(data);
 }
 
 RenX::BuildingInfo *RenX::Server::getBuildingByName(const Jupiter::ReadableString &name) const
@@ -459,9 +469,9 @@ void RenX::Server::kickPlayer(int id, const Jupiter::ReadableString &in_reason)
 	Jupiter::String reason = RenX::escapifyRCON(in_reason);
 
 	if (reason.isEmpty())
-		RenX::Server::sock.send(Jupiter::StringS::Format("ckick pid%d\n", id));
+		RenX::Server::sendSocket(Jupiter::StringS::Format("ckick pid%d\n", id));
 	else
-		RenX::Server::sock.send(Jupiter::StringS::Format("ckick pid%d %.*s\n", id, reason.size(), reason.ptr()));
+		RenX::Server::sendSocket(Jupiter::StringS::Format("ckick pid%d %.*s\n", id, reason.size(), reason.ptr()));
 }
 
 void RenX::Server::kickPlayer(const RenX::PlayerInfo &player, const Jupiter::ReadableString &reason)
@@ -475,9 +485,9 @@ void RenX::Server::forceKickPlayer(int id, const Jupiter::ReadableString &in_rea
 	Jupiter::String reason = RenX::escapifyRCON(in_reason);
 
 	if (reason.isEmpty())
-		RenX::Server::sock.send(Jupiter::StringS::Format("cfkick pid%d You were kicked from the server.\n", id));
+		RenX::Server::sendSocket(Jupiter::StringS::Format("cfkick pid%d You were kicked from the server.\n", id));
 	else
-		RenX::Server::sock.send(Jupiter::StringS::Format("cfkick pid%d %.*s\n", id, reason.size(), reason.ptr()));
+		RenX::Server::sendSocket(Jupiter::StringS::Format("cfkick pid%d %.*s\n", id, reason.size(), reason.ptr()));
 }
 
 void RenX::Server::forceKickPlayer(const RenX::PlayerInfo &player, const Jupiter::ReadableString &reason)
@@ -656,7 +666,7 @@ void RenX::Server::banPlayer(int id, const Jupiter::ReadableString &banner, cons
 	if (RenX::Server::rconBan)
 	{
 		Jupiter::String out_reason = RenX::escapifyRCON(reason);
-		RenX::Server::sock.send(Jupiter::StringS::Format("ckickban pid%d %.*s\n", id, out_reason.size(), out_reason.ptr()));
+		RenX::Server::sendSocket(Jupiter::StringS::Format("ckickban pid%d %.*s\n", id, out_reason.size(), out_reason.ptr()));
 	}
 	else
 	{
@@ -678,7 +688,7 @@ void RenX::Server::banPlayer(const RenX::PlayerInfo &player, const Jupiter::Read
 			if (RenX::Server::rconBan)
 			{
 				Jupiter::String out_reason = RenX::escapifyRCON(reason);
-				RenX::Server::sock.send(Jupiter::StringS::Format("ckickban pid%d %.*s\n", player.id, out_reason.size(), out_reason.ptr()));
+				RenX::Server::sendSocket(Jupiter::StringS::Format("ckickban pid%d %.*s\n", player.id, out_reason.size(), out_reason.ptr()));
 			}
 			else if (banner.isNotEmpty())
 				RenX::Server::forceKickPlayer(player, Jupiter::StringS::Format("You are permanently banned from %.*s by %.*s for: %.*s", RenX::Server::ban_from_str.size(), RenX::Server::ban_from_str.ptr(), banner.size(), banner.ptr(), reason.size(), reason.ptr()));
@@ -730,11 +740,11 @@ bool RenX::Server::fetchClientList()
 {
 	RenX::Server::lastClientListUpdate = std::chrono::steady_clock::now();
 	if (this->rconVersion >= 4)
-		return RenX::Server::sock.send("cclientvarlist KILLS DEATHS SCORE CREDITS CHARACTER VEHICLE PING ADMIN STEAM IP HWID PLAYERLOG\n"_jrs) > 0
-			&& RenX::Server::sock.send("cbotvarlist KILLS DEATHS SCORE CREDITS CHARACTER VEHICLE PLAYERLOG\n"_jrs) > 0;
+		return RenX::Server::sendSocket("cclientvarlist KILLS DEATHS SCORE CREDITS CHARACTER VEHICLE PING ADMIN STEAM IP HWID PLAYERLOG\n"_jrs) > 0
+			&& RenX::Server::sendSocket("cbotvarlist KILLS DEATHS SCORE CREDITS CHARACTER VEHICLE PLAYERLOG\n"_jrs) > 0;
 	else
-		return RenX::Server::sock.send("cclientvarlist KILLS\xA0""DEATHS\xA0""SCORE\xA0""CREDITS\xA0""CHARACTER\xA0""VEHICLE\xA0""PING\xA0""ADMIN\xA0""STEAM\xA0""IP\xA0""PLAYERLOG\n"_jrs) > 0
-			&& RenX::Server::sock.send("cbotvarlist KILLS\xA0""DEATHS\xA0""SCORE\xA0""CREDITS\xA0""CHARACTER\xA0""VEHICLE\xA0""PLAYERLOG\n"_jrs) > 0;
+		return RenX::Server::sendSocket("cclientvarlist KILLS\xA0""DEATHS\xA0""SCORE\xA0""CREDITS\xA0""CHARACTER\xA0""VEHICLE\xA0""PING\xA0""ADMIN\xA0""STEAM\xA0""IP\xA0""PLAYERLOG\n"_jrs) > 0
+			&& RenX::Server::sendSocket("cbotvarlist KILLS\xA0""DEATHS\xA0""SCORE\xA0""CREDITS\xA0""CHARACTER\xA0""VEHICLE\xA0""PLAYERLOG\n"_jrs) > 0;
 }
 
 bool RenX::Server::updateClientList()
@@ -745,17 +755,17 @@ bool RenX::Server::updateClientList()
 	if (RenX::Server::players.size() != this->getBotCount())
 	{
 		if (this->rconVersion >= 4)
-			r = RenX::Server::sock.send("cclientvarlist ID SCORE CREDITS PING\n"_jrs) > 0;
+			r = RenX::Server::sendSocket("cclientvarlist ID SCORE CREDITS PING\n"_jrs) > 0;
 		else
-			r = RenX::Server::sock.send("cclientvarlist ID\xA0""SCORE\xA0""CREDITS\xA0""PING\n"_jrs) > 0;
+			r = RenX::Server::sendSocket("cclientvarlist ID\xA0""SCORE\xA0""CREDITS\xA0""PING\n"_jrs) > 0;
 	}
 
 	if (this->getBotCount() != 0)
 	{
 		if (this->rconVersion >= 4)
-			r |= RenX::Server::sock.send("cbotvarlist ID SCORE CREDITS\n"_jrs) > 0;
+			r |= RenX::Server::sendSocket("cbotvarlist ID SCORE CREDITS\n"_jrs) > 0;
 		else
-			r |= RenX::Server::sock.send("cbotvarlist ID\xA0""SCORE\xA0""CREDITS\n"_jrs) > 0;
+			r |= RenX::Server::sendSocket("cbotvarlist ID\xA0""SCORE\xA0""CREDITS\n"_jrs) > 0;
 	}
 
 	return r != 0;
@@ -764,7 +774,7 @@ bool RenX::Server::updateClientList()
 bool RenX::Server::updateBuildingList()
 {
 	RenX::Server::lastBuildingListUpdate = std::chrono::steady_clock::now();
-	return RenX::Server::sock.send("cbinfo\n"_jrs) > 0;
+	return RenX::Server::sendSocket("cbinfo\n"_jrs) > 0;
 }
 
 bool RenX::Server::gameover()
@@ -3370,7 +3380,7 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 						}
 					}
 
-					RenX::Server::sock.send("s\n"_jrs);
+					RenX::Server::sendSocket("s\n"_jrs);
 					RenX::Server::send("serverinfo"_jrs);
 					RenX::Server::send("gameinfo"_jrs);
 					RenX::Server::send("gameinfo bIsCompetitive"_jrs);
@@ -3436,7 +3446,7 @@ bool RenX::Server::connect()
 	if (RenX::Server::sock.connect(RenX::Server::hostname.c_str(), RenX::Server::port, RenX::Server::clientHostname.empty() ? nullptr : RenX::Server::clientHostname.c_str()))
 	{
 		RenX::Server::sock.setBlocking(false);
-		RenX::Server::sock.send(Jupiter::StringS::Format("a%.*s\n", RenX::Server::pass.size(), RenX::Server::pass.ptr()));
+		RenX::Server::sendSocket(Jupiter::StringS::Format("a%.*s\n", RenX::Server::pass.size(), RenX::Server::pass.ptr()));
 		RenX::Server::connected = true;
 		RenX::Server::attempts = 0;
 		return true;
@@ -3492,6 +3502,13 @@ void RenX::Server::wipePlayers()
 	}
 }
 
+void RenX::Server::startPing()
+{
+	RenX::Server::lastActivity = std::chrono::steady_clock::now();
+	RenX::Server::sendSocket("cping\n"_jrs);
+	RenX::Server::awaitingPong = true;
+}
+
 unsigned int RenX::Server::getVersion() const
 {
 	return RenX::Server::rconVersion;
@@ -3516,7 +3533,7 @@ RenX::Server::Server(Jupiter::Socket &&socket, const Jupiter::ReadableString &co
 {
 	RenX::Server::sock = std::move(socket);
 	RenX::Server::hostname = RenX::Server::sock.getRemoteHostname();
-	RenX::Server::sock.send(Jupiter::StringS::Format("a%.*s\n", RenX::Server::pass.size(), RenX::Server::pass.ptr()));
+	RenX::Server::sendSocket(Jupiter::StringS::Format("a%.*s\n", RenX::Server::pass.size(), RenX::Server::pass.ptr()));
 	RenX::Server::connected = true;
 }
 
