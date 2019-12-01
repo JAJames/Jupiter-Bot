@@ -2713,11 +2713,11 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 					}
 					else if (subHeader.equals("TeamJoin;"))
 					{
-						// Player | "joined" | Team
-						// Player | "joined" | Team | "left" | Old Team
+						// Player | "joined" | Team | "score" | Score | "last round score" | Score | "time" | Timestamp
+						// Player | "joined" | Team | "left" | Old Team | "score" | Score | "last round score" | Score | "time" | Timestamp
 						RenX::PlayerInfo *player = parseGetPlayerOrAdd(tokens.getToken(2));
 						player->character = Jupiter::ReferenceString::empty;
-						if (tokens.token_count > 4)
+						if (tokens.getToken(5) == "left")
 						{
 							RenX::TeamType oldTeam = RenX::getTeam(tokens.getToken(6));
 							if (oldTeam != RenX::TeamType::None)
