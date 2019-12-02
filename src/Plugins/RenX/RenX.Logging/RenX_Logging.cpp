@@ -43,6 +43,8 @@ bool RenX_LoggingPlugin::initialize()
 	RenX_LoggingPlugin::radioChatPublic = this->config.get<bool>("RadioChatPublic"_jrs, false);
 	RenX_LoggingPlugin::hostChatPublic = this->config.get<bool>("HostChatPublic"_jrs, true);
 	RenX_LoggingPlugin::hostPagePublic = this->config.get<bool>("HostPagePublic"_jrs, false);
+	RenX_LoggingPlugin::adminMessagePublic = this->config.get<bool>("AdminMessagePublic"_jrs, true);
+	RenX_LoggingPlugin::adminPMessagePublic = this->config.get<bool>("AdminPagePublic"_jrs, false);
 	RenX_LoggingPlugin::otherChatPublic = this->config.get<bool>("OtherChatPublic"_jrs, false);
 	RenX_LoggingPlugin::deployPublic = this->config.get<bool>("DeployPublic"_jrs, true);
 	RenX_LoggingPlugin::mineDeployPublic = this->config.get<bool>("MineDeployPublic"_jrs, false);
@@ -164,6 +166,18 @@ bool RenX_LoggingPlugin::initialize()
 
 	RenX_LoggingPlugin::hostPageFmt = this->config.get("HostPageFormat"_jrs,
 		Jupiter::StringS::Format(IRCCOLOR "12(Host -> %.*s): %.*s", RenX::tags->rawNameTag.size(), RenX::tags->rawNameTag.ptr(), RenX::tags->messageTag.size(), RenX::tags->messageTag.ptr()));
+
+	RenX_LoggingPlugin::adminMsgFmt = this->config.get("AdminMsgFormat"_jrs,
+		Jupiter::StringS::Format(IRCCOLOR "10%.*s: %.*s", RenX::tags->rawNameTag.size(), RenX::tags->rawNameTag.ptr(), RenX::tags->messageTag.size(), RenX::tags->messageTag.ptr()));
+
+	RenX_LoggingPlugin::warnMsgFmt = this->config.get("WarnMsgFormat"_jrs,
+		Jupiter::StringS::Format(IRCCOLOR "07%.*s: %.*s", RenX::tags->rawNameTag.size(), RenX::tags->rawNameTag.ptr(), RenX::tags->messageTag.size(), RenX::tags->messageTag.ptr()));
+
+	RenX_LoggingPlugin::pAdminMsgFmt = this->config.get("PAdminMsgFormat"_jrs,
+		Jupiter::StringS::Format(IRCCOLOR "10(%.*s -> %.*s): %.*s", RenX::tags->rawNameTag.size(), RenX::tags->rawNameTag.ptr(), RenX::tags->victimRawNameTag.size(), RenX::tags->victimRawNameTag.ptr(), RenX::tags->messageTag.size(), RenX::tags->messageTag.ptr()));
+
+	RenX_LoggingPlugin::pWarnMsgFmt = this->config.get("PWarnMsgFormat"_jrs,
+		Jupiter::StringS::Format(IRCCOLOR "07(%.*s -> %.*s): %.*s", RenX::tags->rawNameTag.size(), RenX::tags->rawNameTag.ptr(), RenX::tags->victimRawNameTag.size(), RenX::tags->victimRawNameTag.ptr(), RenX::tags->messageTag.size(), RenX::tags->messageTag.ptr()));
 
 	RenX_LoggingPlugin::otherChatFmt = this->config.get("OtherChatFormat"_jrs,
 		Jupiter::StringS::Format(IRCCOLOR "06[Other Chat]" IRCCOLOR " %.*s", RenX::tags->messageTag.size(), RenX::tags->messageTag.ptr()));
@@ -503,6 +517,10 @@ bool RenX_LoggingPlugin::initialize()
 	RenX::sanitizeTags(devBotExecuteFmt);
 	RenX::sanitizeTags(hostChatFmt);
 	RenX::sanitizeTags(hostPageFmt);
+	RenX::sanitizeTags(adminMsgFmt);
+	RenX::sanitizeTags(warnMsgFmt);
+	RenX::sanitizeTags(pAdminMsgFmt);
+	RenX::sanitizeTags(pWarnMsgFmt);
 	RenX::sanitizeTags(subscribeFmt);
 	RenX::sanitizeTags(rconFmt);
 	RenX::sanitizeTags(adminLoginFmt);
@@ -814,6 +832,150 @@ void RenX_LoggingPlugin::RenX_OnHostPage(RenX::Server &server, const RenX::Playe
 	if (msg.isNotEmpty())
 	{
 		RenX::processTags(msg, &server, &player);
+		msg.replace(RenX::tags->INTERNAL_MESSAGE_TAG, message);
+		(server.*func)(msg);
+	}
+}
+
+void RenX_LoggingPlugin::RenX_OnAdminMessage(RenX::Server &server, const RenX::PlayerInfo &player, const Jupiter::ReadableString &message)
+{
+	logFuncType func;
+	if (RenX_LoggingPlugin::adminMessagePublic)
+		func = &RenX::Server::sendLogChan;
+	else
+		func = &RenX::Server::sendAdmChan;
+
+	Jupiter::String msg = this->adminMsgFmt;
+	if (msg.isNotEmpty())
+	{
+		RenX::processTags(msg, &server, &player);
+		msg.replace(RenX::tags->INTERNAL_MESSAGE_TAG, message);
+		(server.*func)(msg);
+	}
+}
+
+void RenX_LoggingPlugin::RenX_OnWarnMessage(RenX::Server &server, const RenX::PlayerInfo &player, const Jupiter::ReadableString &message)
+{
+	logFuncType func;
+	if (RenX_LoggingPlugin::adminMessagePublic)
+		func = &RenX::Server::sendLogChan;
+	else
+		func = &RenX::Server::sendAdmChan;
+
+	Jupiter::String msg = this->warnMsgFmt;
+	if (msg.isNotEmpty())
+	{
+		RenX::processTags(msg, &server, &player);
+		msg.replace(RenX::tags->INTERNAL_MESSAGE_TAG, message);
+		(server.*func)(msg);
+	}
+}
+
+void RenX_LoggingPlugin::RenX_OnAdminPMessage(RenX::Server &server, const RenX::PlayerInfo &player, const RenX::PlayerInfo &target, const Jupiter::ReadableString &message)
+{
+	logFuncType func;
+	if (RenX_LoggingPlugin::adminPMessagePublic)
+		func = &RenX::Server::sendLogChan;
+	else
+		func = &RenX::Server::sendAdmChan;
+
+	Jupiter::String msg = this->pAdminMsgFmt;
+	if (msg.isNotEmpty())
+	{
+		RenX::processTags(msg, &server, &player, &target);
+		msg.replace(RenX::tags->INTERNAL_MESSAGE_TAG, message);
+		(server.*func)(msg);
+	}
+}
+
+void RenX_LoggingPlugin::RenX_OnWarnPMessage(RenX::Server &server, const RenX::PlayerInfo &player, const RenX::PlayerInfo &target, const Jupiter::ReadableString &message)
+{
+	logFuncType func;
+	if (RenX_LoggingPlugin::adminPMessagePublic)
+		func = &RenX::Server::sendLogChan;
+	else
+		func = &RenX::Server::sendAdmChan;
+
+	Jupiter::String msg = this->pWarnMsgFmt;
+	if (msg.isNotEmpty())
+	{
+		RenX::processTags(msg, &server, &player, &target);
+		msg.replace(RenX::tags->INTERNAL_MESSAGE_TAG, message);
+		(server.*func)(msg);
+	}
+}
+
+void RenX_LoggingPlugin::RenX_OnHostAdminMessage(RenX::Server &server, const Jupiter::ReadableString &message)
+{
+	logFuncType func;
+	if (RenX_LoggingPlugin::adminMessagePublic)
+		func = &RenX::Server::sendLogChan;
+	else
+		func = &RenX::Server::sendAdmChan;
+
+	Jupiter::String msg = this->adminMsgFmt;
+	if (msg.isNotEmpty())
+	{
+		RenX::processTags(msg, &server);
+		msg.replace(RenX::tags->INTERNAL_NAME_TAG, "Host"_jrs);
+		msg.replace(RenX::tags->INTERNAL_RAW_NAME_TAG, "Host"_jrs);
+		msg.replace(RenX::tags->INTERNAL_MESSAGE_TAG, message);
+		(server.*func)(msg);
+	}
+}
+
+void RenX_LoggingPlugin::RenX_OnHostAdminPMessage(RenX::Server &server, const RenX::PlayerInfo &player, const Jupiter::ReadableString &message)
+{
+	logFuncType func;
+	if (RenX_LoggingPlugin::adminPMessagePublic)
+		func = &RenX::Server::sendLogChan;
+	else
+		func = &RenX::Server::sendAdmChan;
+
+	Jupiter::String msg = this->pAdminMsgFmt;
+	if (msg.isNotEmpty())
+	{
+		RenX::processTags(msg, &server, nullptr, &player);
+		msg.replace(RenX::tags->INTERNAL_NAME_TAG, "Host"_jrs);
+		msg.replace(RenX::tags->INTERNAL_RAW_NAME_TAG, "Host"_jrs);
+		msg.replace(RenX::tags->INTERNAL_MESSAGE_TAG, message);
+		(server.*func)(msg);
+	}
+}
+
+void RenX_LoggingPlugin::RenX_OnHostWarnMessage(RenX::Server &server, const Jupiter::ReadableString &message)
+{
+	logFuncType func;
+	if (RenX_LoggingPlugin::adminMessagePublic)
+		func = &RenX::Server::sendLogChan;
+	else
+		func = &RenX::Server::sendAdmChan;
+
+	Jupiter::String msg = this->warnMsgFmt;
+	if (msg.isNotEmpty())
+	{
+		RenX::processTags(msg, &server);
+		msg.replace(RenX::tags->INTERNAL_NAME_TAG, "Host"_jrs);
+		msg.replace(RenX::tags->INTERNAL_RAW_NAME_TAG, "Host"_jrs);
+		msg.replace(RenX::tags->INTERNAL_MESSAGE_TAG, message);
+		(server.*func)(msg);
+	}
+}
+
+void RenX_LoggingPlugin::RenX_OnHostWarnPMessage(RenX::Server &server, const RenX::PlayerInfo &player, const Jupiter::ReadableString &message)
+{
+	logFuncType func;
+	if (RenX_LoggingPlugin::adminPMessagePublic)
+		func = &RenX::Server::sendLogChan;
+	else
+		func = &RenX::Server::sendAdmChan;
+
+	Jupiter::String msg = this->pWarnMsgFmt;
+	if (msg.isNotEmpty())
+	{
+		RenX::processTags(msg, &server, nullptr, &player);
+		msg.replace(RenX::tags->INTERNAL_NAME_TAG, "Host"_jrs);
+		msg.replace(RenX::tags->INTERNAL_RAW_NAME_TAG, "Host"_jrs);
 		msg.replace(RenX::tags->INTERNAL_MESSAGE_TAG, message);
 		(server.*func)(msg);
 	}

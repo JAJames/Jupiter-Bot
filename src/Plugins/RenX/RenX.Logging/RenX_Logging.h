@@ -43,6 +43,14 @@ public: // RenX::Plugin
 	void RenX_OnRadioChat(RenX::Server &server, const RenX::PlayerInfo &player, const Jupiter::ReadableString &message) override;
 	void RenX_OnHostChat(RenX::Server &server, const Jupiter::ReadableString &message) override;
 	void RenX_OnHostPage(RenX::Server &server, const RenX::PlayerInfo &player, const Jupiter::ReadableString &message) override;
+	void RenX_OnAdminMessage(RenX::Server &server, const RenX::PlayerInfo &player, const Jupiter::ReadableString &message) override;
+	void RenX_OnWarnMessage(RenX::Server &server, const RenX::PlayerInfo &player, const Jupiter::ReadableString &message) override;
+	void RenX_OnAdminPMessage(RenX::Server &server, const RenX::PlayerInfo &player, const RenX::PlayerInfo &target, const Jupiter::ReadableString &message) override;
+	void RenX_OnWarnPMessage(RenX::Server &server, const RenX::PlayerInfo &player, const RenX::PlayerInfo &target, const Jupiter::ReadableString &message) override;
+	void RenX_OnHostAdminMessage(RenX::Server &server, const Jupiter::ReadableString &message) override;
+	void RenX_OnHostAdminPMessage(RenX::Server &server, const RenX::PlayerInfo &player, const Jupiter::ReadableString &message) override;
+	void RenX_OnHostWarnMessage(RenX::Server &server, const Jupiter::ReadableString &message) override;
+	void RenX_OnHostWarnPMessage(RenX::Server &server, const RenX::PlayerInfo &player, const Jupiter::ReadableString &message) override;
 	void RenX_OnOtherChat(RenX::Server &server, const Jupiter::ReadableString &raw) override;
 	
 	void RenX_OnDeploy(RenX::Server &server, const RenX::PlayerInfo &player, const Jupiter::ReadableString &object) override;
@@ -148,6 +156,8 @@ private:
 	unsigned int radioChatPublic : 1;
 	unsigned int hostChatPublic : 1;
 	unsigned int hostPagePublic : 1;
+	unsigned int adminMessagePublic : 1;
+	unsigned int adminPMessagePublic : 1;
 	unsigned int otherChatPublic : 1;
 	unsigned int deployPublic : 1;
 	unsigned int mineDeployPublic : 1;
@@ -228,6 +238,10 @@ private:
 	Jupiter::StringS radioChatFmt;
 	Jupiter::StringS hostChatFmt;
 	Jupiter::StringS hostPageFmt;
+	Jupiter::StringS adminMsgFmt;
+	Jupiter::StringS warnMsgFmt;
+	Jupiter::StringS pAdminMsgFmt;
+	Jupiter::StringS pWarnMsgFmt;
 	Jupiter::StringS otherChatFmt;
 	Jupiter::StringS deployFmt;
 	Jupiter::StringS mineDeployFmt;
