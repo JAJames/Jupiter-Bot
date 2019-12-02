@@ -309,6 +309,93 @@ const Jupiter::ReadableString &HostMsgIRCCommand::getHelp(const Jupiter::Readabl
 
 IRC_COMMAND_INIT(HostMsgIRCCommand)
 
+// Admin Msg IRC Command
+
+void AdminMsgIRCCommand::create()
+{
+	this->addTrigger(STRING_LITERAL_AS_REFERENCE("amsg"));
+	this->addTrigger(STRING_LITERAL_AS_REFERENCE("asay"));
+	this->addTrigger(STRING_LITERAL_AS_REFERENCE("adminmessage"));
+	this->setAccessLevel(4);
+}
+
+void AdminMsgIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &channel, const Jupiter::ReadableString &nick, const Jupiter::ReadableString &parameters)
+{
+	if (parameters.isNotEmpty())
+	{
+		int type = source->getChannel(channel)->getType();
+
+		bool success = false;
+		for (unsigned int i = 0; i != RenX::getCore()->getServerCount(); i++)
+		{
+			RenX::Server *server = RenX::getCore()->getServer(i);
+			if (server->isLogChanType(type))
+				success = server->sendAdminMessage(parameters) > 0;
+		}
+		if (!success)
+			source->sendMessage(channel, STRING_LITERAL_AS_REFERENCE("Error: Channel not attached to any connected Renegade X servers."));
+	}
+	else source->sendNotice(nick, STRING_LITERAL_AS_REFERENCE("Error: Too Few Parameters. Syntax: amsg <Message>"));
+}
+
+const Jupiter::ReadableString &AdminMsgIRCCommand::getHelp(const Jupiter::ReadableString &)
+{
+	static STRING_LITERAL_AS_NAMED_REFERENCE(defaultHelp, "Sends an admin message in-game. Syntax: amsg <Message>");
+	return defaultHelp;
+}
+
+IRC_COMMAND_INIT(AdminMsgIRCCommand)
+
+// PAdminMsg IRC Command
+
+void PAdminMsgIRCCommand::create()
+{
+	this->addTrigger(STRING_LITERAL_AS_REFERENCE("pamsg"));
+	this->addTrigger(STRING_LITERAL_AS_REFERENCE("pasay"));
+	this->addTrigger(STRING_LITERAL_AS_REFERENCE("apage"));
+	this->setAccessLevel(1);
+}
+
+void PAdminMsgIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &channel, const Jupiter::ReadableString &nick, const Jupiter::ReadableString &parameters)
+{
+	if (parameters.wordCount(WHITESPACE) >= 2)
+	{
+		int type = source->getChannel(channel)->getType();
+		Jupiter::ReferenceString name = Jupiter::ReferenceString::getWord(parameters, 0, WHITESPACE);
+		RenX::PlayerInfo *player;
+		Jupiter::StringL msg;
+		char prefix = source->getChannel(channel)->getUserPrefix(nick);
+		if (prefix != '\0')
+			msg += prefix;
+		msg += nick;
+		msg += "@IRC: ";
+		msg += Jupiter::ReferenceString::gotoWord(parameters, 1, WHITESPACE);
+		if (parameters.isNotEmpty())
+		{
+			for (unsigned int i = 0; i != RenX::getCore()->getServerCount(); i++)
+			{
+				RenX::Server *server = RenX::getCore()->getServer(i);
+				if (server->isLogChanType(type))
+				{
+					player = server->getPlayerByPartName(name);
+					if (player != nullptr)
+						server->sendAdminMessage(*player, msg);
+					else source->sendNotice(nick, Jupiter::StringS::Format("Error: Player \"%.*s\" not found.", name.size(), name.ptr()));
+				}
+			}
+		}
+	}
+	else source->sendNotice(nick, STRING_LITERAL_AS_REFERENCE("Error: Too Few Parameters. Syntax: pamsg <Player> <Message>"));
+}
+
+const Jupiter::ReadableString &PAdminMsgIRCCommand::getHelp(const Jupiter::ReadableString &)
+{
+	static STRING_LITERAL_AS_NAMED_REFERENCE(defaultHelp, "Sends an admin message in-game. Syntax: pamsg <Player> <Message>");
+	return defaultHelp;
+}
+
+IRC_COMMAND_INIT(PAdminMsgIRCCommand)
+
 // Players IRC Command
 
 void PlayersIRCCommand::create()

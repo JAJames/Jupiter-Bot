@@ -253,6 +253,32 @@ namespace RenX
 		int sendMessage(const RenX::PlayerInfo &player, const Jupiter::ReadableString &message);
 
 		/**
+		* @brief Sends an in-game admin message to the server.
+		*
+		* @param message Message to send in-game.
+		* @return The number of bytes sent on success, less than or equal to zero otherwise.
+		*/
+		int sendAdminMessage(const Jupiter::ReadableString &message);
+
+		/**
+		* @brief Sends an in-game admin message to a player in the server.
+		*
+		* @param player Data of the player to send a message to.
+		* @param message Message to send in-game.
+		* @return The number of bytes sent on success, less than or equal to zero otherwise.
+		*/
+		int sendAdminMessage(const RenX::PlayerInfo &player, const Jupiter::ReadableString &message);
+
+		/**
+		* @brief Sends an in-game warning message to a player in the server.
+		*
+		* @param player Data of the player to send a message to.
+		* @param message Message to send in-game.
+		* @return The number of bytes sent on success, less than or equal to zero otherwise.
+		*/
+		int sendWarnMessage(const RenX::PlayerInfo &player, const Jupiter::ReadableString &message);
+
+		/**
 		* @brief Sends data to the server.
 		*
 		* @param data String of data to send.

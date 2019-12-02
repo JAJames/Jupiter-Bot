@@ -309,6 +309,21 @@ int RenX::Server::sendMessage(const RenX::PlayerInfo &player, const Jupiter::Rea
 	return RenX::Server::sendSocket("chostprivatesay pid"_jrs + Jupiter::StringS::Format("%d ", player.id) + RenX::escapifyRCON(message) + '\n');
 }
 
+int RenX::Server::sendAdminMessage(const Jupiter::ReadableString &message)
+{
+	return RenX::Server::sendSocket("camsg "_jrs + RenX::escapifyRCON(message) + '\n');
+}
+
+int RenX::Server::sendAdminMessage(const RenX::PlayerInfo &player, const Jupiter::ReadableString &message)
+{
+	return RenX::Server::sendSocket("cpamsg pid"_jrs + Jupiter::StringS::Format("%d ", player.id) + RenX::escapifyRCON(message) + '\n');
+}
+
+int RenX::Server::sendWarnMessage(const RenX::PlayerInfo &player, const Jupiter::ReadableString &message)
+{
+	return RenX::Server::sendSocket("cwarn pid"_jrs + Jupiter::StringS::Format("%d ", player.id) + RenX::escapifyRCON(message) + '\n');
+}
+
 int RenX::Server::sendData(const Jupiter::ReadableString &data)
 {
 	return RenX::Server::sendSocket(data);
@@ -2953,15 +2968,8 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 							Jupiter::ReferenceString command = gotoToken(4);
 							Jupiter::ReferenceString cmd = command.getWord(0, " ");
 
-							if (cmd.equalsi("hostprivatesay"))
-							{
-								RenX::PlayerInfo *player = this->getPlayerByName(command.getWord(1, " "));
-								for (size_t i = 0; i < xPlugins.size(); i++)
-										xPlugins.get(i)->RenX_OnExecute(*this, user, command);
-							}
-							else
-								for (size_t i = 0; i < xPlugins.size(); i++)
-									xPlugins.get(i)->RenX_OnExecute(*this, user, command);
+							for (size_t i = 0; i < xPlugins.size(); i++)
+								xPlugins.get(i)->RenX_OnExecute(*this, user, command);
 
 							if (this->rconUser.equals(user))
 							{
