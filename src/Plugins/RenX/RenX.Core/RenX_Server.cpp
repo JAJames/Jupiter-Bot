@@ -2671,6 +2671,12 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 						for (size_t i = 0; i < xPlugins.size(); i++)
 							xPlugins.get(i)->RenX_OnHostChat(*this, message);
 					}
+					else if (subHeader.equals("HostPMsg;")) {
+						RenX::PlayerInfo *player = parseGetPlayerOrAdd(tokens.getToken(2));
+						Jupiter::ReferenceString message = tokens.getToken(4);
+						for (size_t i = 0; i < xPlugins.size(); i++)
+							xPlugins.get(i)->RenX_OnHostPage(*this, *player, message);
+					}
 					/*else if (subHeader.equals("AdminSay;"))
 					{
 						// Player | "said:" | Message
@@ -2892,14 +2898,7 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 							if (cmd.equalsi("hostprivatesay"))
 							{
 								RenX::PlayerInfo *player = this->getPlayerByName(command.getWord(1, " "));
-								if (player != nullptr)
-								{
-									Jupiter::ReferenceString message = command.gotoWord(2, " ");
-									for (size_t i = 0; i < xPlugins.size(); i++)
-										xPlugins.get(i)->RenX_OnHostPage(*this, *player, message);
-								}
-								else
-									for (size_t i = 0; i < xPlugins.size(); i++)
+								for (size_t i = 0; i < xPlugins.size(); i++)
 										xPlugins.get(i)->RenX_OnExecute(*this, user, command);
 							}
 							else
