@@ -390,7 +390,7 @@ void PAdminMsgIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString
 
 const Jupiter::ReadableString &PAdminMsgIRCCommand::getHelp(const Jupiter::ReadableString &)
 {
-	static STRING_LITERAL_AS_NAMED_REFERENCE(defaultHelp, "Sends an admin message in-game. Syntax: pamsg <Player> <Message>");
+	static STRING_LITERAL_AS_NAMED_REFERENCE(defaultHelp, "Sends an admin message to a player in-game. Syntax: pamsg <Player> <Message>");
 	return defaultHelp;
 }
 
@@ -3382,6 +3382,75 @@ const Jupiter::ReadableString &ModRequestGameCommand::getHelp(const Jupiter::Rea
 }
 
 GAME_COMMAND_INIT(ModRequestGameCommand)
+
+// AdminMessage Game Command
+
+void AdminMessageGameCommand::create()
+{
+	this->addTrigger(STRING_LITERAL_AS_REFERENCE("amsg"));
+	this->addTrigger(STRING_LITERAL_AS_REFERENCE("adminmsg"));
+	this->addTrigger(STRING_LITERAL_AS_REFERENCE("amessage"));
+	this->addTrigger(STRING_LITERAL_AS_REFERENCE("adminmessage"));
+	this->setAccessLevel(1);
+}
+
+void AdminMessageGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *player, const Jupiter::ReadableString &parameters)
+{
+	if (parameters.isNotEmpty())
+	{
+		Jupiter::StringS msg = player->gamePrefix + player->name + ": "_jrs + parameters;
+		source->sendAdminMessage(msg);
+	}
+	else
+		source->sendMessage(*player, "Error: Too few parameters. Syntax: amsg <player> <message>"_jrs);
+}
+
+const Jupiter::ReadableString &AdminMessageGameCommand::getHelp(const Jupiter::ReadableString &)
+{
+	static STRING_LITERAL_AS_NAMED_REFERENCE(defaultHelp, "Sends an admin message in-game. Syntax: amsg <message>");
+	return defaultHelp;
+}
+
+GAME_COMMAND_INIT(AdminMessageGameCommand)
+
+// PAdminMessage Game Command
+
+void PAdminMessageGameCommand::create()
+{
+	this->addTrigger(STRING_LITERAL_AS_REFERENCE("pamsg"));
+	this->addTrigger(STRING_LITERAL_AS_REFERENCE("padminmsg"));
+	this->addTrigger(STRING_LITERAL_AS_REFERENCE("pamessage"));
+	this->addTrigger(STRING_LITERAL_AS_REFERENCE("padminmessage"));
+	this->setAccessLevel(1);
+}
+
+void PAdminMessageGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *player, const Jupiter::ReadableString &parameters)
+{
+	if (parameters.wordCount(WHITESPACE) >= 2)
+	{
+		Jupiter::StringS name = Jupiter::StringS::getWord(parameters, 0, WHITESPACE);
+		Jupiter::StringS msg = player->gamePrefix + player->name + ": "_jrs + Jupiter::ReferenceString::gotoWord(parameters, 1, WHITESPACE);
+
+		RenX::PlayerInfo *target = source->getPlayerByPartName(name);
+		if (target == nullptr)
+			source->sendMessage(*player, "Error: Player not found."_jrs);
+		else
+		{
+			source->sendAdminMessage(*target, msg);
+			source->sendMessage(*player, "Message sent to "_jrs + target->name);
+		}
+	}
+	else
+		source->sendMessage(*player, "Error: Too few parameters. Syntax: pamsg <player> <message>"_jrs);
+}
+
+const Jupiter::ReadableString &PAdminMessageGameCommand::getHelp(const Jupiter::ReadableString &)
+{
+	static STRING_LITERAL_AS_NAMED_REFERENCE(defaultHelp, "Sends an admin message to a player in-game. Syntax: pamsg <player> <message>");
+	return defaultHelp;
+}
+
+GAME_COMMAND_INIT(PAdminMessageGameCommand)
 
 // Kill Game Command
 
