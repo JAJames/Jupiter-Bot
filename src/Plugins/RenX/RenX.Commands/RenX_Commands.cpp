@@ -353,7 +353,7 @@ void PAdminMsgIRCCommand::create()
 	this->addTrigger(STRING_LITERAL_AS_REFERENCE("pamsg"));
 	this->addTrigger(STRING_LITERAL_AS_REFERENCE("pasay"));
 	this->addTrigger(STRING_LITERAL_AS_REFERENCE("apage"));
-	this->setAccessLevel(1);
+	this->setAccessLevel(4);
 }
 
 void PAdminMsgIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &channel, const Jupiter::ReadableString &nick, const Jupiter::ReadableString &parameters)
