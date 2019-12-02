@@ -1448,16 +1448,41 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 			idToken.shiftRight(1);
 			isBot = true;
 		}
+		else if (idToken == "ai") {
+			isBot = true;
+		}
 		else
 			isBot = false;
 		id = idToken.asInt(10);
 	};
+	auto get_next_temp_playerinfo = [](const Jupiter::ReadableString &name, RenX::TeamType team, bool isBot) {
+		static RenX::PlayerInfo s_temp_players[4];
+		static size_t s_temp_player_index{ 0 };
+
+		// Go to next temp player
+		++s_temp_player_index;
+		if (s_temp_player_index >= sizeof(s_temp_players) / sizeof(RenX::PlayerInfo)) {
+			s_temp_player_index = 0;
+		}
+		RenX::PlayerInfo *temp_player = &s_temp_players[s_temp_player_index];
+
+		// Populate temp player with input data
+		temp_player->name = name;
+		temp_player->team = team;
+		temp_player->isBot = isBot;
+
+		return temp_player;
+	};
 	auto getPlayerOrAdd = [&](const Jupiter::ReadableString &name, int id, RenX::TeamType team, bool isBot, uint64_t steamid, const Jupiter::ReadableString &ip, const Jupiter::ReadableString &hwid)
 	{
 		if (id == 0) {
-			// Bad parse; return null player
-			static RenX::PlayerInfo s_null_player;
-			return &s_null_player;
+			if (name.isEmpty()) {
+				// Bad parse; return null player
+				static RenX::PlayerInfo s_null_player;
+				return &s_null_player;
+			}
+
+			return get_next_temp_playerinfo(name, team, isBot);
 		}
 
 		RenX::PlayerInfo *player = this->getPlayer(id);
@@ -1547,7 +1572,7 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 	auto parseGetPlayerOrAdd = [&parsePlayerData, &getPlayerOrAdd, this](const Jupiter::ReadableString &token)
 	{
 		PARSE_PLAYER_DATA_P(token);
-		if (id == 0) {
+		if (id == 0 && name.isEmpty()) {
 			sendAdmChan(IRCCOLOR "04[Error]" IRCCOLOR" Failed to parse player token: %.*s", token.size(), token.ptr());
 		}
 		return getPlayerOrAdd(name, id, team, isBot, 0U, Jupiter::ReferenceString::empty, Jupiter::ReferenceString::empty);
