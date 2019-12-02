@@ -2665,6 +2665,40 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 							xPlugins.get(i)->RenX_OnRadioChat(*this, *player, message);
 						onAction();
 					}
+					else if (subHeader.equals("AdminMsg;"))
+					{
+						RenX::PlayerInfo *player = parseGetPlayerOrAdd(tokens.getToken(2));
+						Jupiter::ReferenceString message = tokens.getToken(4);
+						for (size_t i = 0; i < xPlugins.size(); i++)
+							xPlugins.get(i)->RenX_OnAdminMessage(*this, *player, message);
+						onAction();
+					}
+					else if (subHeader.equals("AdminWarn;"))
+					{
+						RenX::PlayerInfo *player = parseGetPlayerOrAdd(tokens.getToken(2));
+						Jupiter::ReferenceString message = tokens.getToken(4);
+						for (size_t i = 0; i < xPlugins.size(); i++)
+							xPlugins.get(i)->RenX_OnWarnMessage(*this, *player, message);
+						onAction();
+					}
+					else if (subHeader.equals("PAdminMsg;"))
+					{
+						RenX::PlayerInfo *player = parseGetPlayerOrAdd(tokens.getToken(2));
+						RenX::PlayerInfo *target = parseGetPlayerOrAdd(tokens.getToken(4));
+						Jupiter::ReferenceString message = tokens.getToken(6);
+						for (size_t i = 0; i < xPlugins.size(); i++)
+							xPlugins.get(i)->RenX_OnAdminPMessage(*this, *player, *target, message);
+						onAction();
+					}
+					else if (subHeader.equals("PAdminWarn;"))
+					{
+						RenX::PlayerInfo *player = parseGetPlayerOrAdd(tokens.getToken(2));
+						RenX::PlayerInfo *target = parseGetPlayerOrAdd(tokens.getToken(4));
+						Jupiter::ReferenceString message = tokens.getToken(6);
+						for (size_t i = 0; i < xPlugins.size(); i++)
+							xPlugins.get(i)->RenX_OnWarnPMessage(*this, *player, *target, message);
+						onAction();
+					}
 					else if (subHeader.equals("HostSay;"))
 					{
 						Jupiter::ReferenceString message = tokens.getToken(3);
@@ -2676,6 +2710,30 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 						Jupiter::ReferenceString message = tokens.getToken(4);
 						for (size_t i = 0; i < xPlugins.size(); i++)
 							xPlugins.get(i)->RenX_OnHostPage(*this, *player, message);
+					}
+					else if (subHeader.equals("HostAdminMsg;"))
+					{
+						Jupiter::ReferenceString message = tokens.getToken(3);
+						for (size_t i = 0; i < xPlugins.size(); i++)
+							xPlugins.get(i)->RenX_OnHostAdminMessage(*this, message);
+					}
+					else if (subHeader.equals("HostAdminWarn;"))
+					{
+						Jupiter::ReferenceString message = tokens.getToken(3);
+						for (size_t i = 0; i < xPlugins.size(); i++)
+							xPlugins.get(i)->RenX_OnHostWarnMessage(*this, message);
+					}
+					else if (subHeader.equals("HostPAdminMsg;")) {
+						RenX::PlayerInfo *player = parseGetPlayerOrAdd(tokens.getToken(2));
+						Jupiter::ReferenceString message = tokens.getToken(4);
+						for (size_t i = 0; i < xPlugins.size(); i++)
+							xPlugins.get(i)->RenX_OnHostAdminPMessage(*this, *player, message);
+					}
+					else if (subHeader.equals("HostPAdminWarn;")) {
+						RenX::PlayerInfo *player = parseGetPlayerOrAdd(tokens.getToken(2));
+						Jupiter::ReferenceString message = tokens.getToken(4);
+						for (size_t i = 0; i < xPlugins.size(); i++)
+							xPlugins.get(i)->RenX_OnHostWarnPMessage(*this, *player, message);
 					}
 					/*else if (subHeader.equals("AdminSay;"))
 					{

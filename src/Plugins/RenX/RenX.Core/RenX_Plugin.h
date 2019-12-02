@@ -77,6 +77,16 @@ namespace RenX
 		virtual void RenX_OnRadioChat(Server &server, const PlayerInfo &player, const Jupiter::ReadableString &message);
 		virtual void RenX_OnHostChat(Server &server, const Jupiter::ReadableString &message);
 		virtual void RenX_OnHostPage(Server &server, const PlayerInfo &player, const Jupiter::ReadableString &message);
+
+		virtual void RenX_OnAdminMessage(Server &server, const PlayerInfo &player, const Jupiter::ReadableString &message);
+		virtual void RenX_OnWarnMessage(Server &server, const PlayerInfo &player, const Jupiter::ReadableString &message);
+		virtual void RenX_OnAdminPMessage(Server &server, const PlayerInfo &player, const PlayerInfo &target, const Jupiter::ReadableString &message);
+		virtual void RenX_OnWarnPMessage(Server &server, const PlayerInfo &player, const PlayerInfo &target, const Jupiter::ReadableString &message);
+
+		virtual void RenX_OnHostAdminMessage(Server &server, const Jupiter::ReadableString &message);
+		virtual void RenX_OnHostAdminPMessage(Server &server, const PlayerInfo &player, const Jupiter::ReadableString &message);
+		virtual void RenX_OnHostWarnMessage(Server &server, const Jupiter::ReadableString &message);
+		virtual void RenX_OnHostWarnPMessage(Server &server, const PlayerInfo &player, const Jupiter::ReadableString &message);
 		virtual void RenX_OnOtherChat(Server &server, const Jupiter::ReadableString &raw);
 		
 		/** Game type logs */

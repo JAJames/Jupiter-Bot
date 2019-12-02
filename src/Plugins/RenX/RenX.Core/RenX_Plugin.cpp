@@ -181,6 +181,46 @@ void RenX::Plugin::RenX_OnHostPage(Server &, const PlayerInfo &, const Jupiter::
 	return;
 }
 
+void RenX::Plugin::RenX_OnAdminMessage(Server &server, const PlayerInfo &player, const Jupiter::ReadableString &message)
+{
+	return;
+}
+
+void RenX::Plugin::RenX_OnWarnMessage(Server &server, const PlayerInfo &player, const Jupiter::ReadableString &message)
+{
+	return;
+}
+
+void RenX::Plugin::RenX_OnAdminPMessage(Server &server, const PlayerInfo &player, const PlayerInfo &target, const Jupiter::ReadableString &message)
+{
+	return;
+}
+
+void RenX::Plugin::RenX_OnWarnPMessage(Server &server, const PlayerInfo &player, const PlayerInfo &target, const Jupiter::ReadableString &message)
+{
+	return;
+}
+
+void RenX::Plugin::RenX_OnHostAdminMessage(Server &server, const Jupiter::ReadableString &message)
+{
+	return;
+}
+
+void RenX::Plugin::RenX_OnHostAdminPMessage(Server &server, const PlayerInfo &player, const Jupiter::ReadableString &message)
+{
+	return;
+}
+
+void RenX::Plugin::RenX_OnHostWarnMessage(Server &server, const Jupiter::ReadableString &message)
+{
+	return;
+}
+
+void RenX::Plugin::RenX_OnHostWarnPMessage(Server &server, const PlayerInfo &player, const Jupiter::ReadableString &message)
+{
+	return;
+}
+
 void RenX::Plugin::RenX_OnOtherChat(Server &, const Jupiter::ReadableString &)
 {
 	return;
