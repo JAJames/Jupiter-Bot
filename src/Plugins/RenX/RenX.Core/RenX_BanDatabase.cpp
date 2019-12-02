@@ -166,8 +166,10 @@ void RenX::BanDatabase::write(RenX::BanDatabase::Entry *entry, FILE *file)
 void RenX::BanDatabase::add(RenX::Server *server, const RenX::PlayerInfo &player, const Jupiter::ReadableString &banner, const Jupiter::ReadableString &reason, std::chrono::seconds length, uint16_t flags)
 {
 	Entry *entry = new Entry();
-	entry->set_active();
-	entry->flags |= flags;
+	if (flags != 0) {
+		entry->set_active();
+		entry->flags |= flags;
+	}
 	entry->timestamp = std::chrono::system_clock::now();
 	entry->length = length;
 	entry->steamid = player.steamid;
