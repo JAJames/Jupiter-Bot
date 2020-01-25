@@ -30,6 +30,9 @@ public: // RenX_KickDupesPlugin
 
 public: // RenX::Plugin
 	void RenX_OnPlayerIdentify(RenX::Server &server, const RenX::PlayerInfo &player) override;
+
+private:
+	static constexpr size_t s_tolerance{ 1 };
 };
 
 #endif // _RENX_KICKDUPES_H_HEADER

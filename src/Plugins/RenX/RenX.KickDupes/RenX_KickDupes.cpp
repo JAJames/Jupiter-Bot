@@ -41,10 +41,13 @@ void RenX_KickDupesPlugin::RenX_OnPlayerIdentify(RenX::Server &in_server, const 
 	}
 
 	// Check to see if any other players on the server have the same HWID
+	size_t hits{};
 	for (auto& player : in_server.players) {
 		if (player.hwid == in_player.hwid && player.id != in_player.id) {
-			// Two players have the same HWID, but separate player IDs; kick the pre-existing player.
-			in_server.forceKickPlayer(player, "Ghost client detected"_jrs);
+			// Two players have the same HWID, but separate player IDs; kick the pre-existing player if there's too many.
+			if (++hits > s_tolerance) {
+				in_server.forceKickPlayer(player, "Ghost client detected"_jrs);
+			}
 		}
 	}
 }
