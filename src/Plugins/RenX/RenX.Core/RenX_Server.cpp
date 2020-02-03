@@ -394,6 +394,21 @@ size_t RenX::Server::getBotCount() const
 	//return RenX::Server::bot_count;
 }
 
+std::vector<const RenX::PlayerInfo*> RenX::Server::activePlayers(bool includeBots) const {
+	std::vector<const RenX::PlayerInfo*> result;
+	result.reserve(players.size());
+
+	// Build list of active players
+	for (auto& player : players) {
+		// Filter teamless players and bots (if applicable)
+		if (player.team != TeamType::None && (includeBots || !player.isBot)) {
+			result.push_back(&player);
+		}
+	}
+
+	return result;
+}
+
 RenX::PlayerInfo *RenX::Server::getPlayer(int id) const
 {
 	for (auto node = this->players.begin(); node != this->players.end(); ++node)

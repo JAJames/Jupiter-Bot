@@ -349,6 +349,14 @@ namespace RenX
 		size_t getBotCount() const;
 
 		/**
+		 * @brief Builds a list of all active players (i.e: players who have a team)
+		 *
+		 * @param includeBots Specifies whether or not to include bots in the returned list
+		 * @return List of active players
+		 */
+		std::vector<const RenX::PlayerInfo*> activePlayers(bool includeBots = true) const;
+
+		/**
 		* @brief Fetches a player's data based on their ID number.
 		*
 		* @param id ID of the player
