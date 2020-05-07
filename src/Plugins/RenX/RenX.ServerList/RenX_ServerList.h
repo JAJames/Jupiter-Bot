@@ -26,11 +26,18 @@
 class RenX_ServerListPlugin : public RenX::Plugin
 {
 public: // RenX_ServerListPlugin
+	struct ListServerInfo {
+		Jupiter::ReferenceString hostname;
+		unsigned short port;
+		Jupiter::ReferenceString namePrefix;
+	};
+
 	Jupiter::ReadableString *getServerListJSON();
 
 	void addServerToServerList(RenX::Server &server);
 	void updateServerList();
-	Jupiter::ReferenceString getListServerInfo(const RenX::Server& server);
+	Jupiter::ReferenceString getListServerAddress(const RenX::Server& server);
+	ListServerInfo getListServerInfo(const RenX::Server& server);
 	Jupiter::StringS server_as_json(const RenX::Server &server);
 	Jupiter::StringS server_as_long_json(const RenX::Server &server);
 
