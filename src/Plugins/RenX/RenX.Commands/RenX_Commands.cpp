@@ -309,6 +309,93 @@ const Jupiter::ReadableString &HostMsgIRCCommand::getHelp(const Jupiter::Readabl
 
 IRC_COMMAND_INIT(HostMsgIRCCommand)
 
+// Admin Msg IRC Command
+
+void AdminMsgIRCCommand::create()
+{
+	this->addTrigger(STRING_LITERAL_AS_REFERENCE("amsg"));
+	this->addTrigger(STRING_LITERAL_AS_REFERENCE("asay"));
+	this->addTrigger(STRING_LITERAL_AS_REFERENCE("adminmessage"));
+	this->setAccessLevel(4);
+}
+
+void AdminMsgIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &channel, const Jupiter::ReadableString &nick, const Jupiter::ReadableString &parameters)
+{
+	if (parameters.isNotEmpty())
+	{
+		int type = source->getChannel(channel)->getType();
+
+		bool success = false;
+		for (unsigned int i = 0; i != RenX::getCore()->getServerCount(); i++)
+		{
+			RenX::Server *server = RenX::getCore()->getServer(i);
+			if (server->isLogChanType(type))
+				success = server->sendAdminMessage(parameters) > 0;
+		}
+		if (!success)
+			source->sendMessage(channel, STRING_LITERAL_AS_REFERENCE("Error: Channel not attached to any connected Renegade X servers."));
+	}
+	else source->sendNotice(nick, STRING_LITERAL_AS_REFERENCE("Error: Too Few Parameters. Syntax: amsg <Message>"));
+}
+
+const Jupiter::ReadableString &AdminMsgIRCCommand::getHelp(const Jupiter::ReadableString &)
+{
+	static STRING_LITERAL_AS_NAMED_REFERENCE(defaultHelp, "Sends an admin message in-game. Syntax: amsg <Message>");
+	return defaultHelp;
+}
+
+IRC_COMMAND_INIT(AdminMsgIRCCommand)
+
+// PAdminMsg IRC Command
+
+void PAdminMsgIRCCommand::create()
+{
+	this->addTrigger(STRING_LITERAL_AS_REFERENCE("pamsg"));
+	this->addTrigger(STRING_LITERAL_AS_REFERENCE("pasay"));
+	this->addTrigger(STRING_LITERAL_AS_REFERENCE("apage"));
+	this->setAccessLevel(4);
+}
+
+void PAdminMsgIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &channel, const Jupiter::ReadableString &nick, const Jupiter::ReadableString &parameters)
+{
+	if (parameters.wordCount(WHITESPACE) >= 2)
+	{
+		int type = source->getChannel(channel)->getType();
+		Jupiter::ReferenceString name = Jupiter::ReferenceString::getWord(parameters, 0, WHITESPACE);
+		RenX::PlayerInfo *player;
+		Jupiter::StringL msg;
+		char prefix = source->getChannel(channel)->getUserPrefix(nick);
+		if (prefix != '\0')
+			msg += prefix;
+		msg += nick;
+		msg += "@IRC: ";
+		msg += Jupiter::ReferenceString::gotoWord(parameters, 1, WHITESPACE);
+		if (parameters.isNotEmpty())
+		{
+			for (unsigned int i = 0; i != RenX::getCore()->getServerCount(); i++)
+			{
+				RenX::Server *server = RenX::getCore()->getServer(i);
+				if (server->isLogChanType(type))
+				{
+					player = server->getPlayerByPartName(name);
+					if (player != nullptr)
+						server->sendAdminMessage(*player, msg);
+					else source->sendNotice(nick, Jupiter::StringS::Format("Error: Player \"%.*s\" not found.", name.size(), name.ptr()));
+				}
+			}
+		}
+	}
+	else source->sendNotice(nick, STRING_LITERAL_AS_REFERENCE("Error: Too Few Parameters. Syntax: pamsg <Player> <Message>"));
+}
+
+const Jupiter::ReadableString &PAdminMsgIRCCommand::getHelp(const Jupiter::ReadableString &)
+{
+	static STRING_LITERAL_AS_NAMED_REFERENCE(defaultHelp, "Sends an admin message to a player in-game. Syntax: pamsg <Player> <Message>");
+	return defaultHelp;
+}
+
+IRC_COMMAND_INIT(PAdminMsgIRCCommand)
+
 // Players IRC Command
 
 void PlayersIRCCommand::create()
@@ -1267,7 +1354,7 @@ void ReconnectIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString
 			if (server->isLogChanType(type))
 			{
 				if (server->reconnect(RenX::DisconnectReason::Triggered)) msg.set("Connection established");
-				else msg.format("[RenX] ERROR: Failed to connect to %.*s on port %u." ENDL, server->getHostname().size(), server->getHostname().ptr(), server->getPort());
+				else msg.format("[RenX] ERROR: Failed to connect to %.*s on port %u." ENDL, server->getHostname().size(), server->getHostname().c_str(), server->getPort());
 				source->sendMessage(channel, msg);
 			}
 		}
@@ -2008,6 +2095,65 @@ const Jupiter::ReadableString &TempBanIRCCommand::getHelp(const Jupiter::Readabl
 
 IRC_COMMAND_INIT(TempBanIRCCommand)
 
+// TempChatBan IRC Command
+
+void TempChatBanIRCCommand::create()
+{
+	this->addTrigger(STRING_LITERAL_AS_REFERENCE("tchatban"));
+	this->addTrigger(STRING_LITERAL_AS_REFERENCE("tcban"));
+	this->addTrigger(STRING_LITERAL_AS_REFERENCE("tempchatban"));
+	this->addTrigger(STRING_LITERAL_AS_REFERENCE("tcb"));
+	this->setAccessLevel(3);
+}
+
+void TempChatBanIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &channel, const Jupiter::ReadableString &nick, const Jupiter::ReadableString &parameters)
+{
+	if (parameters.isNotEmpty())
+	{
+		Jupiter::IRC::Client::Channel *chan = source->getChannel(channel);
+		if (chan != nullptr)
+		{
+			Jupiter::ArrayList<RenX::Server> servers = RenX::getCore()->getServers(chan->getType());
+			if (servers.size() != 0)
+			{
+				RenX::PlayerInfo *player;
+				RenX::Server *server;
+				unsigned int mutes = 0;
+				Jupiter::ReferenceString name = Jupiter::ReferenceString::getWord(parameters, 0, WHITESPACE);
+				Jupiter::ReferenceString reason = parameters.wordCount(WHITESPACE) > 1 ? Jupiter::ReferenceString::gotoWord(parameters, 1, WHITESPACE) : "No reason"_jrs;
+				Jupiter::String banner(nick.size() + 4);
+				banner += nick;
+				banner += "@IRC";
+				for (size_t i = 0; i != servers.size(); i++)
+				{
+					server = servers.get(i);
+					if (server != nullptr)
+					{
+						player = server->getPlayerByPartName(name);
+						if (player != nullptr)
+						{
+							server->mute(*player);
+							RenX::banDatabase->add(server, *player, banner, reason, pluginInstance.getTBanTime(), RenX::BanDatabase::Entry::FLAG_TYPE_CHAT);
+							mutes++;
+						}
+					}
+				}
+				source->sendMessage(channel, Jupiter::StringS::Format("%u players chat banned.", mutes));
+			}
+			else source->sendMessage(channel, STRING_LITERAL_AS_REFERENCE("Error: Channel not attached to any connected Renegade X servers."));
+		}
+	}
+	else source->sendNotice(nick, STRING_LITERAL_AS_REFERENCE("Error: Too Few Parameters. Syntax: TempChatBan <Player> [Reason]"));
+}
+
+const Jupiter::ReadableString &TempChatBanIRCCommand::getHelp(const Jupiter::ReadableString &)
+{
+	static STRING_LITERAL_AS_NAMED_REFERENCE(defaultHelp, "Mutes and temporarily chat bans a player from the game. Syntax: TempChatBan <Player> [Reason]");
+	return defaultHelp;
+}
+
+IRC_COMMAND_INIT(TempChatBanIRCCommand)
+
 // KickBan IRC Command
 
 void KickBanIRCCommand::create()
@@ -2104,7 +2250,7 @@ void AddBanIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &c
 			{
 				size_t index = 0;
 				Jupiter::ReferenceString name;
-				Jupiter::CStringS ip_str;
+				std::string ip_str;
 				uint32_t ip = 0U;
 				uint8_t prefix_length = 32U;
 				uint64_t steamid = 0U;
@@ -2138,7 +2284,7 @@ void AddBanIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &c
 							return;
 						}
 
-						ip_str = Jupiter::ReferenceString::getWord(parameters, index++, ADDBAN_WHITESPACE);
+						ip_str = static_cast<std::string>(Jupiter::ReferenceString::getWord(parameters, index++, ADDBAN_WHITESPACE));
 					}
 					else if (word.equalsi("Steam"_jrs) || word.equalsi("SteamID"_jrs))
 					{
@@ -2217,13 +2363,13 @@ void AddBanIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &c
 					flags = RenX::BanDatabase::Entry::FLAG_TYPE_GAME;
 
 				index = ip_str.find('/');
-				if (index != JUPITER_INVALID_INDEX)
+				if (index != std::string::npos)
 				{
 					Jupiter::ReferenceString prefix_length_str(ip_str.c_str() + index + 1);
 					prefix_length = prefix_length_str.asUnsignedInt();
 					if (prefix_length == 0)
 						prefix_length = 32U;
-					ip_str.truncate(prefix_length_str.size() + 1);
+					ip_str.erase(index);
 				}
 				ip = Jupiter::Socket::pton4(ip_str.c_str());
 
@@ -2555,7 +2701,7 @@ void AddExemptionIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableStr
 			else
 			{
 				size_t index = 0;
-				Jupiter::CStringS ip_str;
+				std::string ip_str;
 				uint32_t ip = 0U;
 				uint8_t prefix_length = 32U;
 				uint64_t steamid = 0U;
@@ -2576,7 +2722,7 @@ void AddExemptionIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableStr
 							return;
 						}
 
-						ip_str = Jupiter::ReferenceString::getWord(parameters, index++, ADDEXEMPTION_WHITESPACE);
+						ip_str = static_cast<std::string>(Jupiter::ReferenceString::getWord(parameters, index++, ADDEXEMPTION_WHITESPACE));
 					}
 					else if (word.equalsi("Steam"_jrs) || word.equalsi("SteamID"_jrs))
 					{
@@ -2613,16 +2759,16 @@ void AddExemptionIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableStr
 				if (flags == 0)
 					flags = RenX::ExemptionDatabase::Entry::FLAG_TYPE_BAN;
 
-				if (ip_str.isNotEmpty())
+				if (!ip_str.empty())
 				{
 					index = ip_str.find('/');
-					if (index != JUPITER_INVALID_INDEX)
+					if (index != std::string::npos)
 					{
 						Jupiter::ReferenceString prefix_length_str(ip_str.c_str() + index + 1);
 						prefix_length = prefix_length_str.asUnsignedInt();
 						if (prefix_length == 0)
 							prefix_length = 32U;
-						ip_str.truncate(prefix_length_str.size() + 1);
+						ip_str.erase(index);
 					}
 					ip = Jupiter::Socket::pton4(ip_str.c_str());
 
@@ -3204,8 +3350,8 @@ void ModRequestGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *play
 	Jupiter::String fmtName = RenX::getFormattedPlayerName(*player);
 	Jupiter::StringL user_message = Jupiter::StringL::Format(IRCCOLOR "12[%.*s Request] " IRCCOLOR IRCBOLD "%.*s" IRCBOLD IRCCOLOR "07 has requested assistance in-game; please look in ", staff_word.size(), staff_word.ptr(), fmtName.size(), fmtName.ptr());
 	Jupiter::StringS channel_message = Jupiter::StringS::Format(IRCCOLOR "12[%.*s Request] " IRCCOLOR IRCBOLD "%.*s" IRCBOLD IRCCOLOR "07 has requested assistance in-game!" IRCCOLOR, staff_word.size(), staff_word.ptr(), fmtName.size(), fmtName.ptr());
-	
-	auto alert_message_callback = [this, source, server, &user_message, &channel_message, &messageCount](Jupiter::IRC::Client::ChannelTableType::Bucket::Entry &in_entry)
+
+	/*auto alert_message_callback = [this, source, server, &user_message, &channel_message, &messageCount](Jupiter::IRC::Client::ChannelTableType::Bucket::Entry &in_entry)
 	{
 		auto alert_message_user_callback = [server, &in_entry, &user_message, &messageCount](Jupiter::IRC::Client::Channel::UserTableType::Bucket::Entry &in_user_entry)
 		{
@@ -3224,7 +3370,7 @@ void ModRequestGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *play
 			in_entry.value.getUsers().callback(alert_message_user_callback);
 			user_message -= in_entry.value.getName().size();
 		}
-	};
+	};*/
 	
 	source->sendMessage(*player, Jupiter::StringS::Format("A total of %u %.*ss have been notified of your assistance request.", messageCount, staff_word.size(), staff_word.ptr()));
 }
@@ -3236,6 +3382,75 @@ const Jupiter::ReadableString &ModRequestGameCommand::getHelp(const Jupiter::Rea
 }
 
 GAME_COMMAND_INIT(ModRequestGameCommand)
+
+// AdminMessage Game Command
+
+void AdminMessageGameCommand::create()
+{
+	this->addTrigger(STRING_LITERAL_AS_REFERENCE("amsg"));
+	this->addTrigger(STRING_LITERAL_AS_REFERENCE("adminmsg"));
+	this->addTrigger(STRING_LITERAL_AS_REFERENCE("amessage"));
+	this->addTrigger(STRING_LITERAL_AS_REFERENCE("adminmessage"));
+	this->setAccessLevel(1);
+}
+
+void AdminMessageGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *player, const Jupiter::ReadableString &parameters)
+{
+	if (parameters.isNotEmpty())
+	{
+		Jupiter::StringS msg = player->gamePrefix + player->name + ": "_jrs + parameters;
+		source->sendAdminMessage(msg);
+	}
+	else
+		source->sendMessage(*player, "Error: Too few parameters. Syntax: amsg <player> <message>"_jrs);
+}
+
+const Jupiter::ReadableString &AdminMessageGameCommand::getHelp(const Jupiter::ReadableString &)
+{
+	static STRING_LITERAL_AS_NAMED_REFERENCE(defaultHelp, "Sends an admin message in-game. Syntax: amsg <message>");
+	return defaultHelp;
+}
+
+GAME_COMMAND_INIT(AdminMessageGameCommand)
+
+// PAdminMessage Game Command
+
+void PAdminMessageGameCommand::create()
+{
+	this->addTrigger(STRING_LITERAL_AS_REFERENCE("pamsg"));
+	this->addTrigger(STRING_LITERAL_AS_REFERENCE("padminmsg"));
+	this->addTrigger(STRING_LITERAL_AS_REFERENCE("pamessage"));
+	this->addTrigger(STRING_LITERAL_AS_REFERENCE("padminmessage"));
+	this->setAccessLevel(1);
+}
+
+void PAdminMessageGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *player, const Jupiter::ReadableString &parameters)
+{
+	if (parameters.wordCount(WHITESPACE) >= 2)
+	{
+		Jupiter::StringS name = Jupiter::StringS::getWord(parameters, 0, WHITESPACE);
+		Jupiter::StringS msg = player->gamePrefix + player->name + ": "_jrs + Jupiter::ReferenceString::gotoWord(parameters, 1, WHITESPACE);
+
+		RenX::PlayerInfo *target = source->getPlayerByPartName(name);
+		if (target == nullptr)
+			source->sendMessage(*player, "Error: Player not found."_jrs);
+		else
+		{
+			source->sendAdminMessage(*target, msg);
+			source->sendMessage(*player, "Message sent to "_jrs + target->name);
+		}
+	}
+	else
+		source->sendMessage(*player, "Error: Too few parameters. Syntax: pamsg <player> <message>"_jrs);
+}
+
+const Jupiter::ReadableString &PAdminMessageGameCommand::getHelp(const Jupiter::ReadableString &)
+{
+	static STRING_LITERAL_AS_NAMED_REFERENCE(defaultHelp, "Sends an admin message to a player in-game. Syntax: pamsg <player> <message>");
+	return defaultHelp;
+}
+
+GAME_COMMAND_INIT(PAdminMessageGameCommand)
 
 // Kill Game Command
 
@@ -3458,12 +3673,58 @@ const Jupiter::ReadableString &KickGameCommand::getHelp(const Jupiter::ReadableS
 
 GAME_COMMAND_INIT(KickGameCommand)
 
+// Mute Game Command
+
+void MuteGameCommand::create()
+{
+	this->addTrigger(STRING_LITERAL_AS_REFERENCE("mute"));
+	this->setAccessLevel(1);
+}
+
+void MuteGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *player, const Jupiter::ReadableString &parameters)
+{
+	if (parameters.isNotEmpty())
+	{
+		Jupiter::StringS name = Jupiter::StringS::getWord(parameters, 0, WHITESPACE);
+		Jupiter::StringS reason;
+		if (parameters.wordCount(WHITESPACE) > 1) {
+			reason = Jupiter::StringS::gotoWord(parameters, 1, WHITESPACE);
+		}
+		else {
+			reason = STRING_LITERAL_AS_REFERENCE("No reason");
+		}
+		RenX::PlayerInfo *target = source->getPlayerByPartName(name);
+		if (target == nullptr)
+			source->sendMessage(*player, "Error: Player not found."_jrs);
+		else if (player == target)
+			source->sendMessage(*player, "Error: You cannot mute yourself."_jrs);
+		else if (target->access >= player->access)
+			source->sendMessage(*player, "Error: You can not mute higher level "_jrs + pluginInstance.getStaffTitle() + "s."_jrs);
+		else
+		{
+			source->mute(*target);
+			source->sendMessage(*target, "You have been muted for: "_jrs + reason);
+			source->sendMessage(*player, "Player has been muted from chat."_jrs);
+		}
+	}
+	else
+		source->sendMessage(*player, "Error: Too few parameters. Syntax: mute <player> [Reason]"_jrs);
+}
+
+const Jupiter::ReadableString &MuteGameCommand::getHelp(const Jupiter::ReadableString &)
+{
+	static STRING_LITERAL_AS_NAMED_REFERENCE(defaultHelp, "Mutes a player from chat. Syntax: mute <player> [Reason]");
+	return defaultHelp;
+}
+
+GAME_COMMAND_INIT(MuteGameCommand)
+
 // TempBan Game Command
 
 void TempBanGameCommand::create()
 {
 	this->addTrigger(STRING_LITERAL_AS_REFERENCE("tban"));
-	this->addTrigger(STRING_LITERAL_AS_REFERENCE("tempbank"));
+	this->addTrigger(STRING_LITERAL_AS_REFERENCE("tempban"));
 	this->addTrigger(STRING_LITERAL_AS_REFERENCE("tb"));
 	this->setAccessLevel(1);
 }
@@ -3504,6 +3765,55 @@ const Jupiter::ReadableString &TempBanGameCommand::getHelp(const Jupiter::Readab
 }
 
 GAME_COMMAND_INIT(TempBanGameCommand)
+
+// TempChatBan Game Command
+
+void TempChatBanGameCommand::create()
+{
+	this->addTrigger(STRING_LITERAL_AS_REFERENCE("tchatban"));
+	this->addTrigger(STRING_LITERAL_AS_REFERENCE("tcban"));
+	this->addTrigger(STRING_LITERAL_AS_REFERENCE("tempchatban"));
+	this->addTrigger(STRING_LITERAL_AS_REFERENCE("tcb"));
+	this->setAccessLevel(1);
+}
+
+void TempChatBanGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *player, const Jupiter::ReadableString &parameters)
+{
+	if (parameters.isNotEmpty())
+	{
+		Jupiter::StringS name = Jupiter::StringS::getWord(parameters, 0, WHITESPACE);
+		Jupiter::StringS reason;
+		if (parameters.wordCount(WHITESPACE) > 1) {
+			reason = Jupiter::StringS::gotoWord(parameters, 1, WHITESPACE);
+		}
+		else {
+			reason = STRING_LITERAL_AS_REFERENCE("No reason");
+		}
+		RenX::PlayerInfo *target = source->getPlayerByPartName(name);
+		if (target == nullptr)
+			source->sendMessage(*player, "Error: Player not found."_jrs);
+		else if (player == target)
+			source->sendMessage(*player, "Error: You can not ban yourself."_jrs);
+		else if (target->access >= player->access)
+			source->sendMessage(*player, "Error: You can not ban higher level "_jrs + pluginInstance.getStaffTitle() + "s."_jrs);
+		else
+		{
+			source->mute(*target);
+			RenX::banDatabase->add(source, *target, player->name, reason, pluginInstance.getTBanTime(), RenX::BanDatabase::Entry::FLAG_TYPE_CHAT);
+			source->sendMessage(*player, "Player has been temporarily muted and chat banned from the game."_jrs);
+		}
+	}
+	else
+		source->sendMessage(*player, "Error: Too few parameters. Syntax: tchatban <player> [Reason]"_jrs);
+}
+
+const Jupiter::ReadableString &TempChatBanGameCommand::getHelp(const Jupiter::ReadableString &)
+{
+	static STRING_LITERAL_AS_NAMED_REFERENCE(defaultHelp, "Mutes and temporarily chat bans a player from the game. Syntax: tchatban <player> [Reason]");
+	return defaultHelp;
+}
+
+GAME_COMMAND_INIT(TempChatBanGameCommand)
 
 // KickBan Game Command
 
@@ -3665,6 +3975,76 @@ const Jupiter::ReadableString &PhaseBotsGameCommand::getHelp(const Jupiter::Read
 }
 
 GAME_COMMAND_INIT(PhaseBotsGameCommand)
+
+// SpecMode Game Command
+
+void SpecModeGameCommand::create()
+{
+	this->addTrigger(STRING_LITERAL_AS_REFERENCE("specmode"));
+	this->addTrigger(STRING_LITERAL_AS_REFERENCE("spectator"));
+	this->addTrigger(STRING_LITERAL_AS_REFERENCE("smode"));
+	this->addTrigger(STRING_LITERAL_AS_REFERENCE("spec"));
+	this->setAccessLevel(1);
+}
+
+void SpecModeGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *player, const Jupiter::ReadableString &parameters)
+{
+    if (parameters.isNotEmpty())
+	{
+		RenX::PlayerInfo *target = source->getPlayerByPartName(parameters);
+		if (target == nullptr)
+			source->sendMessage(*player, "Error: Player not found."_jrs);
+		else
+		{
+			source->setSpectator(*target);
+			source->sendMessage(*player, "Player is now in spectator mode."_jrs);
+		}
+	}
+	else
+		source->sendMessage(*player, "Error: Too few parameters. Syntax: specmode <player>"_jrs);
+}
+
+const Jupiter::ReadableString &SpecModeGameCommand::getHelp(const Jupiter::ReadableString &)
+{
+	static STRING_LITERAL_AS_NAMED_REFERENCE(defaultHelp, "Sets player to spectator mode. Syntax: <player>");
+	return defaultHelp;
+}
+
+GAME_COMMAND_INIT(SpecModeGameCommand)
+
+// NormalMode Game Command
+
+void NormalModeGameCommand::create()
+{
+    this->addTrigger(STRING_LITERAL_AS_REFERENCE("normalmode"));
+    this->addTrigger(STRING_LITERAL_AS_REFERENCE("nmode"));
+    this->setAccessLevel(1);
+}
+
+void NormalModeGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *player, const Jupiter::ReadableString &parameters)
+{
+    if (parameters.isNotEmpty())
+    {
+        RenX::PlayerInfo *target = source->getPlayerByPartName(parameters);
+        if (target == nullptr)
+            source->sendMessage(*player, "Error: Player not found."_jrs);
+        else
+        {
+            source->setSpectator(*target);
+            source->sendMessage(*player, "Player is now in normal mode."_jrs);
+        }
+    }
+    else
+        source->sendMessage(*player, "Error: Too few parameters. Syntax: normalmode <player>"_jrs);
+}
+
+const Jupiter::ReadableString &NormalModeGameCommand::getHelp(const Jupiter::ReadableString &)
+{
+    static STRING_LITERAL_AS_NAMED_REFERENCE(defaultHelp, "Sets player to normal mode. Syntax: <player>");
+    return defaultHelp;
+}
+
+GAME_COMMAND_INIT(NormalModeGameCommand)
 
 extern "C" JUPITER_EXPORT Jupiter::Plugin *getPlugin()
 {

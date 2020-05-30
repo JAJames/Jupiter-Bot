@@ -29,7 +29,6 @@
 #include "Jupiter/TCPSocket.h"
 #include "Jupiter/ArrayList.h"
 #include "Jupiter/String.hpp"
-#include "Jupiter/CString.h"
 #include "Jupiter/Config.h"
 #include "Jupiter/Thinker.h"
 #include "Jupiter/Rehash.h"
@@ -229,6 +228,14 @@ namespace RenX
 		int send(const Jupiter::ReadableString &command);
 
 		/**
+		 * @brief Sends text over the socket
+		 *
+		 * @param text Text to send
+		 * @return The number of bytes sent on success, less than or equal to zero otherwise.
+		 */
+		 int sendSocket(const Jupiter::ReadableString &text);
+
+		/**
 		* @brief Sends an in-game message to the server.
 		*
 		* @param message Message to send in-game.
@@ -244,6 +251,32 @@ namespace RenX
 		* @return The number of bytes sent on success, less than or equal to zero otherwise.
 		*/
 		int sendMessage(const RenX::PlayerInfo &player, const Jupiter::ReadableString &message);
+
+		/**
+		* @brief Sends an in-game admin message to the server.
+		*
+		* @param message Message to send in-game.
+		* @return The number of bytes sent on success, less than or equal to zero otherwise.
+		*/
+		int sendAdminMessage(const Jupiter::ReadableString &message);
+
+		/**
+		* @brief Sends an in-game admin message to a player in the server.
+		*
+		* @param player Data of the player to send a message to.
+		* @param message Message to send in-game.
+		* @return The number of bytes sent on success, less than or equal to zero otherwise.
+		*/
+		int sendAdminMessage(const RenX::PlayerInfo &player, const Jupiter::ReadableString &message);
+
+		/**
+		* @brief Sends an in-game warning message to a player in the server.
+		*
+		* @param player Data of the player to send a message to.
+		* @param message Message to send in-game.
+		* @return The number of bytes sent on success, less than or equal to zero otherwise.
+		*/
+		int sendWarnMessage(const RenX::PlayerInfo &player, const Jupiter::ReadableString &message);
 
 		/**
 		* @brief Sends data to the server.
@@ -314,6 +347,14 @@ namespace RenX
 		* @return Number of bots in the server.
 		*/
 		size_t getBotCount() const;
+
+		/**
+		 * @brief Builds a list of all active players (i.e: players who have a team)
+		 *
+		 * @param includeBots Specifies whether or not to include bots in the returned list
+		 * @return List of active players
+		 */
+		std::vector<const RenX::PlayerInfo*> activePlayers(bool includeBots = true) const;
 
 		/**
 		* @brief Fetches a player's data based on their ID number.
@@ -658,6 +699,38 @@ namespace RenX
 		bool changeTeam(RenX::PlayerInfo &player, bool resetCredits = true);
 
 		/**
+        * @brief Sets player to spectator.
+        *
+        * @param id ID of the player to change to spectator
+        * @return True on success, false otherwise.
+        */
+        bool setSpectator(int id);
+
+        /**
+        * @brief Sets player to spectator.
+        *
+        * @param player Player to set as spectator
+        * @return True on success, false otherwise.
+        */
+        bool setSpectator(RenX::PlayerInfo &player);
+
+        /**
+        * @brief Sets player to normal (non-spectator).
+        *
+        * @param id ID of the player to change to normal
+        * @return True on success, false otherwise.
+        */
+        bool setNormal(int id);
+
+        /**
+        * @brief Sets player to normal (non-spectator).
+        *
+        * @param player Player to set as normal
+        * @return True on success, false otherwise.
+        */
+        bool setNormal(RenX::PlayerInfo &player);
+
+		/**
 		* @brief Fetches a server's IRC logging prefix.
 		*
 		* @return The server's logging prefix.
@@ -699,7 +772,7 @@ namespace RenX
 		*
 		* @return String containing the hostname of the server.
 		*/
-		const Jupiter::ReadableString &getHostname() const;
+		const std::string &getHostname() const;
 
 		/**
 		* @brief Fetches the port of a server.
@@ -713,7 +786,7 @@ namespace RenX
 		*
 		* @return String containing the hostname of the server.
 		*/
-		const Jupiter::ReadableString &getSocketHostname() const;
+		const std::string &getSocketHostname() const;
 
 		/**
 		* @brief Fetches the port from the server socket.
@@ -1008,6 +1081,7 @@ namespace RenX
 	private:
 		void init(const Jupiter::Config &config);
 		void wipePlayers();
+		void startPing();
 
 		/** Tracking variables */
 		bool gameover_when_empty = false;
@@ -1050,6 +1124,7 @@ namespace RenX
 		std::chrono::steady_clock::time_point lastClientListUpdate = std::chrono::steady_clock::now();
 		std::chrono::steady_clock::time_point lastBuildingListUpdate = std::chrono::steady_clock::now();
 		std::chrono::steady_clock::time_point lastActivity = std::chrono::steady_clock::now();
+		std::chrono::steady_clock::time_point lastSendActivity = std::chrono::steady_clock::now();
 		std::chrono::steady_clock::time_point gameover_time;
 		Jupiter::String lastLine;
 		Jupiter::StringS rconUser;
@@ -1082,8 +1157,8 @@ namespace RenX
 		std::chrono::milliseconds buildingUpdateRate;
 		std::chrono::milliseconds pingRate;
 		std::chrono::milliseconds pingTimeoutThreshold;
-		Jupiter::CStringS clientHostname;
-		Jupiter::CStringS hostname;
+		std::string clientHostname;
+		std::string hostname;
 		Jupiter::StringS pass;
 		Jupiter::StringS configSection;
 		Jupiter::StringS rules;
