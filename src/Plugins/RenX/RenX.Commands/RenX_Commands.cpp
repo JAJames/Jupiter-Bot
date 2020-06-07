@@ -3336,13 +3336,18 @@ GAME_COMMAND_INIT(RulesGameCommand)
 
 void ModRequestGameCommand::create()
 {
-	this->addTrigger(STRING_LITERAL_AS_REFERENCE("modrequest"));
-	this->addTrigger(STRING_LITERAL_AS_REFERENCE("requestmod"));
-	this->addTrigger(STRING_LITERAL_AS_REFERENCE("mod"));
+	this->addTrigger("modrequest"_jrs);
+	this->addTrigger("requestmod"_jrs);
+	this->addTrigger("mod"_jrs);
 }
 
 void ModRequestGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *player, const Jupiter::ReadableString &parameters)
 {
+	if (parameters.isEmpty()) {
+		source->sendMessage(*player, "Please specify a reason for requesting moderator assistance."_jrs);
+		return;
+	}
+
 	const Jupiter::ReadableString &staff_word = pluginInstance.getStaffTitle();
 	Jupiter::String fmtName = RenX::getFormattedPlayerName(*player);
 	Jupiter::StringL user_message = Jupiter::StringL::Format(IRCCOLOR "12[%.*s Request] " IRCCOLOR IRCBOLD "%.*s" IRCBOLD IRCCOLOR "07 has requested assistance in-game for \"%.*s\"; please look in ", staff_word.size(), staff_word.ptr(), fmtName.size(), fmtName.ptr(), parameters.size(), parameters.ptr());
@@ -3391,7 +3396,7 @@ void ModRequestGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *play
 
 const Jupiter::ReadableString &ModRequestGameCommand::getHelp(const Jupiter::ReadableString &)
 {
-	static STRING_LITERAL_AS_NAMED_REFERENCE(defaultHelp, "Notifies staff on IRC that assistance is required. Syntax: modRequest");
+	static STRING_LITERAL_AS_NAMED_REFERENCE(defaultHelp, "Notifies staff on IRC that assistance is required. Syntax: modRequest <reason>");
 	return defaultHelp;
 }
 
