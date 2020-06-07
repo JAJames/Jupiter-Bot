@@ -3344,35 +3344,49 @@ void ModRequestGameCommand::create()
 void ModRequestGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *player, const Jupiter::ReadableString &parameters)
 {
 	const Jupiter::ReadableString &staff_word = pluginInstance.getStaffTitle();
-	size_t serverCount = serverManager->size();
-	IRC_Bot *server;
-	unsigned int messageCount = 0;
 	Jupiter::String fmtName = RenX::getFormattedPlayerName(*player);
-	Jupiter::StringL user_message = Jupiter::StringL::Format(IRCCOLOR "12[%.*s Request] " IRCCOLOR IRCBOLD "%.*s" IRCBOLD IRCCOLOR "07 has requested assistance in-game; please look in ", staff_word.size(), staff_word.ptr(), fmtName.size(), fmtName.ptr());
-	Jupiter::StringS channel_message = Jupiter::StringS::Format(IRCCOLOR "12[%.*s Request] " IRCCOLOR IRCBOLD "%.*s" IRCBOLD IRCCOLOR "07 has requested assistance in-game!" IRCCOLOR, staff_word.size(), staff_word.ptr(), fmtName.size(), fmtName.ptr());
+	Jupiter::StringL user_message = Jupiter::StringL::Format(IRCCOLOR "12[%.*s Request] " IRCCOLOR IRCBOLD "%.*s" IRCBOLD IRCCOLOR "07 has requested assistance in-game for \"%.*s\"; please look in ", staff_word.size(), staff_word.ptr(), fmtName.size(), fmtName.ptr(), parameters.size(), parameters.ptr());
+	Jupiter::StringS channel_message = Jupiter::StringS::Format(IRCCOLOR "12[%.*s Request] " IRCCOLOR IRCBOLD "%.*s" IRCBOLD IRCCOLOR "07 has requested assistance in-game! Reason: %.*s" IRCCOLOR, staff_word.size(), staff_word.ptr(), fmtName.size(), fmtName.ptr(), parameters.size(), parameters.ptr());
 
-	/*auto alert_message_callback = [this, source, server, &user_message, &channel_message, &messageCount](Jupiter::IRC::Client::ChannelTableType::Bucket::Entry &in_entry)
-	{
-		auto alert_message_user_callback = [server, &in_entry, &user_message, &messageCount](Jupiter::IRC::Client::Channel::UserTableType::Bucket::Entry &in_user_entry)
-		{
-			if (in_entry.value.getUserPrefix(in_user_entry.value) != 0 && in_user_entry.value.getNickname().equals(server->getNickname()) == false)
-			{
-				server->sendMessage(in_user_entry.value.getUser()->getNickname(), user_message);
-				++messageCount;
+	// Alerts a channel and all relevant users in the channel
+	auto alert_channel = [&user_message, &channel_message](Jupiter::IRC::Client& server, const Jupiter::IRC::Client::Channel& channel) {
+		// Alert channel
+		server.sendMessage(channel.getName(), channel_message);
+
+		// Alert relevant users in the channel
+		unsigned int total_user_alerts{};
+		user_message += channel.getName();
+
+		for (auto& user : channel.getUsers()) {
+			if (channel.getUserPrefix(user.second) != 0 // If the user has a prefix...
+				&& !user.second.getNickname().equals(server.getNickname())) { // And the user isn't this bot...
+				// Alert the user
+				server.sendMessage(user.second.getNickname(), user_message);
+				++total_user_alerts;
 			}
-		};
-
-		if (source->isAdminLogChanType(in_entry.value.getType()))
-		{
-			server->sendMessage(in_entry.value.getName(), channel_message);
-
-			user_message += in_entry.value.getName();
-			in_entry.value.getUsers().callback(alert_message_user_callback);
-			user_message -= in_entry.value.getName().size();
 		}
-	};*/
-	
-	source->sendMessage(*player, Jupiter::StringS::Format("A total of %u %.*ss have been notified of your assistance request.", messageCount, staff_word.size(), staff_word.ptr()));
+
+		user_message.truncate(channel.getName().size());
+		return total_user_alerts;
+	};
+
+	// TODO: clean this up by just exposing a vector of servers...
+	// Send off alerts
+	unsigned int total_user_alerts{};
+	size_t server_count = serverManager->size();
+	for (size_t server_index = 0; server_index < server_count; ++server_index) {
+		if (Jupiter::IRC::Client *server = serverManager->getServer(server_index)) {
+			// Alert all admin channels (and their relevant users)
+			for (auto& channel : server->getChannels()) {
+				if (source->isAdminLogChanType(channel.second.getType())) {
+					total_user_alerts += alert_channel(*server, channel.second);
+				}
+			}
+		}
+	}
+
+	// Inform the user of the result
+	source->sendMessage(*player, Jupiter::StringS::Format("A total of %u %.*ss have been notified of your assistance request.", total_user_alerts, staff_word.size(), staff_word.ptr()));
 }
 
 const Jupiter::ReadableString &ModRequestGameCommand::getHelp(const Jupiter::ReadableString &)
