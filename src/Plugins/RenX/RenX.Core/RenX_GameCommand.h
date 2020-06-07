@@ -89,7 +89,7 @@ namespace RenX
 		/**
 		* @brief Same as the Default constructor, except that the command is not added to the master command list.
 		*/
-		GameCommand(nullptr_t);
+		GameCommand(std::nullptr_t);
 
 		/**
 		* @brief Copy constructor for a Game Command.
