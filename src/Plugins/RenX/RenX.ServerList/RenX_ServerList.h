@@ -30,6 +30,7 @@ public: // RenX_ServerListPlugin
 		Jupiter::ReferenceString hostname;
 		unsigned short port;
 		Jupiter::ReferenceString namePrefix;
+		std::vector<Jupiter::ReferenceString> attributes;
 	};
 
 	Jupiter::ReadableString *getServerListJSON();

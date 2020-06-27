@@ -205,6 +205,11 @@ Jupiter::StringS RenX_ServerListPlugin::server_as_json(const RenX::Server &serve
 	Jupiter::String server_json_block(128);
 	ListServerInfo serverInfo = getListServerInfo(server);
 
+	if (serverInfo.hostname.isEmpty()) {
+		server_json_block = "null";
+		return server_json_block;
+	}
+
 	Jupiter::String server_name = jsonify(server.getName());
 	Jupiter::String server_map = jsonify(server.getMap().name);
 	Jupiter::String server_version = jsonify(server.getGameVersion());
@@ -212,18 +217,35 @@ Jupiter::StringS RenX_ServerListPlugin::server_as_json(const RenX::Server &serve
 	unsigned short server_port = serverInfo.port;
 	Jupiter::String server_prefix = jsonify(serverInfo.namePrefix);
 
-	// We're just going to omit it if it's not populated instead of supplying blank strings, so make full JSON member
+	// Some members we only include if they're populated
 	if (!server_prefix.isEmpty()) {
 		server_prefix = R"json("NamePrefix":")json"_jrs + server_prefix + "\","_jrs;
 	}
 
-	server_json_block.format(R"json({"Name":"%.*s",%.*s"Current Map":"%.*s","Bots":%u,"Players":%u,"Game Version":"%.*s","Variables":{"Mine Limit":%d,"bSteamRequired":%s,"bPrivateMessageTeamOnly":%s,"bPassworded":%s,"bAllowPrivateMessaging":%s,"bRanked":%s,"Game Type":%d,"Player Limit":%d,"Vehicle Limit":%d,"bAutoBalanceTeams":%s,"Team Mode":%d,"bSpawnCrates":%s,"CrateRespawnAfterPickup":%f,"Time Limit":%d},"Port":%u,"IP":"%.*s")json",
+	std::string server_attributes;
+	if (!serverInfo.attributes.empty()) {
+		server_attributes.reserve(16 * serverInfo.attributes.size() + 16);
+		server_attributes = R"json("Attributes":[)json";
+
+		for (Jupiter::ReferenceString& attribute : serverInfo.attributes) {
+			server_attributes += '\"';
+			server_attributes.append(attribute.ptr(), attribute.size());
+			server_attributes += "\",";
+		}
+
+		server_attributes.back() = ']';
+		server_attributes += ',';
+	}
+
+	// Build block
+	server_json_block.format(R"json({"Name":"%.*s",%.*s"Current Map":"%.*s","Bots":%u,"Players":%u,"Game Version":"%.*s",%.*s"Variables":{"Mine Limit":%d,"bSteamRequired":%s,"bPrivateMessageTeamOnly":%s,"bPassworded":%s,"bAllowPrivateMessaging":%s,"bRanked":%s,"Game Type":%d,"Player Limit":%d,"Vehicle Limit":%d,"bAutoBalanceTeams":%s,"Team Mode":%d,"bSpawnCrates":%s,"CrateRespawnAfterPickup":%f,"Time Limit":%d},"Port":%u,"IP":"%.*s")json",
 		server_name.size(), server_name.ptr(),
 		server_prefix.size(), server_prefix.ptr(),
 		server_map.size(), server_map.ptr(),
 		server.getBotCount(),
 		server.activePlayers(false).size(),
 		server_version.size(), server_version.ptr(),
+		server_attributes.size(), server_attributes.data(),
 		server.getMineLimit(),
 		json_bool_as_cstring(server.isSteamRequired()),
 		json_bool_as_cstring(server.isPrivateMessageTeamOnly()),
@@ -259,6 +281,24 @@ Jupiter::StringS RenX_ServerListPlugin::server_as_long_json(const RenX::Server &
 	Jupiter::String server_prefix = jsonify(serverInfo.namePrefix);
 	std::vector<const RenX::PlayerInfo*> activePlayers = server.activePlayers(false);
 
+	std::string server_attributes = "[]";
+	if (!serverInfo.attributes.empty()) {
+		server_attributes.reserve(16 * serverInfo.attributes.size() + 16);
+		server_attributes = "[";
+
+		const char* comma = "\n";
+		for (Jupiter::ReferenceString& attribute : serverInfo.attributes) {
+			server_attributes += comma;
+			comma = ",\n";
+
+			server_attributes += "\t\t\t\"";
+			server_attributes.append(attribute.ptr(), attribute.size());
+			server_attributes += "\"";
+		}
+
+		server_attributes += "\n\t\t],";
+	}
+
 	server_json_block.format(R"json({
 		"Name": "%.*s",
 		"NamePrefix": "%.*s",
@@ -266,6 +306,7 @@ Jupiter::StringS RenX_ServerListPlugin::server_as_long_json(const RenX::Server &
 		"Bots": %u,
 		"Players": %u,
 		"Game Version": "%.*s",
+		"Attributes": %.*s,
 		"Variables": {
 			"Mine Limit": %d,
 			"bSteamRequired": %s,
@@ -288,6 +329,7 @@ Jupiter::StringS RenX_ServerListPlugin::server_as_long_json(const RenX::Server &
 		server.getBotCount(),
 		activePlayers.size(),
 		server_version.size(), server_version.ptr(),
+		server_attributes.size(), server_attributes.data(),
 
 		server.getMineLimit(),
 		json_bool_as_cstring(server.isSteamRequired()),
@@ -382,20 +424,19 @@ void RenX_ServerListPlugin::addServerToServerList(RenX::Server &server)
 	Jupiter::String server_json_block(256);
 
 	// append to server_list_json
-
+	server_json_block = server_as_json(server);
 	if (RenX_ServerListPlugin::server_list_json.size() <= 2)
 	{
 		RenX_ServerListPlugin::server_list_json = '[';
-		RenX_ServerListPlugin::server_list_json += server_as_json(server);
-		RenX_ServerListPlugin::server_list_json += ']';
 	}
 	else
 	{
 		RenX_ServerListPlugin::server_list_json.truncate(1); // remove trailing ']'.
 		RenX_ServerListPlugin::server_list_json += ',';
-		RenX_ServerListPlugin::server_list_json += server_as_json(server);
-		RenX_ServerListPlugin::server_list_json += ']';
 	}
+	RenX_ServerListPlugin::server_list_json += server_json_block;
+	RenX_ServerListPlugin::server_list_json += ']';
+	server_json_block.erase();
 
 	// add to individual listing
 
@@ -543,6 +584,14 @@ RenX_ServerListPlugin::ListServerInfo RenX_ServerListPlugin::getListServerInfo(c
 		result.hostname = section->get("ListAddress"_jrs, result.hostname);
 		result.port = section->get("ListPort"_jrs, result.port);
 		result.namePrefix = section->get("ListNamePrefix"_jrs, result.namePrefix);
+
+		// Attributes
+		Jupiter::ReferenceString attributes_str = section->get("ListAttributes"_jrs);
+		if (attributes_str.isNotEmpty()) {
+			// TODO: Make tokenize just return a vector instead of this crap
+			Jupiter::ReadableString::TokenizeResult<Jupiter::Reference_String> attributes = Jupiter::ReferenceString::tokenize(attributes_str, ' ');
+			result.attributes.assign(attributes.tokens, attributes.tokens + attributes.token_count);
+		}
 	};
 
 	// Populate with standard information
