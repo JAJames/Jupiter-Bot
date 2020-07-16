@@ -699,6 +699,14 @@ namespace RenX
 		bool changeTeam(RenX::PlayerInfo &player, bool resetCredits = true);
 
 		/**
+		* @brief Changes a player's mode from spectator to normal
+		*
+		* @param player Player to change mode
+		* @return True on success, false otherwise.
+		*/
+		bool nmodePlayer(const RenX::PlayerInfo &player);
+
+		/**
 		* @brief Fetches a server's IRC logging prefix.
 		*
 		* @return The server's logging prefix.
