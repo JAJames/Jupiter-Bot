@@ -3190,6 +3190,56 @@ const Jupiter::ReadableString &TeamChange2IRCCommand::getHelp(const Jupiter::Rea
 
 IRC_COMMAND_INIT(TeamChange2IRCCommand)
 
+// NMode IRC Command
+
+void NModeIRCCommand::create()
+{
+	this->addTrigger(STRING_LITERAL_AS_REFERENCE("nmode"));
+	this->setAccessLevel(2);
+}
+
+void NModeIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &channel, const Jupiter::ReadableString &nick, const Jupiter::ReadableString &parameters)
+{
+	if (parameters.isEmpty()) {
+		source->sendNotice(nick, STRING_LITERAL_AS_REFERENCE("Error: Too Few Parameters. Syntax: nmode <Player>"));
+		return;
+	}
+
+	Jupiter::IRC::Client::Channel *chan = source->getChannel(channel);
+	if (chan == nullptr) {
+		return;
+	}
+
+	Jupiter::ArrayList<RenX::Server> servers = RenX::getCore()->getServers(chan->getType());
+	if (servers.size() == 0) {
+		source->sendMessage(channel, STRING_LITERAL_AS_REFERENCE("Error: Channel not attached to any connected Renegade X servers."));
+		return;
+	}
+
+	RenX::PlayerInfo *player;
+	RenX::Server *server;
+	unsigned int nmodes = 0;
+	for (size_t i = 0; i != servers.size(); i++) {
+		server = servers.get(i);
+		if (server != nullptr) {
+			player = server->getPlayerByPartName(parameters);
+			if (player != nullptr) {
+				server->nmodePlayer(*player);
+				++nmodes;
+			}
+		}
+	}
+	source->sendMessage(channel, Jupiter::StringS::Format("%u players nmoded.", nmodes));
+}
+
+const Jupiter::ReadableString &NModeIRCCommand::getHelp(const Jupiter::ReadableString &)
+{
+	static STRING_LITERAL_AS_NAMED_REFERENCE(defaultHelp, "Resets a player's mode from spectator to normal. Syntax: nmode <player>");
+	return defaultHelp;
+}
+
+IRC_COMMAND_INIT(NModeIRCCommand)
+
 /** Game Commands */
 
 // Help Game Command
@@ -3994,6 +4044,43 @@ const Jupiter::ReadableString &PhaseBotsGameCommand::getHelp(const Jupiter::Read
 }
 
 GAME_COMMAND_INIT(PhaseBotsGameCommand)
+
+// NMode Game Command
+
+void NModeGameCommand::create()
+{
+	this->addTrigger(STRING_LITERAL_AS_REFERENCE("nmode"));
+	this->setAccessLevel(1);
+}
+
+void NModeGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *player, const Jupiter::ReadableString &parameters)
+{
+	if (parameters.isEmpty()) {
+		source->sendMessage(*player, "Error: Too few parameters. Syntax: nmode <player-name>"_jrs);
+		return;
+	}
+
+	RenX::PlayerInfo *target = source->getPlayerByPartName(parameters);
+	if (target == nullptr) {
+		source->sendMessage(*player, "Error: Player not found."_jrs);
+		return;
+	}
+
+	if (!source->nmodePlayer(*target)) {
+		source->sendMessage(*player, "Error: Could not set player's mode."_jrs);
+		return;
+	}
+
+	source->sendMessage(*player, "Player's mode has been reset."_jrs);
+}
+
+const Jupiter::ReadableString &NModeGameCommand::getHelp(const Jupiter::ReadableString &)
+{
+	static STRING_LITERAL_AS_NAMED_REFERENCE(defaultHelp, "Resets a player's mode from spectator to normal. Syntax: nmode <player-name>");
+	return defaultHelp;
+}
+
+GAME_COMMAND_INIT(NModeGameCommand)
 
 extern "C" JUPITER_EXPORT Jupiter::Plugin *getPlugin()
 {

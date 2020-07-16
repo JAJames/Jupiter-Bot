@@ -959,6 +959,11 @@ bool RenX::Server::changeTeam(RenX::PlayerInfo &player, bool resetCredits)
 	return RenX::Server::changeTeam(player.id, resetCredits);
 }
 
+bool RenX::Server::nmodePlayer(const RenX::PlayerInfo &player)
+{
+	return RenX::Server::send(Jupiter::StringS::Format("nmode pid%d", player.id));
+}
+
 const Jupiter::ReadableString &RenX::Server::getPrefix() const
 {
 	static Jupiter::String parsed;
