@@ -199,6 +199,11 @@ RenX_ServerListPlugin::~RenX_ServerListPlugin()
 	server.remove(RenX_ServerListPlugin::web_hostname, RenX_ServerListPlugin::web_path, RenX_ServerListPlugin::server_page_name);
 }
 
+size_t RenX_ServerListPlugin::getListedPlayerCount(const RenX::Server& server) {
+	size_t player_limit = static_cast<size_t>(std::max(server.getPlayerLimit(), 0));
+	return std::min(server.activePlayers(false).size(), player_limit);
+}
+
 Jupiter::ReadableString *RenX_ServerListPlugin::getServerListJSON()
 {
 	return &server_list_json;
@@ -257,7 +262,7 @@ Jupiter::StringS RenX_ServerListPlugin::server_as_json(const RenX::Server &serve
 		server_prefix.size(), server_prefix.ptr(),
 		server_map.size(), server_map.ptr(),
 		server.getBotCount(),
-		server.activePlayers(false).size(),
+		getListedPlayerCount(server),
 		server_version.size(), server_version.ptr(),
 		server_attributes.size(), server_attributes.data(),
 		server.getMineLimit(),
@@ -592,7 +597,7 @@ void RenX_ServerListPlugin::updateMetadata() {
 		RenX::Server* server = servers.get(index);
 		if (server->isConnected() && server->isFullyConnected()) {
 			++server_count;
-			player_count += server->players.size();
+			player_count += getListedPlayerCount(*server);
 		}
 	}
 

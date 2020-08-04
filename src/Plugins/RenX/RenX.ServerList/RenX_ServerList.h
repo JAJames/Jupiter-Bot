@@ -33,6 +33,8 @@ public: // RenX_ServerListPlugin
 		std::vector<Jupiter::ReferenceString> attributes;
 	};
 
+	size_t getListedPlayerCount(const RenX::Server& server);
+
 	Jupiter::ReadableString *getServerListJSON();
 	Jupiter::ReadableString* getMetadataJSON();
 
