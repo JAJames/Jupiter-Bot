@@ -151,6 +151,7 @@ bool RenX_ServerListPlugin::initialize()
 	RenX_ServerListPlugin::server_list_long_page_name = this->config.get("HumanServersPageName"_jrs, "servers_long"_jrs);
 	RenX_ServerListPlugin::server_page_name = this->config.get("ServerPageName"_jrs, "server"_jrs);
 	RenX_ServerListPlugin::metadata_page_name = this->config.get("MetadataPageName"_jrs, "metadata"_jrs);
+	RenX_ServerListPlugin::metadata_prometheus_page_name = this->config.get("MetadataPrometheusPageName"_jrs, "metadata_prometheus"_jrs);
 
 	/** Initialize content */
 	Jupiter::HTTP::Server &server = getHTTPServer();
@@ -187,6 +188,14 @@ bool RenX_ServerListPlugin::initialize()
 	content->free_result = false;
 	server.hook(RenX_ServerListPlugin::web_hostname, RenX_ServerListPlugin::web_path, content);
 
+	// Metadata page
+	content = new Jupiter::HTTP::Server::Content(RenX_ServerListPlugin::metadata_prometheus_page_name, handle_metadata_prometheus_page);
+	content->language = &Jupiter::HTTP::Content::Language::ENGLISH;
+	content->type = &CONTENT_TYPE_APPLICATION_JSON;
+	content->charset = &Jupiter::HTTP::Content::Type::Text::Charset::UTF8;
+	content->free_result = false;
+	server.hook(RenX_ServerListPlugin::web_hostname, RenX_ServerListPlugin::web_path, content);
+
 	this->updateServerList();
 	return true;
 }
@@ -212,6 +221,11 @@ Jupiter::ReadableString *RenX_ServerListPlugin::getServerListJSON()
 Jupiter::ReadableString *RenX_ServerListPlugin::getMetadataJSON()
 {
 	return &metadata_json;
+}
+
+Jupiter::ReadableString *RenX_ServerListPlugin::getMetadataPrometheus()
+{
+	return &metadata_prometheus;
 }
 
 constexpr const char *json_bool_as_cstring(bool in)
@@ -602,7 +616,10 @@ void RenX_ServerListPlugin::updateMetadata() {
 	}
 
 	metadata_json.format(R"json({"player_count":%u,"server_count":%u})json",
-		server_count, player_count);
+		player_count, server_count);
+
+	metadata_prometheus.format("player_count %u\nserver_count %u\n",
+		player_count, server_count);
 }
 
 Jupiter::ReferenceString RenX_ServerListPlugin::getListServerAddress(const RenX::Server& server) {
@@ -769,6 +786,11 @@ Jupiter::ReadableString *handle_server_page(const Jupiter::ReadableString &query
 Jupiter::ReadableString *handle_metadata_page(const Jupiter::ReadableString&)
 {
 	return pluginInstance.getMetadataJSON();
+}
+
+Jupiter::ReadableString *handle_metadata_prometheus_page(const Jupiter::ReadableString&)
+{
+	return pluginInstance.getMetadataPrometheus();
 }
 
 extern "C" JUPITER_EXPORT Jupiter::Plugin *getPlugin()
