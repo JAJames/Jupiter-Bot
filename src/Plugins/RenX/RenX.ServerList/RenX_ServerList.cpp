@@ -148,8 +148,9 @@ bool RenX_ServerListPlugin::initialize()
 	RenX_ServerListPlugin::web_hostname = this->config.get("Hostname"_jrs, ""_jrs);
 	RenX_ServerListPlugin::web_path = this->config.get("Path"_jrs, "/"_jrs);
 	RenX_ServerListPlugin::server_list_page_name = this->config.get("ServersPageName"_jrs, "servers.jsp"_jrs);
-	RenX_ServerListPlugin::server_list_long_page_name = this->config.get("HumanServersPageName"_jrs, "servers_long.jsp"_jrs);
-	RenX_ServerListPlugin::server_page_name = this->config.get("ServerPageName"_jrs, "server.jsp"_jrs);
+	RenX_ServerListPlugin::server_list_long_page_name = this->config.get("HumanServersPageName"_jrs, "servers_long"_jrs);
+	RenX_ServerListPlugin::server_page_name = this->config.get("ServerPageName"_jrs, "server"_jrs);
+	RenX_ServerListPlugin::metadata_page_name = this->config.get("MetadataPageName"_jrs, "metadata"_jrs);
 
 	/** Initialize content */
 	Jupiter::HTTP::Server &server = getHTTPServer();
@@ -178,6 +179,14 @@ bool RenX_ServerListPlugin::initialize()
 	content->free_result = true;
 	server.hook(RenX_ServerListPlugin::web_hostname, RenX_ServerListPlugin::web_path, content);
 
+	// Metadata page
+	content = new Jupiter::HTTP::Server::Content(RenX_ServerListPlugin::metadata_page_name, handle_metadata_page);
+	content->language = &Jupiter::HTTP::Content::Language::ENGLISH;
+	content->type = &CONTENT_TYPE_APPLICATION_JSON;
+	content->charset = &Jupiter::HTTP::Content::Type::Text::Charset::UTF8;
+	content->free_result = false;
+	server.hook(RenX_ServerListPlugin::web_hostname, RenX_ServerListPlugin::web_path, content);
+
 	this->updateServerList();
 	return true;
 }
@@ -192,7 +201,12 @@ RenX_ServerListPlugin::~RenX_ServerListPlugin()
 
 Jupiter::ReadableString *RenX_ServerListPlugin::getServerListJSON()
 {
-	return std::addressof(RenX_ServerListPlugin::server_list_json);
+	return &server_list_json;
+}
+
+Jupiter::ReadableString *RenX_ServerListPlugin::getMetadataJSON()
+{
+	return &metadata_json;
 }
 
 constexpr const char *json_bool_as_cstring(bool in)
@@ -524,6 +538,9 @@ void RenX_ServerListPlugin::addServerToServerList(RenX::Server &server)
 	server_json_block += '}';
 
 	server.varData[this->name].set("j"_jrs, server_json_block);
+
+	// Also update metadata so it reflects the now added server
+	updateMetadata();
 }
 
 void RenX_ServerListPlugin::updateServerList()
@@ -532,7 +549,7 @@ void RenX_ServerListPlugin::updateServerList()
 	size_t index = 0;
 	RenX::Server *server;
 
-	// regenerate server_list_json and server_list_Game 
+	// regenerate server_list_json
 
 	RenX_ServerListPlugin::server_list_json = '[';
 
@@ -560,6 +577,27 @@ void RenX_ServerListPlugin::updateServerList()
 	}
 
 	RenX_ServerListPlugin::server_list_json += ']';
+
+	// Also update metadata so that it reflects any changes
+	updateMetadata();
+}
+
+void RenX_ServerListPlugin::updateMetadata() {
+	Jupiter::ArrayList<RenX::Server> servers = RenX::getCore()->getServers();
+	unsigned int server_count{};
+	unsigned int player_count{};
+
+	for (size_t index = 0; index != servers.size(); ++index)
+	{
+		RenX::Server* server = servers.get(index);
+		if (server->isConnected() && server->isFullyConnected()) {
+			++server_count;
+			player_count += server->players.size();
+		}
+	}
+
+	metadata_json.format(R"json({"player_count":%u,"server_count":%u})json",
+		server_count, player_count);
 }
 
 Jupiter::ReferenceString RenX_ServerListPlugin::getListServerAddress(const RenX::Server& server) {
@@ -721,6 +759,11 @@ Jupiter::ReadableString *handle_server_page(const Jupiter::ReadableString &query
 
 	// return server data
 	return new Jupiter::ReferenceString(server->varData[pluginInstance.getName()].get("j"_jrs));
+}
+
+Jupiter::ReadableString *handle_metadata_page(const Jupiter::ReadableString&)
+{
+	return pluginInstance.getMetadataJSON();
 }
 
 extern "C" JUPITER_EXPORT Jupiter::Plugin *getPlugin()
