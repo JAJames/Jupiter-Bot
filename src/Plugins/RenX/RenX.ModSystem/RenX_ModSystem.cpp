@@ -758,14 +758,14 @@ void DelIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &chan
 					player = server->getPlayerByPartName(parameters);
 					if (player == nullptr)
 					{
-						if (pluginInstance.modsFile.remove(parameters))
+						if (pluginInstance.modsFile.removeSection(parameters))
 							source->sendNotice(nick, "Player has been removed from the moderator list."_jrs);
 						else
 						{
 							for (auto& section : pluginInstance.modsFile.getSections())
 							{
 								if (section.second.get("Name"_jrs).equalsi(parameters)) {
-									if (pluginInstance.modsFile.remove(section.first))
+									if (pluginInstance.modsFile.removeSection(section.first))
 										source->sendNotice(nick, "Player has been removed from the moderator list."_jrs);
 									else
 										source->sendNotice(nick, "Error: Unknown error occurred."_jrs);
@@ -779,7 +779,7 @@ void DelIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &chan
 					}
 					else if (player->isBot)
 						source->sendNotice(nick, "Error: A bot can not be a moderator."_jrs);
-					else if (pluginInstance.modsFile.remove(player->uuid))
+					else if (pluginInstance.modsFile.removeSection(player->uuid))
 						source->sendNotice(nick, "Player has been removed from the moderator list."_jrs);
 					else
 						source->sendNotice(nick, "Player is not in the moderator list."_jrs);
