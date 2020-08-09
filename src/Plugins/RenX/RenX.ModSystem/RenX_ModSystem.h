@@ -76,6 +76,7 @@ public:
 	void tempAuth(RenX::Server &server, const RenX::PlayerInfo &player, const ModGroup *group, bool notify = true) const;
 
 	bool set(RenX::PlayerInfo &player, ModGroup &group);
+	bool removeModSection(const Jupiter::ReadableString& section);
 
 	int getConfigAccess(const Jupiter::ReadableString &uuid) const;
 	size_t getGroupCount() const;
@@ -103,7 +104,6 @@ public: // RenX::Plugin
 public: // Jupiter::Plugin
 	int OnRehash() override;
 
-	Jupiter::Config &modsFile = Jupiter::Plugin::config;
 private:
 	bool lockSteam;
 	bool lockIP;

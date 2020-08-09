@@ -257,6 +257,10 @@ bool RenX_ModSystemPlugin::set(RenX::PlayerInfo &player, RenX_ModSystemPlugin::M
 	return r;
 }
 
+bool RenX_ModSystemPlugin::removeModSection(const Jupiter::ReadableString& section) {
+	return config.removeSection(section) && config.write();
+}
+
 RenX_ModSystemPlugin::ModGroup *RenX_ModSystemPlugin::getGroupByName(const Jupiter::ReadableString &name, ModGroup *defaultGroup) const
 {
 	if (RenX_ModSystemPlugin::groups.size() != 0)
@@ -758,14 +762,14 @@ void DelIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &chan
 					player = server->getPlayerByPartName(parameters);
 					if (player == nullptr)
 					{
-						if (pluginInstance.modsFile.removeSection(parameters))
+						if (pluginInstance.removeModSection(parameters))
 							source->sendNotice(nick, "Player has been removed from the moderator list."_jrs);
 						else
 						{
-							for (auto& section : pluginInstance.modsFile.getSections())
+							for (auto& section : pluginInstance.getConfig().getSections())
 							{
 								if (section.second.get("Name"_jrs).equalsi(parameters)) {
-									if (pluginInstance.modsFile.removeSection(section.first))
+									if (pluginInstance.removeModSection(section.first))
 										source->sendNotice(nick, "Player has been removed from the moderator list."_jrs);
 									else
 										source->sendNotice(nick, "Error: Unknown error occurred."_jrs);
@@ -779,7 +783,7 @@ void DelIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &chan
 					}
 					else if (player->isBot)
 						source->sendNotice(nick, "Error: A bot can not be a moderator."_jrs);
-					else if (pluginInstance.modsFile.removeSection(player->uuid))
+					else if (pluginInstance.removeModSection(player->uuid))
 						source->sendNotice(nick, "Player has been removed from the moderator list."_jrs);
 					else
 						source->sendNotice(nick, "Player is not in the moderator list."_jrs);
@@ -888,7 +892,7 @@ void ModListIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &
 		msg.aformat(IRCNORMAL " (Access: %d): ", node->access);
 		msgBaseSize = msg.size();
 
-		for (auto& section : pluginInstance.modsFile.getSections()) {
+		for (auto& section : pluginInstance.getConfig().getSections()) {
 			if (section.second.get("Group"_jrs).equalsi(node->name))
 			{
 				msg += section.second.get("Name"_jrs, section.second.getName());
