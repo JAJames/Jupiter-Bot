@@ -264,8 +264,8 @@ Jupiter::GenericCommand::ResponseLine *DebugInfoGenericCommand::trigger(const Ju
 		line = line->next;
 
 		for (auto& user_pair : channel.getUsers()) {
-			Jupiter::IRC::Client::User *user = user_pair.second.getUser();
-			line->next = new Jupiter::GenericCommand::ResponseLine(Jupiter::StringS::Format("User %.*s!%.*s@%.*s (prefix: %c) of channel %.*s (of %u shared)", user->getNickname().size(), user->getNickname().ptr(), user->getUsername().size(), user->getUsername().ptr(), user->getHostname().size(), user->getHostname().ptr(), channel.getUserPrefix(user_pair.second) ? channel.getUserPrefix(user_pair.second) : ' ', channel.getName().size(), channel.getName().ptr(), user->getChannelCount()), GenericCommand::DisplayType::PublicSuccess);
+			Jupiter::IRC::Client::User *user = user_pair.second->getUser();
+			line->next = new Jupiter::GenericCommand::ResponseLine(Jupiter::StringS::Format("User %.*s!%.*s@%.*s (prefix: %c) of channel %.*s (of %u shared)", user->getNickname().size(), user->getNickname().ptr(), user->getUsername().size(), user->getUsername().ptr(), user->getHostname().size(), user->getHostname().ptr(), channel.getUserPrefix(*user_pair.second) ? channel.getUserPrefix(*user_pair.second) : ' ', channel.getName().size(), channel.getName().ptr(), user->getChannelCount()), GenericCommand::DisplayType::PublicSuccess);
 			line = line->next;
 		};
 	};

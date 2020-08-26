@@ -3413,10 +3413,10 @@ void ModRequestGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *play
 		user_message += channel.getName();
 
 		for (auto& user : channel.getUsers()) {
-			if (channel.getUserPrefix(user.second) != 0 // If the user has a prefix...
-				&& !user.second.getNickname().equals(server.getNickname())) { // And the user isn't this bot...
+			if (channel.getUserPrefix(*user.second) != 0 // If the user has a prefix...
+				&& !user.second->getNickname().equals(server.getNickname())) { // And the user isn't this bot...
 				// Alert the user
-				server.sendMessage(user.second.getNickname(), user_message);
+				server.sendMessage(user.second->getNickname(), user_message);
 				++total_user_alerts;
 			}
 		}

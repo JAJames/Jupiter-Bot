@@ -680,8 +680,8 @@ void RenX::Server::banCheck(RenX::PlayerInfo &player)
 
 						user_message += channel.second.getName();
 						for (auto& user : channel.second.getUsers()) {
-							if (channel.second.getUserPrefix(user.second) != 0 && user.second.getNickname().equals(server->getNickname()) == false)
-								server->sendMessage(user.second.getUser()->getNickname(), user_message);
+							if (channel.second.getUserPrefix(*user.second) != 0 && user.second->getNickname().equals(server->getNickname()) == false)
+								server->sendMessage(user.second->getUser()->getNickname(), user_message);
 						}
 						user_message -= channel.second.getName().size();
 					}
