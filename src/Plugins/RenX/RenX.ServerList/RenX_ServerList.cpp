@@ -147,7 +147,7 @@ bool RenX_ServerListPlugin::initialize()
 {
 	RenX_ServerListPlugin::web_hostname = this->config.get("Hostname"_jrs, ""_jrs);
 	RenX_ServerListPlugin::web_path = this->config.get("Path"_jrs, "/"_jrs);
-	RenX_ServerListPlugin::server_list_page_name = this->config.get("ServersPageName"_jrs, "servers.jsp"_jrs);
+	RenX_ServerListPlugin::server_list_page_name = this->config.get("ServersPageName"_jrs, "servers"_jrs);
 	RenX_ServerListPlugin::server_list_long_page_name = this->config.get("HumanServersPageName"_jrs, "servers_long"_jrs);
 	RenX_ServerListPlugin::server_page_name = this->config.get("ServerPageName"_jrs, "server"_jrs);
 	RenX_ServerListPlugin::metadata_page_name = this->config.get("MetadataPageName"_jrs, "metadata"_jrs);
