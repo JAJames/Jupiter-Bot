@@ -3240,6 +3240,82 @@ const Jupiter::ReadableString &NModeIRCCommand::getHelp(const Jupiter::ReadableS
 
 IRC_COMMAND_INIT(NModeIRCCommand)
 
+// CancelVote IRC Command
+
+void CancelVoteIRCCommand::create()
+{
+	this->addTrigger(STRING_LITERAL_AS_REFERENCE("cancelvote"));
+	this->addTrigger(STRING_LITERAL_AS_REFERENCE("cancelvotes"));
+	this->addTrigger(STRING_LITERAL_AS_REFERENCE("cv"));
+	this->setAccessLevel(2);
+}
+
+void CancelVoteIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &channel, const Jupiter::ReadableString &nick, const Jupiter::ReadableString &parameters)
+{
+	Jupiter::IRC::Client::Channel *chan = source->getChannel(channel);
+	if (chan == nullptr) {
+		return;
+	}
+
+	Jupiter::ArrayList<RenX::Server> servers = RenX::getCore()->getServers(chan->getType());
+	if (servers.size() == 0) {
+		source->sendMessage(channel, STRING_LITERAL_AS_REFERENCE("Error: Channel not attached to any connected Renegade X servers."));
+		return;
+	}
+
+	bool cancel_all = false;
+	RenX::TeamType target = RenX::TeamType::None;
+
+	if (parameters.isEmpty()) {
+		cancel_all = true;
+	} else {
+		if (parameters.equalsi("all") || parameters.equalsi("a")) {
+			cancel_all = true;
+		} else if (parameters.equalsi("public") || parameters.equalsi("p")) {
+			target = RenX::TeamType::None;
+		} else if (parameters.equalsi("gdi") || parameters.equalsi("g")) {
+			target = RenX::TeamType::GDI;
+		} else if (parameters.equalsi("blackhand") || parameters.equalsi("bh") || parameters.equalsi("b")) {
+			target = RenX::TeamType::GDI;
+		} else if (parameters.equalsi("nod") || parameters.equalsi("n")) {
+			target = RenX::TeamType::Nod;
+		} else {
+			source->sendNotice(nick, STRING_LITERAL_AS_REFERENCE("Error: Invalid Team. Allowed values are all/a, public/p, gdi/g, nod/n, blackhand/bh/b."));
+			return;
+		}
+	}
+
+	if (cancel_all) {
+		for (size_t i = 0; i != servers.size(); i++) {
+			RenX::Server *server = servers.get(i);
+			if (server == nullptr) {
+				continue;
+			}
+
+			server->cancelVote(RenX::TeamType::None);
+			server->cancelVote(RenX::TeamType::GDI);
+			server->cancelVote(RenX::TeamType::Nod);
+		}
+	} else {
+		for (size_t i = 0; i != servers.size(); i++) {
+			RenX::Server *server = servers.get(i);
+			if (server == nullptr) {
+				continue;
+			}
+
+			server->cancelVote(target);
+		}
+	}
+}
+
+const Jupiter::ReadableString &CancelVoteIRCCommand::getHelp(const Jupiter::ReadableString &)
+{
+	static STRING_LITERAL_AS_NAMED_REFERENCE(defaultHelp, "Cancels active votes. Syntax: cancelvote [all|public|gdi|nod|blackhand]");
+	return defaultHelp;
+}
+
+IRC_COMMAND_INIT(CancelVoteIRCCommand)
+
 /** Game Commands */
 
 // Help Game Command
@@ -4081,6 +4157,57 @@ const Jupiter::ReadableString &NModeGameCommand::getHelp(const Jupiter::Readable
 }
 
 GAME_COMMAND_INIT(NModeGameCommand)
+
+// CancelVote Game Command
+
+void CancelVoteGameCommand::create()
+{
+	this->addTrigger(STRING_LITERAL_AS_REFERENCE("cancelvote"));
+	this->addTrigger(STRING_LITERAL_AS_REFERENCE("cancelvotes"));
+	this->addTrigger(STRING_LITERAL_AS_REFERENCE("cv"));
+	this->setAccessLevel(1);
+}
+
+void CancelVoteGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *player, const Jupiter::ReadableString &parameters)
+{
+	bool cancel_all = false;
+	RenX::TeamType target = RenX::TeamType::None;
+
+	if (parameters.isEmpty()) {
+		cancel_all = true;
+	} else {
+		if (parameters.equalsi("all") || parameters.equalsi("a")) {
+			cancel_all = true;
+		} else if (parameters.equalsi("public") || parameters.equalsi("p")) {
+			target = RenX::TeamType::None;
+		} else if (parameters.equalsi("gdi") || parameters.equalsi("g")) {
+			target = RenX::TeamType::GDI;
+		} else if (parameters.equalsi("blackhand") || parameters.equalsi("bh") || parameters.equalsi("b")) {
+			target = RenX::TeamType::GDI;
+		} else if (parameters.equalsi("nod") || parameters.equalsi("n")) {
+			target = RenX::TeamType::Nod;
+		} else {
+			source->sendMessage(*player, STRING_LITERAL_AS_REFERENCE("Error: Invalid Team. Allowed values are all/a, public/p, gdi/g, nod/n, blackhand/bh/b."));
+			return;
+		}
+	}
+
+	if (cancel_all) {
+		source->cancelVote(RenX::TeamType::None);
+		source->cancelVote(RenX::TeamType::GDI);
+		source->cancelVote(RenX::TeamType::Nod);
+	} else {
+		source->cancelVote(target);
+	}
+}
+
+const Jupiter::ReadableString &CancelVoteGameCommand::getHelp(const Jupiter::ReadableString &)
+{
+	static STRING_LITERAL_AS_NAMED_REFERENCE(defaultHelp, "Cancels active votes. Syntax: cancelvote [all|public|gdi|nod|blackhand]");
+	return defaultHelp;
+}
+
+GAME_COMMAND_INIT(CancelVoteGameCommand)
 
 extern "C" JUPITER_EXPORT Jupiter::Plugin *getPlugin()
 {
