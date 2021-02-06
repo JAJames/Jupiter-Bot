@@ -55,6 +55,7 @@ namespace RenX
 		virtual void RenX_OnServerFullyConnected(Server &server);
 		virtual void RenX_OnServerDisconnect(Server &server, RenX::DisconnectReason reason);
 		virtual bool RenX_OnBan(Server &server, const PlayerInfo &player, Jupiter::StringType &data);
+		virtual void RenX_OnCommandTriggered(Server& server, const Jupiter::ReadableString& trigger, RenX::PlayerInfo& player, const Jupiter::ReadableString& parameters, GameCommand& command);
 
 		/** Player type logs */
 		virtual void RenX_OnJoin(Server &server, const PlayerInfo &player);
