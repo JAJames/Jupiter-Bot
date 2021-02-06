@@ -1158,6 +1158,10 @@ RenX::GameCommand *RenX::Server::triggerCommand(const Jupiter::ReadableString &t
 			else
 				RenX::Server::sendMessage(player, "Access Denied."_jrs);
 
+			Jupiter::ArrayList<RenX::Plugin>& xPlugins = *getCore()->getPlugins();
+			for (size_t i = 0; i < xPlugins.size(); i++)
+				xPlugins.get(i)->RenX_OnCommandTriggered(*this, trigger, player, parameters, *cmd);
+
 			return cmd;
 		}
 	}
