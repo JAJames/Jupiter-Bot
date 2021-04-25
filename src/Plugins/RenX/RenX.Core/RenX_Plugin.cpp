@@ -91,6 +91,11 @@ bool RenX::Plugin::RenX_OnBan(Server &, const PlayerInfo &, Jupiter::StringType 
 	return false;
 }
 
+void RenX::Plugin::RenX_OnCommandTriggered(Server& server, const Jupiter::ReadableString& trigger, RenX::PlayerInfo& player, const Jupiter::ReadableString& parameters, GameCommand& command)
+{
+	return;
+}
+
 void RenX::Plugin::RenX_OnJoin(Server &, const PlayerInfo &)
 {
 	return;
