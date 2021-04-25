@@ -9,26 +9,28 @@
 #include "Example.h"
 #include "IRC_Bot.h"
 
+using namespace Jupiter::literals;
+
 void ExamplePlugin::OnConnect(Jupiter::IRC::Client *server)
 {
-	server->sendNotice(STRING_LITERAL_AS_REFERENCE("Agent"), STRING_LITERAL_AS_REFERENCE("Honey, I'm home!"));
+	server->sendNotice("Agent"_jrs, "Honey, I'm home!"_jrs);
 }
 
 // Example IRC Command Implementation
 
 void ExampleIRCCommand::create()
 {
-	this->addTrigger(STRING_LITERAL_AS_REFERENCE("example"));
+	this->addTrigger("example"_jrs);
 }
 
 void ExampleIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &channel, const Jupiter::ReadableString &nick, const Jupiter::ReadableString &parameters)
 {
-	source->sendMessage(channel, STRING_LITERAL_AS_REFERENCE("This is an example command!"));
+	source->sendMessage(channel, "This is an example command!"_jrs);
 }
 
 const Jupiter::ReadableString &ExampleIRCCommand::getHelp(const Jupiter::ReadableString &)
 {
-	static STRING_LITERAL_AS_NAMED_REFERENCE(helpmsg, "This is just an example command. It takes no parameters!");
+	static auto helpmsg = "This is just an example command. It takes no parameters!"_jrs;
 	return helpmsg;
 }
 

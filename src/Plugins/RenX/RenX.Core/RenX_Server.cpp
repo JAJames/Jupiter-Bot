@@ -964,6 +964,11 @@ bool RenX::Server::nmodePlayer(const RenX::PlayerInfo &player)
 	return RenX::Server::send(Jupiter::StringS::Format("nmode pid%d", player.id));
 }
 
+bool RenX::Server::smodePlayer(const RenX::PlayerInfo &player)
+{
+	return RenX::Server::send(Jupiter::StringS::Format("smode pid%d", player.id));
+}
+
 const Jupiter::ReadableString &RenX::Server::getPrefix() const
 {
 	static Jupiter::String parsed;

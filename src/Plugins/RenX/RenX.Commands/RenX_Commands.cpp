@@ -3240,6 +3240,56 @@ const Jupiter::ReadableString &NModeIRCCommand::getHelp(const Jupiter::ReadableS
 
 IRC_COMMAND_INIT(NModeIRCCommand)
 
+// SMode IRC Command
+
+void SModeIRCCommand::create()
+{
+	this->addTrigger(STRING_LITERAL_AS_REFERENCE("smode"));
+	this->setAccessLevel(2);
+}
+
+void SModeIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &channel, const Jupiter::ReadableString &nick, const Jupiter::ReadableString &parameters)
+{
+	if (parameters.isEmpty()) {
+		source->sendNotice(nick, STRING_LITERAL_AS_REFERENCE("Error: Too Few Parameters. Syntax: smode <Player>"));
+		return;
+	}
+
+	Jupiter::IRC::Client::Channel *chan = source->getChannel(channel);
+	if (chan == nullptr) {
+		return;
+	}
+
+	Jupiter::ArrayList<RenX::Server> servers = RenX::getCore()->getServers(chan->getType());
+	if (servers.size() == 0) {
+		source->sendMessage(channel, STRING_LITERAL_AS_REFERENCE("Error: Channel not attached to any connected Renegade X servers."));
+		return;
+	}
+
+	RenX::PlayerInfo *player;
+	RenX::Server *server;
+	unsigned int smodes = 0;
+	for (size_t i = 0; i != servers.size(); i++) {
+		server = servers.get(i);
+		if (server != nullptr) {
+			player = server->getPlayerByPartName(parameters);
+			if (player != nullptr) {
+				server->smodePlayer(*player);
+				++smodes;
+			}
+		}
+	}
+	source->sendMessage(channel, Jupiter::StringS::Format("%u players smoded.", smodes));
+}
+
+const Jupiter::ReadableString &SModeIRCCommand::getHelp(const Jupiter::ReadableString &)
+{
+	static STRING_LITERAL_AS_NAMED_REFERENCE(defaultHelp, "Resets a player's mode from spectator to normal. Syntax: smode <player>");
+	return defaultHelp;
+}
+
+IRC_COMMAND_INIT(SModeIRCCommand)
+
 // CancelVote IRC Command
 
 void CancelVoteIRCCommand::create()
@@ -4157,6 +4207,43 @@ const Jupiter::ReadableString &NModeGameCommand::getHelp(const Jupiter::Readable
 }
 
 GAME_COMMAND_INIT(NModeGameCommand)
+
+// SMode Game Command
+
+void SModeGameCommand::create()
+{
+	this->addTrigger(STRING_LITERAL_AS_REFERENCE("smode"));
+	this->setAccessLevel(1);
+}
+
+void SModeGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *player, const Jupiter::ReadableString &parameters)
+{
+	if (parameters.isEmpty()) {
+		source->sendMessage(*player, "Error: Too few parameters. Syntax: smode <player-name>"_jrs);
+		return;
+	}
+
+	RenX::PlayerInfo *target = source->getPlayerByPartName(parameters);
+	if (target == nullptr) {
+		source->sendMessage(*player, "Error: Player not found."_jrs);
+		return;
+	}
+
+	if (!source->smodePlayer(*target)) {
+		source->sendMessage(*player, "Error: Could not set player's mode."_jrs);
+		return;
+	}
+
+	source->sendMessage(*player, "Player's mode has been reset."_jrs);
+}
+
+const Jupiter::ReadableString &SModeGameCommand::getHelp(const Jupiter::ReadableString &)
+{
+	static STRING_LITERAL_AS_NAMED_REFERENCE(defaultHelp, "Resets a player's mode from spectator to normal. Syntax: smode <player-name>");
+	return defaultHelp;
+}
+
+GAME_COMMAND_INIT(SModeGameCommand)
 
 // CancelVote Game Command
 

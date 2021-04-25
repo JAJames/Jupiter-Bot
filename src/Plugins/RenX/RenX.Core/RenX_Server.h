@@ -707,6 +707,14 @@ namespace RenX
 		bool nmodePlayer(const RenX::PlayerInfo &player);
 
 		/**
+		* @brief Changes a player's mode to spectator
+		*
+		* @param player Player to change mode
+		* @return True on success, false otherwise.
+		*/
+		bool smodePlayer(const RenX::PlayerInfo &player);
+
+		/**
 		* @brief Fetches a server's IRC logging prefix.
 		*
 		* @return The server's logging prefix.
