@@ -1971,15 +1971,24 @@ void BanSearchIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString
 
 			Jupiter::String out(256);
 			Jupiter::String types(64);
-			char timeStr[256];
+			char dateStr[256];
+			char expireStr[256];
 			for (size_t i = 0; i != entries.size(); i++)
 			{
 				entry = entries.get(i);
 				if (isMatch(type))
 				{
-					time_t current_time = std::chrono::system_clock::to_time_t(entry->timestamp);
 					Jupiter::StringS ip_str = Jupiter::Socket::ntop4(entry->ip);
-					strftime(timeStr, sizeof(timeStr), "%b %d %Y, %H:%M:%S", localtime(&current_time));
+
+					time_t added_time = std::chrono::system_clock::to_time_t(entry->timestamp);
+					if (entry->length.count() != 0) {
+						time_t expire_time = std::chrono::system_clock::to_time_t(entry->timestamp + entry->length);
+						strftime(expireStr, sizeof(expireStr), "%b %d %Y, %H:%M:%S", localtime(&expire_time));
+					}
+					else {
+						std::strcpy(expireStr, "never");
+					}
+					strftime(dateStr, sizeof(dateStr), "%b %d %Y, %H:%M:%S", localtime(&added_time));
 
 					if ((entry->flags & 0x7FFF) == 0)
 						types = " NULL;"_jrs;
@@ -2005,8 +2014,8 @@ void BanSearchIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString
 						types += ";"_jrs;
 					}
 
-					out.format("ID: %lu (" IRCCOLOR "%sactive" IRCCOLOR "); Date: %s; IP: %.*s/%u; HWID: %.*s; Steam: %llu; Types:%.*s Name: %.*s; Banner: %.*s",
-						i, entry->is_active() ? "12" : "04in", timeStr, ip_str.size(), ip_str.ptr(), entry->prefix_length, entry->hwid.size(), entry->hwid.ptr(), entry->steamid,
+					out.format("ID: %lu (" IRCCOLOR "%sactive" IRCCOLOR "); Added: %s; Expires: %s; IP: %.*s/%u; HWID: %.*s; Steam: %llu; Types:%.*s Name: %.*s; Banner: %.*s",
+						i, entry->is_active() ? "12" : "04in", dateStr, expireStr, ip_str.size(), ip_str.ptr(), entry->prefix_length, entry->hwid.size(), entry->hwid.ptr(), entry->steamid,
 						types.size(), types.ptr(), entry->name.size(), entry->name.ptr(), entry->banner.size(), entry->banner.ptr());
 
 					if (entry->rdns.isNotEmpty())
