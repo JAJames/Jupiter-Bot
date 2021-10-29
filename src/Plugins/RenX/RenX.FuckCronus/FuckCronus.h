@@ -3,8 +3,8 @@
  * Written by Jessica James <jessica.aj@outlook.com>
  */
 
-#if !defined _EXAMPLE_H_HEADER
-#define _EXAMPLE_H_HEADER
+#if !defined _FUCKCRONUS_H_HEADER
+#define _FUCKCRONUS_H_HEADER
 
 #include "Jupiter/Plugin.h"
 #include "Jupiter/Reference_String.h"
@@ -47,4 +47,4 @@ private:
 	bool m_sanitize_blacklisted_commands{};
 };
 
-#endif // _EXAMPLE_H_HEADER
+#endif // _FUCKCRONUS_H_HEADER
