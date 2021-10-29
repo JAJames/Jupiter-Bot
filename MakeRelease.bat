@@ -4,7 +4,7 @@ ECHO.
 
 SET Platform=Win32
 SET NoArgs=False
-SET BinDir=cmake-build-release---%Platform%\bin\\
+SET BinDir=cmake-build-release\bin\\
 
 if "%1" == "" SET NoArgs=True
 
