@@ -453,6 +453,9 @@ void RenX_FuckCronusPlugin::RenX_OnRaw(RenX::Server &server, const Jupiter::Read
 	auto findPlayerByIP = [&server](const Jupiter::ReadableString& in_ip) -> const RenX::PlayerInfo* {
 		// Parse into integer so we're doing int comparisons instead of strings
 		auto ip32 = Jupiter::Socket::pton4(static_cast<std::string>(in_ip).c_str());
+		if (ip32 == 0) {
+			return nullptr;
+		}
 
 		// Search players
 		for (const auto& player : server.players) {
@@ -465,6 +468,10 @@ void RenX_FuckCronusPlugin::RenX_OnRaw(RenX::Server &server, const Jupiter::Read
 	};
 
 	auto findPlayerByHWID = [&server](const Jupiter::ReadableString& in_hwid) -> const RenX::PlayerInfo* {
+		if (in_hwid.isEmpty()) {
+			return nullptr;
+		}
+
 		for (const auto& player : server.players) {
 			if (player.hwid == in_hwid) {
 				return &player;
@@ -476,6 +483,10 @@ void RenX_FuckCronusPlugin::RenX_OnRaw(RenX::Server &server, const Jupiter::Read
 
 	auto findPlayerBySteamID = [&server](const Jupiter::ReadableString& in_steamid) -> const RenX::PlayerInfo* {
 		uint64_t steamid = in_steamid.asUnsignedLongLong();
+		if (steamid == 0) {
+			return nullptr;
+		}
+
 		for (const auto& player : server.players) {
 			if (player.steamid == steamid) {
 				return &player;
