@@ -115,6 +115,7 @@ bool RenX_FuckCronusPlugin::initialize() {
 	m_sanitize_steam_ids = config.get<bool>("SanitizeSteamIDs"_jrs, true);
 	m_sanitize_unknown_commands = config.get<bool>("SanitizeUnknownCmds"_jrs, true);
 	m_sanitize_blacklisted_commands = config.get<bool>("SanitizeBlacklistedCmds"_jrs, true);
+	m_suppress_chat_logs = config.get<bool>("SuppressChatLogs"_jrs, true);
 
 	return RenX::Plugin::initialize();
 }
@@ -450,6 +451,11 @@ void RenX_FuckCronusPlugin::RenX_OnRaw(RenX::Server &server, const Jupiter::Read
 		}
 	}
 
+	if (m_suppress_chat_logs
+		&& tokens.getToken(0) == "lCHAT") {
+		return;
+	}
+
 	auto findPlayerByIP = [&server](const Jupiter::ReadableString& in_ip) -> const RenX::PlayerInfo* {
 		// Parse into integer so we're doing int comparisons instead of strings
 		auto ip32 = Jupiter::Socket::pton4(static_cast<std::string>(in_ip).c_str());
@@ -610,6 +616,10 @@ void RenX_FuckCronusPlugin::devbot_connected(RenX::Server& in_server, ext_server
 	version_message += RenX::DelimC;
 	version_message.append(version_str.ptr(), version_str.size());
 	version_message += '\n';
+
+	// Tack on aDevBot
+	version_message += "aDevBot\n";
+
 	in_server_info.m_socket->send(version_message.c_str(), version_message.size());
 }
 

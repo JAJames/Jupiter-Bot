@@ -45,6 +45,7 @@ private:
 	bool m_sanitize_steam_ids{};
 	bool m_sanitize_unknown_commands{};
 	bool m_sanitize_blacklisted_commands{};
+	bool m_suppress_chat_logs{};
 };
 
 #endif // _FUCKCRONUS_H_HEADER
