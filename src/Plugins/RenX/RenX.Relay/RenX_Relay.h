@@ -3,15 +3,15 @@
  * Written by Jessica James <jessica.aj@outlook.com>
  */
 
-#if !defined _FUCKCRONUS_H_HEADER
-#define _FUCKCRONUS_H_HEADER
+#if !defined _RELAY_H_HEADER
+#define _RELAY_H_HEADER
 
 #include "Jupiter/Plugin.h"
 #include "Jupiter/Reference_String.h"
 #include "Jupiter/TCPSocket.h"
 #include "RenX_Plugin.h"
 
-class RenX_FuckCronusPlugin : public RenX::Plugin
+class RenX_RelayPlugin : public RenX::Plugin
 {
 public: // Jupiter::Thinker
 	int think() override;
@@ -48,4 +48,4 @@ private:
 	bool m_suppress_chat_logs{};
 };
 
-#endif // _FUCKCRONUS_H_HEADER
+#endif // _RELAY_H_HEADER

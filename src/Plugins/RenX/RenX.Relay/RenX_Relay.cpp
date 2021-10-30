@@ -3,7 +3,7 @@
  * Written by Jessica James <jessica.aj@outlook.com>
  */
 
-#include "FuckCronus.h"
+#include "RenX_Relay.h"
 #include <regex>
 #include <random>
 #include <memory>
@@ -22,7 +22,7 @@ constexpr const char g_blank_steamid[] = "0x0000000000000000";
 constexpr std::chrono::steady_clock::duration g_reconnect_delay = std::chrono::seconds{15 };
 constexpr std::chrono::steady_clock::duration g_activity_timeout = std::chrono::seconds{ 60 };
 
-int RenX_FuckCronusPlugin::think() {
+int RenX_RelayPlugin::think() {
 	for (auto& server_pair : m_server_info_map) {
 		auto server = server_pair.first;
 		auto& server_info = server_pair.second;
@@ -107,7 +107,7 @@ int RenX_FuckCronusPlugin::think() {
 	return 0;
 }
 
-bool RenX_FuckCronusPlugin::initialize() {
+bool RenX_RelayPlugin::initialize() {
 	m_init_time = std::chrono::steady_clock::now();
 	m_sanitize_names = config.get<bool>("SanitizeNames"_jrs, true);
 	m_sanitize_ips = config.get<bool>("SanitizeIPs"_jrs, true);
@@ -120,7 +120,7 @@ bool RenX_FuckCronusPlugin::initialize() {
 	return RenX::Plugin::initialize();
 }
 
-void RenX_FuckCronusPlugin::RenX_OnServerCreate(RenX::Server &server) {
+void RenX_RelayPlugin::RenX_OnServerCreate(RenX::Server &server) {
 	auto& server_info = m_server_info_map[&server];
 
 	server_info.m_socket = std::unique_ptr<Jupiter::TCPSocket>(new Jupiter::TCPSocket());
@@ -129,7 +129,7 @@ void RenX_FuckCronusPlugin::RenX_OnServerCreate(RenX::Server &server) {
 	}
 }
 
-void RenX_FuckCronusPlugin::RenX_OnServerDisconnect(RenX::Server &server, RenX::DisconnectReason reason) {
+void RenX_RelayPlugin::RenX_OnServerDisconnect(RenX::Server &server, RenX::DisconnectReason reason) {
 	auto pair_itr = m_server_info_map.find(&server);
 	if (pair_itr != m_server_info_map.end()) {
 		auto& socket_ptr = pair_itr->second.m_socket;
@@ -428,7 +428,7 @@ static const std::unordered_set<std::string_view> g_blacklist_commands {
 	"warn"sv
 };
 
-void RenX_FuckCronusPlugin::RenX_OnRaw(RenX::Server &server, const Jupiter::ReadableString &line) {
+void RenX_RelayPlugin::RenX_OnRaw(RenX::Server &server, const Jupiter::ReadableString &line) {
 	// Not parsing any escape sequences, so data gets sent to devbot exactly as it's received here. Copy tokens where needed to process escape sequences.
 	Jupiter::ReadableString::TokenizeResult<Jupiter::String_Strict> tokens = Jupiter::StringS::tokenize(line, RenX::DelimC);
 	bool required_sanitization = false;
@@ -604,7 +604,7 @@ void RenX_FuckCronusPlugin::RenX_OnRaw(RenX::Server &server, const Jupiter::Read
 	socket->send(line_sanitized);
 }
 
-void RenX_FuckCronusPlugin::devbot_connected(RenX::Server& in_server, ext_server_info& in_server_info) {
+void RenX_RelayPlugin::devbot_connected(RenX::Server& in_server, ext_server_info& in_server_info) {
 	in_server_info.m_devbot_connected = true;
 	in_server_info.m_socket->setBlocking(false);
 
@@ -623,7 +623,7 @@ void RenX_FuckCronusPlugin::devbot_connected(RenX::Server& in_server, ext_server
 	in_server_info.m_socket->send(version_message.c_str(), version_message.size());
 }
 
-void RenX_FuckCronusPlugin::devbot_disconnected(RenX::Server&, ext_server_info& in_server_info) {
+void RenX_RelayPlugin::devbot_disconnected(RenX::Server&, ext_server_info& in_server_info) {
 	in_server_info.m_devbot_connected = false;
 
 	if (in_server_info.m_socket) {
@@ -631,7 +631,7 @@ void RenX_FuckCronusPlugin::devbot_disconnected(RenX::Server&, ext_server_info& 
 	}
 }
 
-void RenX_FuckCronusPlugin::process_devbot_message(RenX::Server* in_server, const Jupiter::ReadableString& in_line) {
+void RenX_RelayPlugin::process_devbot_message(RenX::Server* in_server, const Jupiter::ReadableString& in_line) {
 	if (in_line.isEmpty()) {
 		return;
 	}
@@ -664,7 +664,7 @@ void RenX_FuckCronusPlugin::process_devbot_message(RenX::Server* in_server, cons
 }
 
 // Plugin instantiation and entry point.
-RenX_FuckCronusPlugin pluginInstance;
+RenX_RelayPlugin pluginInstance;
 
 extern "C" JUPITER_EXPORT Jupiter::Plugin *getPlugin()
 {

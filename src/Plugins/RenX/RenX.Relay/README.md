@@ -1,6 +1,6 @@
 # Setup
 1) Setup Jupiter on the same server as your game server
-2) Add `RenX.Listen` and `RenX.FuckCronus` to your root `Config.ini`
+2) Add `RenX.Listen` and `RenX.Relay` to your root `Config.ini`
 3) Configure `RenX-ListenServer` (see RenX.Listen.ini) server block in `RenX.Core.ini`. These are the settings for any servers which connect to your bot.
 4) In UDKRenegadeX.ini on the game server, replace `devbot.ren-x.com` with `127.0.0.1`
 5) Startup Jupiter Bot
@@ -24,7 +24,7 @@ traffic from there.
 
 *Short*: Thieves shouldn't be trusted with personally identifiable information. This prevents that.
 
-*Long* (copied from RenX.FuckCronus.ini):
+*Long* (copied from RenX.Relay.ini):
 
 Certain server owners report great unease about a specific Totem Arts sysadmin who is entirely unrestrained, who has
 entirely unrestrained access to player personal information such as IP addresses, Hardware IDs (MAC addresses),
