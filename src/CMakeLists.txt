@@ -9,3 +9,6 @@ add_subdirectory(Bot)
 
 # Setup output paths for plugins
 add_subdirectory(Plugins)
+
+# Propagate JUPITER_PLUGINS upwards
+set(JUPITER_PLUGINS "${JUPITER_PLUGINS}" PARENT_SCOPE)

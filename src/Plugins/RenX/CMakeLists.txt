@@ -6,7 +6,7 @@ target_include_directories(RenX.Core PUBLIC
         RenX.Core)
 
 macro(add_renx_plugin target)
-    add_library(${target} SHARED ${ARGN})
+    add_plugin(${target} ${ARGN})
     target_link_libraries(${target} RenX.Core)
 endmacro(add_renx_plugin)
 
@@ -40,3 +40,6 @@ add_subdirectory(RenX.Relay)
 add_subdirectory(RenX.ServerList)
 add_subdirectory(RenX.SetJoin)
 add_subdirectory(RenX.Warn)
+
+# Propagate JUPITER_PLUGINS upwards
+set(JUPITER_PLUGINS "${JUPITER_PLUGINS}" PARENT_SCOPE)
