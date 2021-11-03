@@ -60,9 +60,10 @@ private:
 	bool m_sanitize_ips{};
 	bool m_sanitize_hwids{};
 	bool m_sanitize_steam_ids{};
-	bool m_sanitize_unknown_commands{};
-	bool m_sanitize_blacklisted_commands{};
+	bool m_suppress_unknown_commands{};
+	bool m_suppress_blacklisted_commands{};
 	bool m_suppress_chat_logs{};
+	bool m_suppress_rcon_command_logs{};
 	using fake_command_handler = std::function<bool(std::string_view in_command_line, RenX::Server& in_server, std::vector<std::string>& out_response)>;
 	std::unordered_map<std::string, fake_command_handler> m_fake_command_table;
 };

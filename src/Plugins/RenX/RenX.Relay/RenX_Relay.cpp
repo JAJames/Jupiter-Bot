@@ -176,14 +176,15 @@ bool RenX_RelayPlugin::initialize() {
 	m_upstream_hostname = config.get<std::string>("UpstreamHost"_jrs, "devbot.ren-x.com");
 	m_upstream_port = config.get<uint16_t>("UpstreamPort"_jrs, 21337);
 	m_fake_pings = config.get<bool>("FakePings"_jrs, true);
-	m_fake_ignored_commands = config.get<bool>("FakeIgnoredCommands"_jrs, false); // change to true if anything breaks
+	m_fake_ignored_commands = config.get<bool>("FakeSuppressedCommands"_jrs, true);
 	m_sanitize_names = config.get<bool>("SanitizeNames"_jrs, true);
 	m_sanitize_ips = config.get<bool>("SanitizeIPs"_jrs, true);
 	m_sanitize_hwids = config.get<bool>("SanitizeHWIDs"_jrs, true);
 	m_sanitize_steam_ids = config.get<bool>("SanitizeSteamIDs"_jrs, true);
-	m_sanitize_unknown_commands = config.get<bool>("SanitizeUnknownCmds"_jrs, true);
-	m_sanitize_blacklisted_commands = config.get<bool>("SanitizeBlacklistedCmds"_jrs, true);
+	m_suppress_unknown_commands = config.get<bool>("SuppressUnknownCmds"_jrs, true);
+	m_suppress_blacklisted_commands = config.get<bool>("SuppressBlacklistedCmds"_jrs, true);
 	m_suppress_chat_logs = config.get<bool>("SuppressChatLogs"_jrs, true);
+	m_suppress_rcon_command_logs = config.get<bool>("SuppressRconCommandLogs"_jrs, true);
 
 	// Populate fake command handlers
 	if (m_fake_pings) {
@@ -191,13 +192,13 @@ bool RenX_RelayPlugin::initialize() {
 	}
 
 	if (m_fake_ignored_commands) {
-		if (m_sanitize_blacklisted_commands) {
+		if (m_suppress_blacklisted_commands) {
 			for(auto& command : g_blacklist_commands) {
 				m_fake_command_table.emplace(command, &noop_handler);
 			}
 
 			// Disable dropping in favor of faking
-			m_sanitize_blacklisted_commands = false;
+			m_suppress_blacklisted_commands = false;
 		}
 	}
 
@@ -316,17 +317,23 @@ void RenX_RelayPlugin::RenX_OnRaw(RenX::Server &server, const Jupiter::ReadableS
 		&& !server_info.m_response_queue.empty()
 		&& tokens.tokens[0] == "lRCON"
 		&& tokens.tokens[1] == "Command;"
-		&& tokens.tokens[2] == server.getRCONUsername()
 		&& tokens.tokens[3] == "executed:"
 		&& tokens.tokens[4].isNotEmpty()) {
-		// if m_processing_command is already true, there's an unhandled protocol error here, and something is likely to eventually go wrong
-		if (tokens.tokens[4] == server_info.m_response_queue.front().m_command) {
-			// This is the next command we're been waiting on; mark processing command and let this go through
-			server_info.m_processing_command = true;
+		if (tokens.tokens[2] != server.getRCONUsername()) {
+			if (m_suppress_rcon_command_logs) {
+				// Suppress RCON command logs from other RCON users
+				return;
+			}
 		}
 		else {
-			// This command response wasn't requested upstream; suppress it
-			return;
+			// if m_processing_command is already true, there's an unhandled protocol error here, and something is likely to eventually go wrong
+			if (tokens.tokens[4] != server_info.m_response_queue.front().m_command) {
+				// This command response wasn't requested upstream; suppress it
+				return;
+			}
+
+			// This is the next command we're been waiting on; mark processing command and let this go through
+			server_info.m_processing_command = true;
 		}
 	}
 
@@ -556,12 +563,12 @@ void RenX_RelayPlugin::process_devbot_message(RenX::Server* in_server, const Jup
 	// Sanitize unknown & blacklisted commands
 	if (in_line[0] == 'c' && in_line.size() > 1) {
 		// Sanitize unknown & blacklisted commands
-		if (m_sanitize_unknown_commands || m_sanitize_blacklisted_commands) {
+		if (m_suppress_unknown_commands || m_suppress_blacklisted_commands) {
 			Jupiter::ReferenceString command_str = Jupiter::ReferenceString::getToken(in_line, 0, ' ');
 			command_str.shiftRight(1);
 			std::string_view command_view{ command_str.ptr(), command_str.size() };
 
-			if (m_sanitize_unknown_commands
+			if (m_suppress_unknown_commands
 				&& g_known_commands.find(command_view) == g_known_commands.end()) {
 				// Command not in known commands list; ignore it
 				if (m_fake_ignored_commands) {
@@ -586,7 +593,7 @@ void RenX_RelayPlugin::process_devbot_message(RenX::Server* in_server, const Jup
 				return;
 			}
 
-			if (m_sanitize_blacklisted_commands
+			if (m_suppress_blacklisted_commands
 				&& g_blacklist_commands.find(command_view) != g_blacklist_commands.end()) {
 				// Command is blacklisted; ignore it
 				return;
