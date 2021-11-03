@@ -14,6 +14,9 @@
 #include "RenX_Server.h"
 #include "RenX_PlayerInfo.h"
 
+// String literal redefinition of RenX::DelimC
+#define RX_DELIM "\x02"
+
 using namespace Jupiter::literals;
 using namespace std::literals;
 constexpr const char g_blank_steamid[] = "0x0000000000000000";
@@ -106,6 +109,62 @@ int RenX_RelayPlugin::think() {
 	return 0;
 }
 
+bool noop_handler(std::string_view, RenX::Server&, std::vector<std::string>&) {
+	return true;
+}
+
+bool handle_ping(std::string_view in_command_line, RenX::Server&, std::vector<std::string>& out_response) {
+	std::string pong_message;
+	pong_message.reserve(in_command_line.size() + 1);
+	pong_message = "PONG"sv;
+	pong_message += RenX::DelimC;
+	if (in_command_line.size() > pong_message.size()) {
+		pong_message += in_command_line.substr(5);
+	}
+	out_response.push_back(std::move(pong_message));
+	return true;
+}
+
+static const std::unordered_set<std::string_view> g_known_commands {
+	"addmap"sv, "amsg"sv, "botlist"sv, "botvarlist"sv, "buildinginfo"sv, "binfo"sv, "buildinglist"sv, "blist"sv,
+	"cancelvote"sv, "votestop"sv, "changemap"sv, "setmap"sv, "changename"sv, "changeplayername"sv, "clientlist"sv,
+	"clientvarlist"sv, "disarm"sv, "disarmbeacon"sv, "disarmb"sv, "disarmc4"sv, "dumpkilllog"sv, "dumpkills"sv,
+	"endmap"sv, "gameover"sv, "endgame"sv, "fkick"sv, "forcekick"sv, "forcenonseamless"sv, "forceseamless"sv,
+	"gameinfo"sv, "ginfo"sv, "hascommand"sv, "help"sv, "hostprivatesay"sv, "page"sv, "hostsay"sv, "say"sv, "kick"sv,
+	"kickban"sv, "kill"sv, "listmutators"sv, "listmutator"sv, "mutatorlist"sv, "mutatorslist"sv, "loadmutator"sv,
+	"mutatorload"sv, "lockbuildings"sv, "lockhealth"sv, "lockb"sv, "lockh"sv, "lb"sv, "makeadmin"sv, "map"sv, "getmap"sv,
+	"mineban"sv, "mban"sv, "minelimit"sv, "mlimit"sv, "mineunban"sv, "unmineban"sv, "munban"sv, "unmban"sv,
+	"mutateasnone"sv, "mutateasplayer"sv, "normalmode"sv, "nmode"sv, "ping"sv, "playerinfo"sv, "pamsg"sv, "recorddemo"sv,
+	"demorecord"sv, "demorec"sv, "removemap"sv, "rotation"sv, "serverinfo"sv, "sinfo"sv, "setcommander"sv,
+	"spectatemode"sv, "smode"sv, "swapteams"sv, "teamswap"sv, "team"sv, "changeteam"sv, "team2"sv, "changeteam2"sv,
+	"teaminfo"sv, "tinfo"sv, "textmute"sv, "mute"sv, "textunmute"sv, "unmute"sv, "togglebotvoice"sv, "mutebot"sv,
+	"mutebots"sv, "unmutebot"sv, "unmutebots"sv, "cheatbots"sv, "togglecheatbots"sv, "switchcheatbots"sv, "forcebots"sv,
+	"toggleforcebots"sv, "switchforcebots"sv, "togglesuspect"sv, "travel"sv, "removemutator"sv, "mutatorremove"sv,
+	"unloadmutator"sv, "mutatorunload"sv, "vehiclelimit"sv, "vlimit"sv, "warn"sv
+};
+
+static const std::unordered_set<std::string_view> g_whitelist_commands {
+	"map"sv, "help"sv, "playerinfo"sv, "sinfo"sv, "teaminfo"sv, "hascommand"sv, "buildinglist"sv, "blist"sv,
+	"clientvarlist"sv, "getmap"sv, "buildinginfo"sv, "botlist"sv, "vlimit"sv, "serverinfo"sv, "ginfo"sv, "rotation"sv,
+	"binfo"sv, "vehiclelimit"sv, "tinfo"sv, "botvarlist"sv, "minelimit"sv, "gameinfo"sv, "clientlist"sv, "mlimit"sv,
+	"ping"sv,
+};
+
+static const std::unordered_set<std::string_view> g_blacklist_commands {
+	"addmap"sv, "admin"sv, "amsg"sv, "cancelvote"sv, "votestop"sv, "changemap"sv, "setmap"sv, "changename"sv,
+	"changeplayername"sv, "disarm"sv, "disarmbeacon"sv, "disarmb"sv, "disarmc4"sv, "dumpkilllog"sv, "dumpkills"sv,
+	"endmap"sv, "gameover"sv, "endgame"sv, "fkick"sv, "forcekick"sv, "forcenonseamless"sv, "forceseamless"sv,
+	"hostprivatesay"sv, "page"sv, "hostsay"sv, "say"sv, "kick"sv, "kickban"sv, "kill"sv, "listmutators"sv,
+	"listmutator"sv, "mutatorlist"sv, "mutatorslist"sv, "loadmutator"sv, "mutatorload"sv, "lockbuildings"sv,
+	"lockhealth"sv, "lockb"sv, "lockh"sv, "lb"sv, "makeadmin"sv, "mineban"sv, "mban"sv, "mineunban"sv, "unmineban"sv,
+	"munban"sv, "unmban"sv, "mutateasnone"sv, "mutateasplayer"sv, "normalmode"sv, "nmode"sv, "pamsg"sv, "recorddemo"sv,
+	"demorecord"sv, "demorec"sv, "removemap"sv, "setcommander"sv, "spectatemode"sv, "smode"sv, "swapteams"sv,
+	"teamswap"sv, "team"sv, "changeteam"sv, "team2"sv, "changeteam2"sv, "textmute"sv, "mute"sv, "textunmute"sv,
+	"unmute"sv, "togglebotvoice"sv, "mutebot"sv, "mutebots"sv, "unmutebot"sv, "unmutebots"sv, "cheatbots"sv,
+	"togglecheatbots"sv, "switchcheatbots"sv, "forcebots"sv, "toggleforcebots"sv, "switchforcebots"sv, "togglesuspect"sv,
+	"travel"sv, "removemutator"sv, "mutatorremove"sv, "unloadmutator"sv, "mutatorunload"sv, "warn"sv
+};
+
 bool RenX_RelayPlugin::initialize() {
 	m_init_time = std::chrono::steady_clock::now();
 	// TODO: add BindHost, BindPort
@@ -116,7 +175,8 @@ bool RenX_RelayPlugin::initialize() {
 	//			* notify game server to set failover
 	m_upstream_hostname = config.get<std::string>("UpstreamHost"_jrs, "devbot.ren-x.com");
 	m_upstream_port = config.get<uint16_t>("UpstreamPort"_jrs, 21337);
-	m_fake_pings = config.get<bool>("FakePings"_jrs, false);
+	m_fake_pings = config.get<bool>("FakePings"_jrs, true);
+	m_fake_ignored_commands = config.get<bool>("FakeIgnoredCommands"_jrs, false); // change to true if anything breaks
 	m_sanitize_names = config.get<bool>("SanitizeNames"_jrs, true);
 	m_sanitize_ips = config.get<bool>("SanitizeIPs"_jrs, true);
 	m_sanitize_hwids = config.get<bool>("SanitizeHWIDs"_jrs, true);
@@ -124,6 +184,22 @@ bool RenX_RelayPlugin::initialize() {
 	m_sanitize_unknown_commands = config.get<bool>("SanitizeUnknownCmds"_jrs, true);
 	m_sanitize_blacklisted_commands = config.get<bool>("SanitizeBlacklistedCmds"_jrs, true);
 	m_suppress_chat_logs = config.get<bool>("SuppressChatLogs"_jrs, true);
+
+	// Populate fake command handlers
+	if (m_fake_pings) {
+		m_fake_command_table.emplace("ping", &handle_ping);
+	}
+
+	if (m_fake_ignored_commands) {
+		if (m_sanitize_blacklisted_commands) {
+			for(auto& command : g_blacklist_commands) {
+				m_fake_command_table.emplace(command, &noop_handler);
+			}
+
+			// Disable dropping in favor of faking
+			m_sanitize_blacklisted_commands = false;
+		}
+	}
 
 	return RenX::Plugin::initialize();
 }
@@ -206,238 +282,6 @@ std::string to_hex(T in_integer) {
 	return result;
 }
 
-static const std::unordered_set<std::string_view> g_known_commands {
-	"addmap"sv,
-	"amsg"sv,
-	"botlist"sv,
-	"botvarlist"sv,
-	"buildinginfo"sv,
-	"binfo"sv,
-	"buildinglist"sv,
-	"blist"sv,
-	"cancelvote"sv,
-	"votestop"sv,
-	"changemap"sv,
-	"setmap"sv,
-	"changename"sv,
-	"changeplayername"sv,
-	"clientlist"sv,
-	"clientvarlist"sv,
-	"disarm"sv,
-	"disarmbeacon"sv,
-	"disarmb"sv,
-	"disarmc4"sv,
-	"dumpkilllog"sv,
-	"dumpkills"sv,
-	"endmap"sv,
-	"gameover"sv,
-	"endgame"sv,
-	"fkick"sv,
-	"forcekick"sv,
-	"forcenonseamless"sv,
-	"forceseamless"sv,
-	"gameinfo"sv,
-	"ginfo"sv,
-	"hascommand"sv,
-	"help"sv,
-	"hostprivatesay"sv,
-	"page"sv,
-	"hostsay"sv,
-	"say"sv,
-	"kick"sv,
-	"kickban"sv,
-	"kill"sv,
-	"listmutators"sv,
-	"listmutator"sv,
-	"mutatorlist"sv,
-	"mutatorslist"sv,
-	"loadmutator"sv,
-	"mutatorload"sv,
-	"lockbuildings"sv,
-	"lockhealth"sv,
-	"lockb"sv,
-	"lockh"sv,
-	"lb"sv,
-	"makeadmin"sv,
-	"map"sv,
-	"getmap"sv,
-	"mineban"sv,
-	"mban"sv,
-	"minelimit"sv,
-	"mlimit"sv,
-	"mineunban"sv,
-	"unmineban"sv,
-	"munban"sv,
-	"unmban"sv,
-	"mutateasnone"sv,
-	"mutateasplayer"sv,
-	"normalmode"sv,
-	"nmode"sv,
-	"ping"sv,
-	"playerinfo"sv,
-	"pamsg"sv,
-	"recorddemo"sv,
-	"demorecord"sv,
-	"demorec"sv,
-	"removemap"sv,
-	"rotation"sv,
-	"serverinfo"sv,
-	"sinfo"sv,
-	"setcommander"sv,
-	"spectatemode"sv,
-	"smode"sv,
-	"swapteams"sv,
-	"teamswap"sv,
-	"team"sv,
-	"changeteam"sv,
-	"team2"sv,
-	"changeteam2"sv,
-	"teaminfo"sv,
-	"tinfo"sv,
-	"textmute"sv,
-	"mute"sv,
-	"textunmute"sv,
-	"unmute"sv,
-	"togglebotvoice"sv,
-	"mutebot"sv,
-	"mutebots"sv,
-	"unmutebot"sv,
-	"unmutebots"sv,
-	"cheatbots"sv,
-	"togglecheatbots"sv,
-	"switchcheatbots"sv,
-	"forcebots"sv,
-	"toggleforcebots"sv,
-	"switchforcebots"sv,
-	"togglesuspect"sv,
-	"travel"sv,
-	"removemutator"sv,
-	"mutatorremove"sv,
-	"unloadmutator"sv,
-	"mutatorunload"sv,
-	"vehiclelimit"sv,
-	"vlimit"sv,
-	"warn"sv
-};
-
-static const std::unordered_set<std::string_view> g_whitelist_commands {
-	"map"sv,
-	"help"sv,
-	"playerinfo"sv,
-	"sinfo"sv,
-	"teaminfo"sv,
-	"hascommand"sv,
-	"buildinglist"sv,
-	"blist"sv,
-	"clientvarlist"sv,
-	"getmap"sv,
-	"buildinginfo"sv,
-	"botlist"sv,
-	"vlimit"sv,
-	"serverinfo"sv,
-	"ginfo"sv,
-	"rotation"sv,
-	"binfo"sv,
-	"vehiclelimit"sv,
-	"tinfo"sv,
-	"botvarlist"sv,
-	"minelimit"sv,
-	"gameinfo"sv,
-	"clientlist"sv,
-	"mlimit"sv,
-	"ping"sv,
-};
-
-static const std::unordered_set<std::string_view> g_blacklist_commands {
-	"addmap"sv,
-	"admin"sv, // Console command
-	"amsg"sv,
-	"cancelvote"sv,
-	"votestop"sv,
-	"changemap"sv,
-	"setmap"sv,
-	"changename"sv,
-	"changeplayername"sv,
-	"disarm"sv,
-	"disarmbeacon"sv,
-	"disarmb"sv,
-	"disarmc4"sv,
-	"dumpkilllog"sv,
-	"dumpkills"sv,
-	"endmap"sv,
-	"gameover"sv,
-	"endgame"sv,
-	"fkick"sv,
-	"forcekick"sv,
-	"forcenonseamless"sv,
-	"forceseamless"sv,
-	"hostprivatesay"sv,
-	"page"sv,
-	"hostsay"sv,
-	"say"sv,
-	"kick"sv,
-	"kickban"sv,
-	"kill"sv,
-	"listmutators"sv,
-	"listmutator"sv,
-	"mutatorlist"sv,
-	"mutatorslist"sv,
-	"loadmutator"sv,
-	"mutatorload"sv,
-	"lockbuildings"sv,
-	"lockhealth"sv,
-	"lockb"sv,
-	"lockh"sv,
-	"lb"sv,
-	"makeadmin"sv,
-	"mineban"sv,
-	"mban"sv,
-	"mineunban"sv,
-	"unmineban"sv,
-	"munban"sv,
-	"unmban"sv,
-	"mutateasnone"sv,
-	"mutateasplayer"sv,
-	"normalmode"sv,
-	"nmode"sv,
-	"pamsg"sv,
-	"recorddemo"sv,
-	"demorecord"sv,
-	"demorec"sv,
-	"removemap"sv,
-	"setcommander"sv,
-	"spectatemode"sv,
-	"smode"sv,
-	"swapteams"sv,
-	"teamswap"sv,
-	"team"sv,
-	"changeteam"sv,
-	"team2"sv,
-	"changeteam2"sv,
-	"textmute"sv,
-	"mute"sv,
-	"textunmute"sv,
-	"unmute"sv,
-	"togglebotvoice"sv,
-	"mutebot"sv,
-	"mutebots"sv,
-	"unmutebot"sv,
-	"unmutebots"sv,
-	"cheatbots"sv,
-	"togglecheatbots"sv,
-	"switchcheatbots"sv,
-	"forcebots"sv,
-	"toggleforcebots"sv,
-	"switchforcebots"sv,
-	"togglesuspect"sv,
-	"travel"sv,
-	"removemutator"sv,
-	"mutatorremove"sv,
-	"unloadmutator"sv,
-	"mutatorunload"sv,
-	"warn"sv
-};
-
 void RenX_RelayPlugin::RenX_OnRaw(RenX::Server &server, const Jupiter::ReadableString &line) {
 	// Not parsing any escape sequences, so data gets sent to devbot exactly as it's received here. Copy tokens where needed to process escape sequences.
 	Jupiter::ReadableString::TokenizeResult<Jupiter::String_Strict> tokens = Jupiter::StringS::tokenize(line, RenX::DelimC);
@@ -449,20 +293,48 @@ void RenX_RelayPlugin::RenX_OnRaw(RenX::Server &server, const Jupiter::ReadableS
 	}
 
 	// Check that we already have a session for this server
-	Jupiter::TCPSocket* socket{};
-	{
-		auto pair_itr = m_server_info_map.find(&server);
-		if (pair_itr == m_server_info_map.end()) {
-			return;
-		}
-		socket = pair_itr->second.m_socket.get();
-		if (!socket) {
-			return;
-		}
+	auto server_info_map_itr = m_server_info_map.find(&server);
+	if (server_info_map_itr == m_server_info_map.end()) {
+		// early out: server not yet registered (i.e: finished auth)
+		return;
+	}
+
+	ext_server_info& server_info = server_info_map_itr->second;
+	Jupiter::TCPSocket* socket = server_info.m_socket.get();
+	if (!socket) {
+		// early out: no upstream RCON session
+		return;
 	}
 
 	if (m_suppress_chat_logs
 		&& tokens.getToken(0) == "lCHAT") {
+		return;
+	}
+
+	// Suppress unassociated command execution logs from going upstream
+	if (tokens.token_count >= 5
+		&& !server_info.m_response_queue.empty()
+		&& tokens.tokens[0] == "lRCON"
+		&& tokens.tokens[1] == "Command;"
+		&& tokens.tokens[2] == server.getRCONUsername()
+		&& tokens.tokens[3] == "executed:"
+		&& tokens.tokens[4].isNotEmpty()) {
+		// if m_processing_command is already true, there's an unhandled protocol error here, and something is likely to eventually go wrong
+		if (tokens.tokens[4] == server_info.m_response_queue.front().m_command) {
+			// This is the next command we're been waiting on; mark processing command and let this go through
+			server_info.m_processing_command = true;
+		}
+		else {
+			// This command response wasn't requested upstream; suppress it
+			return;
+		}
+	}
+
+	// Suppress unassociated command responses from going upstream
+	if (tokens.tokens[0].isNotEmpty()
+		&& tokens.tokens[0] == 'r'
+		&& !server_info.m_processing_command) {
+		// This command response wasn't requested upstream; suppress it
 		return;
 	}
 
@@ -612,6 +484,26 @@ void RenX_RelayPlugin::RenX_OnRaw(RenX::Server &server, const Jupiter::ReadableS
 
 	line_sanitized += '\n';
 	socket->send(line_sanitized);
+
+	if (line_sanitized[0] == 'c'
+		&& server_info.m_processing_command) {
+		auto& queue = server_info.m_response_queue;
+		server_info.m_processing_command = false;
+
+		if (queue.empty()) {
+			std::cerr << "COMMAND FINISHED PROCESSING ON EMPTY QUEUE" << std::endl;
+			return;
+		}
+
+		// We've finished executing a command; pop it and go through any pending fakes
+		queue.pop_front();
+		std::string response;
+		while (!queue.empty() && queue.front().m_is_fake) {
+			response = queue.front().to_rcon(server.getRCONUsername());
+			server_info.m_socket->send(response.c_str(), response.size());
+			queue.pop_front();
+		}
+	}
 }
 
 void RenX_RelayPlugin::devbot_connected(RenX::Server& in_server, ext_server_info& in_server_info) {
@@ -647,7 +539,6 @@ void RenX_RelayPlugin::devbot_disconnected(RenX::Server&, ext_server_info& in_se
 }
 
 void RenX_RelayPlugin::process_devbot_message(RenX::Server* in_server, const Jupiter::ReadableString& in_line, ext_server_info& in_server_info) {
-
 	if (in_line.isEmpty()) {
 		return;
 	}
@@ -662,35 +553,36 @@ void RenX_RelayPlugin::process_devbot_message(RenX::Server* in_server, const Jup
 		return;
 	}
 
-	// Faking the pings is dangerous, because if this triggers in the middle of another command's response, the
-	// devbot is not going to be able to resume processing that command
-	if (m_fake_pings
-		&& in_line == "cping"_jrs) {
-		// First: echo command
-		Jupiter::StringS pong_message = "lRCON"_jrs + RenX::DelimC + "Command;" + RenX::DelimC + in_server->getRCONUsername()
-			+ RenX::DelimC + "executed:" + RenX::DelimC + "ping\n";
-
-		// Second: command response
-		pong_message += "rPONG"_jrs + RenX::DelimC + '\n';
-
-		// Third: command complete
-		pong_message += "c\n";
-
-		// Send it
-		in_server_info.m_socket->send(pong_message);
-		return;
-	}
-
 	// Sanitize unknown & blacklisted commands
 	if (in_line[0] == 'c' && in_line.size() > 1) {
+		// Sanitize unknown & blacklisted commands
 		if (m_sanitize_unknown_commands || m_sanitize_blacklisted_commands) {
-			Jupiter::ReferenceString command = Jupiter::ReferenceString::getToken(in_line, 0, ' ');
-			command.shiftRight(1);
-			std::string_view command_view{ command.ptr(), command.size() };
+			Jupiter::ReferenceString command_str = Jupiter::ReferenceString::getToken(in_line, 0, ' ');
+			command_str.shiftRight(1);
+			std::string_view command_view{ command_str.ptr(), command_str.size() };
 
 			if (m_sanitize_unknown_commands
 				&& g_known_commands.find(command_view) == g_known_commands.end()) {
 				// Command not in known commands list; ignore it
+				if (m_fake_ignored_commands) {
+					// Queue a fake response if necessary
+					UpstreamCommand command;
+					command.m_command = command_view;
+					command.m_is_fake = true;
+					command.m_response.push_back("Non-existent RconCommand - executed as ConsoleCommand"s);
+
+					// Push upstream or to queue
+					if (in_server_info.m_response_queue.empty()) {
+						// No commands are in the queue; go ahead and shove back the response
+						auto response = command.to_rcon(in_server->getRCONUsername());
+						in_server_info.m_socket->send(response.c_str(), response.size());
+						return;
+					}
+
+					// Other commands are waiting in the queue; tack this to the end to ensure command order
+					in_server_info.m_response_queue.push_back(std::move(command));
+					return;
+				}
 				return;
 			}
 
@@ -700,12 +592,67 @@ void RenX_RelayPlugin::process_devbot_message(RenX::Server* in_server, const Jup
 				return;
 			}
 		}
+
+		std::string_view command_line{ in_line.ptr() + 1, in_line.size() - 1 };
+		std::string_view command_word = command_line.substr(0, std::min(command_line.find(' '), command_line.size()));
+		std::string command_word_lower;
+		command_word_lower.reserve(command_word.size());
+		std::transform(command_word.begin(), command_word.end(), std::back_inserter(command_word_lower),
+			static_cast<int(*)(int)>(std::tolower));
+
+		// Populate any fake responses (i.e: pings)
+		UpstreamCommand command;
+		command.m_command = command_line;
+		auto handler = m_fake_command_table.find(command_word_lower);
+		if (handler != m_fake_command_table.end()) {
+			// Execute fake command
+			command.m_is_fake = handler->second(command_line, *in_server, command.m_response);
+			if (command.m_is_fake) {
+				if (in_server_info.m_response_queue.empty()) {
+					// No commands are in the queue; go ahead and shove back the response
+					auto response = command.to_rcon(in_server->getRCONUsername());
+					in_server_info.m_socket->send(response.c_str(), response.size());
+					return;
+				}
+
+				// Other commands are waiting in the queue; tack this to the end to ensure command order
+				in_server_info.m_response_queue.push_back(std::move(command));
+				return;
+			}
+		}
+
+		// This is not a fake command; queue it and send it
+		in_server_info.m_response_queue.push_back(std::move(command));
 	}
 
 	// Send line to game server
 	Jupiter::StringS sanitized_message = in_line;
 	sanitized_message += '\n';
 	in_server->sendData(sanitized_message);
+}
+
+std::string RenX_RelayPlugin::UpstreamCommand::to_rcon(const std::string_view& rcon_username) const {
+	std::string result;
+	result.reserve(m_command.size() + m_response.size() + 64);
+
+	// First: echo command
+	result = std::string_view { "lRCON" RX_DELIM "Command;" RX_DELIM };
+	result += rcon_username;
+	result += std::string_view { RX_DELIM "executed:" RX_DELIM };
+	result += m_command;
+	result += '\n';
+
+	// Second: command response
+	for (auto& response_line : m_response) {
+		result += 'r';
+		result += response_line;
+		result += '\n';
+	}
+
+	// Third: command complete
+	result += "c\n"sv;
+
+	return result;
 }
 
 // Plugin instantiation and entry point.
