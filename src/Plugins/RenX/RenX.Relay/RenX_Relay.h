@@ -20,7 +20,7 @@ public: // Jupiter::Plugin
 	bool initialize() override;
 
 public: // RenX::Plugin
-	void RenX_OnServerCreate(RenX::Server &server) override;
+	void RenX_OnServerFullyConnected(RenX::Server &server) override;
 	void RenX_OnServerDisconnect(RenX::Server &server, RenX::DisconnectReason reason) override;
 	void RenX_OnRaw(RenX::Server &server, const Jupiter::ReadableString &raw) override;
 
@@ -35,10 +35,13 @@ private:
 
 	void devbot_connected(RenX::Server& in_server, ext_server_info& in_server_info);
 	void devbot_disconnected(RenX::Server& in_server, ext_server_info& in_server_info);
-	void process_devbot_message(RenX::Server* in_server, const Jupiter::ReadableString& in_line);
+	void process_devbot_message(RenX::Server* in_server, const Jupiter::ReadableString& in_line, ext_server_info& in_server_info);
 
 	std::unordered_map<RenX::Server*, ext_server_info> m_server_info_map;
 	std::chrono::steady_clock::time_point m_init_time{};
+	std::string m_upstream_hostname;
+	uint16_t m_upstream_port;
+	bool m_fake_pings{};
 	bool m_sanitize_names{};
 	bool m_sanitize_ips{};
 	bool m_sanitize_hwids{};

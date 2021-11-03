@@ -156,7 +156,7 @@ int main(int argc, const char **args)
 
 	if (configs_directory.isNotEmpty())
 	{
-		Jupiter::Plugin::setDirectory(configs_directory);
+		Jupiter::Plugin::setConfigDirectory(configs_directory);
 		printf("Plugin configs will be loaded from \"%.*s\"." ENDL, configs_directory.size(), configs_directory.ptr());
 	}
 

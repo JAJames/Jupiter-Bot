@@ -195,4 +195,10 @@ namespace RenX
 	RENX_API extern const Jupiter::ReferenceString DevBotName;
 }
 
+#ifdef NDEBUG
+#define DEBUG_LOG(expr)
+#else // NDEBUG
+#define DEBUG_LOG(expr) { std::cout << '[' << getTimeFormat("%H:%M:%S") << "] (" << __FILE__ << ":" << __LINE__ << ") " << __func__ << " | " << expr << std::endl; }
+#endif // NDEBUG
+
 #endif // _RENX_FUNCTIONS_H_HEADER

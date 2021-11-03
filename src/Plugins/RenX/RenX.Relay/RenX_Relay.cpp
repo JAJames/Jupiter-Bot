@@ -16,11 +16,9 @@
 
 using namespace Jupiter::literals;
 using namespace std::literals;
-constexpr const char* g_devbot_hostname = "devbot.ren-x.com";
-constexpr uint16_t g_devbot_port = 21337;
 constexpr const char g_blank_steamid[] = "0x0000000000000000";
-constexpr std::chrono::steady_clock::duration g_reconnect_delay = std::chrono::seconds{15 };
-constexpr std::chrono::steady_clock::duration g_activity_timeout = std::chrono::seconds{ 60 };
+constexpr std::chrono::steady_clock::duration g_reconnect_delay = std::chrono::seconds{15 }; // game server: 120s
+constexpr std::chrono::steady_clock::duration g_activity_timeout = std::chrono::seconds{ 120 }; // game server: 120s
 
 int RenX_RelayPlugin::think() {
 	for (auto& server_pair : m_server_info_map) {
@@ -30,13 +28,13 @@ int RenX_RelayPlugin::think() {
 
 		if (!devbot_socket) {
 			// This should never happen
-			return 0;
+			continue;
 		}
 
 		if (!server_info.m_devbot_connected) {
 			// Not connected; attempt retry if needed
 			if (std::chrono::steady_clock::now() >= server_info.m_last_connect_attempt + g_reconnect_delay) {
-				if (devbot_socket->connect(g_devbot_hostname, g_devbot_port)) {
+				if (devbot_socket->connect(m_upstream_hostname.c_str(), m_upstream_port)) {
 					// There's some handshake garbage that needs to go on here so the devbot accepts us
 					devbot_connected(*server, server_info);
 					server->sendLogChan(IRCCOLOR "03[RenX]" IRCCOLOR " Socket successfully reconnected to DevBot; game server now listed.");
@@ -60,7 +58,8 @@ int RenX_RelayPlugin::think() {
 			// Connected and fine
 			if (devbot_socket->recv() > 0) // Data received
 			{
-				Jupiter::ReadableString::TokenizeResult<Jupiter::Reference_String> result = Jupiter::ReferenceString::tokenize(devbot_socket->getBuffer(), '\n');
+				auto& buffer = devbot_socket->getBuffer();
+				Jupiter::ReadableString::TokenizeResult<Jupiter::Reference_String> result = Jupiter::ReferenceString::tokenize(buffer, '\n');
 				if (result.token_count != 0)
 				{
 					server_info.m_last_activity = std::chrono::steady_clock::now();
@@ -68,11 +67,11 @@ int RenX_RelayPlugin::think() {
 					if (result.token_count != 1)
 					{
 						// Process devbot message received
-						process_devbot_message(server, server_info.m_last_line);
+						process_devbot_message(server, server_info.m_last_line, server_info);
 						server_info.m_last_line = result.tokens[result.token_count - 1];
 
 						for (size_t index = 1; index != result.token_count - 1; ++index)
-							process_devbot_message(server, result.tokens[index]);
+							process_devbot_message(server, result.tokens[index], server_info);
 					}
 				}
 			}
@@ -87,7 +86,7 @@ int RenX_RelayPlugin::think() {
 				devbot_disconnected(*server, server_info);
 
 				server->sendLogChan(IRCCOLOR "07[Warning]" IRCCOLOR " Connection to DevBot lost. Reconnection attempt in progress.");
-				if (devbot_socket->connect(g_devbot_hostname, g_devbot_port)) {
+				if (devbot_socket->connect(m_upstream_hostname.c_str(), m_upstream_port)) {
 					devbot_connected(*server, server_info);
 					server->sendLogChan(IRCCOLOR "06[Progress]" IRCCOLOR " Connection to DevBot reestablished. Initializing Renegade-X RCON protocol...");
 				}
@@ -109,6 +108,15 @@ int RenX_RelayPlugin::think() {
 
 bool RenX_RelayPlugin::initialize() {
 	m_init_time = std::chrono::steady_clock::now();
+	// TODO: add BindHost, BindPort
+	// TODO: invent a way to send a custom hostname directly to the devbot, rather than having to rely on manual configuration
+	// TODO: Add bidirectional relay support (i.e: bot link)
+	// TODO: Add game data relay support (so players connect through this)
+	// 			* Drop packets for non-players when traffic spikes
+	//			* notify game server to set failover
+	m_upstream_hostname = config.get<std::string>("UpstreamHost"_jrs, "devbot.ren-x.com");
+	m_upstream_port = config.get<uint16_t>("UpstreamPort"_jrs, 21337);
+	m_fake_pings = config.get<bool>("FakePings"_jrs, false);
 	m_sanitize_names = config.get<bool>("SanitizeNames"_jrs, true);
 	m_sanitize_ips = config.get<bool>("SanitizeIPs"_jrs, true);
 	m_sanitize_hwids = config.get<bool>("SanitizeHWIDs"_jrs, true);
@@ -120,12 +128,14 @@ bool RenX_RelayPlugin::initialize() {
 	return RenX::Plugin::initialize();
 }
 
-void RenX_RelayPlugin::RenX_OnServerCreate(RenX::Server &server) {
+void RenX_RelayPlugin::RenX_OnServerFullyConnected(RenX::Server &server) {
 	auto& server_info = m_server_info_map[&server];
 
-	server_info.m_socket = std::unique_ptr<Jupiter::TCPSocket>(new Jupiter::TCPSocket());
-	if (server_info.m_socket->connect(g_devbot_hostname, g_devbot_port)) {
-		devbot_connected(server, server_info);
+	if (!server_info.m_devbot_connected) {
+		server_info.m_socket = std::unique_ptr<Jupiter::TCPSocket>(new Jupiter::TCPSocket());
+		if (server_info.m_socket->connect(m_upstream_hostname.c_str(), m_upstream_port)) {
+			devbot_connected(server, server_info);
+		}
 	}
 }
 
@@ -607,6 +617,8 @@ void RenX_RelayPlugin::RenX_OnRaw(RenX::Server &server, const Jupiter::ReadableS
 void RenX_RelayPlugin::devbot_connected(RenX::Server& in_server, ext_server_info& in_server_info) {
 	in_server_info.m_devbot_connected = true;
 	in_server_info.m_socket->setBlocking(false);
+	in_server_info.m_last_connect_attempt = std::chrono::steady_clock::now();
+	in_server_info.m_last_activity = in_server_info.m_last_connect_attempt;
 
 	// New format: 004 | Game Version Number | Game Version
 	auto& version_str = in_server.getGameVersion();
@@ -617,8 +629,11 @@ void RenX_RelayPlugin::devbot_connected(RenX::Server& in_server, ext_server_info
 	version_message.append(version_str.ptr(), version_str.size());
 	version_message += '\n';
 
-	// Tack on aDevBot
-	version_message += "aDevBot\n";
+	// Tack on username auth
+	auto& username = in_server.getRCONUsername();
+	version_message += 'a';
+	version_message.append(username.ptr(), username.size());
+	version_message += '\n';
 
 	in_server_info.m_socket->send(version_message.c_str(), version_message.size());
 }
@@ -631,8 +646,38 @@ void RenX_RelayPlugin::devbot_disconnected(RenX::Server&, ext_server_info& in_se
 	}
 }
 
-void RenX_RelayPlugin::process_devbot_message(RenX::Server* in_server, const Jupiter::ReadableString& in_line) {
+void RenX_RelayPlugin::process_devbot_message(RenX::Server* in_server, const Jupiter::ReadableString& in_line, ext_server_info& in_server_info) {
+
 	if (in_line.isEmpty()) {
+		return;
+	}
+
+	if (in_line == 's') {
+		// we're already subscribed
+		return;
+	}
+
+	if (in_line[0] == 'a') {
+		// we're already authenticated
+		return;
+	}
+
+	// Faking the pings is dangerous, because if this triggers in the middle of another command's response, the
+	// devbot is not going to be able to resume processing that command
+	if (m_fake_pings
+		&& in_line == "cping"_jrs) {
+		// First: echo command
+		Jupiter::StringS pong_message = "lRCON"_jrs + RenX::DelimC + "Command;" + RenX::DelimC + in_server->getRCONUsername()
+			+ RenX::DelimC + "executed:" + RenX::DelimC + "ping\n";
+
+		// Second: command response
+		pong_message += "rPONG"_jrs + RenX::DelimC + '\n';
+
+		// Third: command complete
+		pong_message += "c\n";
+
+		// Send it
+		in_server_info.m_socket->send(pong_message);
 		return;
 	}
 
@@ -660,7 +705,7 @@ void RenX_RelayPlugin::process_devbot_message(RenX::Server* in_server, const Jup
 	// Send line to game server
 	Jupiter::StringS sanitized_message = in_line;
 	sanitized_message += '\n';
-	in_server->sendData(in_line);
+	in_server->sendData(sanitized_message);
 }
 
 // Plugin instantiation and entry point.
