@@ -19,6 +19,7 @@
 #include <forward_list>
 #include <functional>
 #include "Jupiter/Functions.h"
+#include "duration.hpp"
 #include "IRC_Bot.h"
 #include "RenX_Commands.h"
 #include "RenX_Core.h"
@@ -2344,7 +2345,8 @@ void AddBanIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &c
 							return;
 						}
 
-						duration = std::chrono::seconds(Jupiter::ReferenceString::getWord(parameters, index++, ADDBAN_WHITESPACE).asUnsignedLongLong());
+						const auto& duration_str = Jupiter::ReferenceString::getWord(parameters, index++, ADDBAN_WHITESPACE);
+						duration = jessilib::duration_from_string(duration_str.ptr(), duration_str.ptr() + duration_str.size()).duration;
 					}
 					else if (word.equalsi("Game"_jrs))
 						flags |= RenX::BanDatabase::Entry::FLAG_TYPE_GAME;
@@ -2751,7 +2753,8 @@ void AddExemptionIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableStr
 							return;
 						}
 
-						duration = std::chrono::seconds(Jupiter::ReferenceString::getWord(parameters, index++, ADDEXEMPTION_WHITESPACE).asUnsignedLongLong());
+						const auto& duration_str = Jupiter::ReferenceString::getWord(parameters, index++, ADDEXEMPTION_WHITESPACE);
+						duration = jessilib::duration_from_string(duration_str.ptr(), duration_str.ptr() + duration_str.size()).duration;
 					}
 					else if (word.equalsi("Ban"_jrs))
 						flags |= RenX::ExemptionDatabase::Entry::FLAG_TYPE_BAN;
