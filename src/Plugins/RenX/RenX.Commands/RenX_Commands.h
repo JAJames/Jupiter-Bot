@@ -37,14 +37,16 @@ public: // Jupiter::Plugin
 	int OnRehash() override;
 
 public:
-	std::chrono::seconds getTBanTime() const;
+	std::chrono::seconds getDefaultTBanTime() const;
+	std::chrono::seconds getMaxTBanTime() const;
 	const Jupiter::ReadableString &getPlayerInfoFormat() const;
 	const Jupiter::ReadableString &getAdminPlayerInfoFormat() const;
 	const Jupiter::ReadableString &getBuildingInfoFormat() const;
 	const Jupiter::ReadableString &getStaffTitle() const;
 
 private:
-	std::chrono::seconds _defaultTempBanTime;
+	std::chrono::seconds m_defaultTempBanTime;
+	std::chrono::seconds m_maxTempBanTime;
 	Jupiter::StringS playerInfoFormat;
 	Jupiter::StringS adminPlayerInfoFormat;
 	Jupiter::StringS buildingInfoFormat;

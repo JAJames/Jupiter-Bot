@@ -32,6 +32,7 @@
 #include "RenX_Tags.h"
 
 using namespace Jupiter::literals;
+using namespace jessilib::literals;
 
 const Jupiter::ReferenceString RxCommandsSection = "RenX.Commands"_jrs;
 
@@ -69,7 +70,10 @@ void RenX_CommandsPlugin::RenX_OnDie(RenX::Server &server, const RenX::PlayerInf
 
 bool RenX_CommandsPlugin::initialize()
 {
-	RenX_CommandsPlugin::_defaultTempBanTime = std::chrono::seconds(this->config.get<long long>("TBanTime"_jrs, 86400));
+	auto default_tban_time = this->config.get("DefaultTBanTime"_jrs, "1d"_jrs);
+	auto max_tban_time = this->config.get("MaxTBanTime"_jrs, "1w"_jrs);
+	RenX_CommandsPlugin::m_defaultTempBanTime = jessilib::duration_from_string(default_tban_time.ptr(), default_tban_time.ptr() + default_tban_time.size()).duration;
+	RenX_CommandsPlugin::m_maxTempBanTime = std::max(jessilib::duration_from_string(max_tban_time.ptr(), max_tban_time.ptr() + max_tban_time.size()).duration, m_defaultTempBanTime);
 	RenX_CommandsPlugin::playerInfoFormat = this->config.get("PlayerInfoFormat"_jrs, IRCCOLOR "03[Player Info]" IRCCOLOR "{TCOLOR} Name: " IRCBOLD "{RNAME}" IRCBOLD " - ID: {ID} - Team: " IRCBOLD "{TEAML}" IRCBOLD " - Vehicle Kills: {VEHICLEKILLS} - Building Kills {BUILDINGKILLS} - Kills {KILLS} - Deaths: {DEATHS} - KDR: {KDR} - Access: {ACCESS}"_jrs);
 	RenX_CommandsPlugin::adminPlayerInfoFormat = this->config.get("AdminPlayerInfoFormat"_jrs, Jupiter::StringS::Format("%.*s - IP: " IRCBOLD "{IP}" IRCBOLD " - HWID: " IRCBOLD "{HWID}" IRCBOLD " - RDNS: " IRCBOLD "{RDNS}" IRCBOLD " - Steam ID: " IRCBOLD "{STEAM}", RenX_CommandsPlugin::playerInfoFormat.size(), RenX_CommandsPlugin::playerInfoFormat.ptr()));
 	RenX_CommandsPlugin::buildingInfoFormat = this->config.get("BuildingInfoFormat"_jrs, ""_jrs IRCCOLOR + RenX::tags->buildingTeamColorTag + RenX::tags->buildingNameTag + IRCCOLOR " - " IRCCOLOR "07"_jrs + RenX::tags->buildingHealthPercentageTag + "%"_jrs);
@@ -87,9 +91,12 @@ int RenX_CommandsPlugin::OnRehash()
 	return this->initialize() ? 0 : -1;
 }
 
-std::chrono::seconds RenX_CommandsPlugin::getTBanTime() const
-{
-	return RenX_CommandsPlugin::_defaultTempBanTime;
+std::chrono::seconds RenX_CommandsPlugin::getDefaultTBanTime() const {
+	return RenX_CommandsPlugin::m_defaultTempBanTime;
+}
+
+std::chrono::seconds RenX_CommandsPlugin::getMaxTBanTime() const {
+	return RenX_CommandsPlugin::m_maxTempBanTime;
 }
 
 const Jupiter::ReadableString &RenX_CommandsPlugin::getPlayerInfoFormat() const
@@ -2050,6 +2057,41 @@ IRC_COMMAND_INIT(BanSearchIRCCommand)
 
 // TempBan IRC Command
 
+struct player_search_result {
+	RenX::Server* server{}; // Set to the server the player is on, if one is found, last server checked otherwise
+	RenX::PlayerInfo* player{}; // Set if a player is found
+};
+
+player_search_result findPlayerByPartName(Jupiter::ArrayList<RenX::Server>& servers, const Jupiter::ReadableString& name) {
+	if (servers.size() == 0) {
+		return {};
+	}
+
+	player_search_result result;
+	for (size_t index = 0; index != servers.size(); ++index) {
+		auto server = servers.get(index);
+		if (server != nullptr) {
+			result.server = server;
+			result.player = server->getPlayerByPartName(name);
+			if (result.player != nullptr) {
+				break;
+			}
+		}
+	}
+
+	return result;
+}
+
+player_search_result findPlayerByPartName(IRC_Bot* source, const Jupiter::ReadableString& channel, const Jupiter::ReadableString& name) {
+	Jupiter::IRC::Client::Channel *chan = source->getChannel(channel);
+	if (chan == nullptr) {
+		return {};
+	}
+
+	Jupiter::ArrayList<RenX::Server> servers = RenX::getCore()->getServers(chan->getType());
+	return findPlayerByPartName(servers, name);
+}
+
 void TempBanIRCCommand::create()
 {
 	this->addTrigger(STRING_LITERAL_AS_REFERENCE("tban"));
@@ -2060,46 +2102,53 @@ void TempBanIRCCommand::create()
 
 void TempBanIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &channel, const Jupiter::ReadableString &nick, const Jupiter::ReadableString &parameters)
 {
-	if (parameters.isNotEmpty())
-	{
-		Jupiter::IRC::Client::Channel *chan = source->getChannel(channel);
-		if (chan != nullptr)
-		{
-			Jupiter::ArrayList<RenX::Server> servers = RenX::getCore()->getServers(chan->getType());
-			if (servers.size() != 0)
-			{
-				RenX::PlayerInfo *player;
-				RenX::Server *server;
-				unsigned int kicks = 0;
-				Jupiter::ReferenceString name = Jupiter::ReferenceString::getWord(parameters, 0, WHITESPACE);
-				Jupiter::ReferenceString reason = parameters.wordCount(WHITESPACE) > 1 ? Jupiter::ReferenceString::gotoWord(parameters, 1, WHITESPACE) : "No reason"_jrs;
-				Jupiter::String banner(nick.size() + 4);
-				banner += nick;
-				banner += "@IRC";
-				for (size_t i = 0; i != servers.size(); i++)
-				{
-					server = servers.get(i);
-					if (server != nullptr)
-					{
-						player = server->getPlayerByPartName(name);
-						if (player != nullptr)
-						{
-							server->banPlayer(*player, banner, reason, pluginInstance.getTBanTime());
-							kicks++;
-						}
-					}
-				}
-				source->sendMessage(channel, Jupiter::StringS::Format("%u players kicked.", kicks));
-			}
-			else source->sendMessage(channel, STRING_LITERAL_AS_REFERENCE("Error: Channel not attached to any connected Renegade X servers."));
+	if (parameters.isEmpty()) {
+		source->sendNotice(nick, STRING_LITERAL_AS_REFERENCE("Error: Too Few Parameters. Syntax: TempBan [Duration] <Player> [Reason]"));
+		return;
+	}
+
+	std::chrono::seconds duration = pluginInstance.getDefaultTBanTime();
+	Jupiter::ReferenceString name = Jupiter::ReferenceString::getWord(parameters, 0, WHITESPACE);
+	size_t word_count = parameters.wordCount(WHITESPACE);
+	size_t reason_start_word = 1;
+
+	// Try searching by name first
+	auto search_result = findPlayerByPartName(source, channel, name);
+	if (search_result.server != nullptr
+		&& search_result.player == nullptr
+		&& word_count > 1) {
+		// Try reading token as a duration instead, and search the name token if duration > 0
+		duration = jessilib::duration_from_string(name.ptr(), name.ptr() + name.size()).duration;
+		if (duration.count() > 0) {
+			// It reads as a duration; sanity check & try searching again
+			duration = std::min(duration, pluginInstance.getMaxTBanTime());
+			name = Jupiter::ReferenceString::getWord(parameters, 1, WHITESPACE);
+			++reason_start_word;
+			search_result = findPlayerByPartName(source, channel, name);
 		}
 	}
-	else source->sendNotice(nick, STRING_LITERAL_AS_REFERENCE("Error: Too Few Parameters. Syntax: TempBan <Player> [Reason]"));
+
+	if (search_result.server == nullptr) {
+		source->sendMessage(channel, STRING_LITERAL_AS_REFERENCE("Error: Channel not attached to any connected Renegade X servers."));
+		return;
+	}
+
+	if (search_result.player == nullptr) {
+		source->sendMessage(channel, STRING_LITERAL_AS_REFERENCE("Error: Could not find player."));
+		return;
+	}
+
+	Jupiter::ReferenceString reason = word_count > reason_start_word ? Jupiter::ReferenceString::gotoWord(parameters, reason_start_word, WHITESPACE) : "No reason"_jrs;
+	Jupiter::String banner(nick.size() + 4);
+	banner += nick;
+	banner += "@IRC";
+	search_result.server->banPlayer(*search_result.player, banner, reason, duration);
+	source->sendMessage(channel, STRING_LITERAL_AS_REFERENCE("Player banned."));
 }
 
 const Jupiter::ReadableString &TempBanIRCCommand::getHelp(const Jupiter::ReadableString &)
 {
-	static STRING_LITERAL_AS_NAMED_REFERENCE(defaultHelp, "Kicks and temporarily bans a player from the game. Syntax: TempBan <Player> [Reason]");
+	static STRING_LITERAL_AS_NAMED_REFERENCE(defaultHelp, "Kicks and temporarily bans a player from the game. Syntax: TempBan [Duration] <Player> [Reason]");
 	return defaultHelp;
 }
 
@@ -2118,47 +2167,53 @@ void TempChatBanIRCCommand::create()
 
 void TempChatBanIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &channel, const Jupiter::ReadableString &nick, const Jupiter::ReadableString &parameters)
 {
-	if (parameters.isNotEmpty())
-	{
-		Jupiter::IRC::Client::Channel *chan = source->getChannel(channel);
-		if (chan != nullptr)
-		{
-			Jupiter::ArrayList<RenX::Server> servers = RenX::getCore()->getServers(chan->getType());
-			if (servers.size() != 0)
-			{
-				RenX::PlayerInfo *player;
-				RenX::Server *server;
-				unsigned int mutes = 0;
-				Jupiter::ReferenceString name = Jupiter::ReferenceString::getWord(parameters, 0, WHITESPACE);
-				Jupiter::ReferenceString reason = parameters.wordCount(WHITESPACE) > 1 ? Jupiter::ReferenceString::gotoWord(parameters, 1, WHITESPACE) : "No reason"_jrs;
-				Jupiter::String banner(nick.size() + 4);
-				banner += nick;
-				banner += "@IRC";
-				for (size_t i = 0; i != servers.size(); i++)
-				{
-					server = servers.get(i);
-					if (server != nullptr)
-					{
-						player = server->getPlayerByPartName(name);
-						if (player != nullptr)
-						{
-							server->mute(*player);
-							RenX::banDatabase->add(server, *player, banner, reason, pluginInstance.getTBanTime(), RenX::BanDatabase::Entry::FLAG_TYPE_CHAT);
-							mutes++;
-						}
-					}
-				}
-				source->sendMessage(channel, Jupiter::StringS::Format("%u players chat banned.", mutes));
-			}
-			else source->sendMessage(channel, STRING_LITERAL_AS_REFERENCE("Error: Channel not attached to any connected Renegade X servers."));
+	if (parameters.isEmpty()) {
+		source->sendNotice(nick, STRING_LITERAL_AS_REFERENCE("Error: Too Few Parameters. Syntax: TempChatBan [Duration] <Player> [Reason]"));
+		return;
+	}
+
+	std::chrono::seconds duration = pluginInstance.getDefaultTBanTime();
+	Jupiter::ReferenceString name = Jupiter::ReferenceString::getWord(parameters, 0, WHITESPACE);
+	size_t word_count = parameters.wordCount(WHITESPACE);
+	size_t reason_start_word = 1;
+
+	// Try searching by name first
+	auto search_result = findPlayerByPartName(source, channel, name);
+	if (search_result.server != nullptr
+		&& search_result.player == nullptr
+		&& word_count > 1) {
+		// Try reading token as a duration instead, and search the name token if duration > 0
+		duration = jessilib::duration_from_string(name.ptr(), name.ptr() + name.size()).duration;
+		if (duration.count() > 0) {
+			// It reads as a duration; sanity check & try searching again
+			duration = std::min(duration, pluginInstance.getMaxTBanTime());
+			name = Jupiter::ReferenceString::getWord(parameters, 1, WHITESPACE);
+			++reason_start_word;
+			search_result = findPlayerByPartName(source, channel, name);
 		}
 	}
-	else source->sendNotice(nick, STRING_LITERAL_AS_REFERENCE("Error: Too Few Parameters. Syntax: TempChatBan <Player> [Reason]"));
+
+	if (search_result.server == nullptr) {
+		source->sendMessage(channel, STRING_LITERAL_AS_REFERENCE("Error: Channel not attached to any connected Renegade X servers."));
+		return;
+	}
+
+	if (search_result.player == nullptr) {
+		source->sendMessage(channel, STRING_LITERAL_AS_REFERENCE("Error: Could not find player."));
+		return;
+	}
+
+	Jupiter::ReferenceString reason = word_count > reason_start_word ? Jupiter::ReferenceString::gotoWord(parameters, reason_start_word, WHITESPACE) : "No reason"_jrs;
+	Jupiter::String banner(nick.size() + 4);
+	banner += nick;
+	banner += "@IRC";
+	RenX::banDatabase->add(search_result.server, *search_result.player, banner, reason, duration, RenX::BanDatabase::Entry::FLAG_TYPE_CHAT);
+	source->sendMessage(channel, STRING_LITERAL_AS_REFERENCE("Player chat banned."));
 }
 
 const Jupiter::ReadableString &TempChatBanIRCCommand::getHelp(const Jupiter::ReadableString &)
 {
-	static STRING_LITERAL_AS_NAMED_REFERENCE(defaultHelp, "Mutes and temporarily chat bans a player from the game. Syntax: TempChatBan <Player> [Reason]");
+	static STRING_LITERAL_AS_NAMED_REFERENCE(defaultHelp, "Mutes and temporarily chat bans a player from the game. Syntax: TempChatBan [Duration] <Player> [Reason]");
 	return defaultHelp;
 }
 
@@ -3941,23 +3996,40 @@ void TempBanGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *player,
 	if (parameters.isNotEmpty())
 	{
 		Jupiter::StringS name = Jupiter::StringS::getWord(parameters, 0, WHITESPACE);
+		std::chrono::seconds duration = pluginInstance.getDefaultTBanTime();
 		Jupiter::StringS reason;
-		if (parameters.wordCount(WHITESPACE) > 1) {
-			reason = Jupiter::StringS::gotoWord(parameters, 1, WHITESPACE);
+		auto word_count = parameters.wordCount(WHITESPACE);
+		size_t reason_pos = 1;
+
+		RenX::PlayerInfo *target = source->getPlayerByPartName(name);
+		if (target == nullptr
+			&& word_count > 1) {
+			// Try reading first token as duration
+			duration = jessilib::duration_from_string(name.ptr(), name.ptr() + name.size()).duration;
+			if (duration.count() > 0) {
+				duration = std::min(duration, pluginInstance.getMaxTBanTime());
+				++reason_pos;
+				name = Jupiter::StringS::getWord(parameters, 1, WHITESPACE);
+				target = source->getPlayerByPartName(name);
+			}
+		}
+
+		if (word_count > reason_pos) {
+			reason = Jupiter::StringS::gotoWord(parameters, reason_pos, WHITESPACE);
 		}
 		else {
 			reason = STRING_LITERAL_AS_REFERENCE("No reason");
 		}
-		RenX::PlayerInfo *target = source->getPlayerByPartName(name);
+
 		if (target == nullptr)
 			source->sendMessage(*player, "Error: Player not found."_jrs);
 		else if (player == target)
-			source->sendMessage(*player, "Error: You can not ban yourself."_jrs);
+			source->sendMessage(*player, "Error: You can't ban yourself."_jrs);
 		else if (target->access >= player->access)
-			source->sendMessage(*player, "Error: You can not ban higher level "_jrs + pluginInstance.getStaffTitle() + "s."_jrs);
+			source->sendMessage(*player, "Error: You can't ban higher level "_jrs + pluginInstance.getStaffTitle() + "s."_jrs);
 		else
 		{
-			source->banPlayer(*target, player->name, reason, pluginInstance.getTBanTime());
+			source->banPlayer(*target, player->name, reason, duration);
 			source->sendMessage(*player, "Player has been temporarily banned and kicked from the game."_jrs);
 		}
 	}
@@ -3989,14 +4061,31 @@ void TempChatBanGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *pla
 	if (parameters.isNotEmpty())
 	{
 		Jupiter::StringS name = Jupiter::StringS::getWord(parameters, 0, WHITESPACE);
+		std::chrono::seconds duration = pluginInstance.getDefaultTBanTime();
 		Jupiter::StringS reason;
-		if (parameters.wordCount(WHITESPACE) > 1) {
-			reason = Jupiter::StringS::gotoWord(parameters, 1, WHITESPACE);
+		auto word_count = parameters.wordCount(WHITESPACE);
+		size_t reason_pos = 1;
+
+		RenX::PlayerInfo *target = source->getPlayerByPartName(name);
+		if (target == nullptr
+			&& word_count > 1) {
+			// Try reading first token as duration
+			duration = jessilib::duration_from_string(name.ptr(), name.ptr() + name.size()).duration;
+			if (duration.count() > 0) {
+				duration = std::min(duration, pluginInstance.getMaxTBanTime());
+				++reason_pos;
+				name = Jupiter::StringS::getWord(parameters, 1, WHITESPACE);
+				target = source->getPlayerByPartName(name);
+			}
+		}
+
+		if (word_count > reason_pos) {
+			reason = Jupiter::StringS::gotoWord(parameters, reason_pos, WHITESPACE);
 		}
 		else {
 			reason = STRING_LITERAL_AS_REFERENCE("No reason");
 		}
-		RenX::PlayerInfo *target = source->getPlayerByPartName(name);
+
 		if (target == nullptr)
 			source->sendMessage(*player, "Error: Player not found."_jrs);
 		else if (player == target)
@@ -4006,17 +4095,17 @@ void TempChatBanGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *pla
 		else
 		{
 			source->mute(*target);
-			RenX::banDatabase->add(source, *target, player->name, reason, pluginInstance.getTBanTime(), RenX::BanDatabase::Entry::FLAG_TYPE_CHAT);
+			RenX::banDatabase->add(source, *target, player->name, reason, duration, RenX::BanDatabase::Entry::FLAG_TYPE_CHAT);
 			source->sendMessage(*player, "Player has been temporarily muted and chat banned from the game."_jrs);
 		}
 	}
 	else
-		source->sendMessage(*player, "Error: Too few parameters. Syntax: tchatban <player> [Reason]"_jrs);
+		source->sendMessage(*player, "Error: Too few parameters. Syntax: tchatban [Duration] <player> [Reason]"_jrs);
 }
 
 const Jupiter::ReadableString &TempChatBanGameCommand::getHelp(const Jupiter::ReadableString &)
 {
-	static STRING_LITERAL_AS_NAMED_REFERENCE(defaultHelp, "Mutes and temporarily chat bans a player from the game. Syntax: tchatban <player> [Reason]");
+	static STRING_LITERAL_AS_NAMED_REFERENCE(defaultHelp, "Mutes and temporarily chat bans a player from the game. Syntax: tchatban [Duration] <player> [Reason]");
 	return defaultHelp;
 }
 
@@ -4060,12 +4149,12 @@ void KickBanGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *player,
 		}
 	}
 	else
-		source->sendMessage(*player, "Error: Too few parameters. Syntax: ban <player> [reason]"_jrs);
+		source->sendMessage(*player, "Error: Too few parameters. Syntax: ban [Duration] <player> [reason]"_jrs);
 }
 
 const Jupiter::ReadableString &KickBanGameCommand::getHelp(const Jupiter::ReadableString &)
 {
-	static STRING_LITERAL_AS_NAMED_REFERENCE(defaultHelp, "Kicks and bans a player from the game. Syntax: ban <player> [reason]");
+	static STRING_LITERAL_AS_NAMED_REFERENCE(defaultHelp, "Kicks and bans a player from the game. Syntax: ban [Duration] <player> [reason]");
 	return defaultHelp;
 }
 
