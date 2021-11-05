@@ -27,23 +27,24 @@ int RenX_RelayPlugin::think() {
 	for (auto& server_pair : m_server_info_map) {
 		auto server = server_pair.first;
 		auto& server_info = server_pair.second;
-		auto& devbot_socket = server_info.m_socket;
+		auto& upstream_socket = server_info.m_socket;
+		const auto& upstream_name = get_upstream_name(server_info);
 
-		if (!devbot_socket) {
+		if (!upstream_socket) {
 			// This should never happen
 			continue;
 		}
 
-		if (!server_info.m_devbot_connected) {
+		if (!server_info.m_connected) {
 			// Not connected; attempt retry if needed
 			if (std::chrono::steady_clock::now() >= server_info.m_last_connect_attempt + g_reconnect_delay) {
-				if (devbot_socket->connect(m_upstream_hostname.c_str(), m_upstream_port)) {
-					// There's some handshake garbage that needs to go on here so the devbot accepts us
-					devbot_connected(*server, server_info);
-					server->sendLogChan(IRCCOLOR "03[RenX]" IRCCOLOR " Socket successfully reconnected to DevBot; game server now listed.");
+				if (upstream_socket->connect(m_upstream_hostname.c_str(), m_upstream_port)) {
+					// There's some handshake garbage that needs to go on here so the upstream accepts us
+					upstream_connected(*server, server_info);
+					server->sendLogChan(IRCCOLOR "03[RenX]" IRCCOLOR " Socket successfully reconnected to %.*s; game server now listed.", upstream_name.size(), upstream_name.data());
 				}
 				else {
-					server->sendLogChan(IRCCOLOR "04[Error]" IRCCOLOR " Failed to reconnect to DevBot; game server not listed.");
+					server->sendLogChan(IRCCOLOR "04[Error]" IRCCOLOR " Failed to reconnect to %.*s; game server not listed.", upstream_name.size(), upstream_name.data());
 				}
 
 				// Update our timings
@@ -54,14 +55,14 @@ int RenX_RelayPlugin::think() {
 		else if (std::chrono::steady_clock::now() - server_info.m_last_activity >= g_activity_timeout) // ping timeout
 		{
 			// Ping timeout; disconnect immediately
-			server->sendLogChan(STRING_LITERAL_AS_REFERENCE(IRCCOLOR "04[Error]" IRCCOLOR " Disconnected from DevBot (ping timeout); game server is no longer listed."));
-			devbot_disconnected(*server, server_info);
+			server->sendLogChan(IRCCOLOR "04[Error]" IRCCOLOR " Disconnected from %.*s (ping timeout); game server is no longer listed.", upstream_name.size(), upstream_name.data());
+			upstream_disconnected(*server, server_info);
 		}
 		else {
 			// Connected and fine
-			if (devbot_socket->recv() > 0) // Data received
+			if (upstream_socket->recv() > 0) // Data received
 			{
-				auto& buffer = devbot_socket->getBuffer();
+				auto& buffer = upstream_socket->getBuffer();
 				Jupiter::ReadableString::TokenizeResult<Jupiter::Reference_String> result = Jupiter::ReferenceString::tokenize(buffer, '\n');
 				if (result.token_count != 0)
 				{
@@ -69,32 +70,32 @@ int RenX_RelayPlugin::think() {
 					server_info.m_last_line.concat(result.tokens[0]);
 					if (result.token_count != 1)
 					{
-						// Process devbot message received
-						process_devbot_message(server, server_info.m_last_line, server_info);
+						// Process upstream message received
+						process_upstream_message(server, server_info.m_last_line, server_info);
 						server_info.m_last_line = result.tokens[result.token_count - 1];
 
 						for (size_t index = 1; index != result.token_count - 1; ++index)
-							process_devbot_message(server, result.tokens[index], server_info);
+							process_upstream_message(server, result.tokens[index], server_info);
 					}
 				}
 			}
 			else if (Jupiter::Socket::getLastError() == JUPITER_SOCK_EWOULDBLOCK) // Operation would block (no new data)
 			{
 				if (std::chrono::steady_clock::now() - server_info.m_last_activity >= g_activity_timeout) {
-					devbot_disconnected(*server, server_info);
+					upstream_disconnected(*server, server_info);
 				}
 			}
 			else // This is a serious error
 			{
-				devbot_disconnected(*server, server_info);
+				upstream_disconnected(*server, server_info);
 
-				server->sendLogChan(IRCCOLOR "07[Warning]" IRCCOLOR " Connection to DevBot lost. Reconnection attempt in progress.");
-				if (devbot_socket->connect(m_upstream_hostname.c_str(), m_upstream_port)) {
-					devbot_connected(*server, server_info);
-					server->sendLogChan(IRCCOLOR "06[Progress]" IRCCOLOR " Connection to DevBot reestablished. Initializing Renegade-X RCON protocol...");
+				server->sendLogChan(IRCCOLOR "07[Warning]" IRCCOLOR " Connection to %.*s lost. Reconnection attempt in progress.", upstream_name.size(), upstream_name.data());
+				if (upstream_socket->connect(m_upstream_hostname.c_str(), m_upstream_port)) {
+					upstream_connected(*server, server_info);
+					server->sendLogChan(IRCCOLOR "06[Progress]" IRCCOLOR " Connection to %.*s reestablished. Initializing Renegade-X RCON protocol...", upstream_name.size(), upstream_name.data());
 				}
 				else {
-					server->sendLogChan(IRCCOLOR "04[Error]" IRCCOLOR " Connection to DevBot lost. Reconnection attempt failed.");
+					server->sendLogChan(IRCCOLOR "04[Error]" IRCCOLOR " Connection to %.*s lost. Reconnection attempt failed.", upstream_name.size(), upstream_name.data());
 				}
 
 				// Update our timings
@@ -208,10 +209,10 @@ bool RenX_RelayPlugin::initialize() {
 void RenX_RelayPlugin::RenX_OnServerFullyConnected(RenX::Server &server) {
 	auto& server_info = m_server_info_map[&server];
 
-	if (!server_info.m_devbot_connected) {
+	if (!server_info.m_connected) {
 		server_info.m_socket = std::unique_ptr<Jupiter::TCPSocket>(new Jupiter::TCPSocket());
 		if (server_info.m_socket->connect(m_upstream_hostname.c_str(), m_upstream_port)) {
-			devbot_connected(server, server_info);
+			upstream_connected(server, server_info);
 		}
 	}
 }
@@ -231,6 +232,7 @@ void RenX_RelayPlugin::RenX_OnServerDisconnect(RenX::Server &server, RenX::Disco
 // There's not truly any way to know for certain that a token is a player token without message-specific positional context,
 // but the format is just specific enough that there shouldn't be many false positives. For false positives that do occur,
 // we likely don't really care anyways, since this is just getting forwarded to the devbot
+// maybe this could be improved upon by also verifying the third component truly is a player's name
 bool is_player_token(const char* begin, const char* end) {
 	std::regex player_token_regex{ "[A-Za-z]*,b?[0-9]+,.+" };
 	std::cmatch match_result;
@@ -284,7 +286,7 @@ std::string to_hex(T in_integer) {
 }
 
 void RenX_RelayPlugin::RenX_OnRaw(RenX::Server &server, const Jupiter::ReadableString &line) {
-	// Not parsing any escape sequences, so data gets sent to devbot exactly as it's received here. Copy tokens where needed to process escape sequences.
+	// Not parsing any escape sequences, so data gets sent upstream exactly as it's received here. Copy tokens where needed to process escape sequences.
 	Jupiter::ReadableString::TokenizeResult<Jupiter::String_Strict> tokens = Jupiter::StringS::tokenize(line, RenX::DelimC);
 	bool required_sanitization = false;
 
@@ -300,7 +302,7 @@ void RenX_RelayPlugin::RenX_OnRaw(RenX::Server &server, const Jupiter::ReadableS
 		return;
 	}
 
-	ext_server_info& server_info = server_info_map_itr->second;
+	upstream_server_info& server_info = server_info_map_itr->second;
 	Jupiter::TCPSocket* socket = server_info.m_socket.get();
 	if (!socket) {
 		// early out: no upstream RCON session
@@ -513,8 +515,12 @@ void RenX_RelayPlugin::RenX_OnRaw(RenX::Server &server, const Jupiter::ReadableS
 	}
 }
 
-void RenX_RelayPlugin::devbot_connected(RenX::Server& in_server, ext_server_info& in_server_info) {
-	in_server_info.m_devbot_connected = true;
+std::string_view RenX_RelayPlugin::get_upstream_name(const upstream_server_info&) {
+	return m_upstream_hostname; // Will point to stream-specific name later
+}
+
+void RenX_RelayPlugin::upstream_connected(RenX::Server& in_server, upstream_server_info& in_server_info) {
+	in_server_info.m_connected = true;
 	in_server_info.m_socket->setBlocking(false);
 	in_server_info.m_last_connect_attempt = std::chrono::steady_clock::now();
 	in_server_info.m_last_activity = in_server_info.m_last_connect_attempt;
@@ -537,15 +543,15 @@ void RenX_RelayPlugin::devbot_connected(RenX::Server& in_server, ext_server_info
 	in_server_info.m_socket->send(version_message.c_str(), version_message.size());
 }
 
-void RenX_RelayPlugin::devbot_disconnected(RenX::Server&, ext_server_info& in_server_info) {
-	in_server_info.m_devbot_connected = false;
+void RenX_RelayPlugin::upstream_disconnected(RenX::Server&, upstream_server_info& in_server_info) {
+	in_server_info.m_connected = false;
 
 	if (in_server_info.m_socket) {
 		in_server_info.m_socket->close();
 	}
 }
 
-void RenX_RelayPlugin::process_devbot_message(RenX::Server* in_server, const Jupiter::ReadableString& in_line, ext_server_info& in_server_info) {
+void RenX_RelayPlugin::process_upstream_message(RenX::Server* in_server, const Jupiter::ReadableString& in_line, upstream_server_info& in_server_info) {
 	if (in_line.isEmpty()) {
 		return;
 	}

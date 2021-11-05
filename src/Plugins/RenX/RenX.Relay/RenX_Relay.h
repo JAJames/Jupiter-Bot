@@ -36,21 +36,23 @@ private:
 		std::string to_rcon(const std::string_view& rcon_username) const;
 	};
 
-	struct ext_server_info {
+	struct upstream_server_info {
 		std::unique_ptr<Jupiter::TCPSocket> m_socket;
-		bool m_devbot_connected{};
+		bool m_connected{};
 		std::chrono::steady_clock::time_point m_last_connect_attempt{};
 		std::chrono::steady_clock::time_point m_last_activity{};
 		Jupiter::StringL m_last_line;
-		std::deque<UpstreamCommand> m_response_queue; // also contains real commands
+		std::deque<UpstreamCommand> m_response_queue; // Contains both real & fake commands
 		bool m_processing_command{};
 	};
 
-	void devbot_connected(RenX::Server& in_server, ext_server_info& in_server_info);
-	void devbot_disconnected(RenX::Server& in_server, ext_server_info& in_server_info);
-	void process_devbot_message(RenX::Server* in_server, const Jupiter::ReadableString& in_line, ext_server_info& in_server_info);
+	std::string_view get_upstream_name(const upstream_server_info& in_server_info);
 
-	std::unordered_map<RenX::Server*, ext_server_info> m_server_info_map;
+	void upstream_connected(RenX::Server& in_server, upstream_server_info& in_server_info);
+	void upstream_disconnected(RenX::Server& in_server, upstream_server_info& in_server_info);
+	void process_upstream_message(RenX::Server* in_server, const Jupiter::ReadableString& in_line, upstream_server_info& in_server_info);
+
+	std::unordered_map<RenX::Server*, upstream_server_info> m_server_info_map;
 	std::chrono::steady_clock::time_point m_init_time{};
 	std::string m_upstream_hostname;
 	uint16_t m_upstream_port;
