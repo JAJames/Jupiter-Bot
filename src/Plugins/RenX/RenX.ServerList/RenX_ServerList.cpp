@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2016-2017 Jessica James.
+ * Copyright (C) 2016-2021 Jessica James.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -33,40 +33,33 @@ static STRING_LITERAL_AS_NAMED_REFERENCE(CONTENT_TYPE_APPLICATION_JSON, "applica
 const Jupiter::ReferenceString server_list_game_header = "<html><body>"_jrs;
 const Jupiter::ReferenceString server_list_game_footer = "\n</body></html>"_jrs;
 
-Jupiter::String jsonify(const Jupiter::ReadableString &in_str)
-{
+// TODO: can probably replace with some of the jessilib stuff
+Jupiter::String jsonify(const Jupiter::ReadableString &in_str) {
 	const unsigned char *ptr = reinterpret_cast<const unsigned char *>(in_str.ptr());
 	const unsigned char *end_ptr = ptr + in_str.size();
 	Jupiter::String result(in_str.size());
 
-	while (ptr < end_ptr)
-	{
-		if (*ptr == '\\') // backslash
-		{
+	while (ptr < end_ptr) {
+		if (*ptr == '\\') { // backslash
 			result += '\\';
 			result += '\\';
 		}
-		else if (*ptr == '\"') // quotation
-		{
+		else if (*ptr == '\"') { // quotation
 			result += '\\';
 			result += '\"';
 		}
-		else if (*ptr < 0x20) // control characters
+		else if (*ptr < 0x20) { // control characters
 			result.aformat("\\u%04x", *ptr);
-		else if ((*ptr & 0x80) != 0) // UTF-8 sequence; copy to bypass above processing
-		{
+		}
+		else if ((*ptr & 0x80) != 0) { // UTF-8 sequence; copy to bypass above processing
 			result += *ptr;
-
-			if ((*ptr & 0x40) != 0)
-			{
+			if ((*ptr & 0x40) != 0) {
 				// this is a 2+ byte sequence
 
-				if ((*ptr & 0x20) != 0)
-				{
+				if ((*ptr & 0x20) != 0) {
 					// this is a 3+ byte sequence
 
-					if ((*ptr & 0x10) != 0)
-					{
+					if ((*ptr & 0x10) != 0) {
 						// this is a 4 byte sequnce
 						result += *++ptr;
 					}
@@ -77,8 +70,9 @@ Jupiter::String jsonify(const Jupiter::ReadableString &in_str)
 				result += *++ptr;
 			}
 		}
-		else // Character in standard ASCII table
+		else { // Character in standard ASCII table
 			result += *ptr;
+		}
 
 		++ptr;
 	}
@@ -86,126 +80,67 @@ Jupiter::String jsonify(const Jupiter::ReadableString &in_str)
 	return result;
 }
 
-Jupiter::String sanitize_game(const Jupiter::ReadableString &in_str)
-{
-	const unsigned char *ptr = reinterpret_cast<const unsigned char *>(in_str.ptr());
-	const unsigned char *end_ptr = ptr + in_str.size();
-	Jupiter::String result(in_str.size());
-
-	while (ptr < end_ptr != 0)
-	{
-		if (*ptr == '\\') // backslash
-		{
-			result += '\\';
-			result += '\\';
-		}
-		else if (*ptr == '\"') // quotation
-		{
-			result += '\\';
-			result += '\"';
-		}
-		else if (*ptr < 0x20) // control characters
-			result.aformat("\\u%04x", *ptr);
-		else if (*ptr == '~') // Game server list control character
-			result += "\\u007E"_jrs;
-		else if (*ptr == ';') // Game server list control character
-			result += "\\u003B"_jrs;
-		else if ((*ptr & 0x80) != 0) // UTF-8 sequence; copy to bypass above processing
-		{
-			result += *ptr;
-
-			if ((*ptr & 0x40) != 0)
-			{
-				// this is a 2+ byte sequence
-
-				if ((*ptr & 0x20) != 0)
-				{
-					// this is a 3+ byte sequence
-
-					if ((*ptr & 0x10) != 0)
-					{
-						// this is a 4 byte sequnce
-						result += *++ptr;
-					}
-
-					result += *++ptr;
-				}
-
-				result += *++ptr;
-			}
-		}
-		else // Character in standard ASCII table
-			result += *ptr;
-
-		++ptr;
-	}
-
-	return result;
-}
-
-bool RenX_ServerListPlugin::initialize()
-{
-	RenX_ServerListPlugin::web_hostname = this->config.get("Hostname"_jrs, ""_jrs);
-	RenX_ServerListPlugin::web_path = this->config.get("Path"_jrs, "/"_jrs);
-	RenX_ServerListPlugin::server_list_page_name = this->config.get("ServersPageName"_jrs, "servers"_jrs);
-	RenX_ServerListPlugin::server_list_long_page_name = this->config.get("HumanServersPageName"_jrs, "servers_long"_jrs);
-	RenX_ServerListPlugin::server_page_name = this->config.get("ServerPageName"_jrs, "server"_jrs);
-	RenX_ServerListPlugin::metadata_page_name = this->config.get("MetadataPageName"_jrs, "metadata"_jrs);
-	RenX_ServerListPlugin::metadata_prometheus_page_name = this->config.get("MetadataPrometheusPageName"_jrs, "metadata_prometheus"_jrs);
+bool RenX_ServerListPlugin::initialize() {
+	m_web_hostname = this->config.get("Hostname"_jrs, ""_jrs);
+	m_web_path = this->config.get("Path"_jrs, "/"_jrs);
+	m_server_list_page_name = this->config.get("ServersPageName"_jrs, "servers"_jrs);
+	m_server_list_long_page_name = this->config.get("HumanServersPageName"_jrs, "servers_long"_jrs);
+	m_server_page_name = this->config.get("ServerPageName"_jrs, "server"_jrs);
+	m_metadata_page_name = this->config.get("MetadataPageName"_jrs, "metadata"_jrs);
+	m_metadata_prometheus_page_name = this->config.get("MetadataPrometheusPageName"_jrs, "metadata_prometheus"_jrs);
 
 	/** Initialize content */
 	Jupiter::HTTP::Server &server = getHTTPServer();
 
 	// Server list page
-	Jupiter::HTTP::Server::Content *content = new Jupiter::HTTP::Server::Content(RenX_ServerListPlugin::server_list_page_name, handle_server_list_page);
+	std::unique_ptr<Jupiter::HTTP::Server::Content> content = std::make_unique<Jupiter::HTTP::Server::Content>(m_server_list_page_name, handle_server_list_page);
 	content->language = &Jupiter::HTTP::Content::Language::ENGLISH;
 	content->type = &CONTENT_TYPE_APPLICATION_JSON;
 	content->charset = &Jupiter::HTTP::Content::Type::Text::Charset::UTF8;
 	content->free_result = false;
-	server.hook(RenX_ServerListPlugin::web_hostname, RenX_ServerListPlugin::web_path, content);
+	server.hook(m_web_hostname, m_web_path, std::move(content));
 
 	// Server list (long) page
-	content = new Jupiter::HTTP::Server::Content(RenX_ServerListPlugin::server_list_long_page_name, handle_server_list_long_page);
+	content = std::make_unique<Jupiter::HTTP::Server::Content>(m_server_list_long_page_name, handle_server_list_long_page);
 	content->language = &Jupiter::HTTP::Content::Language::ENGLISH;
 	content->type = &CONTENT_TYPE_APPLICATION_JSON;
 	content->charset = &Jupiter::HTTP::Content::Type::Text::Charset::UTF8;
 	content->free_result = true;
-	server.hook(RenX_ServerListPlugin::web_hostname, RenX_ServerListPlugin::web_path, content);
+	server.hook(m_web_hostname, m_web_path, std::move(content));
 
 	// Server page (GUIDs)
-	content = new Jupiter::HTTP::Server::Content(RenX_ServerListPlugin::server_page_name, handle_server_page);
+	content = std::make_unique<Jupiter::HTTP::Server::Content>(m_server_page_name, handle_server_page);
 	content->language = &Jupiter::HTTP::Content::Language::ENGLISH;
 	content->type = &CONTENT_TYPE_APPLICATION_JSON;
 	content->charset = &Jupiter::HTTP::Content::Type::Text::Charset::UTF8;
 	content->free_result = true;
-	server.hook(RenX_ServerListPlugin::web_hostname, RenX_ServerListPlugin::web_path, content);
+	server.hook(m_web_hostname, m_web_path, std::move(content));
 
 	// Metadata page
-	content = new Jupiter::HTTP::Server::Content(RenX_ServerListPlugin::metadata_page_name, handle_metadata_page);
+	content = std::make_unique<Jupiter::HTTP::Server::Content>(m_metadata_page_name, handle_metadata_page);
 	content->language = &Jupiter::HTTP::Content::Language::ENGLISH;
 	content->type = &CONTENT_TYPE_APPLICATION_JSON;
 	content->charset = &Jupiter::HTTP::Content::Type::Text::Charset::UTF8;
 	content->free_result = false;
-	server.hook(RenX_ServerListPlugin::web_hostname, RenX_ServerListPlugin::web_path, content);
+	server.hook(m_web_hostname, m_web_path, std::move(content));
 
 	// Metadata page
-	content = new Jupiter::HTTP::Server::Content(RenX_ServerListPlugin::metadata_prometheus_page_name, handle_metadata_prometheus_page);
+	content = std::make_unique<Jupiter::HTTP::Server::Content>(m_metadata_prometheus_page_name, handle_metadata_prometheus_page);
 	content->language = &Jupiter::HTTP::Content::Language::ENGLISH;
 	content->type = &CONTENT_TYPE_APPLICATION_JSON;
 	content->charset = &Jupiter::HTTP::Content::Type::Text::Charset::UTF8;
 	content->free_result = false;
-	server.hook(RenX_ServerListPlugin::web_hostname, RenX_ServerListPlugin::web_path, content);
+	server.hook(m_web_hostname, m_web_path, std::move(content));
 
 	this->updateServerList();
 	return true;
 }
 
-RenX_ServerListPlugin::~RenX_ServerListPlugin()
-{
+RenX_ServerListPlugin::~RenX_ServerListPlugin() {
 	Jupiter::HTTP::Server &server = getHTTPServer();
-	server.remove(RenX_ServerListPlugin::web_hostname, RenX_ServerListPlugin::web_path, RenX_ServerListPlugin::server_list_page_name);
-	server.remove(RenX_ServerListPlugin::web_hostname, RenX_ServerListPlugin::web_path, RenX_ServerListPlugin::server_list_long_page_name);
-	server.remove(RenX_ServerListPlugin::web_hostname, RenX_ServerListPlugin::web_path, RenX_ServerListPlugin::server_page_name);
+	server.remove(m_web_hostname, m_web_path, m_server_list_page_name);
+	server.remove(m_web_hostname, m_web_path, m_server_list_long_page_name);
+	server.remove(m_web_hostname, m_web_path, m_server_page_name);
 }
 
 size_t RenX_ServerListPlugin::getListedPlayerCount(const RenX::Server& server) {
@@ -213,28 +148,23 @@ size_t RenX_ServerListPlugin::getListedPlayerCount(const RenX::Server& server) {
 	return std::min(server.activePlayers(false).size(), player_limit);
 }
 
-Jupiter::ReadableString *RenX_ServerListPlugin::getServerListJSON()
-{
-	return &server_list_json;
+Jupiter::ReadableString *RenX_ServerListPlugin::getServerListJSON() {
+	return &m_server_list_json;
 }
 
-Jupiter::ReadableString *RenX_ServerListPlugin::getMetadataJSON()
-{
-	return &metadata_json;
+Jupiter::ReadableString *RenX_ServerListPlugin::getMetadataJSON() {
+	return &m_metadata_json;
 }
 
-Jupiter::ReadableString *RenX_ServerListPlugin::getMetadataPrometheus()
-{
-	return &metadata_prometheus;
+Jupiter::ReadableString *RenX_ServerListPlugin::getMetadataPrometheus() {
+	return &m_metadata_prometheus;
 }
 
-constexpr const char *json_bool_as_cstring(bool in)
-{
+constexpr const char *json_bool_as_cstring(bool in) {
 	return in ? "true" : "false";
 }
 
-Jupiter::StringS RenX_ServerListPlugin::server_as_json(const RenX::Server &server)
-{
+Jupiter::StringS RenX_ServerListPlugin::server_as_json(const RenX::Server &server) {
 	Jupiter::String server_json_block(128);
 	ListServerInfo serverInfo = getListServerInfo(server);
 
@@ -301,8 +231,7 @@ Jupiter::StringS RenX_ServerListPlugin::server_as_json(const RenX::Server &serve
 	return server_json_block;
 }
 
-Jupiter::StringS RenX_ServerListPlugin::server_as_long_json(const RenX::Server &server)
-{
+Jupiter::StringS RenX_ServerListPlugin::server_as_long_json(const RenX::Server &server) {
 	Jupiter::String server_json_block(128);
 	ListServerInfo serverInfo = getListServerInfo(server);
 
@@ -381,22 +310,20 @@ Jupiter::StringS RenX_ServerListPlugin::server_as_long_json(const RenX::Server &
 		server_hostname.size(), server_hostname.ptr());
 
 	// Level Rotation
-	if (server.maps.size() != 0)
-	{
+	if (server.maps.size() != 0) {
 		server_json_block += ",\n\t\t\"Levels\": ["_jrs;
 
 		server_json_block += "\n\t\t\t{\n\t\t\t\t\"Name\": \""_jrs;
-		server_json_block += jsonify(server.maps.get(0)->name);
+		server_json_block += jsonify(server.maps[0].name);
 		server_json_block += "\",\n\t\t\t\t\"GUID\": \""_jrs;
-		server_json_block += RenX::formatGUID(*server.maps.get(0));
+		server_json_block += RenX::formatGUID(server.maps[0]);
 		server_json_block += "\"\n\t\t\t}"_jrs;
 
-		for (size_t index = 1; index != server.maps.size(); ++index)
-		{
+		for (size_t index = 1; index != server.maps.size(); ++index) {
 			server_json_block += ",\n\t\t\t{\n\t\t\t\t\"Name\": \""_jrs;
-			server_json_block += jsonify(server.maps.get(index)->name);
+			server_json_block += jsonify(server.maps[index].name);
 			server_json_block += "\",\n\t\t\t\t\"GUID\": \""_jrs;
-			server_json_block += RenX::formatGUID(*server.maps.get(index));
+			server_json_block += RenX::formatGUID(server.maps[index]);
 			server_json_block += "\"\n\t\t\t}"_jrs;
 		}
 
@@ -404,18 +331,16 @@ Jupiter::StringS RenX_ServerListPlugin::server_as_long_json(const RenX::Server &
 	}
 
 	// Mutators
-	if (server.mutators.size() != 0)
-	{
+	if (server.mutators.size() != 0) {
 		server_json_block += ",\n\t\t\"Mutators\": ["_jrs;
 
 		server_json_block += "\n\t\t\t{\n\t\t\t\t\"Name\": \""_jrs;
-		server_json_block += jsonify(*server.mutators.get(0));
+		server_json_block += jsonify(server.mutators[0]);
 		server_json_block += "\"\n\t\t\t}"_jrs;
 
-		for (size_t index = 1; index != server.mutators.size(); ++index)
-		{
+		for (size_t index = 1; index != server.mutators.size(); ++index) {
 			server_json_block += ",\n\t\t\t{\n\t\t\t\t\"Name\": \""_jrs;
-			server_json_block += jsonify(*server.mutators.get(index));
+			server_json_block += jsonify(server.mutators[index]);
 			server_json_block += "\"\n\t\t\t}"_jrs;
 		}
 
@@ -423,8 +348,7 @@ Jupiter::StringS RenX_ServerListPlugin::server_as_long_json(const RenX::Server &
 	}
 
 	// Player List
-	if (activePlayers.size() != 0)
-	{
+	if (activePlayers.size() != 0) {
 		server_json_block += ",\n\t\t\"PlayerList\": ["_jrs;
 
 		auto node = activePlayers.begin();
@@ -436,8 +360,7 @@ Jupiter::StringS RenX_ServerListPlugin::server_as_long_json(const RenX::Server &
 		++node;
 
 		// Add remaining players to JSON
-		while (node != activePlayers.end())
-		{
+		while (node != activePlayers.end()) {
 			server_json_block += ",\n\t\t\t{\n\t\t\t\t\"Name\": \""_jrs;
 			server_json_block += jsonify((*node)->name);
 			server_json_block += "\"\n\t\t\t}"_jrs;
@@ -452,45 +375,40 @@ Jupiter::StringS RenX_ServerListPlugin::server_as_long_json(const RenX::Server &
 	return server_json_block;
 }
 
-void RenX_ServerListPlugin::addServerToServerList(RenX::Server &server)
-{
+void RenX_ServerListPlugin::addServerToServerList(RenX::Server &server) {
 	Jupiter::String server_json_block(256);
 
 	// append to server_list_json
 	server_json_block = server_as_json(server);
-	if (RenX_ServerListPlugin::server_list_json.size() <= 2)
-	{
-		RenX_ServerListPlugin::server_list_json = '[';
+	if (m_server_list_json.size() <= 2) {
+		m_server_list_json = '[';
 	}
-	else
-	{
-		RenX_ServerListPlugin::server_list_json.truncate(1); // remove trailing ']'.
-		RenX_ServerListPlugin::server_list_json += ',';
+	else {
+		m_server_list_json.truncate(1); // remove trailing ']'.
+		m_server_list_json += ',';
 	}
-	RenX_ServerListPlugin::server_list_json += server_json_block;
-	RenX_ServerListPlugin::server_list_json += ']';
+	m_server_list_json += server_json_block;
+	m_server_list_json += ']';
 	server_json_block.erase();
 
 	// add to individual listing
 
 	server_json_block = '{';
 
-	if (server.maps.size() != 0)
-	{
+	if (server.maps.size() != 0) {
 		server_json_block += "\"Levels\":["_jrs;
 
 		server_json_block += "{\"Name\":\""_jrs;
-		server_json_block += jsonify(server.maps.get(0)->name);
+		server_json_block += jsonify(server.maps[0].name);
 		server_json_block += "\",\"GUID\":\""_jrs;
-		server_json_block += RenX::formatGUID(*server.maps.get(0));
+		server_json_block += RenX::formatGUID(server.maps[0]);
 		server_json_block += "\"}"_jrs;
 
-		for (size_t index = 1; index != server.maps.size(); ++index)
-		{
+		for (size_t index = 1; index != server.maps.size(); ++index) {
 			server_json_block += ",{\"Name\":\""_jrs;
-			server_json_block += jsonify(server.maps.get(index)->name);
+			server_json_block += jsonify(server.maps[index].name);
 			server_json_block += "\",\"GUID\":\""_jrs;
-			server_json_block += RenX::formatGUID(*server.maps.get(index));
+			server_json_block += RenX::formatGUID(server.maps[index]);
 			server_json_block += "\"}"_jrs;
 		}
 
@@ -498,20 +416,18 @@ void RenX_ServerListPlugin::addServerToServerList(RenX::Server &server)
 	}
 
 	// Mutators
-	if (server.mutators.size() != 0)
-	{
+	if (server.mutators.size() != 0) {
 		if (server.maps.size() != 0)
 			server_json_block += ","_jrs;
 		server_json_block += "\"Mutators\":["_jrs;
 
 		server_json_block += "{\"Name\":\""_jrs;
-		server_json_block += jsonify(*server.mutators.get(0));
+		server_json_block += jsonify(server.mutators[0]);
 		server_json_block += "\"}"_jrs;
 
-		for (size_t index = 1; index != server.mutators.size(); ++index)
-		{
+		for (size_t index = 1; index != server.mutators.size(); ++index) {
 			server_json_block += ",{\"Name\":\""_jrs;
-			server_json_block += jsonify(*server.mutators.get(index));
+			server_json_block += jsonify(server.mutators[index]);
 			server_json_block += "\"}"_jrs;
 		}
 
@@ -519,14 +435,12 @@ void RenX_ServerListPlugin::addServerToServerList(RenX::Server &server)
 	}
 
 	// Player List
-	if (server.players.size() != 0 && server.players.size() != server.getBotCount())
-	{
+	if (server.players.size() != 0 && server.players.size() != server.getBotCount()) {
 		server_json_block += ",\"PlayerList\":["_jrs;
 
 		auto node = server.players.begin();
 
-		if (node != server.players.end())
-		{
+		if (node != server.players.end()) {
 			server_json_block += "{\"Name\":\""_jrs;
 			server_json_block += jsonify(node->name);
 			server_json_block += "\", \"isBot\":"_jrs;
@@ -538,8 +452,7 @@ void RenX_ServerListPlugin::addServerToServerList(RenX::Server &server)
 			++node;
 		}
 
-		while (node != server.players.end())
-		{
+		while (node != server.players.end()) {
 			server_json_block += ",{\"Name\":\""_jrs;
 			server_json_block += jsonify(node->name);
 			server_json_block += "\", \"isBot\":"_jrs;
@@ -562,63 +475,57 @@ void RenX_ServerListPlugin::addServerToServerList(RenX::Server &server)
 	updateMetadata();
 }
 
-void RenX_ServerListPlugin::updateServerList()
-{
-	Jupiter::ArrayList<RenX::Server> servers = RenX::getCore()->getServers();
+void RenX_ServerListPlugin::updateServerList() {
+	const auto& servers = RenX::getCore()->getServers();
 	size_t index = 0;
 	RenX::Server *server;
 
 	// regenerate server_list_json
 
-	RenX_ServerListPlugin::server_list_json = '[';
+	m_server_list_json = '[';
 
-	while (index != servers.size())
-	{
-		server = servers.get(index);
-		if (server->isConnected() && server->isFullyConnected())
-		{
-			RenX_ServerListPlugin::server_list_json += server_as_json(*server);
+	while (index != servers.size()) {
+		server = servers[index];
+		if (server->isConnected() && server->isFullyConnected()) {
+			m_server_list_json += server_as_json(*server);
 
 			++index;
 			break;
 		}
 		++index;
 	}
-	while (index != servers.size())
-	{
-		server = servers.get(index);
-		if (server->isConnected() && server->isFullyConnected())
-		{
-			RenX_ServerListPlugin::server_list_json += ',';
-			RenX_ServerListPlugin::server_list_json += server_as_json(*server);
+	while (index != servers.size()) {
+		server = servers[index];
+		if (server->isConnected() && server->isFullyConnected()) {
+			m_server_list_json += ',';
+			m_server_list_json += server_as_json(*server);
 		}
 		++index;
 	}
 
-	RenX_ServerListPlugin::server_list_json += ']';
+	m_server_list_json += ']';
 
 	// Also update metadata so that it reflects any changes
 	updateMetadata();
 }
 
 void RenX_ServerListPlugin::updateMetadata() {
-	Jupiter::ArrayList<RenX::Server> servers = RenX::getCore()->getServers();
+	const auto& servers = RenX::getCore()->getServers();
 	unsigned int server_count{};
 	unsigned int player_count{};
 
-	for (size_t index = 0; index != servers.size(); ++index)
-	{
-		RenX::Server* server = servers.get(index);
+	for (size_t index = 0; index != servers.size(); ++index) {
+		RenX::Server* server = servers[index];
 		if (server->isConnected() && server->isFullyConnected()) {
 			++server_count;
 			player_count += getListedPlayerCount(*server);
 		}
 	}
 
-	metadata_json.format(R"json({"player_count":%u,"server_count":%u})json",
+	m_metadata_json.format(R"json({"player_count":%u,"server_count":%u})json",
 		player_count, server_count);
 
-	metadata_prometheus.format("player_count %u\nserver_count %u\n",
+	m_metadata_prometheus.format("player_count %u\nserver_count %u\n",
 		player_count, server_count);
 }
 
@@ -669,46 +576,39 @@ RenX_ServerListPlugin::ListServerInfo RenX_ServerListPlugin::getListServerInfo(c
 	return result;
 }
 
-void RenX_ServerListPlugin::RenX_OnServerFullyConnected(RenX::Server &server)
-{
+void RenX_ServerListPlugin::RenX_OnServerFullyConnected(RenX::Server &server) {
 	this->addServerToServerList(server);
 }
 
-void RenX_ServerListPlugin::RenX_OnServerDisconnect(RenX::Server &server, RenX::DisconnectReason)
-{
+void RenX_ServerListPlugin::RenX_OnServerDisconnect(RenX::Server &server, RenX::DisconnectReason) {
 	this->updateServerList();
 
 	// remove from individual listing
 	server.varData[this->name].remove("j"_jrs);
 }
 
-void RenX_ServerListPlugin::RenX_OnJoin(RenX::Server &, const RenX::PlayerInfo &)
-{
+void RenX_ServerListPlugin::RenX_OnJoin(RenX::Server &, const RenX::PlayerInfo &) {
 	this->updateServerList();
 }
 
-void RenX_ServerListPlugin::RenX_OnPart(RenX::Server &server, const RenX::PlayerInfo &)
-{
+void RenX_ServerListPlugin::RenX_OnPart(RenX::Server &server, const RenX::PlayerInfo &) {
 	if (server.isTravelling() == false || server.isSeamless())
 		this->updateServerList();
 }
 
-void RenX_ServerListPlugin::RenX_OnMapLoad(RenX::Server &server, const Jupiter::ReadableString &map)
-{
+void RenX_ServerListPlugin::RenX_OnMapLoad(RenX::Server &server, const Jupiter::ReadableString &map) {
 	this->updateServerList();
 }
 
 // Plugin instantiation and entry point.
 RenX_ServerListPlugin pluginInstance;
 
-Jupiter::ReadableString *handle_server_list_page(const Jupiter::ReadableString &)
-{
+Jupiter::ReadableString *handle_server_list_page(const Jupiter::ReadableString &) {
 	return pluginInstance.getServerListJSON();
 }
 
-Jupiter::ReadableString *handle_server_list_long_page(const Jupiter::ReadableString &)
-{
-	Jupiter::ArrayList<RenX::Server> servers = RenX::getCore()->getServers();
+Jupiter::ReadableString *handle_server_list_long_page(const Jupiter::ReadableString &) {
+	const auto& servers = RenX::getCore()->getServers();
 	size_t index = 0;
 	RenX::Server *server;
 	Jupiter::String *server_list_long_json = new Jupiter::String(256 * servers.size());
@@ -717,11 +617,9 @@ Jupiter::ReadableString *handle_server_list_long_page(const Jupiter::ReadableStr
 
 	*server_list_long_json = "["_jrs;
 
-	while (index != servers.size())
-	{
-		server = servers.get(index);
-		if (server->isConnected() && server->isFullyConnected())
-		{
+	while (index != servers.size()) {
+		server = servers[index];
+		if (server->isConnected() && server->isFullyConnected()) {
 			*server_list_long_json += "\n\t"_jrs;
 			*server_list_long_json += pluginInstance.server_as_long_json(*server);
 			++index;
@@ -729,11 +627,9 @@ Jupiter::ReadableString *handle_server_list_long_page(const Jupiter::ReadableStr
 		}
 		++index;
 	}
-	while (index != servers.size())
-	{
-		server = servers.get(index);
-		if (server->isConnected() && server->isFullyConnected())
-		{
+	while (index != servers.size()) {
+		server = servers[index];
+		if (server->isConnected() && server->isFullyConnected()) {
 			*server_list_long_json += ",\n\t"_jrs;
 			*server_list_long_json += pluginInstance.server_as_long_json(*server);
 		}
@@ -745,8 +641,7 @@ Jupiter::ReadableString *handle_server_list_long_page(const Jupiter::ReadableStr
 	return server_list_long_json;
 }
 
-Jupiter::ReadableString *handle_server_page(const Jupiter::ReadableString &query_string)
-{
+Jupiter::ReadableString *handle_server_page(const Jupiter::ReadableString &query_string) {
 	Jupiter::HTTP::HTMLFormResponse html_form_response(query_string);
 	Jupiter::ReferenceString address;
 	int port = 0;
@@ -757,22 +652,20 @@ Jupiter::ReadableString *handle_server_page(const Jupiter::ReadableString &query
 	if (html_form_response.table.size() < 2)
 		return new Jupiter::ReferenceString();
 
-	if (html_form_response.table.size() != 0)
-	{
+	if (html_form_response.table.size() != 0) {
 		address = html_form_response.tableGet("ip"_jrs, address);
 		port = html_form_response.tableGetCast<int>("port"_jrs, port);
 	}
 
 	// search for server
-	Jupiter::ArrayList<RenX::Server> servers = RenX::getCore()->getServers();
+	const auto& servers = RenX::getCore()->getServers();
 	size_t index = 0;
 
-	while (true)
-	{
+	while (true) {
 		if (index == servers.size())
 			return new Jupiter::ReferenceString();
 
-		server = servers.get(index);
+		server = servers[index];
 		if (address.equals(pluginInstance.getListServerAddress(*server)) && server->getPort() == port)
 			break;
 
@@ -783,17 +676,14 @@ Jupiter::ReadableString *handle_server_page(const Jupiter::ReadableString &query
 	return new Jupiter::ReferenceString(server->varData[pluginInstance.getName()].get("j"_jrs));
 }
 
-Jupiter::ReadableString *handle_metadata_page(const Jupiter::ReadableString&)
-{
+Jupiter::ReadableString *handle_metadata_page(const Jupiter::ReadableString&) {
 	return pluginInstance.getMetadataJSON();
 }
 
-Jupiter::ReadableString *handle_metadata_prometheus_page(const Jupiter::ReadableString&)
-{
+Jupiter::ReadableString *handle_metadata_prometheus_page(const Jupiter::ReadableString&) {
 	return pluginInstance.getMetadataPrometheus();
 }
 
-extern "C" JUPITER_EXPORT Jupiter::Plugin *getPlugin()
-{
+extern "C" JUPITER_EXPORT Jupiter::Plugin *getPlugin() {
 	return &pluginInstance;
 }

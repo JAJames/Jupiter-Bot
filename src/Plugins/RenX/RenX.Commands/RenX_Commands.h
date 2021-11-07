@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2014-2017 Jessica James.
+ * Copyright (C) 2014-2021 Jessica James.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -47,10 +47,10 @@ public:
 private:
 	std::chrono::seconds m_defaultTempBanTime;
 	std::chrono::seconds m_maxTempBanTime;
-	Jupiter::StringS playerInfoFormat;
-	Jupiter::StringS adminPlayerInfoFormat;
-	Jupiter::StringS buildingInfoFormat;
-	Jupiter::StringS staffTitle;
+	Jupiter::StringS m_playerInfoFormat;
+	Jupiter::StringS m_adminPlayerInfoFormat;
+	Jupiter::StringS m_buildingInfoFormat;
+	Jupiter::StringS m_staffTitle;
 };
 
 GENERIC_CONSOLE_COMMAND(RawRCONConsoleCommand)

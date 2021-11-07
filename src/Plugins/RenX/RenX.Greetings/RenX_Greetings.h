@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2014-2017 Jessica James.
+ * Copyright (C) 2014-2021 Jessica James.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -35,10 +35,10 @@ public: // Jupiter::Plugin
 	int OnRehash() override;
 
 private:
-	bool sendPrivate;
-	unsigned int lastLine;
-	unsigned int sendMode = 0; /** 0 = Send greetings randomly, 1 = Send greetings sequentially, 2 = Send all greetings */
-	Jupiter::File greetingsFile;
+	bool m_sendPrivate;
+	size_t m_lastLine;
+	unsigned int m_sendMode = 0; /** 0 = Send greetings randomly, 1 = Send greetings sequentially, 2 = Send all greetings */
+	Jupiter::File m_greetingsFile;
 };
 
 #endif // _RENX_GREETING_H_HEADER

@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2015-2017 Jessica James.
+ * Copyright (C) 2015-2021 Jessica James.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -22,50 +22,47 @@
 #include "RenX_BanDatabase.h"
 
 RenX::LadderDatabase *RenX::default_ladder_database = nullptr;
-Jupiter::ArrayList<RenX::LadderDatabase> _ladder_databases;
-Jupiter::ArrayList<RenX::LadderDatabase> &RenX::ladder_databases = _ladder_databases;
+std::vector<RenX::LadderDatabase*> g_ladder_databases;
+std::vector<RenX::LadderDatabase*>& RenX::ladder_databases = g_ladder_databases;
 
-RenX::LadderDatabase::LadderDatabase()
-{
-	_ladder_databases.add(this);
+RenX::LadderDatabase::LadderDatabase() {
+	g_ladder_databases.push_back(this);
 
-	if (RenX::default_ladder_database == nullptr)
+	if (RenX::default_ladder_database == nullptr) {
 		RenX::default_ladder_database = this;
+	}
 }
 
-RenX::LadderDatabase::LadderDatabase(const Jupiter::ReadableString &in_name) : LadderDatabase()
-{
+RenX::LadderDatabase::LadderDatabase(const Jupiter::ReadableString &in_name) : LadderDatabase() {
 	RenX::LadderDatabase::setName(in_name);
 }
 
-RenX::LadderDatabase::~LadderDatabase()
-{
-	while (RenX::LadderDatabase::head != nullptr)
-	{
-		RenX::LadderDatabase::end = RenX::LadderDatabase::head;
-		RenX::LadderDatabase::head = RenX::LadderDatabase::head->next;
-		delete RenX::LadderDatabase::end;
+RenX::LadderDatabase::~LadderDatabase() {
+	while (m_head != nullptr) {
+		m_end = m_head;
+		m_head = m_head->next;
+		delete m_end;
 	}
 
-	for (size_t index = 0; index != _ladder_databases.size(); ++index)
-		if (_ladder_databases.get(index) == this)
-		{
-			_ladder_databases.remove(index);
+	for (auto itr = g_ladder_databases.begin(); itr != g_ladder_databases.end(); ++itr) {
+		if (*itr == this) {
+			g_ladder_databases.erase(itr);
 			break;
 		}
+	}
 
-	if (RenX::default_ladder_database == this)
-	{
-		if (_ladder_databases.size() == 0)
+	if (RenX::default_ladder_database == this) {
+		if (g_ladder_databases.empty()) {
 			RenX::default_ladder_database = nullptr;
-		else
-			RenX::default_ladder_database = _ladder_databases.get(0);
+		}
+		else {
+			RenX::default_ladder_database = g_ladder_databases[0];
+		}
 	}
 }
 
-void RenX::LadderDatabase::process_data(Jupiter::DataBuffer &buffer, FILE *file, fpos_t pos)
-{
-	RenX::LadderDatabase::Entry *entry = new RenX::LadderDatabase::Entry();
+void RenX::LadderDatabase::process_data(Jupiter::DataBuffer &buffer, FILE *file, fpos_t pos) {
+	Entry *entry = new Entry();
 
 	// read data from buffer to entry
 	entry->steam_id = buffer.pop<uint64_t>();
@@ -80,13 +77,13 @@ void RenX::LadderDatabase::process_data(Jupiter::DataBuffer &buffer, FILE *file,
 	entry->total_captures = buffer.pop<uint32_t>();
 	entry->total_game_time = buffer.pop<uint32_t>();
 	entry->total_games = buffer.pop<uint32_t>();
-	if (this->read_version == 0)
+	if (m_read_version == 0)
 	{
 		entry->total_gdi_games = buffer.pop<uint32_t>();
 		entry->total_nod_games = buffer.pop<uint32_t>();
 	}
 	entry->total_wins = buffer.pop<uint32_t>();
-	if (this->read_version == 0)
+	if (m_read_version == 0)
 	{
 		entry->total_gdi_wins = buffer.pop<uint32_t>();
 		entry->total_nod_wins = buffer.pop<uint32_t>();
@@ -96,7 +93,7 @@ void RenX::LadderDatabase::process_data(Jupiter::DataBuffer &buffer, FILE *file,
 	entry->total_proxy_placements = buffer.pop<uint32_t>();
 	entry->total_proxy_disarms = buffer.pop<uint32_t>();
 
-	if (this->read_version > 0)
+	if (m_read_version > 0)
 	{
 		entry->total_gdi_games = buffer.pop<uint32_t>();
 		entry->total_gdi_wins = buffer.pop<uint32_t>();
@@ -149,194 +146,199 @@ void RenX::LadderDatabase::process_data(Jupiter::DataBuffer &buffer, FILE *file,
 	entry->most_recent_name = buffer.pop<Jupiter::String_Strict, char>();
 
 	// push data to list
-	if (RenX::LadderDatabase::head == nullptr)
-	{
-		RenX::LadderDatabase::head = entry;
-		RenX::LadderDatabase::end = RenX::LadderDatabase::head;
+	if (m_head == nullptr) {
+		m_head = entry;
+		m_end = m_head;
 	}
-	else
-	{
-		RenX::LadderDatabase::end->next = entry;
-		entry->prev = end;
-		end = entry;
+	else {
+		m_end->next = entry;
+		entry->prev = m_end;
+		m_end = entry;
 	}
 
-	entry->rank = ++RenX::LadderDatabase::entries;
+	entry->rank = ++m_entries;
 }
 
-void RenX::LadderDatabase::process_header(FILE *file)
-{
+void RenX::LadderDatabase::process_header(FILE *file) {
 	int chr = fgetc(file);
-	if (chr != EOF)
-		RenX::LadderDatabase::read_version = chr;
+	if (chr != EOF) {
+		m_read_version = chr;
+	}
 }
 
-void RenX::LadderDatabase::create_header(FILE *file)
-{
-	fputc(RenX::LadderDatabase::write_version, file);
+void RenX::LadderDatabase::create_header(FILE *file) {
+	fputc(m_write_version, file);
 }
 
-void RenX::LadderDatabase::process_file_finish(FILE *file)
-{
-	if (RenX::LadderDatabase::read_version != RenX::LadderDatabase::write_version)
-	{
+void RenX::LadderDatabase::process_file_finish(FILE *file) {
+	if (m_read_version != m_write_version) {
 		puts("Notice: Ladder database is out of date; upgrading...");
 		std::chrono::steady_clock::duration write_duration;
 		std::chrono::steady_clock::time_point start_time = std::chrono::steady_clock::now();
 
-		RenX::LadderDatabase::write(this->getFilename());
+		write(this->getFilename());
 
 		write_duration = std::chrono::steady_clock::now() - start_time;
 		printf("Ladder database upgrade completed in %f seconds", static_cast<double>(write_duration.count()) * (static_cast<double>(std::chrono::steady_clock::duration::period::num) / static_cast<double>(std::chrono::steady_clock::duration::period::den) * static_cast<double>(std::chrono::seconds::duration::period::den / std::chrono::seconds::duration::period::num)));
-		RenX::LadderDatabase::read_version = RenX::LadderDatabase::write_version;
+		m_read_version = m_write_version;
 	}
 }
 
-RenX::LadderDatabase::Entry *RenX::LadderDatabase::getHead() const
-{
-	return RenX::LadderDatabase::head;
+RenX::LadderDatabase::Entry *RenX::LadderDatabase::getHead() const {
+	return m_head;
 }
 
-RenX::LadderDatabase::Entry *RenX::LadderDatabase::getPlayerEntry(uint64_t steamid) const
-{
-	for (RenX::LadderDatabase::Entry *itr = RenX::LadderDatabase::head; itr != nullptr; itr = itr->next)
-		if (itr->steam_id == steamid)
+RenX::LadderDatabase::Entry *RenX::LadderDatabase::getPlayerEntry(uint64_t steamid) const {
+	for (Entry *itr = m_head; itr != nullptr; itr = itr->next) {
+		if (itr->steam_id == steamid) {
 			return itr;
-	return nullptr;
-}
-
-std::pair<RenX::LadderDatabase::Entry *, size_t> RenX::LadderDatabase::getPlayerEntryAndIndex(uint64_t steamid) const
-{
-	size_t index = 0;
-	for (RenX::LadderDatabase::Entry *itr = RenX::LadderDatabase::head; itr != nullptr; itr = itr->next, ++index)
-		if (itr->steam_id == steamid)
-			return std::pair<RenX::LadderDatabase::Entry *, size_t>(itr, index);
-	return std::pair<RenX::LadderDatabase::Entry *, size_t>(nullptr, Jupiter::INVALID_INDEX);
-}
-
-RenX::LadderDatabase::Entry *RenX::LadderDatabase::getPlayerEntryByName(const Jupiter::ReadableString &name) const
-{
-	for (RenX::LadderDatabase::Entry *itr = RenX::LadderDatabase::head; itr != nullptr; itr = itr->next)
-		if (itr->most_recent_name.equalsi(name))
-			return itr;
-	return nullptr;
-}
-
-std::pair<RenX::LadderDatabase::Entry *, size_t> RenX::LadderDatabase::getPlayerEntryAndIndexByName(const Jupiter::ReadableString &name) const
-{
-	size_t index = 0;
-	for (RenX::LadderDatabase::Entry *itr = RenX::LadderDatabase::head; itr != nullptr; itr = itr->next, ++index)
-		if (itr->most_recent_name.equalsi(name))
-			return std::pair<RenX::LadderDatabase::Entry *, size_t>(itr, index);
-	return std::pair<RenX::LadderDatabase::Entry *, size_t>(nullptr, Jupiter::INVALID_INDEX);
-}
-
-RenX::LadderDatabase::Entry *RenX::LadderDatabase::getPlayerEntryByPartName(const Jupiter::ReadableString &name) const
-{
-	for (RenX::LadderDatabase::Entry *itr = RenX::LadderDatabase::head; itr != nullptr; itr = itr->next)
-		if (itr->most_recent_name.findi(name) != Jupiter::INVALID_INDEX)
-			return itr;
-	return nullptr;
-}
-
-std::pair<RenX::LadderDatabase::Entry *, size_t> RenX::LadderDatabase::getPlayerEntryAndIndexByPartName(const Jupiter::ReadableString &name) const
-{
-	size_t index = 0;
-	for (RenX::LadderDatabase::Entry *itr = RenX::LadderDatabase::head; itr != nullptr; itr = itr->next, ++index)
-		if (itr->most_recent_name.findi(name) != Jupiter::INVALID_INDEX)
-			return std::pair<RenX::LadderDatabase::Entry *, size_t>(itr, index);
-	return std::pair<RenX::LadderDatabase::Entry *, size_t>(nullptr, Jupiter::INVALID_INDEX);
-}
-
-std::forward_list<RenX::LadderDatabase::Entry> RenX::LadderDatabase::getPlayerEntriesByPartName(const Jupiter::ReadableString &name, size_t max) const
-{
-	std::forward_list<RenX::LadderDatabase::Entry> list;
-	if (max == 0)
-	{
-		for (RenX::LadderDatabase::Entry *itr = RenX::LadderDatabase::head; itr != nullptr; itr = itr->next)
-			if (itr->most_recent_name.findi(name) != Jupiter::INVALID_INDEX)
-				list.emplace_front(*itr);
+		}
 	}
-	else
-		for (RenX::LadderDatabase::Entry *itr = RenX::LadderDatabase::head; itr != nullptr; itr = itr->next)
-			if (itr->most_recent_name.findi(name) != Jupiter::INVALID_INDEX)
-			{
+
+	return nullptr;
+}
+
+std::pair<RenX::LadderDatabase::Entry *, size_t> RenX::LadderDatabase::getPlayerEntryAndIndex(uint64_t steamid) const {
+	size_t index = 0;
+	for (Entry *itr = m_head; itr != nullptr; itr = itr->next, ++index) {
+		if (itr->steam_id == steamid) {
+			return std::pair<Entry*, size_t>(itr, index);
+		}
+	}
+	return std::pair<Entry*, size_t>(nullptr, Jupiter::INVALID_INDEX);
+}
+
+RenX::LadderDatabase::Entry *RenX::LadderDatabase::getPlayerEntryByName(const Jupiter::ReadableString &name) const {
+	for (Entry *itr = m_head; itr != nullptr; itr = itr->next) {
+		if (itr->most_recent_name.equalsi(name)) {
+			return itr;
+		}
+	}
+
+	return nullptr;
+}
+
+std::pair<RenX::LadderDatabase::Entry *, size_t> RenX::LadderDatabase::getPlayerEntryAndIndexByName(const Jupiter::ReadableString &name) const {
+	size_t index = 0;
+	for (Entry *itr = m_head; itr != nullptr; itr = itr->next, ++index) {
+		if (itr->most_recent_name.equalsi(name)) {
+			return std::pair<Entry*, size_t>(itr, index);
+		}
+	}
+
+	return std::pair<Entry*, size_t>(nullptr, Jupiter::INVALID_INDEX);
+}
+
+RenX::LadderDatabase::Entry *RenX::LadderDatabase::getPlayerEntryByPartName(const Jupiter::ReadableString &name) const {
+	for (Entry *itr = m_head; itr != nullptr; itr = itr->next) {
+		if (itr->most_recent_name.findi(name) != Jupiter::INVALID_INDEX) {
+			return itr;
+		}
+	}
+
+	return nullptr;
+}
+
+std::pair<RenX::LadderDatabase::Entry *, size_t> RenX::LadderDatabase::getPlayerEntryAndIndexByPartName(const Jupiter::ReadableString &name) const {
+	size_t index = 0;
+	for (Entry *itr = m_head; itr != nullptr; itr = itr->next, ++index) {
+		if (itr->most_recent_name.findi(name) != Jupiter::INVALID_INDEX) {
+			return std::pair<RenX::LadderDatabase::Entry*, size_t>(itr, index);
+		}
+	}
+
+	return std::pair<Entry *, size_t>(nullptr, Jupiter::INVALID_INDEX);
+}
+
+std::forward_list<RenX::LadderDatabase::Entry> RenX::LadderDatabase::getPlayerEntriesByPartName(const Jupiter::ReadableString &name, size_t max) const {
+	std::forward_list<Entry> list;
+	if (max == 0) {
+		for (Entry *itr = m_head; itr != nullptr; itr = itr->next) {
+			if (itr->most_recent_name.findi(name) != Jupiter::INVALID_INDEX) {
 				list.emplace_front(*itr);
-				if (--max == 0)
-					return list;
 			}
+		}
+	}
+	else {
+		for (Entry* itr = m_head; itr != nullptr; itr = itr->next) {
+			if (itr->most_recent_name.findi(name) != Jupiter::INVALID_INDEX) {
+				list.emplace_front(*itr);
+				if (--max == 0) {
+					return list;
+				}
+			}
+		}
+	}
 	return list;
 }
 
-std::forward_list<std::pair<RenX::LadderDatabase::Entry, size_t>> RenX::LadderDatabase::getPlayerEntriesAndIndexByPartName(const Jupiter::ReadableString &name, size_t max) const
-{
-	std::forward_list<std::pair<RenX::LadderDatabase::Entry, size_t>> list;
+std::forward_list<std::pair<RenX::LadderDatabase::Entry, size_t>> RenX::LadderDatabase::getPlayerEntriesAndIndexByPartName(const Jupiter::ReadableString &name, size_t max) const {
+	std::forward_list<std::pair<Entry, size_t>> list;
 	size_t index = 0;
 	if (max == 0)
 	{
-		for (RenX::LadderDatabase::Entry *itr = RenX::LadderDatabase::head; itr != nullptr; itr = itr->next, ++index)
-			if (itr->most_recent_name.findi(name) != Jupiter::INVALID_INDEX)
+		for (Entry *itr = m_head; itr != nullptr; itr = itr->next, ++index) {
+			if (itr->most_recent_name.findi(name) != Jupiter::INVALID_INDEX) {
 				list.emplace_front(*itr, index);
-	}
-	else
-		for (RenX::LadderDatabase::Entry *itr = RenX::LadderDatabase::head; itr != nullptr; itr = itr->next, ++index)
-			if (itr->most_recent_name.findi(name) != Jupiter::INVALID_INDEX)
-			{
-				list.emplace_front(*itr, index);
-				if (--max)
-					return list;
 			}
+		}
+	}
+	else {
+		for (Entry* itr = m_head; itr != nullptr; itr = itr->next, ++index) {
+			if (itr->most_recent_name.findi(name) != Jupiter::INVALID_INDEX) {
+				list.emplace_front(*itr, index);
+				if (--max) {
+					return list;
+				}
+			}
+		}
+	}
 	return list;
 }
 
-RenX::LadderDatabase::Entry *RenX::LadderDatabase::getPlayerEntryByIndex(size_t index) const
-{
-	for (RenX::LadderDatabase::Entry *itr = RenX::LadderDatabase::head; itr != nullptr; itr = itr->next, --index)
-		if (index == 0)
+RenX::LadderDatabase::Entry *RenX::LadderDatabase::getPlayerEntryByIndex(size_t index) const {
+	for (Entry *itr = m_head; itr != nullptr; itr = itr->next, --index) {
+		if (index == 0) {
 			return itr;
+		}
+	}
 	return nullptr;
 }
 
-size_t RenX::LadderDatabase::getEntries() const
-{
-	return RenX::LadderDatabase::entries;
+size_t RenX::LadderDatabase::getEntries() const {
+	return m_entries;
 }
 
-std::chrono::steady_clock::time_point RenX::LadderDatabase::getLastSortTime() const
-{
-	return RenX::LadderDatabase::last_sort;
+std::chrono::steady_clock::time_point RenX::LadderDatabase::getLastSortTime() const {
+	return m_last_sort;
 }
 
-void RenX::LadderDatabase::append(RenX::LadderDatabase::Entry *entry)
-{
-	++RenX::LadderDatabase::entries;
-	if (RenX::LadderDatabase::head == nullptr)
-	{
-		RenX::LadderDatabase::head = entry;
-		RenX::LadderDatabase::end = RenX::LadderDatabase::head;
+void RenX::LadderDatabase::append(Entry *entry) {
+	++m_entries;
+	if (m_head == nullptr) {
+		m_head = entry;
+		m_end = m_head;
 		return;
 	}
-	RenX::LadderDatabase::end->next = entry;
-	entry->prev = RenX::LadderDatabase::end;
-	RenX::LadderDatabase::end = entry;
+	m_end->next = entry;
+	entry->prev = m_end;
+	m_end = entry;
 }
 
-void RenX::LadderDatabase::write(const std::string &filename)
-{
-	return RenX::LadderDatabase::write(filename.c_str());
+void RenX::LadderDatabase::write(const std::string &filename) {
+	return write(filename.c_str());
 }
 
-void RenX::LadderDatabase::write(const char *filename)
-{
-	if (RenX::LadderDatabase::entries != 0)
+void RenX::LadderDatabase::write(const char *filename) {
+	if (m_entries != 0)
 	{
 		FILE *file = fopen(filename, "wb");
 		if (file != nullptr)
 		{
 			size_t rank = 0;
 			Jupiter::DataBuffer buffer;
-			RenX::LadderDatabase::create_header(file);
-			RenX::LadderDatabase::Entry *entry = RenX::LadderDatabase::head;
+			create_header(file);
+			Entry *entry = m_head;
 			while (entry != nullptr)
 			{
 				// update rank
@@ -421,42 +423,38 @@ void RenX::LadderDatabase::write(const char *filename)
 	}
 }
 
-void RenX::LadderDatabase::sort_entries()
-{
-	if (RenX::LadderDatabase::entries <= 1)
+void RenX::LadderDatabase::sort_entries() {
+	if (m_entries <= 1) {
 		return;
+	}
 
-	RenX::LadderDatabase::Entry *itr = RenX::LadderDatabase::head;
-	RenX::LadderDatabase::Entry *itr2, *ptr;
+	Entry *itr = m_head;
+	Entry *itr2, *ptr;
 
 	// iterate forward (search for out-of-order content)
-	while (itr->next != nullptr)
-	{
+	while (itr->next != nullptr) {
 		// out-of-order content found
-		if (itr->next->total_score > itr->total_score)
-		{
+		if (itr->next->total_score > itr->total_score) {
 			// pull content out
 			ptr = itr->next;
 			itr->next = ptr->next;
-			if (itr->next != nullptr)
+			if (itr->next != nullptr) {
 				itr->next->prev = itr;
+			}
 
 			// iterate backwards from our iterator, and insert
 			itr2 = itr;
-			while (true)
-			{
-				if (itr2->prev == nullptr)
-				{
+			while (true) {
+				if (itr2->prev == nullptr) {
 					// push ptr to head
 					ptr->next = itr2;
 					ptr->prev = nullptr;
 					itr2->prev = ptr;
-					RenX::LadderDatabase::head = ptr;
+					m_head = ptr;
 					break;
 				}
 				itr2 = itr2->prev;
-				if (itr2->total_score > ptr->total_score)
-				{
+				if (itr2->total_score > ptr->total_score) {
 					// insert ptr after itr2
 					ptr->next = itr2->next;
 					ptr->next->prev = ptr;
@@ -466,33 +464,30 @@ void RenX::LadderDatabase::sort_entries()
 				}
 			}
 		}
-		else // continue iterating
+		else { // continue iterating
 			itr = itr->next;
+		}
 	}
 
-	RenX::LadderDatabase::end = itr;
-	RenX::LadderDatabase::last_sort = std::chrono::steady_clock::now();
+	m_end = itr;
+	m_last_sort = std::chrono::steady_clock::now();
 }
 
-void RenX::LadderDatabase::updateLadder(RenX::Server &server, const RenX::TeamType &team)
-{
-	if (server.players.size() != server.getBotCount())
-	{
+void RenX::LadderDatabase::updateLadder(RenX::Server &server, const RenX::TeamType &team) {
+	if (server.players.size() != server.getBotCount()) {
 		// call the PreUpdateLadder event
-		if (this->OnPreUpdateLadder != nullptr)
+		if (this->OnPreUpdateLadder != nullptr) {
 			this->OnPreUpdateLadder(*this, server, team);
+		}
 
 		// update player stats in memory
-		RenX::LadderDatabase::Entry *entry;
-		for (auto player = server.players.begin(); player != server.players.end(); ++player)
-		{
-			if (player->steamid != 0 && (player->ban_flags & RenX::BanDatabase::Entry::FLAG_TYPE_LADDER) == 0)
-			{
-				entry = RenX::LadderDatabase::getPlayerEntry(player->steamid);
-				if (entry == nullptr)
-				{
-					entry = new RenX::LadderDatabase::Entry();
-					RenX::LadderDatabase::append(entry);
+		Entry *entry;
+		for (auto player = server.players.begin(); player != server.players.end(); ++player) {
+			if (player->steamid != 0 && (player->ban_flags & RenX::BanDatabase::Entry::FLAG_TYPE_LADDER) == 0) {
+				entry = getPlayerEntry(player->steamid);
+				if (entry == nullptr) {
+					entry = new Entry();
+					append(entry);
 					entry->steam_id = player->steamid;
 				}
 
@@ -512,8 +507,7 @@ void RenX::LadderDatabase::updateLadder(RenX::Server &server, const RenX::TeamTy
 				entry->total_proxy_disarms += player->proxy_disarms;
 
 				++entry->total_games;
-				switch (player->team)
-				{
+				switch (player->team) {
 				case RenX::TeamType::GDI:
 					++entry->total_gdi_games;
 					if (player->team == team)
@@ -560,10 +554,10 @@ void RenX::LadderDatabase::updateLadder(RenX::Server &server, const RenX::TeamTy
 					break;
 				}
 
-				auto set_if_greater = [](uint32_t &src, const uint32_t &cmp)
-				{
-					if (cmp > src)
+				auto set_if_greater = [](uint32_t &src, const uint32_t &cmp) {
+					if (cmp > src) {
 						src = cmp;
+					}
 				};
 
 				set_if_greater(entry->top_score, static_cast<uint32_t>(player->score));
@@ -588,18 +582,18 @@ void RenX::LadderDatabase::updateLadder(RenX::Server &server, const RenX::TeamTy
 
 		// sort new stats
 		std::chrono::steady_clock::time_point start_time = std::chrono::steady_clock::now();
-		RenX::LadderDatabase::sort_entries();
+		sort_entries();
 		std::chrono::steady_clock::duration sort_duration = std::chrono::steady_clock::now() - start_time;
 
 		// write new stats
 		start_time = std::chrono::steady_clock::now();
-		RenX::LadderDatabase::write(this->getFilename());
+		write(this->getFilename());
 		std::chrono::steady_clock::duration write_duration = std::chrono::steady_clock::now() - start_time;
 
-		if (RenX::LadderDatabase::output_times)
+		if (m_output_times)
 		{
 			Jupiter::StringS str = Jupiter::StringS::Format("Ladder: %zu entries sorted in %f seconds; Database written in %f seconds." ENDL,
-				RenX::LadderDatabase::getEntries(),
+				getEntries(),
 				static_cast<double>(sort_duration.count()) * (static_cast<double>(std::chrono::steady_clock::duration::period::num) / static_cast<double>(std::chrono::steady_clock::duration::period::den) * static_cast<double>(std::chrono::seconds::duration::period::den / std::chrono::seconds::duration::period::num)),
 				static_cast<double>(write_duration.count()) * (static_cast<double>(std::chrono::steady_clock::duration::period::num) / static_cast<double>(std::chrono::steady_clock::duration::period::den) * static_cast<double>(std::chrono::seconds::duration::period::den / std::chrono::seconds::duration::period::num)));
 			str.println(stdout);
@@ -608,38 +602,32 @@ void RenX::LadderDatabase::updateLadder(RenX::Server &server, const RenX::TeamTy
 	}
 }
 
-void RenX::LadderDatabase::erase()
-{
-	if (RenX::LadderDatabase::head != nullptr)
-	{
-		RenX::LadderDatabase::entries = 0;
-		while (RenX::LadderDatabase::head->next != nullptr)
-		{
-			RenX::LadderDatabase::head = head->next;
-			delete head->prev;
+void RenX::LadderDatabase::erase() {
+	if (m_head != nullptr) {
+		m_entries = 0;
+		while (m_head->next != nullptr) {
+			m_head = m_head->next;
+			delete m_head->prev;
 		}
-		delete RenX::LadderDatabase::head;
-		RenX::LadderDatabase::head = nullptr;
-		RenX::LadderDatabase::end = nullptr;
+
+		delete m_head;
+		m_head = nullptr;
+		m_end = nullptr;
 	}
 }
 
-const Jupiter::ReadableString &RenX::LadderDatabase::getName() const
-{
-	return RenX::LadderDatabase::name;
+const Jupiter::ReadableString &RenX::LadderDatabase::getName() const {
+	return m_name;
 }
 
-void RenX::LadderDatabase::setName(const Jupiter::ReadableString &in_name)
-{
-	RenX::LadderDatabase::name = in_name;
+void RenX::LadderDatabase::setName(const Jupiter::ReadableString &in_name) {
+	m_name = in_name;
 }
 
-bool RenX::LadderDatabase::getOutputTimes() const
-{
-	return RenX::LadderDatabase::output_times;
+bool RenX::LadderDatabase::getOutputTimes() const {
+	return m_output_times;
 }
 
-void RenX::LadderDatabase::setOutputTimes(bool in_output_times)
-{
-	RenX::LadderDatabase::output_times = in_output_times;
+void RenX::LadderDatabase::setOutputTimes(bool in_output_times) {
+	m_output_times = in_output_times;
 }

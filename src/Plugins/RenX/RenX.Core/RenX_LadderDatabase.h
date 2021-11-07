@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2015-2017 Jessica James.
+ * Copyright (C) 2015-2021 Jessica James.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -23,7 +23,6 @@
 #include <forward_list>
 #include "Jupiter/Database.h"
 #include "Jupiter/String.hpp"
-#include "Jupiter/ArrayList.h"
 #include "RenX.h"
 
 /** DLL Linkage Nagging */
@@ -32,12 +31,10 @@
 #pragma warning(disable: 4251)
 #endif
 
-namespace RenX
-{
+namespace RenX {
 	class Server;
 
-	class RENX_API LadderDatabase : public Jupiter::Database
-	{
+	class RENX_API LadderDatabase : public Jupiter::Database {
 	public: // Jupiter::Database
 
 		/**
@@ -228,19 +225,19 @@ namespace RenX
 
 	private:
 		/** Database version */
-		const uint8_t write_version = 1;
-		uint8_t read_version = write_version;
+		const uint8_t m_write_version = 1;
+		uint8_t m_read_version = m_write_version;
 
-		bool output_times = false;
-		Jupiter::StringS name;
-		std::chrono::steady_clock::time_point last_sort = std::chrono::steady_clock::now();
-		size_t entries = 0;
-		Entry *head = nullptr;
-		Entry *end = nullptr;
+		bool m_output_times = false;
+		Jupiter::StringS m_name;
+		std::chrono::steady_clock::time_point m_last_sort = std::chrono::steady_clock::now();
+		size_t m_entries = 0;
+		Entry* m_head = nullptr;
+		Entry* m_end = nullptr;
 	};
 
 	RENX_API extern RenX::LadderDatabase *default_ladder_database;
-	RENX_API extern Jupiter::ArrayList<RenX::LadderDatabase> &ladder_databases;
+	RENX_API extern std::vector<RenX::LadderDatabase*>& ladder_databases;
 }
 
 /** Re-enable warnings */

@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2014-2017 Jessica James.
+ * Copyright (C) 2014-2021 Jessica James.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -27,6 +27,7 @@
 #include "Jupiter/Plugin.h"
 #include "Jupiter/Config.h"
 #include "RenX.h"
+#include "RenX_Server.h"
 
 /** DLL Linkage Nagging */
 #if defined _MSC_VER
@@ -80,7 +81,7 @@ namespace RenX
 		*
 		* @param server Server to add to the list.
 		*/
-		void addServer(RenX::Server *server);
+		void addServer(std::unique_ptr<RenX::Server> server);
 
 		/**
 		* @brief Fetches a server's index.
@@ -103,15 +104,15 @@ namespace RenX
 		*
 		* @return Copy of the list of servers.
 		*/
-		Jupiter::ArrayList<RenX::Server> getServers();
+		std::vector<RenX::Server*> getServers();
 
 		/**
 		* @brief Constructs a list of servers based on their type.
 		*
 		* @param type Type of servers to fetch.
-		* @return ArrayList of servers with the same type.
+		* @return vector of servers with the same type.
 		*/
-		Jupiter::ArrayList<RenX::Server> getServers(int type);
+		std::vector<RenX::Server*> getServers(int type);
 
 		/**
 		* @brief Removes a server based on its index.
@@ -146,9 +147,9 @@ namespace RenX
 		/**
 		* @brief Fetches the Renegade-X plugins currently loaded.
 		*
-		* @return ArrayList containing pointers to the plugins.
+		* @return vector containing pointers to the plugins.
 		*/
-		Jupiter::ArrayList<RenX::Plugin> *getPlugins();
+		std::vector<RenX::Plugin*>& getPlugins();
 
 		/**
 		* @brief Fetches the commands settings file.
@@ -175,11 +176,15 @@ namespace RenX
 		*/
 		~Core();
 
+		Core() = default;
+		Core(const Core&) = delete;
+		Core& operator=(const Core&) = delete;
+
 	private:
 		/** Inaccessible private members */
-		Jupiter::ArrayList<RenX::Server> servers;
-		Jupiter::ArrayList<RenX::Plugin> plugins;
-		Jupiter::INIConfig commandsFile;
+		std::vector<std::unique_ptr<RenX::Server>> m_servers;
+		std::vector<RenX::Plugin*> m_plugins;
+		Jupiter::INIConfig m_commandsFile;
 	};
 
 	RENX_API Core *getCore();

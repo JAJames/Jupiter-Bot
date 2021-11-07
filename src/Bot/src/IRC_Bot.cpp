@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2013-2017 Jessica James.
+ * Copyright (C) 2013-2021 Jessica James.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -27,94 +27,85 @@
 
 using namespace Jupiter::literals;
 
-IRC_Bot::IRC_Bot(Jupiter::Config *in_primary_section, Jupiter::Config *in_secondary_section) : Client(in_primary_section, in_secondary_section)
-{
-	IRC_Bot::commandPrefix = this->readConfigValue("Prefix"_jrs);
+IRC_Bot::IRC_Bot(Jupiter::Config *in_primary_section, Jupiter::Config *in_secondary_section)
+	: Client(in_primary_section, in_secondary_section) {
+	m_commandPrefix = this->readConfigValue("Prefix"_jrs);
 	
-	for (size_t i = 0; i != IRCMasterCommandList->size(); i++)
-		IRC_Bot::commands.add(IRCMasterCommandList->get(i)->copy());
+	for (const auto& command : IRCMasterCommandList) {
+		m_commands.emplace_back(command->copy());
+	}
 
-	IRC_Bot::setCommandAccessLevels();
+	setCommandAccessLevels();
 }
 
-IRC_Bot::~IRC_Bot()
-{
-	if (IRCCommand::selected_server == this)
+IRC_Bot::~IRC_Bot() {
+	if (IRCCommand::selected_server == this) {
 		IRCCommand::selected_server = nullptr;
-	if (IRCCommand::active_server == this)
+	}
+
+	if (IRCCommand::active_server == this) {
 		IRCCommand::active_server = IRCCommand::selected_server;
-
-	IRC_Bot::commands.emptyAndDelete();
+	}
 }
 
-void IRC_Bot::addCommand(IRCCommand *in_command)
-{
-	IRC_Bot::commands.add(in_command);
-	IRC_Bot::setCommandAccessLevels(in_command);
+void IRC_Bot::addCommand(IRCCommand *in_command) {
+	m_commands.emplace_back(in_command);
+	setCommandAccessLevels(in_command);
 }
 
-bool IRC_Bot::freeCommand(const Jupiter::ReadableString &trigger)
-{
-	for (size_t i = 0; i != IRC_Bot::commands.size(); i++)
-	{
-		if (IRC_Bot::commands.get(i)->matches(trigger))
-		{
-			delete IRC_Bot::commands.remove(i);
+bool IRC_Bot::freeCommand(const Jupiter::ReadableString &trigger) {
+	for (auto itr = m_commands.begin(); itr != m_commands.end(); ++itr) {
+		if ((*itr)->matches(trigger)) {
+			m_commands.erase(itr);
 			return true;
 		}
 	}
+
 	return false;
 }
 
-int IRC_Bot::getCommandIndex(const Jupiter::ReadableString &trigger) const
-{
-	for (size_t i = 0; i != IRC_Bot::commands.size(); i++)
-		if (IRC_Bot::commands.get(i)->matches(trigger))
-			return i;
-	return -1;
-}
-
-IRCCommand *IRC_Bot::getCommand(const Jupiter::ReadableString &trigger) const
-{
-	int i = IRC_Bot::getCommandIndex(trigger);
-	if (i < 0) return nullptr;
-	return IRC_Bot::commands.get(i);
-}
-
-Jupiter::ArrayList<IRCCommand> IRC_Bot::getAccessCommands(Jupiter::IRC::Client::Channel *chan, int access)
-{
-	Jupiter::ArrayList<IRCCommand> r;
-	for (size_t i = 0; i != IRC_Bot::commands.size(); i++)
-	{
-		IRCCommand *cmd = IRC_Bot::commands.get(i);
-		if (cmd->getAccessLevel(chan) == access)
-			r.add(cmd);
+IRCCommand* IRC_Bot::getCommand(const Jupiter::ReadableString &trigger) const {
+	for (const auto& command : m_commands) {
+		if (command->matches(trigger)) {
+			return command.get();
+		}
 	}
-	return r;
+
+	return nullptr;
 }
 
-Jupiter::StringL IRC_Bot::getTriggers(Jupiter::ArrayList<IRCCommand> &cmds)
-{
-	Jupiter::StringL r;
-	for (size_t i = 0; i < cmds.size(); i++)
-	{
-		r += cmds[i]->getTrigger();
-		r += ' ';
+std::vector<IRCCommand*> IRC_Bot::getAccessCommands(Jupiter::IRC::Client::Channel *chan, int access) {
+	std::vector<IRCCommand*> result;
+	for (const auto& command : m_commands) {
+		if (command->getAccessLevel(chan) == access) {
+			result.push_back(command.get());
+		}
 	}
-	return r;
+
+	return result;
 }
 
-void IRC_Bot::setCommandAccessLevels(IRCCommand *in_command)
-{
-	auto set_command_access_levels = [this, in_command](Jupiter::Config *in_section)
-	{
-		if (in_section == nullptr)
+// TODO: This isn't really needed on here
+Jupiter::StringL IRC_Bot::getTriggers(std::vector<IRCCommand*> &commands) {
+	Jupiter::StringL result;
+	for (const auto& command : commands) {
+		result += command->getTrigger();
+		result += ' ';
+	}
+
+	return result;
+}
+
+void IRC_Bot::setCommandAccessLevels(IRCCommand *in_command) {
+	auto set_command_access_levels = [this, in_command](Jupiter::Config *in_section) {
+		if (in_section == nullptr) {
 			return;
+		}
 
 		Jupiter::Config *section = in_section->getSection("Commands"_jrs);
-
-		if (section == nullptr)
+		if (section == nullptr) {
 			return;
+		}
 
 		for (auto& entry : section->getTable()) {
 			size_t tmp_index;
@@ -122,8 +113,7 @@ void IRC_Bot::setCommandAccessLevels(IRCCommand *in_command)
 			IRCCommand *command;
 
 			tmp_index = entry.first.find('.');
-			if (tmp_index != Jupiter::INVALID_INDEX)
-			{
+			if (tmp_index != Jupiter::INVALID_INDEX) {
 				// non-default access assignment
 
 				tmp_key.set(entry.first.ptr(), tmp_index);
@@ -131,16 +121,15 @@ void IRC_Bot::setCommandAccessLevels(IRCCommand *in_command)
 				tmp_sub_key = entry.first;
 				tmp_sub_key.shiftRight(tmp_index + 1);
 
-				if (tmp_sub_key.findi("Type."_jrs) == 0)
-				{
+				if (tmp_sub_key.findi("Type."_jrs) == 0) {
 					tmp_sub_key.shiftRight(5); // shift beyond "Type."
 
 					command = this->getCommand(tmp_key);
-					if (command != nullptr && (in_command == nullptr || in_command == command))
+					if (command != nullptr && (in_command == nullptr || in_command == command)) {
 						command->setAccessLevel(tmp_sub_key.asInt(), entry.second.asInt());
+					}
 				}
-				else if (tmp_sub_key.findi("Channel."_jrs) == 0)
-				{
+				else if (tmp_sub_key.findi("Channel."_jrs) == 0) {
 					tmp_sub_key.shiftRight(8); // shift beyond "Channel."
 
 					// Assign access level to command (if command exists)
@@ -149,8 +138,7 @@ void IRC_Bot::setCommandAccessLevels(IRCCommand *in_command)
 						command->setAccessLevel(tmp_sub_key, entry.second.asInt());
 				}
 			}
-			else
-			{
+			else {
 				// Assign access level to command (if command exists)
 				command = this->getCommand(entry.first);
 				if (command != nullptr && (in_command == nullptr || in_command == command))
@@ -159,48 +147,46 @@ void IRC_Bot::setCommandAccessLevels(IRCCommand *in_command)
 		};
 	};
 
-	set_command_access_levels(this->getSecondaryConfigSection());
-	set_command_access_levels(this->getPrimaryConfigSection());
+	set_command_access_levels(getSecondaryConfigSection());
+	set_command_access_levels(getPrimaryConfigSection());
 }
 
-void IRC_Bot::OnChat(const Jupiter::ReadableString &in_channel, const Jupiter::ReadableString &nick, const Jupiter::ReadableString &message)
-{
+void IRC_Bot::OnChat(const Jupiter::ReadableString &in_channel, const Jupiter::ReadableString &nick, const Jupiter::ReadableString &message) {
 	Channel *channel = this->getChannel(in_channel);
-	if (channel != nullptr && channel->getType() >= 0)
-	{
+	if (channel != nullptr && channel->getType() >= 0) {
 		Jupiter::ReferenceString msg = message;
-		while (msg.isNotEmpty() && isspace(msg[0]))
+		while (msg.isNotEmpty() && isspace(msg[0])) {
 			msg.shiftRight(1);
+		}
 
-		if (IRC_Bot::commandPrefix.size() <= msg.size())
-		{
+		if (m_commandPrefix.size() <= msg.size()) {
 			bool matchesPrefix = true;
 			size_t i;
-			for (i = 0; i != IRC_Bot::commandPrefix.size(); i++)
-			{
-				if (toupper(msg.get(0)) != toupper(IRC_Bot::commandPrefix[i]))
-				{
+			for (i = 0; i != m_commandPrefix.size(); i++) {
+				if (toupper(msg.get(0)) != toupper(m_commandPrefix[i])) {
 					matchesPrefix = false;
 					break;
 				}
 				msg.shiftRight(1);
 			}
 
-			if (matchesPrefix)
-			{
+			if (matchesPrefix) {
 				Jupiter::ReferenceString command = Jupiter::ReferenceString::getWord(msg, 0, WHITESPACE);;
 				Jupiter::ReferenceString parameters = Jupiter::ReferenceString::gotoWord(msg, 1, WHITESPACE);
-				IRCCommand *cmd = IRC_Bot::getCommand(command);
-				if (cmd != nullptr)
-				{
+				IRCCommand *cmd = getCommand(command);
+				if (cmd != nullptr) {
 					IRCCommand::active_server = this;
 					int command_access = cmd->getAccessLevel(channel);
-					if (command_access < 0)
+					if (command_access < 0) {
 						this->sendNotice(nick, "Error: Command disabled."_jrs);
-					else if (Jupiter::IRC::Client::getAccessLevel(*channel, nick) < command_access)
+					}
+					else if (Jupiter::IRC::Client::getAccessLevel(*channel, nick) < command_access) {
 						this->sendNotice(nick, "Access Denied."_jrs);
-					else
+					}
+					else {
 						cmd->trigger(this, in_channel, nick, parameters);
+					}
+
 					IRCCommand::active_server = IRCCommand::selected_server;
 				}
 			}

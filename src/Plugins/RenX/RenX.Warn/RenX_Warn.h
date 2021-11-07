@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2014-2016 Jessica James.
+ * Copyright (C) 2014-2021 Jessica James.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -31,8 +31,8 @@ public: // Jupiter::Plugin
 	virtual bool initialize() override;
 	int OnRehash() override;
 
-	int maxWarns;
-	int warnAction; /** -1 = kick; 0 = perm ban; other = temp ban */
+	int m_maxWarns;
+	int m_warnAction; /** -1 = kick; 0 = perm ban; other = temp ban */
 };
 
 GENERIC_IRC_COMMAND(WarnIRCCommand)

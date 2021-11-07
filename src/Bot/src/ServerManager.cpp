@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2014-2016 Jessica James.
+ * Copyright (C) 2014-2021 Jessica James.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -23,148 +23,129 @@
 
 using namespace Jupiter::literals;
 
-ServerManager _serverManager;
-ServerManager *serverManager = &_serverManager;
+ServerManager g_serverManager;
+ServerManager *serverManager = &g_serverManager;
 
-int ServerManager::think()
-{
-	for (size_t i = 0; i < ServerManager::servers.size(); i++)
-	{
-		IRC_Bot *server = ServerManager::servers.get(i);
-		if (server->think() != 0) delete ServerManager::servers.remove(i);
+int ServerManager::think() {
+	for (auto itr = m_servers.begin(); itr != m_servers.end();) {
+		if ((*itr)->think() != 0) {
+			itr = m_servers.erase(itr + 1);
+			continue;
+		}
+		++itr;
 	}
-	return ServerManager::servers.size() != 0;
+
+	return m_servers.size() != 0;
 }
 
-size_t ServerManager::addCommand(IRCCommand *command)
-{
-	for (size_t i = 0; i != ServerManager::servers.size(); i++)
-	{
-		IRC_Bot *server = ServerManager::servers.get(i);
+size_t ServerManager::addCommand(IRCCommand *command) {
+	for (const auto& server : m_servers) {
 		server->addCommand(command->copy());
 	}
-	return ServerManager::servers.size();
+
+	return m_servers.size();
 }
 
-size_t ServerManager::removeCommand(IRCCommand *command)
-{
-	size_t r = 0;
-	for (size_t i = 0; i != ServerManager::servers.size(); i++)
-	{
-		IRC_Bot *server = ServerManager::servers.get(i);
-		if (server->freeCommand(command->getTrigger())) r++;
+size_t ServerManager::removeCommand(IRCCommand *command) {
+	size_t result = 0;
+	for (const auto& server : m_servers) {
+		if (server->freeCommand(command->getTrigger())) {
+			++result;
+		}
 	}
-	return r;
+
+	return result;
 }
 
-size_t ServerManager::removeCommand(const Jupiter::ReadableString &command)
-{
-	size_t r = 0;
-	for (size_t i = 0; i != ServerManager::servers.size(); i++)
-	{
-		IRC_Bot *server = ServerManager::servers.get(i);
-		if (server->freeCommand(command)) r++;
+size_t ServerManager::removeCommand(const Jupiter::ReadableString &command) {
+	size_t result = 0;
+	for (const auto& server : m_servers) {
+		if (server->freeCommand(command)) {
+			++result;
+		}
 	}
-	return r;
+
+	return result;
 }
 
-void ServerManager::OnConfigRehash()
-{
-	IRC_Bot *server;
-	for (size_t index = 0; index != ServerManager::servers.size(); ++index)
-	{
-		server = ServerManager::servers.get(index);
-
+void ServerManager::OnConfigRehash() {
+	for (const auto& server : m_servers) {
 		server->setPrimaryConfigSection(m_config->getSection(server->getConfigSection()));
 		server->setSecondaryConfigSection(m_config->getSection("Defualt"_jrs));
 		server->setCommandAccessLevels();
 	}
 }
 
-size_t ServerManager::syncCommands()
-{
-	for (size_t i = 0; i != ServerManager::servers.size(); i++)
-	{
-		IRC_Bot *server = ServerManager::servers.get(i);
+size_t ServerManager::syncCommands() {
+	for (const auto& server : m_servers) {
 		server->setCommandAccessLevels();
 	}
-	return ServerManager::servers.size();
+
+	return m_servers.size();
 }
 
-IRC_Bot *ServerManager::getServer(const Jupiter::ReadableString &serverConfig)
-{
-	for (size_t i = 0; i != ServerManager::servers.size(); i++)
-	{
-		IRC_Bot *server = ServerManager::servers.get(i);
-		if (server->getConfigSection().equalsi(serverConfig)) return server;
+IRC_Bot *ServerManager::getServer(const Jupiter::ReadableString &serverConfig) {
+	for (const auto& server : m_servers) {
+		if (server->getConfigSection().equalsi(serverConfig)) {
+			return server.get();
+		}
 	}
+
 	return nullptr;
 }
 
-IRC_Bot *ServerManager::getServer(size_t serverIndex)
-{
-	if (serverIndex < ServerManager::servers.size()) return ServerManager::servers.get(serverIndex);
+IRC_Bot *ServerManager::getServer(size_t serverIndex) {
+	if (serverIndex < m_servers.size()) {
+		return m_servers[serverIndex].get();
+	}
+
 	return nullptr;
 }
 
-bool ServerManager::addServer(const Jupiter::ReadableString &serverConfig)
-{
-	IRC_Bot *server = new IRC_Bot(m_config->getSection(serverConfig), m_config->getSection("Default"_jrs));
-	if (server->connect())
-	{
-		ServerManager::servers.add(server);
+bool ServerManager::addServer(const Jupiter::ReadableString &serverConfig) {
+	auto server = std::make_unique<IRC_Bot>(m_config->getSection(serverConfig), m_config->getSection("Default"_jrs));
+	if (server->connect()) {
+		m_servers.push_back(std::move(server));
 		return true;
 	}
-	else
-	{
-		delete server;
-		return false;
-	}
-}
 
-bool ServerManager::freeServer(size_t serverIndex)
-{
-	if (serverIndex < ServerManager::servers.size())
-	{
-		delete ServerManager::servers.remove(serverIndex);
-		return true;
-	}
 	return false;
 }
 
-bool ServerManager::freeServer(IRC_Bot *server)
-{
-	for (size_t i = 0; i != ServerManager::servers.size(); i++)
-	{
-		if (ServerManager::servers.get(i) == server)
-		{
-			delete ServerManager::servers.remove(i);
+bool ServerManager::freeServer(size_t serverIndex) {
+	if (serverIndex < m_servers.size()) {
+		m_servers.erase(m_servers.begin() + serverIndex);
+		return true;
+	}
+
+	return false;
+}
+
+bool ServerManager::freeServer(IRC_Bot *server) {
+	for (auto itr = m_servers.begin(); itr != m_servers.end(); ++itr) {
+		if (itr->get() == server) {
+			m_servers.erase(itr);
 			return true;
 		}
 	}
+
 	return false;
 }
 
-bool ServerManager::freeServer(const Jupiter::ReadableString &serverConfig)
-{
-	for (size_t i = 0; i != ServerManager::servers.size(); i++)
-	{
-		IRC_Bot *server = ServerManager::servers.get(i);
-		if (server->getConfigSection().equalsi(serverConfig))
-		{
-			delete ServerManager::servers.remove(i);
+bool ServerManager::freeServer(const Jupiter::ReadableString &serverConfig) {
+	for (auto itr = m_servers.begin(); itr != m_servers.end(); ++itr) {
+		if ((*itr)->getConfigSection().equalsi(serverConfig)) {
+			m_servers.erase(itr);
 			return true;
 		}
 	}
+
 	return false;
 }
 
-size_t ServerManager::size()
-{
-	return ServerManager::servers.size();
+size_t ServerManager::size() {
+	return m_servers.size();
 }
 
-ServerManager::~ServerManager()
-{
-	ServerManager::servers.emptyAndDelete();
+ServerManager::~ServerManager() {
 }

@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2013-2015 Jessica James.
+ * Copyright (C) 2013-2021 Jessica James.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -25,7 +25,6 @@
 */
 
 #include "Jupiter/GenericCommand.h"
-#include "Jupiter/ArrayList.h"
 #include "Jupiter_Bot.h"
 
 class ConsoleCommand;
@@ -36,8 +35,8 @@ class ConsoleCommand;
 #pragma warning(disable: 4251)
 #endif
 
-/** Console command list */
-JUPITER_BOT_API extern Jupiter::ArrayList<ConsoleCommand> *consoleCommands;
+/** Console command list; weak pointers */
+JUPITER_BOT_API extern std::vector<ConsoleCommand*>& consoleCommands;
 
 /**
 * @brief Provides the basis for console commands.

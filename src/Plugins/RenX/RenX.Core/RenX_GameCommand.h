@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2014-2015 Jessica James.
+ * Copyright (C) 2014-2021 Jessica James.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -43,7 +43,7 @@ namespace RenX
 	class GameCommand;
 
 	/** Master command list */
-	RENX_API extern Jupiter::ArrayList<GameCommand> *GameMasterCommandList;
+	RENX_API extern std::vector<GameCommand*>& GameMasterCommandList;
 
 	/**
 	* @brief Provides an extendable interface from which in-game commands can be created.
@@ -133,7 +133,7 @@ namespace RenX
 		BasicGameCommand(const Jupiter::ReadableString &trigger, const Jupiter::ReadableString &in_message, const Jupiter::ReadableString &in_help_message);
 
 	private:
-		Jupiter::StringS message, help_message;
+		Jupiter::StringS m_message, m_help_message;
 	};
 }
 

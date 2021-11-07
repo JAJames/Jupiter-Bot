@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2014-2017 Jessica James.
+ * Copyright (C) 2014-2021 Jessica James.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -105,15 +105,15 @@ public: // Jupiter::Plugin
 	int OnRehash() override;
 
 private:
-	bool lockSteam;
-	bool lockIP;
-	bool lockName;
-	bool kickLockMismatch;
-	bool autoAuthSteam;
-	bool autoAuthIP;
-	Jupiter::StringS atmDefault;
-	Jupiter::StringS moderatorGroup;
-	Jupiter::StringS administratorGroup;
+	bool m_lockSteam;
+	bool m_lockIP;
+	bool m_lockName;
+	bool m_kickLockMismatch;
+	bool m_autoAuthSteam;
+	bool m_autoAuthIP;
+	Jupiter::StringS m_atmDefault;
+	Jupiter::StringS m_moderatorGroup;
+	Jupiter::StringS m_administratorGroup;
 };
 
 GENERIC_IRC_COMMAND(AuthIRCCommand)

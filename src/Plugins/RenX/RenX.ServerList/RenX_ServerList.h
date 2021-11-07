@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2016-2017 Jessica James.
+ * Copyright (C) 2016-2021 Jessica James.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -58,9 +58,9 @@ public: // RenX::Plugin
 	void RenX_OnMapLoad(RenX::Server &server, const Jupiter::ReadableString &map) override;
 
 private:
-	Jupiter::StringS server_list_json, metadata_json, metadata_prometheus;
-	Jupiter::StringS web_hostname, web_path;
-	Jupiter::StringS server_list_page_name, server_list_long_page_name, server_page_name, metadata_page_name, metadata_prometheus_page_name;
+	Jupiter::StringS m_server_list_json, m_metadata_json, m_metadata_prometheus;
+	Jupiter::StringS m_web_hostname, m_web_path;
+	Jupiter::StringS m_server_list_page_name, m_server_list_long_page_name, m_server_page_name, m_metadata_page_name, m_metadata_prometheus_page_name;
 };
 
 Jupiter::ReadableString *handle_server_list_page(const Jupiter::ReadableString &);

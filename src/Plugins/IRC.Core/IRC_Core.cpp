@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2016 Jessica James.
+ * Copyright (C) 2016-2021 Jessica James.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -23,56 +23,47 @@
 
 using namespace Jupiter::literals;
 
-IRCCorePlugin::~IRCCorePlugin()
-{
-	IRCCorePlugin::m_wrapped_commands.emptyAndDelete();
+IRCCorePlugin::~IRCCorePlugin() {
 }
 
-bool IRCCorePlugin::initialize()
-{
+bool IRCCorePlugin::initialize() {
 	const Jupiter::ReadableString &serverList = this->config.get("Servers"_jrs);
-	if (serverList != nullptr)
-	{
+	if (serverList != nullptr) {
 		serverManager->setConfig(this->config);
 
 		unsigned int server_count = serverList.wordCount(WHITESPACE);
-		for (unsigned int index = 0; index != server_count; ++index)
+		for (unsigned int index = 0; index != server_count; ++index) {
 			serverManager->addServer(Jupiter::ReferenceString::getWord(serverList, index, WHITESPACE));
+		}
 	}
 
 	return true;
 }
 
-int IRCCorePlugin::OnRehash()
-{
+int IRCCorePlugin::OnRehash() {
 	Jupiter::Plugin::OnRehash();
 
 	serverManager->OnConfigRehash();
 	return 0;
 }
 
-int IRCCorePlugin::think()
-{
+int IRCCorePlugin::think() {
 	serverManager->think();
 	return 0;
 }
 
-void IRCCorePlugin::OnGenericCommandAdd(Jupiter::GenericCommand &in_command)
-{
-	IRCCorePlugin::m_wrapped_commands.add(new GenericCommandWrapperIRCCommand(in_command));
+void IRCCorePlugin::OnGenericCommandAdd(Jupiter::GenericCommand &in_command) {
+	m_wrapped_commands.emplace_back(in_command);
 }
 
-void IRCCorePlugin::OnGenericCommandRemove(Jupiter::GenericCommand &in_command)
-{
-	for (size_t index = 0; index != IRCCorePlugin::m_wrapped_commands.size(); ++index)
-		if (&IRCCorePlugin::m_wrapped_commands.get(index)->getGenericCommand() == &in_command)
-		{
-			delete IRCCorePlugin::m_wrapped_commands.remove(index);
+void IRCCorePlugin::OnGenericCommandRemove(Jupiter::GenericCommand &in_command) {
+	for (auto itr = m_wrapped_commands.begin(); itr != m_wrapped_commands.end(); ++itr) {
+		if (&itr->getGenericCommand() == &in_command) {
+			m_wrapped_commands.erase(itr);
 			return;
 		}
+	}
 }
-
-
 
 // Plugin instantiation and entry point.
 IRCCorePlugin pluginInstance;

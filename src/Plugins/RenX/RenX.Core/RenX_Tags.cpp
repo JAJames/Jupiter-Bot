@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2015-2017 Jessica James.
+ * Copyright (C) 2015-2021 Jessica James.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -581,9 +581,9 @@ void TagsImp::processTags(Jupiter::StringType &msg, const RenX::Server *server, 
 		PROCESS_TAG(this->INTERNAL_BUILDING_TEAM_LONG_TAG, RenX::getFullTeamName(building->team));
 	}
 
-	Jupiter::ArrayList<RenX::Plugin> &xPlugins = *RenX::getCore()->getPlugins();
-	for (index = 0; index < xPlugins.size(); ++index)
-		xPlugins.get(index)->RenX_ProcessTags(msg, server, player, victim, building);
+	for (const auto& plugin : RenX::getCore()->getPlugins()) {
+		plugin->RenX_ProcessTags(msg, server, player, victim, building);
+	}
 }
 
 void TagsImp::processTags(Jupiter::StringType &msg, const RenX::LadderDatabase::Entry &entry)
@@ -867,9 +867,9 @@ void TagsImp::sanitizeTags(Jupiter::StringType &fmt)
 	fmt.replace(this->winScoreTag, this->INTERNAL_WIN_SCORE_TAG);
 	fmt.replace(this->loseScoreTag, this->INTERNAL_LOSE_SCORE_TAG);
 
-	Jupiter::ArrayList<RenX::Plugin> &xPlugins = *RenX::getCore()->getPlugins();
-	for (size_t i = 0; i < xPlugins.size(); i++)
-		xPlugins.get(i)->RenX_SanitizeTags(fmt);
+	for (const auto& plugin : RenX::getCore()->getPlugins()) {
+		plugin->RenX_SanitizeTags(fmt);
+	}
 }
 
 const Jupiter::ReadableString &TagsImp::getUniqueInternalTag()

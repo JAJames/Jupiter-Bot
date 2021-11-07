@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2014-2017 Jessica James.
+ * Copyright (C) 2014-2021 Jessica James.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -23,7 +23,6 @@
 #include <unordered_map>
 #include "Jupiter/Database.h"
 #include "Jupiter/String.hpp"
-#include "Jupiter/ArrayList.h"
 #include "RenX.h"
 
 /** DLL Linkage Nagging */
@@ -188,6 +187,7 @@ namespace RenX
 		* @param True if the entry was active and is now inactive, false otherwise.
 		*/
 		bool deactivate(size_t index);
+		bool deactivate(Entry* entry);
 
 		/**
 		* @brief Fetches the version of the database file.
@@ -208,19 +208,19 @@ namespace RenX
 		*
 		* @return List of entries
 		*/
-		const Jupiter::ArrayList<RenX::BanDatabase::Entry> &getEntries() const;
+		const std::vector<std::unique_ptr<Entry>>& getEntries() const;
 
 		virtual bool initialize();
 		~BanDatabase();
 
 	private:
 		/** Database version */
-		const uint8_t write_version = 5U;
-		uint8_t read_version = write_version;
-		fpos_t eof;
+		const uint8_t m_write_version = 5U;
+		uint8_t m_read_version = m_write_version;
+		fpos_t m_eof;
 
-		std::string filename;
-		Jupiter::ArrayList<RenX::BanDatabase::Entry> entries;
+		std::string m_filename;
+		std::vector<std::unique_ptr<Entry>> m_entries;
 	};
 
 	RENX_API extern RenX::BanDatabase *banDatabase;

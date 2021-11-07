@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2014-2017 Jessica James.
+ * Copyright (C) 2014-2021 Jessica James.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -19,95 +19,83 @@
 #include "RenX_GameCommand.h"
 #include "RenX_Server.h"
 
-Jupiter::ArrayList<RenX::GameCommand> _GameMasterCommandList;
-Jupiter::ArrayList<RenX::GameCommand> *RenX::GameMasterCommandList = &_GameMasterCommandList;
+std::vector<RenX::GameCommand*> g_GameMasterCommandList;
+std::vector<RenX::GameCommand*> &RenX::GameMasterCommandList = g_GameMasterCommandList;
 
 RenX::Server *RenX::GameCommand::active_server = nullptr;
 RenX::Server *RenX::GameCommand::selected_server = nullptr;
 
-RenX::GameCommand::GameCommand(std::nullptr_t)
-{
+RenX::GameCommand::GameCommand(std::nullptr_t) {
 }
 
-RenX::GameCommand::GameCommand(const RenX::GameCommand &command)
-{
+RenX::GameCommand::GameCommand(const RenX::GameCommand &command) {
 	//RenX::GameMasterCommandList->add(this);
 }
 
-RenX::GameCommand::GameCommand()
-{
-	RenX::GameMasterCommandList->add(this);
+RenX::GameCommand::GameCommand() {
+	RenX::GameMasterCommandList.push_back(this);
 }
 
-RenX::GameCommand::~GameCommand()
-{
+RenX::GameCommand::~GameCommand() {
 	RenX::Core *core = RenX::getCore();
-	for (size_t command_index = 0; command_index != RenX::GameMasterCommandList->size(); ++command_index)
-	{
-		if (RenX::GameMasterCommandList->get(command_index) == this)
-		{
+	for (auto itr = RenX::GameMasterCommandList.begin(); itr != RenX::GameMasterCommandList.end(); ++itr) {
+		if (*itr == this) {
 			RenX::Server *server;
-			for (size_t server_index = 0; server_index != core->getServerCount(); ++server_index)
-			{
+			for (size_t server_index = 0; server_index != core->getServerCount(); ++server_index) {
 				server = core->getServer(server_index);
-				if (server != nullptr)
+				if (server != nullptr) {
 					server->removeCommand(this->getTrigger());
+				}
 			}
 
-			RenX::GameMasterCommandList->remove(command_index);
+			RenX::GameMasterCommandList.erase(itr);
 			break;
 		}
 	}
 }
 
-int RenX::GameCommand::getAccessLevel()
-{
+int RenX::GameCommand::getAccessLevel() {
 	return RenX::GameCommand::access;
 }
 
-void RenX::GameCommand::setAccessLevel(int accessLevel)
-{
+void RenX::GameCommand::setAccessLevel(int accessLevel) {
 	RenX::GameCommand::access = accessLevel;
 }
 
 // Basic Game Command
 
-RenX::BasicGameCommand::BasicGameCommand() : RenX::GameCommand(nullptr)
-{
+RenX::BasicGameCommand::BasicGameCommand() : RenX::GameCommand(nullptr) {
 }
 
-RenX::BasicGameCommand::BasicGameCommand(BasicGameCommand &c) : RenX::GameCommand(c)
-{
+RenX::BasicGameCommand::BasicGameCommand(BasicGameCommand &c) : RenX::GameCommand(c) {
 }
 
-RenX::BasicGameCommand::BasicGameCommand(const Jupiter::ReadableString &in_trigger, const Jupiter::ReadableString &in_message, const Jupiter::ReadableString &in_help_message) : RenX::GameCommand(nullptr)
-{
+RenX::BasicGameCommand::BasicGameCommand(const Jupiter::ReadableString &in_trigger, const Jupiter::ReadableString &in_message, const Jupiter::ReadableString &in_help_message)
+	: RenX::GameCommand(nullptr) {
 	this->addTrigger(in_trigger);
-	RenX::BasicGameCommand::message = in_message;
-	RenX::BasicGameCommand::help_message = in_help_message;
+	m_message = in_message;
+	m_help_message = in_help_message;
 }
 
-void RenX::BasicGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *player, const Jupiter::ReadableString &parameters)
-{
-	source->sendMessage(RenX::BasicGameCommand::message);
+void RenX::BasicGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *player, const Jupiter::ReadableString &parameters) {
+	source->sendMessage(m_message);
 }
 
-const Jupiter::ReadableString &RenX::BasicGameCommand::getHelp(const Jupiter::ReadableString &)
-{
+const Jupiter::ReadableString &RenX::BasicGameCommand::getHelp(const Jupiter::ReadableString &) {
 	static STRING_LITERAL_AS_NAMED_REFERENCE(defaultHelp, "Returns a basic text string.");
-	if (RenX::BasicGameCommand::help_message.isEmpty())
+	if (m_help_message.isEmpty()) {
 		return defaultHelp;
-	return RenX::BasicGameCommand::help_message;
+	}
+
+	return m_help_message;
 }
 
-RenX::BasicGameCommand *RenX::BasicGameCommand::copy()
-{
-	RenX::BasicGameCommand *r = new RenX::BasicGameCommand(*this);
-	r->message = RenX::BasicGameCommand::message;
-	r->help_message = RenX::BasicGameCommand::help_message;
-	return r;
+RenX::BasicGameCommand *RenX::BasicGameCommand::copy() {
+	RenX::BasicGameCommand* result = new RenX::BasicGameCommand(*this);
+	result->m_message = m_message;
+	result->m_help_message = m_help_message;
+	return result;
 }
 
-void RenX::BasicGameCommand::create()
-{
+void RenX::BasicGameCommand::create() {
 }

@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2013-2016 Jessica James.
+ * Copyright (C) 2013-2021 Jessica James.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -26,7 +26,6 @@
 
 #include "Jupiter/GenericCommand.h"
 #include "Jupiter/IRC_Client.h"
-#include "Jupiter/ArrayList.h"
 #include "Jupiter/String.hpp"
 #include "Jupiter_Bot.h"
 #include "ServerManager.h"
@@ -41,7 +40,7 @@ class IRCCommand;
 #endif
 
 /** IRC Master Command List */
-JUPITER_BOT_API extern Jupiter::ArrayList<IRCCommand> *IRCMasterCommandList;
+JUPITER_BOT_API extern std::vector<IRCCommand*>& IRCMasterCommandList;
 
 /**
 * @brief Provides the basis for IRC commands.
@@ -152,21 +151,20 @@ public:
 
 	/** Private members */
 private:
-	int access; /** Default access level */
+	int m_access; /** Default access level */
 
-	struct TypeAccessPair
-	{
+	// Both of these vector sets could just be maps
+	struct TypeAccessPair {
 		int type;
 		int access;
 	};
-	Jupiter::ArrayList<IRCCommand::TypeAccessPair> types; /** Access levels for channel types */
+	std::vector<IRCCommand::TypeAccessPair> m_types; /** Access levels for channel types */
 
-	struct ChannelAccessPair
-	{
+	struct ChannelAccessPair {
 		Jupiter::StringS channel;
 		int access;
 	};
-	Jupiter::ArrayList<IRCCommand::ChannelAccessPair> channels; /** Access levels for specific channels */
+	std::vector<IRCCommand::ChannelAccessPair> m_channels; /** Access levels for specific channels */
 };
 
 class JUPITER_BOT_API GenericCommandWrapperIRCCommand : public IRCCommand

@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2014-2017 Jessica James.
+ * Copyright (C) 2014-2021 Jessica James.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -26,17 +26,16 @@
 
 using namespace Jupiter::literals;
 
-bool RenX_ModSystemPlugin::initialize()
-{
-	RenX_ModSystemPlugin::lockSteam = this->config.get<bool>("LockSteam"_jrs, true);
-	RenX_ModSystemPlugin::lockIP = this->config.get<bool>("LockIP"_jrs, false);
-	RenX_ModSystemPlugin::lockName = this->config.get<bool>("LockName"_jrs, false);
-	RenX_ModSystemPlugin::kickLockMismatch = this->config.get<bool>("KickLockMismatch"_jrs, true);
-	RenX_ModSystemPlugin::autoAuthSteam = this->config.get<bool>("AutoAuthSteam"_jrs, true);
-	RenX_ModSystemPlugin::autoAuthIP = this->config.get<bool>("AutoAuthIP"_jrs, false);
-	RenX_ModSystemPlugin::atmDefault = this->config.get("ATMDefault"_jrs);
-	RenX_ModSystemPlugin::moderatorGroup = this->config.get("Moderator"_jrs, "Moderator"_jrs);
-	RenX_ModSystemPlugin::administratorGroup = this->config.get("Administrator"_jrs, "Administrator"_jrs);
+bool RenX_ModSystemPlugin::initialize() {
+	m_lockSteam = this->config.get<bool>("LockSteam"_jrs, true);
+	m_lockIP = this->config.get<bool>("LockIP"_jrs, false);
+	m_lockName = this->config.get<bool>("LockName"_jrs, false);
+	m_kickLockMismatch = this->config.get<bool>("KickLockMismatch"_jrs, true);
+	m_autoAuthSteam = this->config.get<bool>("AutoAuthSteam"_jrs, true);
+	m_autoAuthIP = this->config.get<bool>("AutoAuthIP"_jrs, false);
+	m_atmDefault = this->config.get("ATMDefault"_jrs);
+	m_moderatorGroup = this->config.get("Moderator"_jrs, "Moderator"_jrs);
+	m_administratorGroup = this->config.get("Administrator"_jrs, "Administrator"_jrs);
 
 	ModGroup *group;
 	Jupiter::ReferenceString dotLockSteam = ".LockSteam";
@@ -60,27 +59,27 @@ bool RenX_ModSystemPlugin::initialize()
 		group->name = groupName;
 
 		groupName += dotLockSteam;
-		group->lockSteam = this->config.get<bool>(groupName, RenX_ModSystemPlugin::lockSteam);
+		group->lockSteam = this->config.get<bool>(groupName, m_lockSteam);
 		groupName.truncate(dotLockSteam.size());
 
 		groupName += dotLockIP;
-		group->lockIP = this->config.get<bool>(groupName, RenX_ModSystemPlugin::lockIP);
+		group->lockIP = this->config.get<bool>(groupName, m_lockIP);
 		groupName.truncate(dotLockIP.size());
 
 		groupName += dotLockName;
-		group->lockName = this->config.get<bool>(groupName, RenX_ModSystemPlugin::lockName);
+		group->lockName = this->config.get<bool>(groupName, m_lockName);
 		groupName.truncate(dotLockName.size());
 
 		groupName += dotKickLockMismatch;
-		group->kickLockMismatch = this->config.get<bool>(groupName, RenX_ModSystemPlugin::kickLockMismatch);
+		group->kickLockMismatch = this->config.get<bool>(groupName, m_kickLockMismatch);
 		groupName.truncate(dotKickLockMismatch.size());
 
 		groupName += dotAutoAuthSteam;
-		group->autoAuthSteam = this->config.get<bool>(groupName, RenX_ModSystemPlugin::autoAuthSteam);
+		group->autoAuthSteam = this->config.get<bool>(groupName, m_autoAuthSteam);
 		groupName.truncate(dotAutoAuthSteam.size());
 
 		groupName += dotAutoAuthIP;
-		group->autoAuthIP = this->config.get<bool>(groupName, RenX_ModSystemPlugin::autoAuthIP);
+		group->autoAuthIP = this->config.get<bool>(groupName, m_autoAuthIP);
 		groupName.truncate(dotAutoAuthIP.size());
 
 		groupName += dotAccess;
@@ -101,38 +100,37 @@ bool RenX_ModSystemPlugin::initialize()
 	}
 
 	RenX::Core *core = RenX::getCore();
-	unsigned int total = core->getServerCount();
+	size_t server_count = core->getServerCount();
 	RenX::Server *server;
-	while (total != 0)
-	{
-		server = core->getServer(--total);
-		if (server->players.size() != server->getBotCount())
-			for (auto node = server->players.begin(); node != server->players.end(); ++node)
-				RenX_ModSystemPlugin::auth(*server, *node, true);
+	while (server_count != 0) {
+		server = core->getServer(--server_count);
+		if (server->players.size() != server->getBotCount()) {
+			for (auto node = server->players.begin(); node != server->players.end(); ++node) {
+				auth(*server, *node, true);
+			}
+		}
 	}
 
 	return true;
 }
 
-unsigned int RenX_ModSystemPlugin::logoutAllMods(RenX::Server &server)
-{
+unsigned int RenX_ModSystemPlugin::logoutAllMods(RenX::Server &server) {
 	if (server.players.size() == 0)
 		return 0;
 
 	unsigned int total = 0;
 	for (auto node = server.players.begin(); node != server.players.end(); ++node)
-		if (RenX_ModSystemPlugin::resetAccess(*node))
+		if (resetAccess(*node))
 			total++;
 
 	return total;
 }
 
-bool RenX_ModSystemPlugin::resetAccess(RenX::PlayerInfo &player)
-{
+bool RenX_ModSystemPlugin::resetAccess(RenX::PlayerInfo &player) {
 	int oAccess = player.access;
 	if (player.adminType.equals("administrator"))
 	{
-		ModGroup *group = RenX_ModSystemPlugin::getGroupByName(RenX_ModSystemPlugin::administratorGroup);
+		ModGroup *group = getGroupByName(m_administratorGroup);
 		if (group == nullptr)
 			player.access = 2;
 		else
@@ -140,7 +138,7 @@ bool RenX_ModSystemPlugin::resetAccess(RenX::PlayerInfo &player)
 	}
 	else if (player.adminType.equals("moderator"))
 	{
-		ModGroup *group = RenX_ModSystemPlugin::getGroupByName(RenX_ModSystemPlugin::moderatorGroup);
+		ModGroup *group = getGroupByName(m_moderatorGroup);
 		if (group == nullptr)
 			player.access = 1;
 		else
@@ -154,8 +152,7 @@ bool RenX_ModSystemPlugin::resetAccess(RenX::PlayerInfo &player)
 	return player.access != oAccess;
 }
 
-int RenX_ModSystemPlugin::auth(RenX::Server &server, const RenX::PlayerInfo &player, bool checkAuto, bool forceAuth) const
-{
+int RenX_ModSystemPlugin::auth(RenX::Server &server, const RenX::PlayerInfo &player, bool checkAuto, bool forceAuth) const {
 	if (player.isBot)
 		return 0;
 
@@ -171,7 +168,7 @@ int RenX_ModSystemPlugin::auth(RenX::Server &server, const RenX::PlayerInfo &pla
 				group = &RenX_ModSystemPlugin::groups.front();
 			else
 			{
-				group = RenX_ModSystemPlugin::getGroupByName(groupName);
+				group = getGroupByName(groupName);
 				if (group == nullptr)
 					group = &RenX_ModSystemPlugin::groups.front();
 			}
@@ -232,8 +229,7 @@ int RenX_ModSystemPlugin::auth(RenX::Server &server, const RenX::PlayerInfo &pla
 	return player.access = group->access;
 }
 
-void RenX_ModSystemPlugin::tempAuth(RenX::Server &server, const RenX::PlayerInfo &player, const ModGroup *group, bool notify) const
-{
+void RenX_ModSystemPlugin::tempAuth(RenX::Server &server, const RenX::PlayerInfo &player, const ModGroup *group, bool notify) const {
 	if (group == nullptr)
 		group = this->getDefaultGroup();
 
@@ -246,8 +242,7 @@ void RenX_ModSystemPlugin::tempAuth(RenX::Server &server, const RenX::PlayerInfo
 		server.sendMessage(player, Jupiter::StringS::Format("You have been authorized into group \"%.*s\", with access level %u.", group->name.size(), group->name.ptr(), player.access));
 }
 
-bool RenX_ModSystemPlugin::set(RenX::PlayerInfo &player, RenX_ModSystemPlugin::ModGroup &group)
-{
+bool RenX_ModSystemPlugin::set(RenX::PlayerInfo &player, ModGroup &group) {
 	bool r = this->config[player.uuid].set("Group"_jrs, group.name);
 	this->config[player.uuid].set("SteamID"_jrs, Jupiter::StringS::Format("%llu", player.steamid));
 	this->config[player.uuid].set("LastIP"_jrs, player.ip);
@@ -261,8 +256,7 @@ bool RenX_ModSystemPlugin::removeModSection(const Jupiter::ReadableString& secti
 	return config.removeSection(section) && config.write();
 }
 
-RenX_ModSystemPlugin::ModGroup *RenX_ModSystemPlugin::getGroupByName(const Jupiter::ReadableString &name, ModGroup *defaultGroup) const
-{
+RenX_ModSystemPlugin::ModGroup *RenX_ModSystemPlugin::getGroupByName(const Jupiter::ReadableString &name, ModGroup *defaultGroup) const {
 	if (RenX_ModSystemPlugin::groups.size() != 0)
 		for (auto node = this->groups.begin(); node != this->groups.end(); ++node)
 			if (node->name.equalsi(name))
@@ -271,8 +265,7 @@ RenX_ModSystemPlugin::ModGroup *RenX_ModSystemPlugin::getGroupByName(const Jupit
 	return defaultGroup;
 }
 
-RenX_ModSystemPlugin::ModGroup *RenX_ModSystemPlugin::getGroupByAccess(int access, ModGroup *defaultGroup) const
-{
+RenX_ModSystemPlugin::ModGroup *RenX_ModSystemPlugin::getGroupByAccess(int access, ModGroup *defaultGroup) const {
 	if (RenX_ModSystemPlugin::groups.size() != 0)
 		for (auto node = this->groups.begin(); node != this->groups.end(); ++node)
 			if (node->access == access)
@@ -281,8 +274,7 @@ RenX_ModSystemPlugin::ModGroup *RenX_ModSystemPlugin::getGroupByAccess(int acces
 	return defaultGroup;
 }
 
-RenX_ModSystemPlugin::ModGroup *RenX_ModSystemPlugin::getGroupByIndex(size_t index) const
-{
+RenX_ModSystemPlugin::ModGroup *RenX_ModSystemPlugin::getGroupByIndex(size_t index) const {
 	if (RenX_ModSystemPlugin::groups.size() != 0)
 		for (auto node = this->groups.begin(); node != this->groups.end(); ++node)
 			if (index-- == 0)
@@ -291,56 +283,44 @@ RenX_ModSystemPlugin::ModGroup *RenX_ModSystemPlugin::getGroupByIndex(size_t ind
 	return nullptr;
 }
 
-int RenX_ModSystemPlugin::getConfigAccess(const Jupiter::ReadableString &uuid) const
-{
+int RenX_ModSystemPlugin::getConfigAccess(const Jupiter::ReadableString &uuid) const {
 	Jupiter::Config *section = this->config.getSection(uuid);
 
 	if (section == nullptr)
 		return RenX_ModSystemPlugin::groups.front().access;
 	//for (auto node = this->groups.begin(); node != this->groups.end(); ++node)
-	return section->get<int>("Access"_jrs,
-		RenX_ModSystemPlugin::getGroupByName(section->get("Group"_jrs),
-			const_cast<ModGroup *>(&groups.front()))->access);
+	return section->get<int>("Access"_jrs, getGroupByName(section->get("Group"_jrs),const_cast<ModGroup *>(&groups.front()))->access);
 }
 
-size_t RenX_ModSystemPlugin::getGroupCount() const
-{
+size_t RenX_ModSystemPlugin::getGroupCount() const {
 	return RenX_ModSystemPlugin::groups.size();
 }
 
-RenX_ModSystemPlugin::ModGroup *RenX_ModSystemPlugin::getDefaultGroup() const
-{
+RenX_ModSystemPlugin::ModGroup *RenX_ModSystemPlugin::getDefaultGroup() const {
 	return const_cast<ModGroup *>(&RenX_ModSystemPlugin::groups.front());
 }
 
-RenX_ModSystemPlugin::ModGroup *RenX_ModSystemPlugin::getDefaultATMGroup() const
-{
-	return RenX_ModSystemPlugin::getGroupByName(RenX_ModSystemPlugin::atmDefault);
+RenX_ModSystemPlugin::ModGroup *RenX_ModSystemPlugin::getDefaultATMGroup() const {
+	return getGroupByName(m_atmDefault);
 }
 
-RenX_ModSystemPlugin::ModGroup *RenX_ModSystemPlugin::getModeratorGroup() const
-{
-	return RenX_ModSystemPlugin::getGroupByName(RenX_ModSystemPlugin::moderatorGroup);
+RenX_ModSystemPlugin::ModGroup *RenX_ModSystemPlugin::getModeratorGroup() const {
+	return getGroupByName(m_moderatorGroup);
 }
 
-RenX_ModSystemPlugin::ModGroup *RenX_ModSystemPlugin::getAdministratorGroup() const
-{
-	return RenX_ModSystemPlugin::getGroupByName(RenX_ModSystemPlugin::administratorGroup);
+RenX_ModSystemPlugin::ModGroup *RenX_ModSystemPlugin::getAdministratorGroup() const {
+	return getGroupByName(m_administratorGroup);
 }
 
-RenX_ModSystemPlugin::~RenX_ModSystemPlugin()
-{
+RenX_ModSystemPlugin::~RenX_ModSystemPlugin() {
 	RenX::Core *core = RenX::getCore();
-	unsigned int total = core->getServerCount();
+	size_t server_count = core->getServerCount();
 	RenX::Server *server;
-	while (total != 0)
-	{
-		server = core->getServer(--total);
-		if (server->players.size() != server->getBotCount())
-			for (auto node = server->players.begin(); node != server->players.end(); ++node)
-			{
-				if (node->isBot == false)
-				{
+	while (server_count != 0) {
+		server = core->getServer(--server_count);
+		if (server->players.size() != server->getBotCount()) {
+			for (auto node = server->players.begin(); node != server->players.end(); ++node) {
+				if (node->isBot == false) {
 					node->varData[RenX_ModSystemPlugin::name].remove("Group"_jrs);
 					node->gamePrefix.truncate(node->gamePrefix.size());
 					node->formatNamePrefix.truncate(node->formatNamePrefix.size());
@@ -352,24 +332,21 @@ RenX_ModSystemPlugin::~RenX_ModSystemPlugin()
 						node->access = 0;
 				}
 			}
+		}
 	}
 
 	RenX_ModSystemPlugin::groups.clear();
 }
 
-void RenX_ModSystemPlugin::RenX_OnPlayerCreate(RenX::Server &server, const RenX::PlayerInfo &player)
-{
+void RenX_ModSystemPlugin::RenX_OnPlayerCreate(RenX::Server &server, const RenX::PlayerInfo &player) {
 	if (player.isBot == false)
-		RenX_ModSystemPlugin::auth(server, player, true);
+		auth(server, player, true);
 }
 
-void RenX_ModSystemPlugin::RenX_OnPlayerDelete(RenX::Server &server, const RenX::PlayerInfo &player)
-{
-	if (RenX_ModSystemPlugin::groups.size() != 0 && player.isBot == false && player.uuid.isNotEmpty())
-	{
+void RenX_ModSystemPlugin::RenX_OnPlayerDelete(RenX::Server &server, const RenX::PlayerInfo &player) {
+	if (RenX_ModSystemPlugin::groups.size() != 0 && player.isBot == false && player.uuid.isNotEmpty()) {
 		Jupiter::Config *section = this->config.getSection(player.uuid);
-		if (section != nullptr)
-		{
+		if (section != nullptr) {
 			section->set("SteamID"_jrs, Jupiter::StringS::Format("%llu", player.steamid));
 			section->set("LastIP"_jrs, player.ip);
 			section->set("Name"_jrs, player.name);
@@ -377,42 +354,39 @@ void RenX_ModSystemPlugin::RenX_OnPlayerDelete(RenX::Server &server, const RenX:
 	}
 }
 
-void RenX_ModSystemPlugin::RenX_OnIDChange(RenX::Server &server, const RenX::PlayerInfo &player, int oldID)
-{
-	if (player.access != 0 && server.isDevBot())
+void RenX_ModSystemPlugin::RenX_OnIDChange(RenX::Server &server, const RenX::PlayerInfo &player, int oldID) {
+	if (player.access != 0 && server.isDevBot()) {
 		server.sendData(Jupiter::StringS::Format("d%d\n", player.id));
+	}
 }
 
-void RenX_ModSystemPlugin::RenX_OnAdminLogin(RenX::Server &server, const RenX::PlayerInfo &player)
-{
+void RenX_ModSystemPlugin::RenX_OnAdminLogin(RenX::Server &server, const RenX::PlayerInfo &player) {
 	ModGroup *group = nullptr;
 	if (player.adminType.equals("administrator"))
-		group = RenX_ModSystemPlugin::getGroupByName(RenX_ModSystemPlugin::administratorGroup);
+		group = getGroupByName(m_administratorGroup);
 	else if (player.adminType.equals("moderator"))
-		group = RenX_ModSystemPlugin::getGroupByName(RenX_ModSystemPlugin::moderatorGroup);
+		group = getGroupByName(m_moderatorGroup);
 
 	if (group != nullptr && player.access < group->access)
 		player.access = group->access;
 }
 
-void RenX_ModSystemPlugin::RenX_OnAdminGrant(RenX::Server &server, const RenX::PlayerInfo &player)
-{
-	RenX_ModSystemPlugin::RenX_OnAdminLogin(server, player);
+void RenX_ModSystemPlugin::RenX_OnAdminGrant(RenX::Server &server, const RenX::PlayerInfo &player) {
+	RenX_OnAdminLogin(server, player);
 }
 
-void RenX_ModSystemPlugin::RenX_OnAdminLogout(RenX::Server &server, const RenX::PlayerInfo &player)
-{
+void RenX_ModSystemPlugin::RenX_OnAdminLogout(RenX::Server &server, const RenX::PlayerInfo &player) {
 	ModGroup *group = nullptr;
 	int access = RenX_ModSystemPlugin::groups.size() == 0 ? 0 : RenX_ModSystemPlugin::groups.front().access;
 	if (player.adminType.equals("administrator"))
 	{
 		access = 2;
-		group = RenX_ModSystemPlugin::getGroupByName(RenX_ModSystemPlugin::administratorGroup);
+		group = getGroupByName(m_administratorGroup);
 	}
 	else if (player.adminType.equals("moderator"))
 	{
 		access = 1;
-		group = RenX_ModSystemPlugin::getGroupByName(RenX_ModSystemPlugin::moderatorGroup);
+		group = getGroupByName(m_moderatorGroup);
 	}
 	if (group != nullptr)
 		access = group->access;

@@ -1,5 +1,5 @@
 /**
-* Copyright (C) 2016-2017 Jessica James.
+* Copyright (C) 2016-2021 Jessica James.
 *
 * Permission to use, copy, modify, and/or distribute this software for any
 * purpose with or without fee is hereby granted, provided that the above
@@ -25,13 +25,12 @@
 
 using namespace Jupiter::literals;
 
-RenX::ExemptionDatabase _exemptionDatabase;
-RenX::ExemptionDatabase *RenX::exemptionDatabase = &_exemptionDatabase;
-RenX::ExemptionDatabase &RenX::defaultExemptionDatabase = _exemptionDatabase;
+RenX::ExemptionDatabase g_exemptionDatabase;
+RenX::ExemptionDatabase *RenX::exemptionDatabase = &g_exemptionDatabase;
+RenX::ExemptionDatabase &RenX::defaultExemptionDatabase = g_exemptionDatabase;
 
-void RenX::ExemptionDatabase::process_data(Jupiter::DataBuffer &buffer, FILE *file, fpos_t pos)
-{
-	RenX::ExemptionDatabase::Entry *entry = new RenX::ExemptionDatabase::Entry();
+void RenX::ExemptionDatabase::process_data(Jupiter::DataBuffer &buffer, FILE *file, fpos_t pos) {
+	std::unique_ptr<Entry> entry = std::make_unique<Entry>();
 	entry->pos = pos;
 
 	// Read data from buffer to entry
@@ -43,52 +42,45 @@ void RenX::ExemptionDatabase::process_data(Jupiter::DataBuffer &buffer, FILE *fi
 	entry->prefix_length = buffer.pop<uint8_t>();
 	entry->setter = buffer.pop<Jupiter::String_Strict, char>();
 
-	RenX::ExemptionDatabase::entries.add(entry);
+	m_entries.push_back(std::move(entry));
 }
 
-void RenX::ExemptionDatabase::process_header(FILE *file)
-{
+void RenX::ExemptionDatabase::process_header(FILE *file) {
 	int chr = fgetc(file);
 	if (chr != EOF)
-		RenX::ExemptionDatabase::read_version = chr;
+		m_read_version = chr;
 }
 
-void RenX::ExemptionDatabase::create_header(FILE *file)
-{
-	fputc(RenX::ExemptionDatabase::write_version, file);
+void RenX::ExemptionDatabase::create_header(FILE *file) {
+	fputc(m_write_version, file);
 }
 
-void RenX::ExemptionDatabase::process_file_finish(FILE *file)
-{
-	fgetpos(file, std::addressof(RenX::ExemptionDatabase::eof));
+void RenX::ExemptionDatabase::process_file_finish(FILE *file) {
+	fgetpos(file, std::addressof(m_eof));
 }
 
-void RenX::ExemptionDatabase::upgrade_database()
-{
-	FILE *file = fopen(RenX::ExemptionDatabase::filename.c_str(), "wb");
-	if (file != nullptr)
-	{
+void RenX::ExemptionDatabase::upgrade_database() {
+	FILE *file = fopen(m_filename.c_str(), "wb");
+	if (file != nullptr) {
 		this->create_header(file);
-		for (size_t index = 0; RenX::ExemptionDatabase::entries.size(); ++index)
-			RenX::ExemptionDatabase::write(RenX::ExemptionDatabase::entries.get(index), file);
+		for (size_t index = 0; m_entries.size(); ++index) {
+			write(m_entries[index].get(), file);
+		}
 
 		fclose(file);
 	}
 }
 
-void RenX::ExemptionDatabase::write(RenX::ExemptionDatabase::Entry *entry)
-{
-	FILE *file = fopen(filename.c_str(), "r+b");
-	fsetpos(file, std::addressof(RenX::ExemptionDatabase::eof));
-	if (file != nullptr)
-	{
-		RenX::ExemptionDatabase::write(entry, file);
+void RenX::ExemptionDatabase::write(RenX::ExemptionDatabase::Entry *entry) {
+	FILE *file = fopen(m_filename.c_str(), "r+b");
+	fsetpos(file, std::addressof(m_eof));
+	if (file != nullptr) {
+		write(entry, file);
 		fclose(file);
 	}
 }
 
-void RenX::ExemptionDatabase::write(RenX::ExemptionDatabase::Entry *entry, FILE *file)
-{
+void RenX::ExemptionDatabase::write(RenX::ExemptionDatabase::Entry *entry, FILE *file) {
 	Jupiter::DataBuffer buffer;
 	fgetpos(file, &entry->pos);
 
@@ -103,17 +95,15 @@ void RenX::ExemptionDatabase::write(RenX::ExemptionDatabase::Entry *entry, FILE 
 
 	// push buffer to file
 	buffer.push_to(file);
-	fgetpos(file, std::addressof(RenX::ExemptionDatabase::eof));
+	fgetpos(file, std::addressof(m_eof));
 }
 
-void RenX::ExemptionDatabase::add(RenX::Server &, const RenX::PlayerInfo &player, const Jupiter::ReadableString &setter, std::chrono::seconds length, uint8_t flags)
-{
-	RenX::ExemptionDatabase::add(player.ip32, 32U, player.steamid, setter, length, flags);
+void RenX::ExemptionDatabase::add(RenX::Server &, const RenX::PlayerInfo &player, const Jupiter::ReadableString &setter, std::chrono::seconds length, uint8_t flags) {
+	add(player.ip32, 32U, player.steamid, setter, length, flags);
 }
 
-void RenX::ExemptionDatabase::add(uint32_t ip, uint8_t prefix_length, uint64_t steamid, const Jupiter::ReadableString &setter, std::chrono::seconds length, uint8_t flags)
-{
-	Entry *entry = new Entry();
+void RenX::ExemptionDatabase::add(uint32_t ip, uint8_t prefix_length, uint64_t steamid, const Jupiter::ReadableString &setter, std::chrono::seconds length, uint8_t flags) {
+	std::unique_ptr<Entry> entry = std::make_unique<Entry>();
 	entry->set_active();
 	entry->flags |= flags;
 	entry->timestamp = std::chrono::system_clock::now();
@@ -123,19 +113,16 @@ void RenX::ExemptionDatabase::add(uint32_t ip, uint8_t prefix_length, uint64_t s
 	entry->prefix_length = prefix_length;
 	entry->setter = setter;
 
-	entries.add(entry);
-	RenX::ExemptionDatabase::write(entry);
+	m_entries.push_back(std::move(entry));
+	write(m_entries.back().get());
 }
 
-bool RenX::ExemptionDatabase::deactivate(size_t index)
-{
-	RenX::ExemptionDatabase::Entry *entry = RenX::ExemptionDatabase::entries.get(index);
-	if (entry->is_active())
-	{
+bool RenX::ExemptionDatabase::deactivate(size_t index) {
+	Entry* entry = m_entries[index].get();
+	if (entry->is_active()) {
 		entry->unset_active();
-		FILE *file = fopen(RenX::ExemptionDatabase::filename.c_str(), "r+b");
-		if (file != nullptr)
-		{
+		FILE *file = fopen(m_filename.c_str(), "r+b");
+		if (file != nullptr) {
 			fsetpos(file, &entry->pos);
 			fseek(file, sizeof(size_t), SEEK_CUR);
 			fwrite(std::addressof(entry->flags), sizeof(entry->flags), 1, file);
@@ -146,51 +133,43 @@ bool RenX::ExemptionDatabase::deactivate(size_t index)
 	return false;
 }
 
-void RenX::ExemptionDatabase::exemption_check(RenX::PlayerInfo &player)
-{
-	RenX::ExemptionDatabase::Entry *entry;
+void RenX::ExemptionDatabase::exemption_check(RenX::PlayerInfo &player) {
+	Entry* entry;
 	uint32_t netmask;
-	size_t index = RenX::ExemptionDatabase::entries.size();
-	while (index != 0)
-	{
-		entry = RenX::ExemptionDatabase::entries.get(--index);
-		if (entry->is_active())
-		{
-			if (entry->length == std::chrono::seconds::zero() || entry->timestamp + entry->length < std::chrono::system_clock::now())
-			{
+	size_t index = m_entries.size();
+	while (index != 0) {
+		entry = m_entries[--index].get();
+		if (entry->is_active()) {
+			if (entry->length == std::chrono::seconds::zero() || entry->timestamp + entry->length < std::chrono::system_clock::now()) {
 				netmask = Jupiter_prefix_length_to_netmask(entry->prefix_length);
 				if ((player.steamid != 0 && entry->steamid == player.steamid) // SteamID exemption
-					|| (player.ip32 != 0U && (player.ip32 & netmask) == (entry->ip & netmask))) // IP address exemption
+					|| (player.ip32 != 0U && (player.ip32 & netmask) == (entry->ip & netmask))) { // IP address exemption
 					player.exemption_flags |= entry->flags;
+				}
 			}
-			else
-				RenX::ExemptionDatabase::deactivate(index);
+			else {
+				deactivate(index);
+			}
 		}
 	}
 }
 
-uint8_t RenX::ExemptionDatabase::getVersion() const
-{
-	return RenX::ExemptionDatabase::write_version;
+uint8_t RenX::ExemptionDatabase::getVersion() const {
+	return m_write_version;
 }
 
-const std::string &RenX::ExemptionDatabase::getFileName() const
-{
-	return RenX::ExemptionDatabase::filename;
+const std::string &RenX::ExemptionDatabase::getFileName() const {
+	return m_filename;
 }
 
-const Jupiter::ArrayList<RenX::ExemptionDatabase::Entry> &RenX::ExemptionDatabase::getEntries() const
-{
-	return RenX::ExemptionDatabase::entries;
+const std::vector<std::unique_ptr<RenX::ExemptionDatabase::Entry>>& RenX::ExemptionDatabase::getEntries() const {
+	return m_entries;
 }
 
-bool RenX::ExemptionDatabase::initialize()
-{
-	RenX::ExemptionDatabase::filename = static_cast<std::string>(RenX::getCore()->getConfig().get("ExemptionDB"_jrs, "Exemptions.db"_jrs));
-	return this->process_file(filename);
+bool RenX::ExemptionDatabase::initialize() {
+	m_filename = static_cast<std::string>(RenX::getCore()->getConfig().get("ExemptionDB"_jrs, "Exemptions.db"_jrs));
+	return this->process_file(m_filename);
 }
 
-RenX::ExemptionDatabase::~ExemptionDatabase()
-{
-	RenX::ExemptionDatabase::entries.emptyAndDelete();
+RenX::ExemptionDatabase::~ExemptionDatabase() {
 }

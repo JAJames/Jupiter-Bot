@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2014-2017 Jessica James.
+ * Copyright (C) 2014-2021 Jessica James.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -34,158 +34,157 @@ using namespace Jupiter::literals;
 RenX::Core pluginInstance;
 RenX::Core *RenXInstance = &pluginInstance;
 
-RenX::Core *RenX::getCore()
-{
+RenX::Core *RenX::getCore() {
 	return &pluginInstance;
 }
 
-bool RenX::Core::initialize()
-{
+bool RenX::Core::initialize() {
 	RenX::banDatabase->initialize();
 	RenX::exemptionDatabase->initialize();
 	RenX::tags->initialize();
 	RenX::initTranslations(this->config);
 
 	const Jupiter::ReadableString &serverList = this->config.get("Servers"_jrs);
-	RenX::Core::commandsFile.read(this->config.get("CommandsFile"_jrs, "RenXGameCommands.ini"_jrs));
+	m_commandsFile.read(this->config.get("CommandsFile"_jrs, "RenXGameCommands.ini"_jrs));
 
 	unsigned int wc = serverList.wordCount(WHITESPACE);
 
-	RenX::Server *server;
-	for (unsigned int i = 0; i != wc; i++)
-	{
-		server = new RenX::Server(Jupiter::ReferenceString::getWord(serverList, i, WHITESPACE));
+	std::unique_ptr<RenX::Server> server;
+	for (unsigned int i = 0; i != wc; i++) {
+		server = std::make_unique<RenX::Server>(Jupiter::ReferenceString::getWord(serverList, i, WHITESPACE));
 
-		if (server->connect() == false)
-		{
+		if (server->connect() == false) {
 			fprintf(stderr, "[RenX] ERROR: Failed to connect to %.*s on port %u. Error code: %d" ENDL, server->getHostname().size(), server->getHostname().c_str(), server->getPort(), Jupiter::Socket::getLastError());
-			delete server;
+			continue;
 		}
-		else RenX::Core::addServer(server);
+
+		addServer(std::move(server));
 	}
 
 	return true;
 }
 
-RenX::Core::~Core()
-{
-	RenX::Core::servers.emptyAndDelete();
+RenX::Core::~Core() {
 }
 
-size_t RenX::Core::send(int type, const Jupiter::ReadableString &msg)
-{
+size_t RenX::Core::send(int type, const Jupiter::ReadableString &msg) {
 	size_t result = 0;
-	RenX::Server *server;
 
-	for (size_t i = 0; i != RenX::Core::servers.size(); i++)
-	{
-		server = RenX::Core::getServer(i);
-		if (server->isLogChanType(type) && server->send(msg) > 0)
+	for (auto& server : m_servers) {
+		if (server->isLogChanType(type) && server->send(msg) > 0) {
 			++result;
+		}
 	}
 
 	return result;
 }
 
-void RenX::Core::addServer(RenX::Server *server)
-{
-	RenX::Core::servers.add(server);
+void RenX::Core::addServer(std::unique_ptr<RenX::Server> server) {
+	m_servers.push_back(std::move(server));
 }
 
-size_t RenX::Core::getServerIndex(RenX::Server *server)
-{
-	for (size_t index = 0; index != RenX::Core::servers.size(); ++index)
-		if (server == RenX::Core::servers.get(index))
+size_t RenX::Core::getServerIndex(RenX::Server *server) {
+	for (size_t index = 0; index != m_servers.size(); ++index) {
+		if (server == m_servers[index].get()) {
 			return index;
+		}
+	}
 
 	return Jupiter::INVALID_INDEX;
 }
 
-RenX::Server *RenX::Core::getServer(size_t index)
-{
-	return RenX::Core::servers.get(index);
-}
-
-Jupiter::ArrayList<RenX::Server> RenX::Core::getServers()
-{
-	return RenX::Core::servers;
-}
-
-Jupiter::ArrayList<RenX::Server> RenX::Core::getServers(int type)
-{
-	Jupiter::ArrayList<RenX::Server> r;
-	RenX::Server *server;
-	for (size_t i = 0; i != RenX::Core::servers.size(); i++)
-	{
-		server = RenX::Core::servers.get(i);
-		if (server != nullptr && server->isLogChanType(type))
-			r.add(server);
+RenX::Server* RenX::Core::getServer(size_t index) {
+	if (index > m_servers.size()) {
+		return nullptr;
 	}
-	return r;
+
+	return m_servers[index].get();
 }
 
-void RenX::Core::removeServer(unsigned int index)
-{
-	delete RenX::Core::servers.remove(index);
+std::vector<RenX::Server*> RenX::Core::getServers() {
+	std::vector<RenX::Server*> result;
+
+	for (const auto& server : m_servers) {
+		result.push_back(server.get());
+	}
+
+	return result;
 }
 
-size_t RenX::Core::removeServer(RenX::Server *server)
-{
-	size_t index = RenX::Core::getServerIndex(server);
-	
-	if (index != Jupiter::INVALID_INDEX)
-		delete RenX::Core::servers.remove(index);
+std::vector<RenX::Server*> RenX::Core::getServers(int type) {
+	std::vector<RenX::Server*> result;
 
-	return index;
+	for (const auto& server : m_servers) {
+		if (server->isLogChanType(type)) {
+			result.push_back(server.get());
+		}
+	}
+
+	return result;
 }
 
-bool RenX::Core::hasServer(RenX::Server *server)
-{
-	size_t index = RenX::Core::servers.size();
-	
-	while (index != 0)
-		if (server == RenX::Core::servers.get(--index))
+void RenX::Core::removeServer(unsigned int index) {
+	if (index < m_servers.size()) {
+		m_servers.erase(m_servers.begin() + index);
+	}
+}
+
+size_t RenX::Core::removeServer(RenX::Server *server) {
+	for (auto itr = m_servers.begin(); itr != m_servers.end(); ++itr) {
+		if (itr->get() == server) {
+			size_t index = m_servers.end() - itr;
+			m_servers.erase(itr);
+			return index;
+		}
+	}
+
+	return Jupiter::INVALID_INDEX;
+}
+
+bool RenX::Core::hasServer(RenX::Server* in_server) {
+	for (const auto& server : m_servers) {
+		if (server.get() == in_server) {
 			return true;
+		}
+	}
 
 	return false;
 }
 
-size_t RenX::Core::getServerCount()
-{
-	return RenX::Core::servers.size();
+size_t RenX::Core::getServerCount() {
+	return m_servers.size();
 }
 
-Jupiter::ArrayList<RenX::Plugin> *RenX::Core::getPlugins()
-{
-	return &(RenX::Core::plugins);
+std::vector<RenX::Plugin*>& RenX::Core::getPlugins() {
+	return m_plugins;
 }
 
-Jupiter::Config &RenX::Core::getCommandsFile()
-{
-	return RenX::Core::commandsFile;
+Jupiter::Config &RenX::Core::getCommandsFile() {
+	return m_commandsFile;
 }
 
-size_t RenX::Core::addCommand(RenX::GameCommand *command)
-{
-	for (size_t index = 0; index != RenX::Core::servers.size(); ++index)
-		RenX::Core::servers.get(index)->addCommand(command->copy());
+size_t RenX::Core::addCommand(RenX::GameCommand *command) {
+	for (const auto& server : m_servers) {
+		server->addCommand(command->copy());
+	}
 
-	return RenX::Core::servers.size();
+	return m_servers.size();
 }
 
-void RenX::Core::banCheck()
-{
-	for (size_t index = 0; index != RenX::Core::servers.size(); ++index)
-		RenX::Core::servers.get(index)->banCheck();
+void RenX::Core::banCheck() {
+	for (const auto& server : m_servers) {
+		server->banCheck();
+	}
 }
 
-int RenX::Core::think()
-{
-	size_t index = 0;
-	while (index < RenX::Core::servers.size())
-		if (RenX::Core::servers.get(index)->think() != 0)
-			delete RenX::Core::servers.remove(index);
-		else ++index;
+int RenX::Core::think() {
+	for (auto itr = m_servers.begin(); itr != m_servers.end();) {
+		if ((*itr)->think() != 0) {
+			itr = m_servers.erase(itr + 1);
+			continue;
+		}
+		++itr;
+	}
 
 	return Jupiter::Plugin::think();
 }
@@ -199,8 +198,10 @@ extern "C" JUPITER_EXPORT Jupiter::Plugin *getPlugin()
 
 // Unload
 
-extern "C" JUPITER_EXPORT void unload(void)
-{
-	while (pluginInstance.getPlugins()->size() > 0)
-		Jupiter::Plugin::free(pluginInstance.getPlugins()->remove(0));
+extern "C" JUPITER_EXPORT void unload(void) {
+	auto& plugins = pluginInstance.getPlugins();
+	while (!plugins.empty()) {
+		Jupiter::Plugin::free(plugins.back());
+		plugins.pop_back();
+	}
 }

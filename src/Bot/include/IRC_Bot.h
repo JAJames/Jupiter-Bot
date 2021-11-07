@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2013-2016 Jessica James.
+ * Copyright (C) 2013-2021 Jessica James.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -26,7 +26,6 @@
 
 #include "Jupiter_Bot.h"
 #include "Jupiter/IRC_Client.h"
-#include "Jupiter/ArrayList.h"
 #include "Jupiter/Rehash.h"
 #include "Jupiter/String.hpp"
 
@@ -65,14 +64,6 @@ public:
 	bool freeCommand(const Jupiter::ReadableString &trigger);
 
 	/**
-	* @brief Gets the index of a command.
-	*
-	* @param trigger Trigger of the command to find.
-	* @return Index of the first match for the trigger if found, -1 otherwise.
-	*/
-	int getCommandIndex(const Jupiter::ReadableString &trigger) const;
-
-	/**
 	* @return Gets a command.
 	*
 	* @param trigger Trigger of the command to find.
@@ -81,21 +72,21 @@ public:
 	IRCCommand *getCommand(const Jupiter::ReadableString &trigger) const;
 
 	/**
-	* @brief Creates and returns an ArrayList of IRC Commands with a specified access level.
+	* @brief Creates and returns a vector of IRC Commands with a specified access level.
 	*
 	* @param chan Channel which access levels are set.
 	* @param access Access level to match.
-	* @return An ArrayList containing pointers to all of the matching commands.
+	* @return Vector containing pointers to all of the matching commands.
 	*/
-	Jupiter::ArrayList<IRCCommand> getAccessCommands(Jupiter::IRC::Client::Channel *chan, int access);
+	std::vector<IRCCommand*> getAccessCommands(Jupiter::IRC::Client::Channel *chan, int access);
 
 	/**
-	* @brief Gets the triggers of all the commands in an ArrayList, and adds them to a space-deliminated string.
+	* @brief Gets the triggers of all the commands in a vector, and adds them to a space-deliminated string.
 	*
 	* @param cmds Commands to construct the string with.
 	* @return A string containing the triggers of the commands in a space-deliminated list.
 	*/
-	static Jupiter::StringL getTriggers(Jupiter::ArrayList<IRCCommand> &cmds);
+	static Jupiter::StringL getTriggers(std::vector<IRCCommand*> &cmds);
 
 	/**
 	* @brief Reloads some settings.
@@ -115,6 +106,9 @@ public:
 	/** Destructor for IRC_Bot */
 	~IRC_Bot();
 
+	IRC_Bot& operator=(const IRC_Bot&) = delete;
+	IRC_Bot(const IRC_Bot&) = delete;
+
 	/** Overloaded events from Jupiter::IRC::Client */
 protected:
 
@@ -122,8 +116,8 @@ protected:
 
 	/** Private members for internal usage */
 private:
-	Jupiter::ArrayList<IRCCommand> commands;
-	Jupiter::StringS commandPrefix;
+	std::vector<std::unique_ptr<IRCCommand>> m_commands;
+	Jupiter::StringS m_commandPrefix;
 };
 
 /** Re-enable warnings */

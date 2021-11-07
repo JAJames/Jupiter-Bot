@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2013-2015 Jessica James.
+ * Copyright (C) 2013-2021 Jessica James.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -18,33 +18,28 @@
 
 #include "Console_Command.h"
 
-Jupiter::ArrayList<ConsoleCommand> _consoleCommands;
-Jupiter::ArrayList<ConsoleCommand> *consoleCommands = &_consoleCommands;
+std::vector<ConsoleCommand*> g_consoleCommands;
+std::vector<ConsoleCommand*>& consoleCommands = g_consoleCommands;
 
-ConsoleCommand::ConsoleCommand()
-{
-	consoleCommands->add(this);
+ConsoleCommand::ConsoleCommand() {
+	consoleCommands.push_back(this);
 }
 
-ConsoleCommand::~ConsoleCommand()
-{
-	for (size_t i = 0; i != consoleCommands->size(); i++)
-	{
-		if (consoleCommands->get(i) == this)
-		{
-			consoleCommands->remove(i);
+ConsoleCommand::~ConsoleCommand() {
+	for (auto itr = consoleCommands.begin(); itr != consoleCommands.end(); ++itr) {
+		if (*itr == this) {
+			consoleCommands.erase(itr);
 			break;
 		}
 	}
 }
 
-ConsoleCommand *getConsoleCommand(const Jupiter::ReadableString &trigger)
-{
-	for (size_t i = 0; i != consoleCommands->size(); i++)
-	{
-		ConsoleCommand *cmd = consoleCommands->get(i);
-		if (cmd->matches(trigger))
-			return cmd;
+ConsoleCommand* getConsoleCommand(const Jupiter::ReadableString &trigger) {
+	for (const auto& command : consoleCommands) {
+		if (command->matches(trigger)) {
+			return command;
+		}
 	}
+
 	return nullptr;
 }

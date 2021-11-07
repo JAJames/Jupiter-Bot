@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2015-2016 Jessica James.
+ * Copyright (C) 2015-2021 Jessica James.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -23,13 +23,11 @@
 
 using namespace Jupiter::literals;
 
-RenX_ListenPlugin::~RenX_ListenPlugin()
-{
+RenX_ListenPlugin::~RenX_ListenPlugin() {
 	RenX_ListenPlugin::socket.close();
 }
 
-bool RenX_ListenPlugin::initialize()
-{
+bool RenX_ListenPlugin::initialize() {
 	uint16_t port = this->config.get<uint16_t>("Port"_jrs, 21337);
 	const Jupiter::ReadableString &address = this->config.get("Address"_jrs, "0.0.0.0"_jrs);
 	RenX_ListenPlugin::serverSection = this->config.get("ServerSection"_jrs, this->getName());
@@ -37,31 +35,27 @@ bool RenX_ListenPlugin::initialize()
 	return RenX_ListenPlugin::socket.bind(static_cast<std::string>(address).c_str(), port, true) && RenX_ListenPlugin::socket.setBlocking(false);
 }
 
-int RenX_ListenPlugin::think()
-{
+int RenX_ListenPlugin::think() {
 	Jupiter::Socket *sock = socket.accept();
-	if (sock != nullptr)
-	{
+	if (sock != nullptr) {
 		sock->setBlocking(false);
-		RenX::Server *server = new RenX::Server(std::move(*sock), RenX_ListenPlugin::serverSection);
+		std::unique_ptr<RenX::Server> server = std::make_unique<RenX::Server>(std::move(*sock), RenX_ListenPlugin::serverSection);
 		printf("Incoming server connected from %.*s:%u" ENDL, server->getSocketHostname().size(), server->getSocketHostname().c_str(), server->getSocketPort());
 		server->sendLogChan("Incoming server connected from " IRCCOLOR "12%.*s:%u", server->getSocketHostname().size(), server->getSocketHostname().c_str(), server->getSocketPort());
-		RenX::getCore()->addServer(server);
+		RenX::getCore()->addServer(std::move(server));
 		delete sock;
 	}
 	return 0;
 }
 
-int RenX_ListenPlugin::OnRehash()
-{
+int RenX_ListenPlugin::OnRehash() {
 	RenX::Plugin::OnRehash();
 
 	uint16_t port = this->config.get<uint16_t>("Port"_jrs, 21337);
 	const Jupiter::ReadableString &address = this->config.get("Address"_jrs, "0.0.0.0"_jrs);
 	RenX_ListenPlugin::serverSection = this->config.get("ServerSection"_jrs, this->getName());
 
-	if (port != RenX_ListenPlugin::socket.getBoundPort() || address.equals(RenX_ListenPlugin::socket.getBoundHostname()) == false)
-	{
+	if (port != RenX_ListenPlugin::socket.getBoundPort() || address.equals(RenX_ListenPlugin::socket.getBoundHostname()) == false) {
 		puts("Notice: The Renegade-X listening socket has been changed!");
 		RenX_ListenPlugin::socket.close();
 		return RenX_ListenPlugin::socket.bind(static_cast<std::string>(address).c_str(), port, true) == false || RenX_ListenPlugin::socket.setBlocking(false) == false;

@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2014-2017 Jessica James.
+ * Copyright (C) 2014-2021 Jessica James.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -276,15 +276,12 @@ void RenX_MedalsPlugin::init()
 	RenX_MedalsPlugin::worthTag = RenX_MedalsPlugin::config.get("WorthTag"_jrs, "{WORTH}"_jrs);
 
 	RenX::Core *core = RenX::getCore();
-	unsigned int sCount = core->getServerCount();
+	size_t server_count = core->getServerCount();
 	RenX::Server *server;
-	for (unsigned int i = 0; i < sCount; i++)
-	{
-		server = core->getServer(i);
-		if (server->players.size() != server->getBotCount())
-		{
-			for (auto node = server->players.begin(); node != server->players.end(); ++node)
-			{
+	for (size_t index = 0; index < server_count; ++index) {
+		server = core->getServer(index);
+		if (server->players.size() != server->getBotCount()) {
+			for (auto node = server->players.begin(); node != server->players.end(); ++node) {
 				node->varData[this->getName()].set("Recs"_jrs, RenX_MedalsPlugin::medalsFile[node->name].get("Recs"_jrs));
 				node->varData[this->getName()].set("Noobs"_jrs, RenX_MedalsPlugin::medalsFile[node->name].get("Noobs"_jrs));
 			}

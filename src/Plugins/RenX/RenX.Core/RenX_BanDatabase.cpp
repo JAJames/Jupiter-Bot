@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2014-2017 Jessica James.
+ * Copyright (C) 2014-2021 Jessica James.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -32,15 +32,15 @@ RenX::BanDatabase &RenX::defaultBanDatabase = _banDatabase;
 
 void RenX::BanDatabase::process_data(Jupiter::DataBuffer &buffer, FILE *file, fpos_t pos)
 {
-	if (RenX::BanDatabase::read_version < 3U)
+	if (m_read_version < 3U)
 		return; // incompatible database version
 
-	RenX::BanDatabase::Entry *entry = new RenX::BanDatabase::Entry();
+	std::unique_ptr<Entry> entry = std::make_unique<Entry>();
 	entry->pos = pos;
 
 	// Read data from buffer to entry
 	entry->flags = buffer.pop<uint16_t>();
-	if (RenX::BanDatabase::read_version >= 4U)
+	if (m_read_version >= 4U)
 	{
 		entry->timestamp = std::chrono::system_clock::time_point(std::chrono::seconds(buffer.pop<uint64_t>()));
 		entry->length = std::chrono::seconds(buffer.pop<uint64_t>());
@@ -53,7 +53,7 @@ void RenX::BanDatabase::process_data(Jupiter::DataBuffer &buffer, FILE *file, fp
 	entry->steamid = buffer.pop<uint64_t>();
 	entry->ip = buffer.pop<uint32_t>();
 	entry->prefix_length = buffer.pop<uint8_t>();
-	if (this->read_version >= 5U)
+	if (m_read_version >= 5U)
 		entry->hwid = buffer.pop<Jupiter::String_Strict, char>();
 	entry->rdns = buffer.pop<Jupiter::String_Strict, char>();
 	entry->name = buffer.pop<Jupiter::String_Strict, char>();
@@ -61,78 +61,72 @@ void RenX::BanDatabase::process_data(Jupiter::DataBuffer &buffer, FILE *file, fp
 	entry->reason = buffer.pop<Jupiter::String_Strict, char>();
 
 	// Read varData from buffer to entry
-	for (size_t varData_entries = buffer.pop<size_t>(); varData_entries != 0; --varData_entries)
+	for (size_t varData_entries = buffer.pop<size_t>(); varData_entries != 0; --varData_entries) {
 		entry->varData[buffer.pop<Jupiter::String_Strict, char>()] = buffer.pop<Jupiter::String_Strict, char>();
+	}
 
-	RenX::BanDatabase::entries.add(entry);
+	m_entries.push_back(std::move(entry));
 }
 
 void RenX::BanDatabase::process_header(FILE *file)
 {
 	int chr = fgetc(file);
 	if (chr != EOF)
-		RenX::BanDatabase::read_version = chr;
+		m_read_version = chr;
 }
 
 void RenX::BanDatabase::create_header(FILE *file)
 {
-	fputc(RenX::BanDatabase::write_version, file);
+	fputc(m_write_version, file);
 }
 
-void RenX::BanDatabase::process_file_finish(FILE *file)
-{
-	if (RenX::BanDatabase::read_version < 3)
-	{
-		if (freopen(RenX::BanDatabase::filename.c_str(), "wb", file) == nullptr)
+void RenX::BanDatabase::process_file_finish(FILE *file) {
+	if (m_read_version < 3) {
+		if (freopen(m_filename.c_str(), "wb", file) == nullptr) {
 			puts("FATAL ERROR: UNABLE TO REMOVE UNSUPPORTED BAN DATABASE FILE VERSION");
-		else
-		{
-			puts("Warning: Unsupported ban database file version. The database will be removed and rewritten.");
-			this->create_header(file);
-			fgetpos(file, std::addressof(RenX::BanDatabase::eof));
-			RenX::BanDatabase::read_version = RenX::BanDatabase::write_version;
+			return;
 		}
+
+		puts("Warning: Unsupported ban database file version. The database will be removed and rewritten.");
+		create_header(file);
+		fgetpos(file, std::addressof(m_eof));
+		m_read_version = m_write_version;
 		return;
 	}
-	else if (RenX::BanDatabase::read_version < RenX::BanDatabase::write_version)
-	{
-		if (freopen(RenX::BanDatabase::filename.c_str(), "wb", file) != nullptr)
-		{
+	else if (m_read_version < m_write_version) {
+		if (freopen(m_filename.c_str(), "wb", file) != nullptr) {
 			this->create_header(file);
-			for (size_t index = 0; index != RenX::BanDatabase::entries.size(); ++index)
-				RenX::BanDatabase::write(RenX::BanDatabase::entries.get(index), file);
+			for (const auto& entry : m_entries) {
+				write(entry.get(), file);
+			}
 		}
 	}
 
-	fgetpos(file, std::addressof(RenX::BanDatabase::eof));
+	fgetpos(file, std::addressof(m_eof));
 }
 
-void RenX::BanDatabase::upgrade_database()
-{
-	FILE *file = fopen(RenX::BanDatabase::filename.c_str(), "wb");
-	if (file != nullptr)
-	{
+void RenX::BanDatabase::upgrade_database() {
+	FILE *file = fopen(m_filename.c_str(), "wb");
+	if (file != nullptr) {
 		this->create_header(file);
-		for (size_t index = 0; index != RenX::BanDatabase::entries.size(); ++index)
-			RenX::BanDatabase::write(RenX::BanDatabase::entries.get(index), file);
+		for (const auto& entry : m_entries) {
+			write(entry.get(), file);
+		}
 		
 		fclose(file);
 	}
 }
 
-void RenX::BanDatabase::write(RenX::BanDatabase::Entry *entry)
-{
-	FILE *file = fopen(filename.c_str(), "r+b");
-	fsetpos(file, std::addressof(RenX::BanDatabase::eof));
-	if (file != nullptr)
-	{
-		RenX::BanDatabase::write(entry, file);
+void RenX::BanDatabase::write(Entry* entry) {
+	FILE *file = fopen(m_filename.c_str(), "r+b");
+	fsetpos(file, std::addressof(m_eof));
+	if (file != nullptr) {
+		write(entry, file);
 		fclose(file);
 	}
 }
 
-void RenX::BanDatabase::write(RenX::BanDatabase::Entry *entry, FILE *file)
-{
+void RenX::BanDatabase::write(Entry* entry, FILE *file) {
 	Jupiter::DataBuffer buffer;
 	fgetpos(file, &entry->pos);
 
@@ -160,12 +154,11 @@ void RenX::BanDatabase::write(RenX::BanDatabase::Entry *entry, FILE *file)
 
 	// push buffer to file
 	buffer.push_to(file);
-	fgetpos(file, std::addressof(RenX::BanDatabase::eof));
+	fgetpos(file, std::addressof(m_eof));
 }
 
-void RenX::BanDatabase::add(RenX::Server *server, const RenX::PlayerInfo &player, const Jupiter::ReadableString &banner, const Jupiter::ReadableString &reason, std::chrono::seconds length, uint16_t flags)
-{
-	Entry *entry = new Entry();
+void RenX::BanDatabase::add(RenX::Server *server, const RenX::PlayerInfo &player, const Jupiter::ReadableString &banner, const Jupiter::ReadableString &reason, std::chrono::seconds length, uint16_t flags) {
+	std::unique_ptr<Entry> entry = std::make_unique<Entry>();
 	if (flags != 0) {
 		entry->set_active();
 		entry->flags |= flags;
@@ -187,18 +180,18 @@ void RenX::BanDatabase::add(RenX::Server *server, const RenX::PlayerInfo &player
 
 	// add plugin data
 	Jupiter::String pluginData;
-	Jupiter::ArrayList<RenX::Plugin> &xPlugins = *RenX::getCore()->getPlugins();
-	for (size_t i = 0; i < xPlugins.size(); i++)
-		if (xPlugins.get(i)->RenX_OnBan(*server, player, pluginData))
-			entry->varData[xPlugins.get(i)->getName()] = pluginData;
+	for (Plugin* plugin : RenX::getCore()->getPlugins()) {
+		if (plugin->RenX_OnBan(*server, player, pluginData)) {
+			entry->varData[plugin->getName()] = pluginData;
+		}
+	}
 
-	entries.add(entry);
-	RenX::BanDatabase::write(entry);
+	m_entries.push_back(std::move(entry));
+	write(m_entries.back().get());
 }
 
-void RenX::BanDatabase::add(const Jupiter::ReadableString &name, uint32_t ip, uint8_t prefix_length, uint64_t steamid, const Jupiter::ReadableString &hwid, const Jupiter::ReadableString &rdns, const Jupiter::ReadableString &banner, Jupiter::ReadableString &reason, std::chrono::seconds length, uint16_t flags)
-{
-	Entry *entry = new Entry();
+void RenX::BanDatabase::add(const Jupiter::ReadableString &name, uint32_t ip, uint8_t prefix_length, uint64_t steamid, const Jupiter::ReadableString &hwid, const Jupiter::ReadableString &rdns, const Jupiter::ReadableString &banner, Jupiter::ReadableString &reason, std::chrono::seconds length, uint16_t flags) {
+	std::unique_ptr<Entry> entry = std::make_unique<Entry>();
 	entry->set_active();
 	entry->flags |= flags;
 	entry->timestamp = std::chrono::system_clock::now();
@@ -212,19 +205,20 @@ void RenX::BanDatabase::add(const Jupiter::ReadableString &name, uint32_t ip, ui
 	entry->banner = banner;
 	entry->reason = reason;
 
-	entries.add(entry);
-	RenX::BanDatabase::write(entry);
+	m_entries.push_back(std::move(entry));
+	write(m_entries.back().get());
 }
 
-bool RenX::BanDatabase::deactivate(size_t index)
-{
-	RenX::BanDatabase::Entry *entry = RenX::BanDatabase::entries.get(index);
-	if (entry->is_active())
-	{
+bool RenX::BanDatabase::deactivate(size_t index) {
+	const auto& entry = m_entries[index];
+	return deactivate(entry.get());
+}
+
+bool RenX::BanDatabase::deactivate(Entry* entry) {
+	if (entry->is_active()) {
 		entry->unset_active();
-		FILE *file = fopen(RenX::BanDatabase::filename.c_str(), "r+b");
-		if (file != nullptr)
-		{
+		FILE *file = fopen(m_filename.c_str(), "r+b");
+		if (file != nullptr) {
 			fsetpos(file, &entry->pos);
 			fseek(file, sizeof(size_t), SEEK_CUR);
 			fwrite(std::addressof(entry->flags), sizeof(entry->flags), 1, file);
@@ -235,28 +229,22 @@ bool RenX::BanDatabase::deactivate(size_t index)
 	return false;
 }
 
-uint8_t RenX::BanDatabase::getVersion() const
-{
-	return RenX::BanDatabase::write_version;
+uint8_t RenX::BanDatabase::getVersion() const {
+	return m_write_version;
 }
 
-const std::string &RenX::BanDatabase::getFileName() const
-{
-	return RenX::BanDatabase::filename;
+const std::string &RenX::BanDatabase::getFileName() const {
+	return m_filename;
 }
 
-const Jupiter::ArrayList<RenX::BanDatabase::Entry> &RenX::BanDatabase::getEntries() const
-{
-	return RenX::BanDatabase::entries;
+const std::vector<std::unique_ptr<RenX::BanDatabase::Entry>>& RenX::BanDatabase::getEntries() const {
+	return m_entries;
 }
 
-bool RenX::BanDatabase::initialize()
-{
-	RenX::BanDatabase::filename = static_cast<std::string>(RenX::getCore()->getConfig().get("BanDB"_jrs, "Bans.db"_jrs));
-	return this->process_file(filename);
+bool RenX::BanDatabase::initialize() {
+	m_filename = static_cast<std::string>(RenX::getCore()->getConfig().get("BanDB"_jrs, "Bans.db"_jrs));
+	return this->process_file(m_filename);
 }
 
-RenX::BanDatabase::~BanDatabase()
-{
-	RenX::BanDatabase::entries.emptyAndDelete();
+RenX::BanDatabase::~BanDatabase() {
 }

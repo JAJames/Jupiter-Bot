@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2014 Jessica James.
+ * Copyright (C) 2014-2021 Jessica James.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -24,9 +24,9 @@
  * @brief Provides a system for controlling and affecting multiple IRC connections simultaneously.
  */
 
+#include <memory>
 #include "Jupiter_Bot.h"
 #include "Jupiter/Thinker.h"
-#include "Jupiter/ArrayList.h"
 #include "Jupiter/Readable_String.h"
 
 /** Forward declarations */
@@ -161,12 +161,16 @@ public:
 	*/
 	virtual ~ServerManager();
 
+	ServerManager() = default;
+	ServerManager& operator=(const ServerManager&) = delete;
+	ServerManager(const ServerManager&) = delete;
+
 private:
-	/** Underlying ArrayList of servers */
-	Jupiter::ArrayList<IRC_Bot> servers;
+	/** Underlying vector of servers */
+	std::vector<std::unique_ptr<IRC_Bot>> m_servers;
 
 	/** Config to read data from */
-	Jupiter::Config *m_config = Jupiter::g_config;
+	Jupiter::Config* m_config = Jupiter::g_config;
 };
 
 /** Pointer to an instance of the server manager. Note: DO NOT DELETE OR FREE THIS POINTER. */

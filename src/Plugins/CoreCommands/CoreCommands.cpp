@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2014-2017 Jessica James.
+ * Copyright (C) 2014-2021 Jessica James.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -18,7 +18,6 @@
 
 #include <cstring>
 #include "Jupiter/Functions.h"
-#include "Jupiter/ArrayList.h"
 #include "CoreCommands.h"
 #include "IRC_Bot.h"
 
@@ -26,37 +25,33 @@ using namespace Jupiter::literals;
 
 // Help Console Command
 
-HelpConsoleCommand::HelpConsoleCommand()
-{
+HelpConsoleCommand::HelpConsoleCommand() {
 	this->addTrigger(STRING_LITERAL_AS_REFERENCE("help"));
 }
 
-void HelpConsoleCommand::trigger(const Jupiter::ReadableString &parameters)
-{
-	if (parameters.isEmpty())
-	{
+void HelpConsoleCommand::trigger(const Jupiter::ReadableString &parameters) {
+	if (parameters.isEmpty()) {
 		fputs("Supported commands:", stdout);
-		for (size_t i = 0; i != consoleCommands->size(); i++)
-		{
+		for (const auto& command : consoleCommands) {
 			fputc(' ', stdout);
-			consoleCommands->get(i)->getTrigger().print(stdout);
+			command->getTrigger().print(stdout);
 		}
 		printf(ENDL "%s - %s" ENDL, Jupiter::version, Jupiter::copyright);
 		puts("For command-specific help, use: help <command>");
+		return;
 	}
-	else
-	{
-		Jupiter::ReferenceString command = Jupiter::ReferenceString::getWord(parameters, 0, WHITESPACE);
-		ConsoleCommand *cmd = getConsoleCommand(command);
-		if (cmd != nullptr)
-			cmd->getHelp(Jupiter::ReferenceString::gotoWord(parameters, 1, WHITESPACE)).println(stdout);
-		else
-			printf("Error: Command \"%.*s\" not found." ENDL, command.size(), command.ptr());
+
+	Jupiter::ReferenceString command = Jupiter::ReferenceString::getWord(parameters, 0, WHITESPACE);
+	ConsoleCommand *cmd = getConsoleCommand(command);
+	if (cmd == nullptr) {
+		printf("Error: Command \"%.*s\" not found." ENDL, command.size(), command.ptr());
+		return;
 	}
+
+	cmd->getHelp(Jupiter::ReferenceString::gotoWord(parameters, 1, WHITESPACE)).println(stdout);
 }
 
-const Jupiter::ReadableString &HelpConsoleCommand::getHelp(const Jupiter::ReadableString &)
-{
+const Jupiter::ReadableString &HelpConsoleCommand::getHelp(const Jupiter::ReadableString &) {
 	static STRING_LITERAL_AS_NAMED_REFERENCE(defaultHelp, "Lists commands, or sends command-specific help. Syntax: help [command]");
 	return defaultHelp;
 }
@@ -65,13 +60,11 @@ CONSOLE_COMMAND_INIT(HelpConsoleCommand)
 
 // Help IRC Command.
 
-void HelpIRCCommand::create()
-{
+void HelpIRCCommand::create() {
 	this->addTrigger("help"_jrs);
 }
 
-void HelpIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &in_channel, const Jupiter::ReadableString &nick, const Jupiter::ReadableString &parameters)
-{
+void HelpIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &in_channel, const Jupiter::ReadableString &nick, const Jupiter::ReadableString &parameters) {
 	Jupiter::IRC::Client::Channel *channel = source->getChannel(in_channel);
 	if (channel != nullptr)
 	{
@@ -80,7 +73,7 @@ void HelpIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &in_
 		{
 			for (int i = 0; i <= access; i++)
 			{
-				Jupiter::ArrayList<IRCCommand> cmds = source->getAccessCommands(channel, i);
+				auto cmds = source->getAccessCommands(channel, i);
 				if (cmds.size() != 0)
 				{
 					Jupiter::StringL triggers = source->getTriggers(cmds);
@@ -109,8 +102,7 @@ void HelpIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &in_
 	}
 }
 
-const Jupiter::ReadableString &HelpIRCCommand::getHelp(const Jupiter::ReadableString &)
-{
+const Jupiter::ReadableString &HelpIRCCommand::getHelp(const Jupiter::ReadableString &) {
 	static STRING_LITERAL_AS_NAMED_REFERENCE(defaultHelp, "Syntax: help [command]");
 	return defaultHelp;
 }
@@ -119,8 +111,7 @@ IRC_COMMAND_INIT(HelpIRCCommand)
 
 // Version Command
 
-VersionGenericCommand::VersionGenericCommand()
-{
+VersionGenericCommand::VersionGenericCommand() {
 	this->addTrigger(STRING_LITERAL_AS_REFERENCE("version"));
 	this->addTrigger(STRING_LITERAL_AS_REFERENCE("versioninfo"));
 	this->addTrigger(STRING_LITERAL_AS_REFERENCE("copyright"));
@@ -129,15 +120,13 @@ VersionGenericCommand::VersionGenericCommand()
 	this->addTrigger(STRING_LITERAL_AS_REFERENCE("clientinfo"));
 }
 
-Jupiter::GenericCommand::ResponseLine *VersionGenericCommand::trigger(const Jupiter::ReadableString &parameters)
-{
+Jupiter::GenericCommand::ResponseLine *VersionGenericCommand::trigger(const Jupiter::ReadableString &parameters) {
 	Jupiter::GenericCommand::ResponseLine *ret = new Jupiter::GenericCommand::ResponseLine("Version: "_jrs + Jupiter::ReferenceString(Jupiter::version), GenericCommand::DisplayType::PublicSuccess);
 	ret->next = new Jupiter::GenericCommand::ResponseLine(Jupiter::ReferenceString(Jupiter::copyright), GenericCommand::DisplayType::PublicSuccess);
 	return ret;
 }
 
-const Jupiter::ReadableString &VersionGenericCommand::getHelp(const Jupiter::ReadableString &)
-{
+const Jupiter::ReadableString &VersionGenericCommand::getHelp(const Jupiter::ReadableString &) {
 	static STRING_LITERAL_AS_NAMED_REFERENCE(defaultHelp, "Displays version and copyright information");
 	return defaultHelp;
 }
@@ -147,13 +136,11 @@ GENERIC_COMMAND_AS_CONSOLE_COMMAND(VersionGenericCommand)
 
 // Rehash Command
 
-RehashGenericCommand::RehashGenericCommand()
-{
+RehashGenericCommand::RehashGenericCommand() {
 	this->addTrigger(STRING_LITERAL_AS_REFERENCE("rehash"));
 }
 
-Jupiter::GenericCommand::ResponseLine *RehashGenericCommand::trigger(const Jupiter::ReadableString &parameters)
-{
+Jupiter::GenericCommand::ResponseLine *RehashGenericCommand::trigger(const Jupiter::ReadableString &parameters) {
 	unsigned int r = Jupiter::rehash();
 
 	if (r == 0)
@@ -162,8 +149,7 @@ Jupiter::GenericCommand::ResponseLine *RehashGenericCommand::trigger(const Jupit
 	return new Jupiter::GenericCommand::ResponseLine(Jupiter::StringS::Format("%u of %u objects failed to successfully rehash.", r, Jupiter::getRehashableCount()), GenericCommand::DisplayType::PublicError);
 }
 
-const Jupiter::ReadableString &RehashGenericCommand::getHelp(const Jupiter::ReadableString &)
-{
+const Jupiter::ReadableString &RehashGenericCommand::getHelp(const Jupiter::ReadableString &) {
 	static STRING_LITERAL_AS_NAMED_REFERENCE(defaultHelp, "Rehashes configuration data from a file. Syntax: rehash [file]");
 	return defaultHelp;
 }
@@ -174,7 +160,6 @@ GENERIC_COMMAND_AS_CONSOLE_COMMAND(RehashGenericCommand)
 // Plugin instantiation and entry point.
 CoreCommandsPlugin pluginInstance;
 
-extern "C" JUPITER_EXPORT Jupiter::Plugin *getPlugin()
-{
+extern "C" JUPITER_EXPORT Jupiter::Plugin *getPlugin() {
 	return &pluginInstance;
 }

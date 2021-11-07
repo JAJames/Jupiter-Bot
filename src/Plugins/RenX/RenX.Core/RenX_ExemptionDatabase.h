@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2016-2017 Jessica James.
+ * Copyright (C) 2016-2021 Jessica James.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -23,7 +23,6 @@
 #include <chrono>
 #include "Jupiter/Database.h"
 #include "Jupiter/String.hpp"
-#include "Jupiter/ArrayList.h"
 #include "RenX.h"
 
 /** DLL Linkage Nagging */
@@ -179,19 +178,19 @@ namespace RenX
 		*
 		* @return List of entries
 		*/
-		const Jupiter::ArrayList<RenX::ExemptionDatabase::Entry> &getEntries() const;
+		const std::vector<std::unique_ptr<RenX::ExemptionDatabase::Entry>>& getEntries() const;
 
 		virtual bool initialize();
 		~ExemptionDatabase();
 
 	private:
 		/** Database version */
-		const uint8_t write_version = 0U;
-		uint8_t read_version = write_version;
-		fpos_t eof;
+		const uint8_t m_write_version = 0U;
+		uint8_t m_read_version = m_write_version;
+		fpos_t m_eof;
 
-		std::string filename;
-		Jupiter::ArrayList<RenX::ExemptionDatabase::Entry> entries;
+		std::string m_filename;
+		std::vector<std::unique_ptr<RenX::ExemptionDatabase::Entry>> m_entries;
 	};
 
 	RENX_API extern RenX::ExemptionDatabase *exemptionDatabase;

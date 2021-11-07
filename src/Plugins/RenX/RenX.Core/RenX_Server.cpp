@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2014-2017 Jessica James.
+ * Copyright (C) 2014-2021 Jessica James.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -32,363 +32,334 @@
 
 using namespace Jupiter::literals;
 
-int RenX::Server::think()
-{
-	if (RenX::Server::connected == false)
-	{
+// This could probably be templated but I really just want this done quickly right this moment so I can purge ArrayList
+#define CALL_RX_PLUGIN_EVENT(event, ...) \
+	{ for (auto plugin : RenX::getCore()->getPlugins()) { plugin->event(__VA_ARGS__); } }
+
+int RenX::Server::think() {
+	if (m_connected == false) {
 		// Not connected; attempt retry if needed
-		if (RenX::Server::maxAttempts < 0 || RenX::Server::attempts < RenX::Server::maxAttempts)
-		{
-			if (std::chrono::steady_clock::now() >= RenX::Server::lastAttempt + RenX::Server::delay)
-			{
-				if (RenX::Server::connect())
-					RenX::Server::sendLogChan(IRCCOLOR "03[RenX]" IRCCOLOR " Socket successfully reconnected to Renegade-X server.");
-				else RenX::Server::sendLogChan(IRCCOLOR "04[Error]" IRCCOLOR " Failed to reconnect to Renegade-X server.");
+		if (m_maxAttempts < 0 || m_attempts < m_maxAttempts) {
+			if (std::chrono::steady_clock::now() >= m_lastAttempt + m_delay) {
+				if (connect()) {
+					sendLogChan(IRCCOLOR "03[RenX]" IRCCOLOR " Socket successfully reconnected to Renegade-X server.");
+				}
+				else {
+					sendLogChan(IRCCOLOR "04[Error]" IRCCOLOR " Failed to reconnect to Renegade-X server.");
+				}
 			}
 		}
-		else
+		else {
 			return 1;
+		}
 	}
-	else if (RenX::Server::awaitingPong && std::chrono::steady_clock::now() - RenX::Server::lastActivity >= RenX::Server::pingTimeoutThreshold) // ping timeout
-	{
+	else if (m_awaitingPong && std::chrono::steady_clock::now() - m_lastActivity >= m_pingTimeoutThreshold) { // ping timeout
 		// Ping timeout; disconnect immediately
-		RenX::Server::sendLogChan(STRING_LITERAL_AS_REFERENCE(IRCCOLOR "04[Error]" IRCCOLOR " Disconnected from Renegade-X server (ping timeout)."));
-		RenX::Server::disconnect(RenX::DisconnectReason::PingTimeout);
+		sendLogChan(STRING_LITERAL_AS_REFERENCE(IRCCOLOR "04[Error]" IRCCOLOR " Disconnected from Renegade-X server (ping timeout)."));
+		disconnect(RenX::DisconnectReason::PingTimeout);
 	}
-	else
-	{
-		auto cycle_player_rdns = [this]() // Cycles through any pending RDNS resolutions, and fires events as necessary.
-		{
-			if (this->player_rdns_resolutions_pending != 0)
-			{
-				Jupiter::ArrayList<RenX::Plugin> &xPlugins = *RenX::getCore()->getPlugins();
-				for (auto node = this->players.begin(); node != this->players.end(); ++node)
-				{
-					if (node->rdns_thread.joinable() && node->rdns_mutex.try_lock()) // RDNS event hasn't fired AND RDNS value has been resolved
-					{
+	else {
+		auto cycle_player_rdns = [this]() { // Cycles through any pending RDNS resolutions, and fires events as necessary.
+			if (m_player_rdns_resolutions_pending != 0) {
+				for (auto node = this->players.begin(); node != this->players.end(); ++node) {
+					if (node->rdns_thread.joinable() && node->rdns_mutex.try_lock()) { // RDNS event hasn't fired AND RDNS value has been resolved
 						node->rdns_mutex.unlock();
 						node->rdns_thread.join();
-						--this->player_rdns_resolutions_pending;
+						--m_player_rdns_resolutions_pending;
 
 						// Check for bans
-						this->banCheck(*node);
+						banCheck(*node);
 
 						// Fire RDNS resolved event
-						for (size_t index = 0; index < xPlugins.size(); ++index)
-							xPlugins.get(index)->RenX_OnPlayerRDNS(*this, *node);
+						for (const auto& plugin : RenX::getCore()->getPlugins()) {
+							plugin->RenX_OnPlayerRDNS(*this, *node);
+						}
 
 						// Fire player indentified event if ready
-						if (node->hwid.isNotEmpty())
-							for (size_t index = 0; index < xPlugins.size(); ++index)
-								xPlugins.get(index)->RenX_OnPlayerIdentify(*this, *node);
+						if (node->hwid.isNotEmpty()) {
+							for (auto plugin : RenX::getCore()->getPlugins()) {
+								plugin->RenX_OnPlayerIdentify(*this, *node);
+							}
+						}
 
-						if (this->player_rdns_resolutions_pending == 0) // No more resolutions pending
+						if (m_player_rdns_resolutions_pending == 0) { // No more resolutions pending
 							return;
+						}
 					}
 				}
 			}
 		};
 
 		// Connected and fine
-		if (RenX::Server::sock.recv() > 0) // Data received
-		{
+		if (m_sock.recv() > 0) { // Data received
 			cycle_player_rdns();
 
-			Jupiter::ReadableString::TokenizeResult<Jupiter::Reference_String> result = Jupiter::ReferenceString::tokenize(RenX::Server::sock.getBuffer(), '\n');
-			if (result.token_count != 0)
-			{
-				RenX::Server::lastActivity = std::chrono::steady_clock::now();
-				RenX::Server::lastLine.concat(result.tokens[0]);
-				if (result.token_count != 1)
-				{
-					RenX::Server::processLine(RenX::Server::lastLine);
-					RenX::Server::lastLine = result.tokens[result.token_count - 1];
+			Jupiter::ReadableString::TokenizeResult<Jupiter::Reference_String> result = Jupiter::ReferenceString::tokenize(m_sock.getBuffer(), '\n');
+			if (result.token_count != 0) {
+				m_lastActivity = std::chrono::steady_clock::now();
+				m_lastLine.concat(result.tokens[0]);
+				if (result.token_count != 1) {
+					processLine(m_lastLine);
+					m_lastLine = result.tokens[result.token_count - 1];
 
-					for (size_t index = 1; index != result.token_count - 1; ++index)
-						RenX::Server::processLine(result.tokens[index]);
+					for (size_t index = 1; index != result.token_count - 1; ++index) {
+						processLine(result.tokens[index]);
+					}
 				}
 			}
 		}
-		else if (Jupiter::Socket::getLastError() == JUPITER_SOCK_EWOULDBLOCK) // Operation would block (no new data)
-		{
+		else if (Jupiter::Socket::getLastError() == JUPITER_SOCK_EWOULDBLOCK) { // Operation would block (no new data)
 			cycle_player_rdns();
 
-			if (RenX::Server::awaitingPong == false && std::chrono::steady_clock::now() - RenX::Server::lastActivity >= RenX::Server::pingRate) {
+			if (m_awaitingPong == false && std::chrono::steady_clock::now() - m_lastActivity >= m_pingRate) {
 				startPing();
 			}
 		}
-		else // This is a serious error
-		{
-			RenX::Server::wipeData();
-			if (RenX::Server::maxAttempts != 0)
-			{
-				RenX::Server::sendLogChan(IRCCOLOR "07[Warning]" IRCCOLOR " Connection to Renegade-X server lost. Reconnection attempt in progress.");
-				if (RenX::Server::reconnect(RenX::DisconnectReason::SocketError))
-					RenX::Server::sendLogChan(IRCCOLOR "06[Progress]" IRCCOLOR " Connection to Renegade-X server reestablished. Initializing Renegade-X RCON protocol...");
-				else
-					RenX::Server::sendLogChan(IRCCOLOR "04[Error]" IRCCOLOR " Connection to Renegade-X server lost. Reconnection attempt failed.");
+		else { // This is a serious error
+			wipeData();
+			if (m_maxAttempts != 0) {
+				sendLogChan(IRCCOLOR "07[Warning]" IRCCOLOR " Connection to Renegade-X server lost. Reconnection attempt in progress.");
+				if (reconnect(RenX::DisconnectReason::SocketError)) {
+					sendLogChan(IRCCOLOR "06[Progress]" IRCCOLOR " Connection to Renegade-X server reestablished. Initializing Renegade-X RCON protocol...");
+				}
+				else {
+					sendLogChan(IRCCOLOR "04[Error]" IRCCOLOR " Connection to Renegade-X server lost. Reconnection attempt failed.");
+				}
 			}
-			else
-			{
-				RenX::Server::sendLogChan(IRCCOLOR "04[Error]" IRCCOLOR " Connection to Renegade-X server lost. No attempt will be made to reconnect.");
+			else {
+				sendLogChan(IRCCOLOR "04[Error]" IRCCOLOR " Connection to Renegade-X server lost. No attempt will be made to reconnect.");
 				return 1;
 			}
 			return 0;
 		}
 
 		// Updating client and building lists, if there is a game in progress and it's time for an update
-		if (RenX::Server::rconVersion >= 3 && RenX::Server::players.size() != 0)
-		{
-			if (RenX::Server::clientUpdateRate != std::chrono::milliseconds::zero() && std::chrono::steady_clock::now() > RenX::Server::lastClientListUpdate + RenX::Server::clientUpdateRate)
-				RenX::Server::updateClientList();
+		if (m_rconVersion >= 3 && this->players.size() != 0) {
+			if (m_clientUpdateRate != std::chrono::milliseconds::zero() && std::chrono::steady_clock::now() > m_lastClientListUpdate + m_clientUpdateRate) {
+				updateClientList();
+			}
 
-			if (RenX::Server::buildingUpdateRate != std::chrono::milliseconds::zero() && std::chrono::steady_clock::now() > RenX::Server::lastBuildingListUpdate + RenX::Server::buildingUpdateRate)
-				RenX::Server::updateBuildingList();
+			if (m_buildingUpdateRate != std::chrono::milliseconds::zero() && std::chrono::steady_clock::now() > m_lastBuildingListUpdate + m_buildingUpdateRate) {
+				updateBuildingList();
+			}
 		}
 
 		// Trigger gameover, if one is pending
-		if (RenX::Server::gameover_pending && RenX::Server::gameover_time < std::chrono::steady_clock::now())
-		{
-			this->gameover();
-			RenX::Server::gameover_pending = false;
+		if (m_gameover_pending && m_gameover_time < std::chrono::steady_clock::now()) {
+			gameover();
+			m_gameover_pending = false;
 		}
 
 		// Trigger ping if we haven't sent anything over the socket in a while, to prevent the server from disconnecting
-		if (RenX::Server::awaitingPong == false && std::chrono::steady_clock::now() - RenX::Server::lastSendActivity >= RenX::Server::pingRate) {
+		if (m_awaitingPong == false && std::chrono::steady_clock::now() - m_lastSendActivity >= m_pingRate) {
 			startPing();
 		}
 	}
-	return 0;
-}
-
-int RenX::Server::OnRehash()
-{
-	std::string oldHostname = RenX::Server::hostname;
-	std::string oldClientHostname = RenX::Server::clientHostname;
-	Jupiter::StringS oldPass = RenX::Server::pass;
-	unsigned short oldPort = RenX::Server::port;
-	int oldSteamFormat = RenX::Server::steamFormat;
-	RenX::Server::commands.emptyAndDelete();
-	RenX::Server::init(*RenX::getCore()->getConfig().getSection(RenX::Server::configSection));
-	if (RenX::Server::port == 0 || !RenX::Server::hostname.empty())
-	{
-		RenX::Server::hostname = oldHostname;
-		RenX::Server::clientHostname = oldClientHostname;
-		RenX::Server::pass = oldPass;
-		RenX::Server::port = oldPort;
-	}
-	else if (Jupiter::ReferenceString(oldHostname.c_str()).equalsi(RenX::Server::hostname) == false
-		|| oldPort != RenX::Server::port
-		|| Jupiter::ReferenceString(oldClientHostname.c_str()).equalsi(RenX::Server::clientHostname) == false
-		|| oldPass.equalsi(RenX::Server::pass) == false) {
-		RenX::Server::reconnect(RenX::DisconnectReason::Rehash);
-	}
 
 	return 0;
 }
 
-bool RenX::Server::OnBadRehash(bool removed)
-{
+int RenX::Server::OnRehash() {
+	std::string oldHostname = m_hostname;
+	std::string oldClientHostname = m_clientHostname;
+	Jupiter::StringS oldPass = m_pass;
+	unsigned short oldPort = m_port;
+	int oldSteamFormat = m_steamFormat;
+	m_commands.clear();
+	init(*RenX::getCore()->getConfig().getSection(m_configSection));
+	if (m_port == 0 || !m_hostname.empty()) {
+		m_hostname = oldHostname;
+		m_clientHostname = oldClientHostname;
+		m_pass = oldPass;
+		m_port = oldPort;
+	}
+	else if (Jupiter::ReferenceString(oldHostname.c_str()).equalsi(m_hostname) == false
+		|| oldPort != m_port
+		|| Jupiter::ReferenceString(oldClientHostname.c_str()).equalsi(m_clientHostname) == false
+		|| oldPass.equalsi(m_pass) == false) {
+		reconnect(RenX::DisconnectReason::Rehash);
+	}
+
+	return 0;
+}
+
+bool RenX::Server::OnBadRehash(bool removed) {
 	return removed;
 }
 
-bool RenX::Server::isConnected() const
-{
-	return RenX::Server::connected;
+bool RenX::Server::isConnected() const {
+	return m_connected;
 }
 
-bool RenX::Server::isSubscribed() const
-{
-	return RenX::Server::subscribed;
+bool RenX::Server::isSubscribed() const {
+	return m_subscribed;
 }
 
-bool RenX::Server::isFullyConnected() const
-{
-	return RenX::Server::fully_connected;
+bool RenX::Server::isFullyConnected() const {
+	return m_fully_connected;
 }
 
-bool RenX::Server::isFirstKill() const
-{
-	return RenX::Server::firstKill;
+bool RenX::Server::isFirstKill() const {
+	return m_firstKill;
 }
 
-bool RenX::Server::isFirstDeath() const
-{
-	return RenX::Server::firstDeath;
+bool RenX::Server::isFirstDeath() const {
+	return m_firstDeath;
 }
 
-bool RenX::Server::isFirstAction() const
-{
-	return RenX::Server::firstAction;
+bool RenX::Server::isFirstAction() const {
+	return m_firstAction;
 }
 
-bool RenX::Server::isSeamless() const
-{
-	return RenX::Server::seamless;
+bool RenX::Server::isSeamless() const {
+	return m_seamless;
 }
 
-bool RenX::Server::isReliable() const
-{
-	return RenX::Server::reliable;
+bool RenX::Server::isReliable() const {
+	return m_reliable;
 }
 
-bool RenX::Server::isMatchPending() const
-{
-	return RenX::Server::match_state == 0 || RenX::Server::isTravelling();
+bool RenX::Server::isMatchPending() const {
+	return m_match_state == 0 || isTravelling();
 }
 
-bool RenX::Server::isMatchInProgress() const
-{
-	return RenX::Server::match_state == 1;
+bool RenX::Server::isMatchInProgress() const {
+	return m_match_state == 1;
 }
 
-bool RenX::Server::isMatchOver() const
-{
-	return RenX::Server::match_state == 2 || RenX::Server::isMatchOver();
+bool RenX::Server::isMatchOver() const {
+	return m_match_state == 2 || isMatchOver();
 }
 
-bool RenX::Server::isTravelling() const
-{
-	return RenX::Server::match_state == 3;
+bool RenX::Server::isTravelling() const {
+	return m_match_state == 3;
 }
 
-bool RenX::Server::isCompetitive() const
-{
-	return RenX::Server::competitive;
+bool RenX::Server::isCompetitive() const {
+	return m_competitive;
 }
 
-bool RenX::Server::isPublicLogChanType(int type) const
-{
-	return RenX::Server::logChanType == type;
+bool RenX::Server::isPublicLogChanType(int type) const {
+	return m_logChanType == type;
 }
 
-bool RenX::Server::isAdminLogChanType(int type) const
-{
-	return RenX::Server::adminLogChanType == type;
+bool RenX::Server::isAdminLogChanType(int type) const {
+	return m_adminLogChanType == type;
 }
 
-bool RenX::Server::isLogChanType(int type) const
-{
-	return RenX::Server::isPublicLogChanType(type) || RenX::Server::isAdminLogChanType(type);
+bool RenX::Server::isLogChanType(int type) const {
+	return isPublicLogChanType(type) || isAdminLogChanType(type);
 }
 
-bool RenX::Server::isPure() const
-{
-	return RenX::Server::pure;
+bool RenX::Server::isPure() const {
+	return m_pure;
 }
 
-int RenX::Server::send(const Jupiter::ReadableString &command)
-{
-	return RenX::Server::sendSocket("c"_jrs + RenX::escapifyRCON(command) + '\n');
+int RenX::Server::send(const Jupiter::ReadableString &command) {
+	return sendSocket("c"_jrs + RenX::escapifyRCON(command) + '\n');
 }
 
-int RenX::Server::sendSocket(const Jupiter::ReadableString &text)
-{
-	lastSendActivity = std::chrono::steady_clock::now();
-	return sock.send(text);
+int RenX::Server::sendSocket(const Jupiter::ReadableString &text) {
+	m_lastSendActivity = std::chrono::steady_clock::now();
+	return m_sock.send(text);
 }
 
-int RenX::Server::sendMessage(const Jupiter::ReadableString &message)
-{
+int RenX::Server::sendMessage(const Jupiter::ReadableString &message) {
 	Jupiter::String msg = RenX::escapifyRCON(message);
-	if (RenX::Server::neverSay)
-	{
-		int r = 0;
-		if (RenX::Server::players.size() != 0)
-			for (auto node = this->players.begin(); node != this->players.end(); ++node)
-				if (node->isBot == false)
-					r += RenX::Server::sendSocket(Jupiter::StringS::Format("chostprivatesay pid%d %.*s\n", node->id, msg.size(), msg.ptr()));
-		return r;
+	if (m_neverSay) {
+		int result = 0;
+		if (this->players.size() != 0) {
+			for (auto node = this->players.begin(); node != this->players.end(); ++node) {
+				if (node->isBot == false) {
+					result += sendSocket(Jupiter::StringS::Format("chostprivatesay pid%d %.*s\n", node->id, msg.size(), msg.ptr()));
+				}
+			}
+		}
+		return result;
 	}
-	else
-		return RenX::Server::sendSocket("chostsay "_jrs + msg + '\n');
+
+	return sendSocket("chostsay "_jrs + msg + '\n');
 }
 
-int RenX::Server::sendMessage(const RenX::PlayerInfo &player, const Jupiter::ReadableString &message)
-{
-	return RenX::Server::sendSocket("chostprivatesay pid"_jrs + Jupiter::StringS::Format("%d ", player.id) + RenX::escapifyRCON(message) + '\n');
+int RenX::Server::sendMessage(const RenX::PlayerInfo &player, const Jupiter::ReadableString &message) {
+	return sendSocket("chostprivatesay pid"_jrs + Jupiter::StringS::Format("%d ", player.id) + RenX::escapifyRCON(message) + '\n');
 }
 
-int RenX::Server::sendAdminMessage(const Jupiter::ReadableString &message)
-{
-	return RenX::Server::sendSocket("camsg "_jrs + RenX::escapifyRCON(message) + '\n');
+int RenX::Server::sendAdminMessage(const Jupiter::ReadableString &message) {
+	return sendSocket("camsg "_jrs + RenX::escapifyRCON(message) + '\n');
 }
 
-int RenX::Server::sendAdminMessage(const RenX::PlayerInfo &player, const Jupiter::ReadableString &message)
-{
-	return RenX::Server::sendSocket("cpamsg pid"_jrs + Jupiter::StringS::Format("%d ", player.id) + RenX::escapifyRCON(message) + '\n');
+int RenX::Server::sendAdminMessage(const RenX::PlayerInfo &player, const Jupiter::ReadableString &message) {
+	return sendSocket("cpamsg pid"_jrs + Jupiter::StringS::Format("%d ", player.id) + RenX::escapifyRCON(message) + '\n');
 }
 
-int RenX::Server::sendWarnMessage(const RenX::PlayerInfo &player, const Jupiter::ReadableString &message)
-{
-	return RenX::Server::sendSocket("cwarn pid"_jrs + Jupiter::StringS::Format("%d ", player.id) + RenX::escapifyRCON(message) + '\n');
+int RenX::Server::sendWarnMessage(const RenX::PlayerInfo &player, const Jupiter::ReadableString &message) {
+	return sendSocket("cwarn pid"_jrs + Jupiter::StringS::Format("%d ", player.id) + RenX::escapifyRCON(message) + '\n');
 }
 
-int RenX::Server::sendData(const Jupiter::ReadableString &data)
-{
-	return RenX::Server::sendSocket(data);
+int RenX::Server::sendData(const Jupiter::ReadableString &data) {
+	return sendSocket(data);
 }
 
-RenX::BuildingInfo *RenX::Server::getBuildingByName(const Jupiter::ReadableString &name) const
-{
-	for (size_t index = 0; index != RenX::Server::buildings.size(); ++index)
-		if (RenX::Server::buildings.get(index)->name.equalsi(name))
-			return RenX::Server::buildings.get(index);
+RenX::BuildingInfo *RenX::Server::getBuildingByName(const Jupiter::ReadableString &name) const {
+	for (size_t index = 0; index != RenX::Server::buildings.size(); ++index) {
+		if (RenX::Server::buildings[index]->name.equalsi(name)) {
+			return RenX::Server::buildings[index].get();
+		}
+	}
+
 	return nullptr;
 }
 
-bool RenX::Server::hasMapInRotation(const Jupiter::ReadableString &name) const
-{
+bool RenX::Server::hasMapInRotation(const Jupiter::ReadableString &name) const {
 	size_t index = RenX::Server::maps.size();
-	while (index != 0)
-		if (RenX::Server::maps.get(--index)->name.equalsi(name))
+	while (index != 0) {
+		if (RenX::Server::maps[--index].name.equalsi(name)) {
 			return true;
+		}
+	}
+
 	return false;
 }
 
-const Jupiter::ReadableString *RenX::Server::getMapName(const Jupiter::ReadableString &name) const
-{
+const Jupiter::ReadableString *RenX::Server::getMapName(const Jupiter::ReadableString &name) const {
 	size_t index = RenX::Server::maps.size();
 	const Jupiter::ReadableString *map_name;
-	while (index != 0)
-	{
-		map_name = &RenX::Server::maps.get(--index)->name;
+	while (index != 0) {
+		map_name = &RenX::Server::maps[--index].name;
 		if (map_name->findi(name) != Jupiter::INVALID_INDEX)
 			return map_name;
 	}
 	return nullptr;
 }
 
-const Jupiter::ReadableString &RenX::Server::getCurrentRCONCommand() const
-{
-	return RenX::Server::lastCommand;
+const Jupiter::ReadableString &RenX::Server::getCurrentRCONCommand() const {
+	return m_lastCommand;
 }
 
-const Jupiter::ReadableString &RenX::Server::getCurrentRCONCommandParameters() const
-{
-	return RenX::Server::lastCommandParams;
+const Jupiter::ReadableString &RenX::Server::getCurrentRCONCommandParameters() const {
+	return m_lastCommandParams;
 }
 
-std::chrono::milliseconds RenX::Server::getGameTime() const
-{
-	return std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - RenX::Server::gameStart);
+std::chrono::milliseconds RenX::Server::getGameTime() const {
+	return std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - m_gameStart);
 }
 
-std::chrono::milliseconds RenX::Server::getGameTime(const RenX::PlayerInfo &player) const
-{
-	if (player.joinTime < RenX::Server::gameStart)
-		return RenX::Server::getGameTime();
+std::chrono::milliseconds RenX::Server::getGameTime(const RenX::PlayerInfo &player) const {
+	if (player.joinTime < m_gameStart)
+		return getGameTime();
 
 	return std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - player.joinTime);
 }
 
-size_t RenX::Server::getBotCount() const
-{
+size_t RenX::Server::getBotCount() const {
 	size_t count = 0;
 
-	for (auto node = this->players.begin(); node != this->players.end(); ++node)
-		if (node->isBot)
+	for (auto node = this->players.begin(); node != this->players.end(); ++node) {
+		if (node->isBot) {
 			++count;
+		}
+	}
 
 	return count;
 	//return RenX::Server::bot_count;
@@ -409,8 +380,7 @@ std::vector<const RenX::PlayerInfo*> RenX::Server::activePlayers(bool includeBot
 	return result;
 }
 
-RenX::PlayerInfo *RenX::Server::getPlayer(int id) const
-{
+RenX::PlayerInfo *RenX::Server::getPlayer(int id) const {
 	for (auto node = this->players.begin(); node != this->players.end(); ++node)
 		if (node->id == id)
 			return const_cast<RenX::PlayerInfo *>(&*node);
@@ -418,42 +388,47 @@ RenX::PlayerInfo *RenX::Server::getPlayer(int id) const
 	return nullptr;
 }
 
-RenX::PlayerInfo *RenX::Server::getPlayerByName(const Jupiter::ReadableString &name) const
-{
-	if (RenX::Server::players.size() == 0)
+RenX::PlayerInfo *RenX::Server::getPlayerByName(const Jupiter::ReadableString &name) const {
+	if (this->players.size() == 0) {
 		return nullptr;
+	}
 
-	for (auto node = this->players.begin(); node != this->players.end(); ++node)
-		if (node->name == name)
-			return const_cast<RenX::PlayerInfo *>(&*node);
+	// Try full name match
+	for (auto node = this->players.begin(); node != this->players.end(); ++node) {
+		if (node->name == name) {
+			return const_cast<RenX::PlayerInfo*>(&*node);
+		}
+	}
 
+	// Try player ID
 	Jupiter::ReferenceString idToken = name;
-	if (name.matchi("Player?*"))
+	if (name.matchi("Player?*")) {
 		idToken.shiftRight(6);
-	else if (name.matchi("pid?*"))
+	}
+	else if (name.matchi("pid?*")) {
 		idToken.shiftRight(3);
-	else
+	}
+	else {
 		return nullptr;
-	int id = idToken.asInt(10);
+	}
 
-	return this->getPlayer(id);
+	int id = idToken.asInt(10);
+	return getPlayer(id);
 }
 
-RenX::PlayerInfo *RenX::Server::getPlayerByPartName(const Jupiter::ReadableString &partName) const
-{
-	if (RenX::Server::players.size() == 0)
+RenX::PlayerInfo *RenX::Server::getPlayerByPartName(const Jupiter::ReadableString &partName) const {
+	if (this->players.size() == 0)
 		return nullptr;
 
-	RenX::PlayerInfo *r = RenX::Server::getPlayerByName(partName);
+	RenX::PlayerInfo *r = getPlayerByName(partName);
 	if (r != nullptr)
 		return r;
 
-	return RenX::Server::getPlayerByPartNameFast(partName);
+	return getPlayerByPartNameFast(partName);
 }
 
-RenX::PlayerInfo *RenX::Server::getPlayerByPartNameFast(const Jupiter::ReadableString &partName) const
-{
-	if (RenX::Server::players.size() == 0)
+RenX::PlayerInfo *RenX::Server::getPlayerByPartNameFast(const Jupiter::ReadableString &partName) const {
+	if (this->players.size() == 0)
 		return nullptr;
 
 	for (auto node = this->players.begin(); node != this->players.end(); ++node)
@@ -463,17 +438,15 @@ RenX::PlayerInfo *RenX::Server::getPlayerByPartNameFast(const Jupiter::ReadableS
 	return nullptr;
 }
 
-Jupiter::StringS RenX::Server::formatSteamID(const RenX::PlayerInfo &player) const
-{
-	return RenX::Server::formatSteamID(player.steamid);
+Jupiter::StringS RenX::Server::formatSteamID(const RenX::PlayerInfo &player) const {
+	return formatSteamID(player.steamid);
 }
 
-Jupiter::StringS RenX::Server::formatSteamID(uint64_t id) const
-{
+Jupiter::StringS RenX::Server::formatSteamID(uint64_t id) const {
 	if (id == 0)
 		return Jupiter::ReferenceString::empty;
 
-	switch (RenX::Server::steamFormat)
+	switch (m_steamFormat)
 	{
 	default:
 	case 16:
@@ -494,178 +467,171 @@ Jupiter::StringS RenX::Server::formatSteamID(uint64_t id) const
 	}
 }
 
-void RenX::Server::kickPlayer(int id, const Jupiter::ReadableString &in_reason)
-{
+void RenX::Server::kickPlayer(int id, const Jupiter::ReadableString &in_reason) {
 	Jupiter::String reason = RenX::escapifyRCON(in_reason);
 
 	if (reason.isEmpty())
-		RenX::Server::sendSocket(Jupiter::StringS::Format("ckick pid%d\n", id));
+		sendSocket(Jupiter::StringS::Format("ckick pid%d\n", id));
 	else
-		RenX::Server::sendSocket(Jupiter::StringS::Format("ckick pid%d %.*s\n", id, reason.size(), reason.ptr()));
+		sendSocket(Jupiter::StringS::Format("ckick pid%d %.*s\n", id, reason.size(), reason.ptr()));
 }
 
-void RenX::Server::kickPlayer(const RenX::PlayerInfo &player, const Jupiter::ReadableString &reason)
-{
-	if ((player.exemption_flags & RenX::ExemptionDatabase::Entry::FLAG_TYPE_KICK) == 0)
-		RenX::Server::kickPlayer(player.id, reason);
+void RenX::Server::kickPlayer(const RenX::PlayerInfo &player, const Jupiter::ReadableString &reason) {
+	if ((player.exemption_flags & RenX::ExemptionDatabase::Entry::FLAG_TYPE_KICK) == 0) {
+		kickPlayer(player.id, reason);
+	}
 }
 
-void RenX::Server::forceKickPlayer(int id, const Jupiter::ReadableString &in_reason)
-{
+void RenX::Server::forceKickPlayer(int id, const Jupiter::ReadableString &in_reason) {
 	Jupiter::String reason = RenX::escapifyRCON(in_reason);
 
-	if (reason.isEmpty())
-		RenX::Server::sendSocket(Jupiter::StringS::Format("cfkick pid%d You were kicked from the server.\n", id));
-	else
-		RenX::Server::sendSocket(Jupiter::StringS::Format("cfkick pid%d %.*s\n", id, reason.size(), reason.ptr()));
-}
-
-void RenX::Server::forceKickPlayer(const RenX::PlayerInfo &player, const Jupiter::ReadableString &reason)
-{
-	if ((player.exemption_flags & RenX::ExemptionDatabase::Entry::FLAG_TYPE_KICK) == 0)
-		RenX::Server::forceKickPlayer(player.id, reason);
-}
-
-void RenX::Server::banCheck()
-{
-	if (RenX::Server::players.size() != 0)
-		for (auto node = this->players.begin(); node != this->players.end(); ++node)
-			if (node->isBot == false)
-				this->banCheck(*node);
-}
-
-void RenX::Server::banCheck(RenX::PlayerInfo &player)
-{
-	if ((player.exemption_flags & (RenX::ExemptionDatabase::Entry::FLAG_TYPE_BAN | RenX::ExemptionDatabase::Entry::FLAG_TYPE_KICK)) != 0)
+	if (reason.isEmpty()) {
+		sendSocket(Jupiter::StringS::Format("cfkick pid%d You were kicked from the server.\n", id));
 		return;
+	}
 
-	const Jupiter::ArrayList<RenX::BanDatabase::Entry> &entries = RenX::banDatabase->getEntries();
-	RenX::BanDatabase::Entry *entry = nullptr;
+	sendSocket(Jupiter::StringS::Format("cfkick pid%d %.*s\n", id, reason.size(), reason.ptr()));
+}
+
+void RenX::Server::forceKickPlayer(const RenX::PlayerInfo &player, const Jupiter::ReadableString &reason) {
+	if ((player.exemption_flags & RenX::ExemptionDatabase::Entry::FLAG_TYPE_KICK) == 0) {
+		forceKickPlayer(player.id, reason);
+	}
+}
+
+void RenX::Server::banCheck() {
+	if (this->players.size() != 0) {
+		for (auto node = this->players.begin(); node != this->players.end(); ++node) {
+			if (node->isBot == false) {
+				banCheck(*node);
+			}
+		}
+	}
+}
+
+void RenX::Server::banCheck(RenX::PlayerInfo &player) {
+	if ((player.exemption_flags & (RenX::ExemptionDatabase::Entry::FLAG_TYPE_BAN | RenX::ExemptionDatabase::Entry::FLAG_TYPE_KICK)) != 0) {
+		return;
+	}
+
 	uint32_t netmask;
 
-	RenX::BanDatabase::Entry *last_to_expire[7];
+	RenX::BanDatabase::Entry* last_to_expire[7]; // TODO: what the fuck is this?
 	for (size_t index = 0; index != sizeof(last_to_expire) / sizeof(RenX::BanDatabase::Entry *); ++index)
 		last_to_expire[index] = nullptr;
 
-	auto handle_type = [&entry, &last_to_expire](size_t index)
-	{
-		if (last_to_expire[index] == nullptr)
+	auto handle_type = [&last_to_expire](RenX::BanDatabase::Entry* entry, size_t index) {
+		if (last_to_expire[index] == nullptr) {
 			last_to_expire[index] = entry;
-		else if (last_to_expire[index]->length == std::chrono::seconds::zero())
-		{
-			// favor older bans if they're also permanent
-			if (entry->length == std::chrono::seconds::zero() && entry->timestamp < last_to_expire[index]->timestamp)
-				last_to_expire[index] = entry;
 		}
-		else if (entry->length == std::chrono::seconds::zero() || entry->timestamp + entry->length > last_to_expire[index]->timestamp + last_to_expire[index]->length)
+		else if (last_to_expire[index]->length == std::chrono::seconds::zero()) {
+			// favor older bans if they're also permanent
+			if (entry->length == std::chrono::seconds::zero() && entry->timestamp < last_to_expire[index]->timestamp) {
+				last_to_expire[index] = entry;
+			}
+		}
+		else if (entry->length == std::chrono::seconds::zero() || entry->timestamp + entry->length > last_to_expire[index]->timestamp + last_to_expire[index]->length) {
 			last_to_expire[index] = entry;
+		}
 	};
 
-	for (size_t i = 0; i != entries.size(); i++)
-	{
-		entry = entries.get(i);
-		if (entry->is_active())
-		{
-			if (entry->length != std::chrono::seconds::zero() && entry->timestamp + entry->length < std::chrono::system_clock::now())
-				banDatabase->deactivate(i);
-			else
-			{
-				if (entry->prefix_length >= 32)
+	for (const auto& entry : RenX::banDatabase->getEntries()) {
+		if (entry->is_active()) {
+			if (entry->length != std::chrono::seconds::zero() && entry->timestamp + entry->length < std::chrono::system_clock::now()) {
+				banDatabase->deactivate(entry.get());
+			}
+			else {
+				if (entry->prefix_length >= 32) {
 					netmask = 0xFFFFFFFF;
-				else
+				}
+				else {
 					netmask = Jupiter_prefix_length_to_netmask(entry->prefix_length);
+				}
 
-				if ((this->localSteamBan && entry->steamid != 0 && entry->steamid == player.steamid)
-					|| (this->localIPBan && entry->ip != 0 && (entry->ip & netmask) == (player.ip32 & netmask))
-					|| (this->localHWIDBan && entry->hwid.isNotEmpty() && entry->hwid.equals(player.hwid))
-					|| (this->localRDNSBan && entry->rdns.isNotEmpty() && entry->is_rdns_ban() && player.rdns_thread.joinable() == false && player.rdns.match(entry->rdns))
-					|| (this->localNameBan && entry->name.isNotEmpty() && entry->name.equalsi(player.name)))
-				{
+				if ((m_localSteamBan && entry->steamid != 0 && entry->steamid == player.steamid)
+					|| (m_localIPBan && entry->ip != 0 && (entry->ip & netmask) == (player.ip32 & netmask))
+					|| (m_localHWIDBan && entry->hwid.isNotEmpty() && entry->hwid.equals(player.hwid))
+					|| (m_localRDNSBan && entry->rdns.isNotEmpty() && entry->is_rdns_ban() && player.rdns_thread.joinable() == false && player.rdns.match(entry->rdns))
+					|| (m_localNameBan && entry->name.isNotEmpty() && entry->name.equalsi(player.name))) {
 					player.ban_flags |= entry->flags;
 					if (entry->is_type_game())
-						handle_type(0);
+						handle_type(entry.get(), 0);
 					if (entry->is_type_chat())
-						handle_type(1);
+						handle_type(entry.get(), 1);
 					if (entry->is_type_bot())
-						handle_type(2);
+						handle_type(entry.get(), 2);
 					if (entry->is_type_vote())
-						handle_type(3);
+						handle_type(entry.get(), 3);
 					if (entry->is_type_mine())
-						handle_type(4);
+						handle_type(entry.get(), 4);
 					if (entry->is_type_ladder())
-						handle_type(5);
+						handle_type(entry.get(), 5);
 					if (entry->is_type_alert())
-						handle_type(6);
+						handle_type(entry.get(), 6);
 				}
 			}
 		}
 	}
 
 	char timeStr[256];
-	if (last_to_expire[0] != nullptr) // Game ban
-	{
+	if (last_to_expire[0] != nullptr) { // Game ban
 		time_t current_time = std::chrono::system_clock::to_time_t(last_to_expire[0]->timestamp + last_to_expire[0]->length);
 		strftime(timeStr, sizeof(timeStr), "%b %d %Y at %H:%M:%S", localtime(&current_time));
-		if (last_to_expire[0]->length == std::chrono::seconds::zero())
-			this->forceKickPlayer(player, Jupiter::StringS::Format("You were permanently banned from %.*s on %s for: %.*s", RenX::Server::ban_from_str.size(), RenX::Server::ban_from_str.ptr(), timeStr, last_to_expire[0]->reason.size(), last_to_expire[0]->reason.ptr()));
-		else
-			this->forceKickPlayer(player, Jupiter::StringS::Format("You are banned from %.*s until %s for: %.*s", RenX::Server::ban_from_str.size(), RenX::Server::ban_from_str.ptr(), timeStr, last_to_expire[0]->reason.size(), last_to_expire[0]->reason.ptr()));
+		if (last_to_expire[0]->length == std::chrono::seconds::zero()) {
+			forceKickPlayer(player, Jupiter::StringS::Format("You were permanently banned from %.*s on %s for: %.*s", m_ban_from_str.size(), m_ban_from_str.ptr(), timeStr, last_to_expire[0]->reason.size(), last_to_expire[0]->reason.ptr()));
+		}
+		else {
+			forceKickPlayer(player, Jupiter::StringS::Format("You are banned from %.*s until %s for: %.*s", m_ban_from_str.size(), m_ban_from_str.ptr(), timeStr, last_to_expire[0]->reason.size(), last_to_expire[0]->reason.ptr()));
+		}
 
 		player.ban_flags |= RenX::BanDatabase::Entry::FLAG_TYPE_BOT; // implies FLAG_TYPE_BOT
 	}
-	else
-	{
-		if (last_to_expire[1] != nullptr) // Chat ban
-		{
+	else {
+		if (last_to_expire[1] != nullptr) { // Chat ban
 			time_t current_time = std::chrono::system_clock::to_time_t(last_to_expire[1]->timestamp + last_to_expire[1]->length);
 			strftime(timeStr, sizeof(timeStr), "%b %d %Y at %H:%M:%S", localtime(&current_time));
-			this->mute(player);
+			mute(player);
 			if (last_to_expire[1]->length == std::chrono::seconds::zero())
-				this->sendMessage(player, Jupiter::StringS::Format("You were permanently muted from %.*s on %s for: %.*s", ban_from_str.size(), ban_from_str.ptr(), timeStr, last_to_expire[1]->reason.size(), last_to_expire[1]->reason.ptr()));
+				sendMessage(player, Jupiter::StringS::Format("You were permanently muted from %.*s on %s for: %.*s", m_ban_from_str.size(), m_ban_from_str.ptr(), timeStr, last_to_expire[1]->reason.size(), last_to_expire[1]->reason.ptr()));
 			else
-				this->sendMessage(player, Jupiter::StringS::Format("You are muted from %.*s until %s for: %.*s", ban_from_str.size(), ban_from_str.ptr(), timeStr, last_to_expire[1]->reason.size(), last_to_expire[1]->reason.ptr()));
+				sendMessage(player, Jupiter::StringS::Format("You are muted from %.*s until %s for: %.*s", m_ban_from_str.size(), m_ban_from_str.ptr(), timeStr, last_to_expire[1]->reason.size(), last_to_expire[1]->reason.ptr()));
 
 			player.ban_flags |= RenX::BanDatabase::Entry::FLAG_TYPE_BOT; // implies FLAG_TYPE_BOT
 		}
-		else if (last_to_expire[2] != nullptr) // Bot ban
-		{
+		else if (last_to_expire[2] != nullptr) { // Bot ban
 			time_t current_time = std::chrono::system_clock::to_time_t(last_to_expire[2]->timestamp + last_to_expire[2]->length);
 			strftime(timeStr, sizeof(timeStr), "%b %d %Y at %H:%M:%S", localtime(&current_time));
 			if (last_to_expire[2]->length == std::chrono::seconds::zero())
-				this->sendMessage(player, Jupiter::StringS::Format("You were permanently bot-muted from %.*s on %s for: %.*s", ban_from_str.size(), ban_from_str.ptr(), timeStr, last_to_expire[2]->reason.size(), last_to_expire[2]->reason.ptr()));
+				sendMessage(player, Jupiter::StringS::Format("You were permanently bot-muted from %.*s on %s for: %.*s", m_ban_from_str.size(), m_ban_from_str.ptr(), timeStr, last_to_expire[2]->reason.size(), last_to_expire[2]->reason.ptr()));
 			else
-				this->sendMessage(player, Jupiter::StringS::Format("You are bot-muted from %.*s until %s for: %.*s", ban_from_str.size(), ban_from_str.ptr(), timeStr, last_to_expire[2]->reason.size(), last_to_expire[2]->reason.ptr()));
+				sendMessage(player, Jupiter::StringS::Format("You are bot-muted from %.*s until %s for: %.*s", m_ban_from_str.size(), m_ban_from_str.ptr(), timeStr, last_to_expire[2]->reason.size(), last_to_expire[2]->reason.ptr()));
 		}
-		if (last_to_expire[3] != nullptr) // Vote ban
-		{
+		if (last_to_expire[3] != nullptr) { // Vote ban
 			time_t current_time = std::chrono::system_clock::to_time_t(last_to_expire[3]->timestamp + last_to_expire[3]->length);
 			strftime(timeStr, sizeof(timeStr), "%b %d %Y at %H:%M:%S", localtime(&current_time));
 			if (last_to_expire[3]->length == std::chrono::seconds::zero())
-				this->sendMessage(player, Jupiter::StringS::Format("You were permanently vote-muted from %.*s on %s for: %.*s", ban_from_str.size(), ban_from_str.ptr(), timeStr, last_to_expire[3]->reason.size(), last_to_expire[3]->reason.ptr()));
+				sendMessage(player, Jupiter::StringS::Format("You were permanently vote-muted from %.*s on %s for: %.*s", m_ban_from_str.size(), m_ban_from_str.ptr(), timeStr, last_to_expire[3]->reason.size(), last_to_expire[3]->reason.ptr()));
 			else
-				this->sendMessage(player, Jupiter::StringS::Format("You are vote-muted from %.*s until %s for: %.*s", ban_from_str.size(), ban_from_str.ptr(), timeStr, last_to_expire[3]->reason.size(), last_to_expire[3]->reason.ptr()));
+				sendMessage(player, Jupiter::StringS::Format("You are vote-muted from %.*s until %s for: %.*s", m_ban_from_str.size(), m_ban_from_str.ptr(), timeStr, last_to_expire[3]->reason.size(), last_to_expire[3]->reason.ptr()));
 		}
-		if (last_to_expire[4] != nullptr) // Mine ban
-		{
+		if (last_to_expire[4] != nullptr) { // Mine ban
 			time_t current_time = std::chrono::system_clock::to_time_t(last_to_expire[4]->timestamp + last_to_expire[4]->length);
-			this->mineBan(player);
+			mineBan(player);
 			strftime(timeStr, sizeof(timeStr), "%b %d %Y at %H:%M:%S", localtime(&current_time));
 			if (last_to_expire[4]->length == std::chrono::seconds::zero())
-				this->sendMessage(player, Jupiter::StringS::Format("You were permanently mine-banned from %.*s on %s for: %.*s", ban_from_str.size(), ban_from_str.ptr(), timeStr, last_to_expire[4]->reason.size(), last_to_expire[4]->reason.ptr()));
+				sendMessage(player, Jupiter::StringS::Format("You were permanently mine-banned from %.*s on %s for: %.*s", m_ban_from_str.size(), m_ban_from_str.ptr(), timeStr, last_to_expire[4]->reason.size(), last_to_expire[4]->reason.ptr()));
 			else
-				this->sendMessage(player, Jupiter::StringS::Format("You are mine-banned from %.*s until %s for: %.*s", ban_from_str.size(), ban_from_str.ptr(), timeStr, last_to_expire[4]->reason.size(), last_to_expire[4]->reason.ptr()));
+				sendMessage(player, Jupiter::StringS::Format("You are mine-banned from %.*s until %s for: %.*s", m_ban_from_str.size(), m_ban_from_str.ptr(), timeStr, last_to_expire[4]->reason.size(), last_to_expire[4]->reason.ptr()));
 		}
-		if (last_to_expire[5] != nullptr) // Ladder ban
-		{
+		if (last_to_expire[5] != nullptr) { // Ladder ban
 			time_t current_time = std::chrono::system_clock::to_time_t(last_to_expire[5]->timestamp + last_to_expire[5]->length);
 			strftime(timeStr, sizeof(timeStr), "%b %d %Y at %H:%M:%S", localtime(&current_time));
 			if (last_to_expire[5]->length == std::chrono::seconds::zero())
-				this->sendMessage(player, Jupiter::StringS::Format("You were permanently ladder-banned from %.*s on %s for: %.*s", ban_from_str.size(), ban_from_str.ptr(), timeStr, last_to_expire[5]->reason.size(), last_to_expire[5]->reason.ptr()));
+				sendMessage(player, Jupiter::StringS::Format("You were permanently ladder-banned from %.*s on %s for: %.*s", m_ban_from_str.size(), m_ban_from_str.ptr(), timeStr, last_to_expire[5]->reason.size(), last_to_expire[5]->reason.ptr()));
 			else
-				this->sendMessage(player, Jupiter::StringS::Format("You are ladder-banned from %.*s until %s for: %.*s", ban_from_str.size(), ban_from_str.ptr(), timeStr, last_to_expire[5]->reason.size(), last_to_expire[5]->reason.ptr()));
+				sendMessage(player, Jupiter::StringS::Format("You are ladder-banned from %.*s until %s for: %.*s", m_ban_from_str.size(), m_ban_from_str.ptr(), timeStr, last_to_expire[5]->reason.size(), last_to_expire[5]->reason.ptr()));
 		}
-		if (last_to_expire[6] != nullptr) // Alert
-		{
+		if (last_to_expire[6] != nullptr) { // Alert
 			IRC_Bot *server;
 			Jupiter::String fmtName = RenX::getFormattedPlayerName(player);
 			Jupiter::StringL user_message = Jupiter::StringL::Format(IRCCOLOR "04[Alert] " IRCCOLOR IRCBOLD "%.*s" IRCBOLD IRCCOLOR " is marked for monitoring by %.*s for: \"%.*s\". Please keep an eye on them in ", fmtName.size(), fmtName.ptr(), last_to_expire[6]->banner.size(), last_to_expire[6]->banner.ptr(), last_to_expire[6]->reason.size(), last_to_expire[6]->reason.ptr());
@@ -674,8 +640,7 @@ void RenX::Server::banCheck(RenX::PlayerInfo &player)
 			for (size_t server_index = 0; server_index < serverManager->size(); ++server_index) {
 				server = serverManager->getServer(server_index);
 				for (auto& channel : server->getChannels()) {
-					if (this->isAdminLogChanType(channel.second.getType()))
-					{
+					if (isAdminLogChanType(channel.second.getType())) {
 						server->sendMessage(channel.second.getName(), channel_message);
 
 						user_message += channel.second.getName();
@@ -691,66 +656,64 @@ void RenX::Server::banCheck(RenX::PlayerInfo &player)
 	}
 };
 
-void RenX::Server::banPlayer(int id, const Jupiter::ReadableString &banner, const Jupiter::ReadableString &reason)
-{
-	if (RenX::Server::rconBan)
-	{
+void RenX::Server::banPlayer(int id, const Jupiter::ReadableString &banner, const Jupiter::ReadableString &reason) {
+	if (m_rconBan) {
 		Jupiter::String out_reason = RenX::escapifyRCON(reason);
-		RenX::Server::sendSocket(Jupiter::StringS::Format("ckickban pid%d %.*s\n", id, out_reason.size(), out_reason.ptr()));
+		sendSocket(Jupiter::StringS::Format("ckickban pid%d %.*s\n", id, out_reason.size(), out_reason.ptr()));
 	}
-	else
-	{
-		RenX::PlayerInfo *player = RenX::Server::getPlayer(id);
-		if (player != nullptr)
-			RenX::Server::banPlayer(*player, banner, reason);
-	}
-}
-
-void RenX::Server::banPlayer(const RenX::PlayerInfo &player, const Jupiter::ReadableString &banner, const Jupiter::ReadableString &reason, std::chrono::seconds length)
-{
-	if ((player.exemption_flags & RenX::ExemptionDatabase::Entry::FLAG_TYPE_BAN) == 0)
-	{
-		if (RenX::Server::localBan)
-			RenX::banDatabase->add(this, player, banner, reason, length);
-
-		if (length == std::chrono::seconds::zero())
-		{
-			if (RenX::Server::rconBan)
-			{
-				Jupiter::String out_reason = RenX::escapifyRCON(reason);
-				RenX::Server::sendSocket(Jupiter::StringS::Format("ckickban pid%d %.*s\n", player.id, out_reason.size(), out_reason.ptr()));
-			}
-			else if (banner.isNotEmpty())
-				RenX::Server::forceKickPlayer(player, Jupiter::StringS::Format("You are permanently banned from %.*s by %.*s for: %.*s", RenX::Server::ban_from_str.size(), RenX::Server::ban_from_str.ptr(), banner.size(), banner.ptr(), reason.size(), reason.ptr()));
-			else
-				RenX::Server::forceKickPlayer(player, Jupiter::StringS::Format("You are permanently banned from %.*s for: %.*s", RenX::Server::ban_from_str.size(), RenX::Server::ban_from_str.ptr(), reason.size(), reason.ptr()));
+	else {
+		RenX::PlayerInfo *player = getPlayer(id);
+		if (player != nullptr) {
+			banPlayer(*player, banner, reason);
 		}
-		else if (banner.isNotEmpty())
-			RenX::Server::forceKickPlayer(player, Jupiter::StringS::Format("You are banned from %.*s by %.*s for the next %lld days, %.2d:%.2d:%.2d for: %.*s", RenX::Server::ban_from_str.size(), RenX::Server::ban_from_str.ptr(), banner.size(), banner.ptr(), static_cast<long long>(length.count() / 86400), static_cast<int>(length.count() % 3600), static_cast<int>((length.count() % 3600) / 60), static_cast<int>(length.count() % 60), reason.size(), reason.ptr()));
-		else
-			RenX::Server::forceKickPlayer(player, Jupiter::StringS::Format("You are banned from %.*s for the next %lld days, %.2d:%.2d:%.2d for: %.*s", RenX::Server::ban_from_str.size(), RenX::Server::ban_from_str.ptr(), static_cast<long long>(length.count() / 86400), static_cast<int>(length.count() % 3600), static_cast<int>((length.count() % 3600) / 60), static_cast<int>(length.count() % 60), reason.size(), reason.ptr()));
 	}
 }
 
-bool RenX::Server::removePlayer(int id)
-{
-	if (RenX::Server::players.size() == 0)
+void RenX::Server::banPlayer(const RenX::PlayerInfo &player, const Jupiter::ReadableString &banner, const Jupiter::ReadableString &reason, std::chrono::seconds length) {
+	if ((player.exemption_flags & RenX::ExemptionDatabase::Entry::FLAG_TYPE_BAN) == 0) {
+		if (m_localBan) {
+			RenX::banDatabase->add(this, player, banner, reason, length);
+		}
+
+		if (length == std::chrono::seconds::zero()) {
+			if (m_rconBan) {
+				Jupiter::String out_reason = RenX::escapifyRCON(reason);
+				sendSocket(Jupiter::StringS::Format("ckickban pid%d %.*s\n", player.id, out_reason.size(), out_reason.ptr()));
+			}
+			else if (banner.isNotEmpty()) {
+				forceKickPlayer(player, Jupiter::StringS::Format("You are permanently banned from %.*s by %.*s for: %.*s", m_ban_from_str.size(), m_ban_from_str.ptr(), banner.size(), banner.ptr(), reason.size(), reason.ptr()));
+			}
+			else {
+				forceKickPlayer(player, Jupiter::StringS::Format("You are permanently banned from %.*s for: %.*s", m_ban_from_str.size(), m_ban_from_str.ptr(), reason.size(), reason.ptr()));
+			}
+		}
+		else if (banner.isNotEmpty()) {
+			// TODO: make the time formatting not complete nonsense
+			forceKickPlayer(player, Jupiter::StringS::Format("You are banned from %.*s by %.*s for the next %lld days, %.2d:%.2d:%.2d for: %.*s", m_ban_from_str.size(), m_ban_from_str.ptr(), banner.size(), banner.ptr(), static_cast<long long>(length.count() / 86400), static_cast<int>(length.count() % 3600), static_cast<int>((length.count() % 3600) / 60), static_cast<int>(length.count() % 60), reason.size(), reason.ptr()));
+		}
+		else {
+			forceKickPlayer(player, Jupiter::StringS::Format("You are banned from %.*s for the next %lld days, %.2d:%.2d:%.2d for: %.*s", m_ban_from_str.size(), m_ban_from_str.ptr(), static_cast<long long>(length.count() / 86400), static_cast<int>(length.count() % 3600), static_cast<int>((length.count() % 3600) / 60), static_cast<int>(length.count() % 60), reason.size(), reason.ptr()));
+		}
+	}
+}
+
+bool RenX::Server::removePlayer(int id) {
+	if (this->players.size() == 0) {
 		return false;
+	}
 
-	for (auto node = this->players.begin(); node != this->players.end(); ++node)
-	{
-		if (node->id == id)
-		{
-			Jupiter::ArrayList<RenX::Plugin> &xPlugins = *RenX::getCore()->getPlugins();
-			for (size_t i = 0; i < xPlugins.size(); i++)
-				xPlugins.get(i)->RenX_OnPlayerDelete(*this, *node);
+	for (auto node = this->players.begin(); node != this->players.end(); ++node) {
+		if (node->id == id) {
+			for (auto plugin : RenX::getCore()->getPlugins()) {
+				plugin->RenX_OnPlayerDelete(*this, *node);
+			}
 
-			if (node->isBot)
-				--this->bot_count;
+			if (node->isBot) {
+				--m_bot_count;
+			}
 
-			if (node->rdns_thread.joinable()) // Close the RDNS thread, if one exists
-			{
-				--this->player_rdns_resolutions_pending;
+			if (node->rdns_thread.joinable()) { // Close the RDNS thread, if one exists
+				--m_player_rdns_resolutions_pending;
 				node->rdns_thread.join();
 			}
 
@@ -758,611 +721,540 @@ bool RenX::Server::removePlayer(int id)
 			return true;
 		}
 	}
+
 	return false;
 }
 
-bool RenX::Server::removePlayer(RenX::PlayerInfo &player)
-{
-	return RenX::Server::removePlayer(player.id);
+bool RenX::Server::removePlayer(RenX::PlayerInfo &player) {
+	return removePlayer(player.id);
 }
 
-bool RenX::Server::fetchClientList()
-{
-	RenX::Server::lastClientListUpdate = std::chrono::steady_clock::now();
-	if (this->rconVersion >= 4)
-		return RenX::Server::sendSocket("cclientvarlist KILLS DEATHS SCORE CREDITS CHARACTER VEHICLE PING ADMIN STEAM IP HWID PLAYERLOG\n"_jrs) > 0
-			&& RenX::Server::sendSocket("cbotvarlist KILLS DEATHS SCORE CREDITS CHARACTER VEHICLE PLAYERLOG\n"_jrs) > 0;
-	else
-		return RenX::Server::sendSocket("cclientvarlist KILLS\xA0""DEATHS\xA0""SCORE\xA0""CREDITS\xA0""CHARACTER\xA0""VEHICLE\xA0""PING\xA0""ADMIN\xA0""STEAM\xA0""IP\xA0""PLAYERLOG\n"_jrs) > 0
-			&& RenX::Server::sendSocket("cbotvarlist KILLS\xA0""DEATHS\xA0""SCORE\xA0""CREDITS\xA0""CHARACTER\xA0""VEHICLE\xA0""PLAYERLOG\n"_jrs) > 0;
+bool RenX::Server::fetchClientList() {
+	m_lastClientListUpdate = std::chrono::steady_clock::now();
+	// TODO: remove all support for rconVersion < 4
+	if (m_rconVersion >= 4) {
+		return sendSocket("cclientvarlist KILLS DEATHS SCORE CREDITS CHARACTER VEHICLE PING ADMIN STEAM IP HWID PLAYERLOG\n"_jrs) > 0
+			&& sendSocket("cbotvarlist KILLS DEATHS SCORE CREDITS CHARACTER VEHICLE PLAYERLOG\n"_jrs) > 0;
+	}
+
+	return sendSocket("cclientvarlist KILLS\xA0""DEATHS\xA0""SCORE\xA0""CREDITS\xA0""CHARACTER\xA0""VEHICLE\xA0""PING\xA0""ADMIN\xA0""STEAM\xA0""IP\xA0""PLAYERLOG\n"_jrs) > 0
+		&& sendSocket("cbotvarlist KILLS\xA0""DEATHS\xA0""SCORE\xA0""CREDITS\xA0""CHARACTER\xA0""VEHICLE\xA0""PLAYERLOG\n"_jrs) > 0;
 }
 
-bool RenX::Server::updateClientList()
-{
-	RenX::Server::lastClientListUpdate = std::chrono::steady_clock::now();
+bool RenX::Server::updateClientList() {
+	m_lastClientListUpdate = std::chrono::steady_clock::now();
 
-	int r = 0;
-	if (RenX::Server::players.size() != this->getBotCount())
-	{
-		if (this->rconVersion >= 4)
-			r = RenX::Server::sendSocket("cclientvarlist ID SCORE CREDITS PING\n"_jrs) > 0;
+	int result = 0;
+	if (this->players.size() != getBotCount()) {
+		if (m_rconVersion >= 4)
+			result = sendSocket("cclientvarlist ID SCORE CREDITS PING\n"_jrs) > 0;
 		else
-			r = RenX::Server::sendSocket("cclientvarlist ID\xA0""SCORE\xA0""CREDITS\xA0""PING\n"_jrs) > 0;
+			result = sendSocket("cclientvarlist ID\xA0""SCORE\xA0""CREDITS\xA0""PING\n"_jrs) > 0;
 	}
 
-	if (this->getBotCount() != 0)
-	{
-		if (this->rconVersion >= 4)
-			r |= RenX::Server::sendSocket("cbotvarlist ID SCORE CREDITS\n"_jrs) > 0;
+	if (getBotCount() != 0) {
+		if (m_rconVersion >= 4)
+			result |= sendSocket("cbotvarlist ID SCORE CREDITS\n"_jrs) > 0;
 		else
-			r |= RenX::Server::sendSocket("cbotvarlist ID\xA0""SCORE\xA0""CREDITS\n"_jrs) > 0;
+			result |= sendSocket("cbotvarlist ID\xA0""SCORE\xA0""CREDITS\n"_jrs) > 0;
 	}
 
-	return r != 0;
+	return result != 0;
 }
 
-bool RenX::Server::updateBuildingList()
-{
-	RenX::Server::lastBuildingListUpdate = std::chrono::steady_clock::now();
-	return RenX::Server::sendSocket("cbinfo\n"_jrs) > 0;
+bool RenX::Server::updateBuildingList() {
+	m_lastBuildingListUpdate = std::chrono::steady_clock::now();
+	return sendSocket("cbinfo\n"_jrs) > 0;
 }
 
-bool RenX::Server::gameover()
-{
-	RenX::Server::gameover_when_empty = false;
-	return RenX::Server::send("endmap"_jrs) > 0;
+bool RenX::Server::gameover() {
+	m_gameover_when_empty = false;
+	return send("endmap"_jrs) > 0;
 }
 
-void RenX::Server::gameover(std::chrono::seconds delay)
-{
-	if (delay == std::chrono::seconds::zero())
-		this->gameover();
-	else
-	{
-		this->gameover_time = std::chrono::steady_clock::now() + delay;
-		this->gameover_pending = true;
+void RenX::Server::gameover(std::chrono::seconds delay) {
+	if (delay == std::chrono::seconds::zero()) {
+		gameover();
+		return;
 	}
+
+	m_gameover_time = std::chrono::steady_clock::now() + delay;
+	m_gameover_pending = true;
 }
 
-bool RenX::Server::gameoverStop()
-{
-	if (this->gameover_pending == false)
+bool RenX::Server::gameoverStop() {
+	if (m_gameover_pending == false) {
 		return false;
+	}
 
-	this->gameover_pending = false;
+	m_gameover_pending = false;
 	return true;
 }
 
-void RenX::Server::gameoverWhenEmpty()
-{
-	if (this->players.size() == this->getBotCount())
-		this->gameover();
-	else
-		this->gameover_when_empty = true;
+void RenX::Server::gameoverWhenEmpty() {
+	if (this->players.size() == this->getBotCount()) {
+		gameover();
+		return;
+	}
+
+	m_gameover_when_empty = true;
 }
 
-bool RenX::Server::setMap(const Jupiter::ReadableString &map)
-{
-	return RenX::Server::send(Jupiter::StringS::Format("changemap %.*s", map.size(), map.ptr())) > 0;
+bool RenX::Server::setMap(const Jupiter::ReadableString &map) {
+	return send(Jupiter::StringS::Format("changemap %.*s", map.size(), map.ptr())) > 0;
 }
 
-bool RenX::Server::loadMutator(const Jupiter::ReadableString &mutator)
-{
-	return RenX::Server::send(Jupiter::StringS::Format("loadmutator %.*s", mutator.size(), mutator.ptr())) > 0;
+bool RenX::Server::loadMutator(const Jupiter::ReadableString &mutator) {
+	return send(Jupiter::StringS::Format("loadmutator %.*s", mutator.size(), mutator.ptr())) > 0;
 }
 
-bool RenX::Server::unloadMutator(const Jupiter::ReadableString &mutator)
-{
-	return RenX::Server::send(Jupiter::StringS::Format("unloadmutator %.*s", mutator.size(), mutator.ptr())) > 0;
+bool RenX::Server::unloadMutator(const Jupiter::ReadableString &mutator) {
+	return send(Jupiter::StringS::Format("unloadmutator %.*s", mutator.size(), mutator.ptr())) > 0;
 }
 
-bool RenX::Server::cancelVote(const RenX::TeamType team)
-{
-	switch (team)
-	{
+bool RenX::Server::cancelVote(const RenX::TeamType team) {
+	switch (team) {
 	default:
-		return RenX::Server::send("cancelvote -1"_jrs) > 0;
+		return send("cancelvote -1"_jrs) > 0;
 	case TeamType::GDI:
-		return RenX::Server::send("cancelvote 0"_jrs) > 0;
+		return send("cancelvote 0"_jrs) > 0;
 	case TeamType::Nod:
-		return RenX::Server::send("cancelvote 1"_jrs) > 0;
+		return send("cancelvote 1"_jrs) > 0;
 	}
 }
 
-bool RenX::Server::swapTeams()
-{
-	return RenX::Server::send("swapteams"_jrs) > 0;
+bool RenX::Server::swapTeams() {
+	return send("swapteams"_jrs) > 0;
 }
 
-bool RenX::Server::recordDemo()
-{
-	return RenX::Server::send("recorddemo"_jrs) > 0;
+bool RenX::Server::recordDemo() {
+	return send("recorddemo"_jrs) > 0;
 }
 
-bool RenX::Server::mute(const RenX::PlayerInfo &player)
-{
-	return RenX::Server::send(Jupiter::StringS::Format("textmute pid%u", player.id)) > 0;
+bool RenX::Server::mute(const RenX::PlayerInfo &player) {
+	return send(Jupiter::StringS::Format("textmute pid%u", player.id)) > 0;
 }
 
-bool RenX::Server::unmute(const RenX::PlayerInfo &player)
-{
-	return RenX::Server::send(Jupiter::StringS::Format("textunmute pid%u", player.id)) > 0;
+bool RenX::Server::unmute(const RenX::PlayerInfo &player) {
+	return send(Jupiter::StringS::Format("textunmute pid%u", player.id)) > 0;
 }
 
-bool RenX::Server::giveCredits(int id, double credits)
-{
-	return RenX::Server::competitive == false && RenX::Server::send(Jupiter::StringS::Format("givecredits pid%d %f", id, credits)) > 0;
+bool RenX::Server::giveCredits(int id, double credits) {
+	return m_competitive == false && send(Jupiter::StringS::Format("givecredits pid%d %f", id, credits)) > 0;
 }
 
-bool RenX::Server::giveCredits(RenX::PlayerInfo &player, double credits)
-{
-	return RenX::Server::giveCredits(player.id, credits);
+bool RenX::Server::giveCredits(RenX::PlayerInfo &player, double credits) {
+	return giveCredits(player.id, credits);
 }
 
-bool RenX::Server::kill(int id)
-{
-	return RenX::Server::competitive == false && RenX::Server::send(Jupiter::StringS::Format("kill pid%d", id)) > 0;
+bool RenX::Server::kill(int id) {
+	return m_competitive == false && send(Jupiter::StringS::Format("kill pid%d", id)) > 0;
 }
 
-bool RenX::Server::kill(RenX::PlayerInfo &player)
-{
-	return RenX::Server::kill(player.id);
+bool RenX::Server::kill(RenX::PlayerInfo &player) {
+	return kill(player.id);
 }
 
-bool RenX::Server::disarm(int id)
-{
-	return RenX::Server::competitive == false && RenX::Server::send(Jupiter::StringS::Format("disarm pid%d", id)) > 0;
+bool RenX::Server::disarm(int id) {
+	return m_competitive == false && send(Jupiter::StringS::Format("disarm pid%d", id)) > 0;
 }
 
-bool RenX::Server::disarm(RenX::PlayerInfo &player)
-{
-	return RenX::Server::disarm(player.id);
+bool RenX::Server::disarm(RenX::PlayerInfo &player) {
+	return disarm(player.id);
 }
 
-bool RenX::Server::disarmC4(int id)
-{
-	return RenX::Server::competitive == false && RenX::Server::send(Jupiter::StringS::Format("disarmc4 pid%d", id)) > 0;
+bool RenX::Server::disarmC4(int id) {
+	return m_competitive == false && send(Jupiter::StringS::Format("disarmc4 pid%d", id)) > 0;
 }
 
-bool RenX::Server::disarmC4(RenX::PlayerInfo &player)
-{
-	return RenX::Server::disarmC4(player.id);
+bool RenX::Server::disarmC4(RenX::PlayerInfo &player) {
+	return disarmC4(player.id);
 }
 
-bool RenX::Server::disarmBeacon(int id)
-{
-	return RenX::Server::competitive == false && RenX::Server::send(Jupiter::StringS::Format("disarmb pid%d", id)) > 0;
+bool RenX::Server::disarmBeacon(int id) {
+	return m_competitive == false && send(Jupiter::StringS::Format("disarmb pid%d", id)) > 0;
 }
 
-bool RenX::Server::disarmBeacon(RenX::PlayerInfo &player)
-{
-	return RenX::Server::disarmBeacon(player.id);
+bool RenX::Server::disarmBeacon(RenX::PlayerInfo &player) {
+	return disarmBeacon(player.id);
 }
 
-bool RenX::Server::mineBan(int id)
-{
-	return RenX::Server::send(Jupiter::StringS::Format("mineban pid%d", id)) > 0;
+bool RenX::Server::mineBan(int id) {
+	return send(Jupiter::StringS::Format("mineban pid%d", id)) > 0;
 }
 
-bool RenX::Server::mineBan(RenX::PlayerInfo &player)
-{
-	return RenX::Server::mineBan(player.id);
+bool RenX::Server::mineBan(RenX::PlayerInfo &player) {
+	return mineBan(player.id);
 }
 
-bool RenX::Server::changeTeam(int id, bool resetCredits)
-{
-	return RenX::Server::send(Jupiter::StringS::Format(resetCredits ? "team pid%d" : "team2 pid%d", id)) > 0;
+bool RenX::Server::changeTeam(int id, bool resetCredits) {
+	return send(Jupiter::StringS::Format(resetCredits ? "team pid%d" : "team2 pid%d", id)) > 0;
 }
 
-bool RenX::Server::changeTeam(RenX::PlayerInfo &player, bool resetCredits)
-{
-	return RenX::Server::changeTeam(player.id, resetCredits);
+bool RenX::Server::changeTeam(RenX::PlayerInfo &player, bool resetCredits) {
+	return changeTeam(player.id, resetCredits);
 }
 
-bool RenX::Server::nmodePlayer(const RenX::PlayerInfo &player)
-{
-	return RenX::Server::send(Jupiter::StringS::Format("nmode pid%d", player.id));
+bool RenX::Server::nmodePlayer(const RenX::PlayerInfo &player) {
+	return send(Jupiter::StringS::Format("nmode pid%d", player.id));
 }
 
-bool RenX::Server::smodePlayer(const RenX::PlayerInfo &player)
-{
-	return RenX::Server::send(Jupiter::StringS::Format("smode pid%d", player.id));
+bool RenX::Server::smodePlayer(const RenX::PlayerInfo &player) {
+	return send(Jupiter::StringS::Format("smode pid%d", player.id));
 }
 
-const Jupiter::ReadableString &RenX::Server::getPrefix() const
-{
-	static Jupiter::String parsed;
-	RenX::processTags(parsed = RenX::Server::IRCPrefix, this);
+const Jupiter::ReadableString &RenX::Server::getPrefix() const {
+	static Jupiter::String parsed; // TODO: What the hell?
+	RenX::processTags(parsed = m_IRCPrefix, this);
 	return parsed;
 }
 
-void RenX::Server::setPrefix(const Jupiter::ReadableString &prefix)
-{
-	RenX::sanitizeTags(RenX::Server::IRCPrefix = prefix);
+void RenX::Server::setPrefix(const Jupiter::ReadableString &prefix) {
+	RenX::sanitizeTags(m_IRCPrefix = prefix);
 }
 
-const Jupiter::ReadableString &RenX::Server::getCommandPrefix() const
-{
-	return RenX::Server::CommandPrefix;
+const Jupiter::ReadableString &RenX::Server::getCommandPrefix() const {
+	return m_CommandPrefix;
 }
 
-void RenX::Server::setCommandPrefix(const Jupiter::ReadableString &prefix)
-{
-	RenX::Server::CommandPrefix = prefix;
+void RenX::Server::setCommandPrefix(const Jupiter::ReadableString &prefix) {
+	m_CommandPrefix = prefix;
 }
 
-void RenX::Server::setRanked(bool in_value)
-{
-	RenX::Server::m_ranked = in_value;
+void RenX::Server::setRanked(bool in_value) {
+	m_ranked = in_value;
 }
 
-const Jupiter::ReadableString &RenX::Server::getRules() const
-{
-	return RenX::Server::rules;
+const Jupiter::ReadableString &RenX::Server::getRules() const {
+	return m_rules;
 }
 
-const std::string &RenX::Server::getHostname() const
-{
-	return RenX::Server::hostname;
+const std::string &RenX::Server::getHostname() const {
+	return m_hostname;
 }
 
-unsigned short RenX::Server::getPort() const
-{
-	return RenX::Server::port;
+unsigned short RenX::Server::getPort() const {
+	return m_port;
 }
 
-const std::string &RenX::Server::getSocketHostname() const
-{
-	return RenX::Server::sock.getRemoteHostname();
+const std::string &RenX::Server::getSocketHostname() const {
+	return m_sock.getRemoteHostname();
 }
 
-unsigned short RenX::Server::getSocketPort() const
-{
-	return RenX::Server::sock.getRemotePort();
+unsigned short RenX::Server::getSocketPort() const {
+	return m_sock.getRemotePort();
 }
 
-std::chrono::steady_clock::time_point RenX::Server::getLastAttempt() const
-{
-	return RenX::Server::lastAttempt;
+std::chrono::steady_clock::time_point RenX::Server::getLastAttempt() const {
+	return m_lastAttempt;
 }
 
-std::chrono::milliseconds RenX::Server::getDelay() const
-{
-	return RenX::Server::delay;
+std::chrono::milliseconds RenX::Server::getDelay() const {
+	return m_delay;
 }
 
-int RenX::Server::getMineLimit() const
-{
-	return RenX::Server::mineLimit;
+int RenX::Server::getMineLimit() const {
+	return m_mineLimit;
 }
 
-int RenX::Server::getPlayerLimit() const
-{
-	return RenX::Server::playerLimit;
+int RenX::Server::getPlayerLimit() const {
+	return m_playerLimit;
 }
 
-int RenX::Server::getVehicleLimit() const
-{
-	return RenX::Server::vehicleLimit;
+int RenX::Server::getVehicleLimit() const {
+	return m_vehicleLimit;
 }
 
-int RenX::Server::getTimeLimit() const
-{
-	return RenX::Server::timeLimit;
+int RenX::Server::getTimeLimit() const {
+	return m_timeLimit;
 }
 
-int RenX::Server::getTeamMode() const
-{
-	return RenX::Server::m_team_mode;
+int RenX::Server::getTeamMode() const {
+	return m_team_mode;
 }
 
-int RenX::Server::getGameType() const
-{
-	return RenX::Server::m_game_type;
+int RenX::Server::getGameType() const {
+	return m_game_type;
 }
 
-double RenX::Server::getCrateRespawnDelay() const
-{
-	return RenX::Server::crateRespawnAfterPickup;
+double RenX::Server::getCrateRespawnDelay() const {
+	return m_crateRespawnAfterPickup;
 }
 
-bool RenX::Server::isSteamRequired() const
-{
-	return RenX::Server::steamRequired;
+bool RenX::Server::isSteamRequired() const {
+	return m_steamRequired;
 }
 
-bool RenX::Server::isPrivateMessageTeamOnly() const
-{
-	return RenX::Server::privateMessageTeamOnly;
+bool RenX::Server::isPrivateMessageTeamOnly() const {
+	return m_privateMessageTeamOnly;
 }
 
-bool RenX::Server::isPrivateMessagingEnabled() const
-{
-	return RenX::Server::allowPrivateMessaging;
+bool RenX::Server::isPrivateMessagingEnabled() const {
+	return m_allowPrivateMessaging;
 }
 
-bool RenX::Server::isRanked() const
-{
-	return RenX::Server::m_ranked;
+bool RenX::Server::isRanked() const {
+	return m_ranked;
 }
 
-bool RenX::Server::isPassworded() const
-{
-	return RenX::Server::passworded;
+bool RenX::Server::isPassworded() const {
+	return m_passworded;
 }
 
-bool RenX::Server::isCratesEnabled() const
-{
-	return RenX::Server::spawnCrates;
+bool RenX::Server::isCratesEnabled() const {
+	return m_spawnCrates;
 }
 
-bool RenX::Server::isBotsEnabled() const
-{
-	return RenX::Server::botsEnabled;
+bool RenX::Server::isBotsEnabled() const {
+	return m_botsEnabled;
 }
 
-const Jupiter::ReadableString &RenX::Server::getPassword() const
-{
-	return RenX::Server::pass;
+const Jupiter::ReadableString &RenX::Server::getPassword() const {
+	return m_pass;
 }
 
-const Jupiter::ReadableString &RenX::Server::getUser() const
-{
-	return RenX::Server::rconUser;
+const Jupiter::ReadableString &RenX::Server::getUser() const {
+	return m_rconUser;
 }
 
-bool RenX::Server::isDevBot() const
-{
-	return RenX::Server::devBot;
+bool RenX::Server::isDevBot() const {
+	return m_devBot;
 }
 
-const Jupiter::ReadableString &RenX::Server::getName() const
-{
-	return RenX::Server::serverName;
+const Jupiter::ReadableString &RenX::Server::getName() const {
+	return m_serverName;
 }
 
-const RenX::Map &RenX::Server::getMap() const
-{
-	return RenX::Server::map;
+const RenX::Map &RenX::Server::getMap() const {
+	return m_map;
 }
 
-RenX::GameCommand *RenX::Server::getCommand(unsigned int index) const
-{
-	return RenX::Server::commands.get(index);
+RenX::GameCommand *RenX::Server::getCommand(unsigned int index) const {
+	return m_commands[index].get();
 }
 
-RenX::GameCommand *RenX::Server::getCommand(const Jupiter::ReadableString &trigger) const
-{
-	RenX::GameCommand *cmd;
-	for (size_t i = 0; i != RenX::Server::commands.size(); i++)
-	{
-		cmd = RenX::Server::commands.get(i);
-		if (cmd->matches(trigger))
-			return cmd;
-	}
-	return nullptr;
-}
-
-size_t RenX::Server::getCommandCount() const
-{
-	return RenX::Server::commands.size();
-}
-
-RenX::GameCommand *RenX::Server::triggerCommand(const Jupiter::ReadableString &trigger, RenX::PlayerInfo &player, const Jupiter::ReadableString &parameters)
-{
-	RenX::GameCommand *cmd;
-
-	RenX::GameCommand::active_server = this;
-	for (size_t i = 0; i < RenX::Server::commands.size(); i++)
-	{
-		cmd = RenX::Server::commands.get(i);
-		if (cmd->matches(trigger))
-		{
-			if (player.access >= cmd->getAccessLevel())
-				cmd->trigger(this, &player, parameters);
-			else
-				RenX::Server::sendMessage(player, "Access Denied."_jrs);
-
-			Jupiter::ArrayList<RenX::Plugin>& xPlugins = *getCore()->getPlugins();
-			for (size_t i = 0; i < xPlugins.size(); i++)
-				xPlugins.get(i)->RenX_OnCommandTriggered(*this, trigger, player, parameters, *cmd);
-
-			return cmd;
+RenX::GameCommand *RenX::Server::getCommand(const Jupiter::ReadableString &trigger) const {
+	for (const auto& command : m_commands) {
+		if (command->matches(trigger)) {
+			return command.get();
 		}
 	}
-	RenX::GameCommand::active_server = RenX::GameCommand::selected_server;
-
 	return nullptr;
 }
 
-void RenX::Server::addCommand(RenX::GameCommand *command)
-{
+size_t RenX::Server::getCommandCount() const {
+	return m_commands.size();
+}
+
+RenX::GameCommand *RenX::Server::triggerCommand(const Jupiter::ReadableString &trigger, RenX::PlayerInfo &player, const Jupiter::ReadableString &parameters) {
+	RenX::GameCommand::active_server = this;
+	for (const auto& command : m_commands) {
+		if (command->matches(trigger)) {
+			if (player.access >= command->getAccessLevel()) {
+				command->trigger(this, &player, parameters);
+			}
+			else {
+				sendMessage(player, "Access Denied."_jrs);
+			}
+
+			// TODO: avoiding modifying behavior for now, but this probably doesn't need to be called on access denied
+			for (const auto& plugin : getCore()->getPlugins()) {
+				plugin->RenX_OnCommandTriggered(*this, trigger, player, parameters, *command);
+			}
+
+			return command.get();
+		}
+	}
+
+	// TODO: do we need to set active_server on the return above as well?
+	RenX::GameCommand::active_server = RenX::GameCommand::selected_server;
+	return nullptr;
+}
+
+void RenX::Server::addCommand(RenX::GameCommand* in_command) {
+	std::unique_ptr<RenX::GameCommand> command{ in_command };
 	int access_level;
 
-	if (RenX::Server::commandAccessLevels != nullptr)
-	{
-		const Jupiter::ReadableString &accessLevel = RenX::Server::commandAccessLevels->get(command->getTrigger());
-		if (accessLevel.isNotEmpty())
-		{
+	if (m_commandAccessLevels != nullptr) {
+		const Jupiter::ReadableString &accessLevel = m_commandAccessLevels->get(command->getTrigger());
+		if (accessLevel.isNotEmpty()) {
 			access_level = accessLevel.asInt();
-			if (access_level < 0) // Disabled command
-			{
-				delete command;
+			if (access_level < 0) { // Disabled command
 				return;
 			}
+
 			command->setAccessLevel(access_level);
 		}
 	}
 
-	if (RenX::Server::commandAliases != nullptr)
-	{
-		const Jupiter::ReadableString &aliasList = RenX::Server::commandAliases->get(command->getTrigger());
+	if (m_commandAliases != nullptr) {
+		const Jupiter::ReadableString &aliasList = m_commandAliases->get(command->getTrigger());
 		unsigned int j = aliasList.wordCount(WHITESPACE);
-		while (j != 0)
+		while (j != 0) {
 			command->addTrigger(Jupiter::ReferenceString::getWord(aliasList, --j, WHITESPACE));
+		}
 	}
 
-	RenX::Server::commands.add(command);
+	m_commands.push_back(std::move(command));
 }
 
-bool RenX::Server::removeCommand(RenX::GameCommand *command)
-{
-	for (size_t i = 0; i != RenX::Server::commands.size(); i++)
-		if (RenX::Server::commands.get(i) == command)
-		{
-			delete RenX::Server::commands.remove(i);
+bool RenX::Server::removeCommand(RenX::GameCommand *command) {
+	for (auto itr = m_commands.begin(); itr != m_commands.end(); ++itr) {
+		if (itr->get() == command) {
+			m_commands.erase(itr);
 			return true;
 		}
+	}
+
 	return false;
 }
 
-bool RenX::Server::removeCommand(const Jupiter::ReadableString &trigger)
-{
-	for (size_t i = 0; i != RenX::Server::commands.size(); i++)
-		if (RenX::Server::commands.get(i)->matches(trigger))
-		{
-			delete RenX::Server::commands.remove(i);
+bool RenX::Server::removeCommand(const Jupiter::ReadableString &trigger) {
+	for (auto itr = m_commands.begin(); itr != m_commands.end(); ++itr) {
+		if ((*itr)->matches(trigger)) {
+			m_commands.erase(itr);
 			return true;
 		}
+	}
+
 	return false;
 }
 
-void RenX::Server::setUUIDFunction(RenX::Server::uuid_func func)
-{
-	RenX::Server::calc_uuid = func;
+void RenX::Server::setUUIDFunction(RenX::Server::uuid_func func) {
+	m_calc_uuid = func;
 
-	for (auto node = this->players.begin(); node != this->players.end(); ++node)
-		RenX::Server::setUUIDIfDifferent(*node, RenX::Server::calc_uuid(*node));
+	for (auto node = this->players.begin(); node != this->players.end(); ++node) {
+		setUUIDIfDifferent(*node, m_calc_uuid(*node));
+	}
 }
 
-RenX::Server::uuid_func RenX::Server::getUUIDFunction() const
-{
-	return RenX::Server::calc_uuid;
+RenX::Server::uuid_func RenX::Server::getUUIDFunction() const {
+	return m_calc_uuid;
 }
 
-void RenX::Server::setUUID(RenX::PlayerInfo &player, const Jupiter::ReadableString &uuid)
-{
-	Jupiter::ArrayList<RenX::Plugin> &xPlugins = *getCore()->getPlugins();
-
-	for (size_t index = 0; index < xPlugins.size(); ++index)
-		xPlugins.get(index)->RenX_OnPlayerUUIDChange(*this, player, uuid);
+void RenX::Server::setUUID(RenX::PlayerInfo &player, const Jupiter::ReadableString &uuid) {
+	for (const auto& plugin : getCore()->getPlugins()) {
+		plugin->RenX_OnPlayerUUIDChange(*this, player, uuid);
+	}
 
 	player.uuid = uuid;
 }
 
-bool RenX::Server::setUUIDIfDifferent(RenX::PlayerInfo &player, const Jupiter::ReadableString &uuid)
-{
-	if (player.uuid.equals(uuid))
+bool RenX::Server::setUUIDIfDifferent(RenX::PlayerInfo &player, const Jupiter::ReadableString &uuid) {
+	if (player.uuid.equals(uuid)) {
 		return false;
+	}
 
 	setUUID(player, uuid);
 	return true;
 }
 
-bool RenX::Server::resolvesRDNS()
-{
-	return RenX::Server::resolve_player_rdns;
+bool RenX::Server::resolvesRDNS() {
+	return m_resolve_player_rdns;
 }
 
-void RenX::Server::sendPubChan(const char *fmt, ...) const
-{
+void RenX::Server::sendPubChan(const char *fmt, ...) const {
 	va_list args;
 	va_start(args, fmt);
 	Jupiter::StringL msg;
-	const Jupiter::ReadableString &serverPrefix = RenX::Server::getPrefix();
-	if (serverPrefix.isNotEmpty())
-	{
+	const Jupiter::ReadableString &serverPrefix = getPrefix();
+	if (serverPrefix.isNotEmpty()) {
 		msg += serverPrefix;
 		msg += ' ';
 		msg.avformat(fmt, args);
 	}
-	else msg.vformat(fmt, args);
+	else {
+		msg.vformat(fmt, args);
+	}
 	va_end(args);
-	for (size_t i = 0; i != serverManager->size(); i++)
-		serverManager->getServer(i)->messageChannels(RenX::Server::logChanType, msg);
+	for (size_t i = 0; i != serverManager->size(); i++) {
+		serverManager->getServer(i)->messageChannels(m_logChanType, msg);
+	}
 }
 
-void RenX::Server::sendPubChan(const Jupiter::ReadableString &msg) const
-{
-	const Jupiter::ReadableString &prefix = this->getPrefix();
-	if (prefix.isNotEmpty())
-	{
+void RenX::Server::sendPubChan(const Jupiter::ReadableString &msg) const {
+	const Jupiter::ReadableString &prefix = getPrefix();
+	if (prefix.isNotEmpty()) {
 		Jupiter::String m(msg.size() + prefix.size() + 1);
 		m.set(prefix);
 		m += ' ';
 		m += msg;
-		for (size_t i = 0; i != serverManager->size(); i++)
-			serverManager->getServer(i)->messageChannels(RenX::Server::logChanType, m);
+		for (size_t i = 0; i != serverManager->size(); i++) {
+			serverManager->getServer(i)->messageChannels(m_logChanType, m);
+		}
+
+		return;
 	}
-	else
-		for (size_t i = 0; i != serverManager->size(); i++)
-			serverManager->getServer(i)->messageChannels(RenX::Server::logChanType, msg);
+
+	for (size_t i = 0; i != serverManager->size(); i++) {
+		serverManager->getServer(i)->messageChannels(m_logChanType, msg);
+	}
 }
 
-void RenX::Server::sendAdmChan(const char *fmt, ...) const
-{
+void RenX::Server::sendAdmChan(const char *fmt, ...) const {
 	va_list args;
 	va_start(args, fmt);
 	Jupiter::StringL msg;
-	const Jupiter::ReadableString &serverPrefix = RenX::Server::getPrefix();
-	if (serverPrefix.isNotEmpty())
-	{
+	const Jupiter::ReadableString &serverPrefix = getPrefix();
+	if (serverPrefix.isNotEmpty()) {
 		msg += serverPrefix;
 		msg += ' ';
 		msg.avformat(fmt, args);
 	}
-	else msg.vformat(fmt, args);
+	else {
+		msg.vformat(fmt, args);
+	}
 	va_end(args);
-	for (size_t i = 0; i != serverManager->size(); i++)
-		serverManager->getServer(i)->messageChannels(RenX::Server::adminLogChanType, msg);
+	for (size_t i = 0; i != serverManager->size(); i++) {
+		serverManager->getServer(i)->messageChannels(m_adminLogChanType, msg);
+	}
 }
 
-void RenX::Server::sendAdmChan(const Jupiter::ReadableString &msg) const
-{
-	const Jupiter::ReadableString &prefix = this->getPrefix();
-	if (prefix.isNotEmpty())
-	{
+void RenX::Server::sendAdmChan(const Jupiter::ReadableString &msg) const {
+	const Jupiter::ReadableString &prefix = getPrefix();
+	if (prefix.isNotEmpty()) {
 		Jupiter::String m(msg.size() + prefix.size() + 1);
 		m.set(prefix);
 		m += ' ';
 		m += msg;
-		for (size_t i = 0; i != serverManager->size(); i++)
-			serverManager->getServer(i)->messageChannels(RenX::Server::adminLogChanType, m);
+		for (size_t i = 0; i != serverManager->size(); i++) {
+			serverManager->getServer(i)->messageChannels(m_adminLogChanType, m);
+		}
+
+		return;
 	}
-	else
-		for (size_t i = 0; i != serverManager->size(); i++)
-			serverManager->getServer(i)->messageChannels(RenX::Server::adminLogChanType, msg);
+
+	for (size_t i = 0; i != serverManager->size(); i++) {
+		serverManager->getServer(i)->messageChannels(m_adminLogChanType, msg);
+	}
 }
 
-void RenX::Server::sendLogChan(const char *fmt, ...) const
-{
+void RenX::Server::sendLogChan(const char *fmt, ...) const {
 	IRC_Bot *server;
 	va_list args;
 	va_start(args, fmt);
 	Jupiter::StringL msg;
-	const Jupiter::ReadableString &serverPrefix = RenX::Server::getPrefix();
-	if (serverPrefix.isNotEmpty())
-	{
+	const Jupiter::ReadableString &serverPrefix = getPrefix();
+	if (serverPrefix.isNotEmpty()) {
 		msg += serverPrefix;
 		msg += ' ';
 		msg.avformat(fmt, args);
 	}
-	else msg.vformat(fmt, args);
+	else {
+		msg.vformat(fmt, args);
+	}
 	va_end(args);
-	for (size_t i = 0; i != serverManager->size(); i++)
-	{
+	for (size_t i = 0; i != serverManager->size(); i++) {
 		server = serverManager->getServer(i);
-		server->messageChannels(RenX::Server::logChanType, msg);
-		server->messageChannels(RenX::Server::adminLogChanType, msg);
+		server->messageChannels(m_logChanType, msg);
+		server->messageChannels(m_adminLogChanType, msg);
 	}
 }
 
-void RenX::Server::sendLogChan(const Jupiter::ReadableString &msg) const
-{
+void RenX::Server::sendLogChan(const Jupiter::ReadableString &msg) const {
 	IRC_Bot *server;
-	const Jupiter::ReadableString &prefix = this->getPrefix();
-	if (prefix.isNotEmpty())
-	{
+	const Jupiter::ReadableString &prefix = getPrefix();
+	if (prefix.isNotEmpty()) {
 		Jupiter::String m(msg.size() + prefix.size() + 1);
 		m.set(prefix);
 		m += ' ';
@@ -1370,27 +1262,28 @@ void RenX::Server::sendLogChan(const Jupiter::ReadableString &msg) const
 		for (size_t i = 0; i != serverManager->size(); i++)
 		{
 			server = serverManager->getServer(i);
-			server->messageChannels(RenX::Server::logChanType, m);
-			server->messageChannels(RenX::Server::adminLogChanType, m);
+			server->messageChannels(m_logChanType, m);
+			server->messageChannels(m_adminLogChanType, m);
 		}
+
+		return;
 	}
-	else
-		for (size_t i = 0; i != serverManager->size(); i++)
-		{
-			server = serverManager->getServer(i);
-			server->messageChannels(RenX::Server::logChanType, msg);
-			server->messageChannels(RenX::Server::adminLogChanType, msg);
-		}
+
+	for (size_t i = 0; i != serverManager->size(); i++) {
+		server = serverManager->getServer(i);
+		server->messageChannels(m_logChanType, msg);
+		server->messageChannels(m_adminLogChanType, msg);
+	}
 }
 
-void resolve_rdns(RenX::PlayerInfo *player)
-{
+void resolve_rdns(RenX::PlayerInfo *player) {
 	player->rdns_mutex.lock();
 	char *resolved = Jupiter::Socket::resolveHostname_alloc(static_cast<std::string>(player->ip).c_str(), 0);
 	player->rdns.capture(resolved, strlen(resolved));
 	player->rdns_mutex.unlock();
 }
 
+// TODO: less macros
 #define PARSE_PLAYER_DATA_P(DATA) \
 	Jupiter::ReferenceString name; \
 	TeamType team; \
@@ -1398,13 +1291,12 @@ void resolve_rdns(RenX::PlayerInfo *player)
 	bool isBot; \
 	parsePlayerData(DATA, name, team, id, isBot);
 
-void RenX::Server::processLine(const Jupiter::ReadableString &line)
-{
+void RenX::Server::processLine(const Jupiter::ReadableString &line) {
 	if (line.isEmpty())
 		return;
 
-	Jupiter::ArrayList<RenX::Plugin> &xPlugins = *RenX::getCore()->getPlugins();
-	Jupiter::ReadableString::TokenizeResult<Jupiter::String_Strict> tokens = Jupiter::StringS::tokenize(line, this->rconVersion == 3 ? RenX::DelimC3 : RenX::DelimC);
+	auto& xPlugins = RenX::getCore()->getPlugins();
+	Jupiter::ReadableString::TokenizeResult<Jupiter::String_Strict> tokens = Jupiter::StringS::tokenize(line, m_rconVersion == 3 ? RenX::DelimC3 : RenX::DelimC);
 
 	for (size_t index = 0; index != tokens.token_count; ++index)
 		tokens.tokens[index].processEscapeSequences();
@@ -1425,12 +1317,12 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 	};
 	auto onMapChange = [this]()
 	{
-		this->firstAction = false;
-		this->firstKill = false;
-		this->firstDeath = false;
+		m_firstAction = false;
+		m_firstKill = false;
+		m_firstDeath = false;
 
-		if (this->isSeamless() == false)
-			this->wipePlayers();
+		if (isSeamless() == false)
+			wipePlayers();
 		else
 		{
 			for (auto node = this->players.begin(); node != this->players.end(); ++node)
@@ -1456,7 +1348,7 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 	};
 	auto onChat = [this](RenX::PlayerInfo &player, const Jupiter::ReadableString &message)
 	{
-		const Jupiter::ReadableString &prefix = this->getCommandPrefix();
+		const Jupiter::ReadableString &prefix = getCommandPrefix();
 		if ((player.ban_flags & RenX::BanDatabase::Entry::FLAG_TYPE_BOT) == 0 && message.find(prefix) == 0 && message.size() != prefix.size())
 		{
 			Jupiter::ReferenceString command;
@@ -1472,14 +1364,14 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 				command.shiftRight(prefix.size());
 				parameters = Jupiter::ReferenceString::gotoWord(message, 1, WHITESPACE);
 			}
-			this->triggerCommand(command, player, parameters);
+			triggerCommand(command, player, parameters);
 		}
 	};
 	auto onAction = [this]()
 	{
-		if (this->firstAction == false)
+		if (m_firstAction == false)
 		{
-			this->firstAction = true;
+			m_firstAction = true;
 		}
 	};
 	auto parsePlayerData = [this](const Jupiter::ReadableString &data, Jupiter::ReferenceString &name, TeamType &team, int &id, bool &isBot)
@@ -1529,7 +1421,7 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 			return get_next_temp_playerinfo(name, team, isBot);
 		}
 
-		RenX::PlayerInfo *player = this->getPlayer(id);
+		RenX::PlayerInfo *player = getPlayer(id);
 		if (player == nullptr)
 		{
 			// Initialize a new player
@@ -1543,10 +1435,10 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 			player->hwid = hwid;
 			
 			// RDNS
-			if (this->resolvesRDNS() && player->ip32 != 0)
+			if (resolvesRDNS() && player->ip32 != 0)
 			{
 				player->rdns_thread = std::thread(resolve_rdns, player);
-				++this->player_rdns_resolutions_pending;
+				++m_player_rdns_resolutions_pending;
 			}
 
 			player->steamid = steamid;
@@ -1557,18 +1449,19 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 			//if (id != 0)
 			//	this->players.add(r);
 
-			player->uuid = calc_uuid(*player);
+			player->uuid = m_calc_uuid(*player);
 
 			if (player->isBot == false)
 			{
 				RenX::exemptionDatabase->exemption_check(*player);
-				this->banCheck(*player);
+				banCheck(*player);
 			}
 			else
-				++bot_count;
+				++m_bot_count;
 
-			for (size_t i = 0; i < xPlugins.size(); i++)
-				xPlugins.get(i)->RenX_OnPlayerCreate(*this, *player);
+			for (const auto& plugin : xPlugins) {
+				plugin->RenX_OnPlayerCreate(*this, *player);
+			}
 		}
 		else
 		{
@@ -1578,10 +1471,10 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 			{
 				player->ip = ip;
 				player->ip32 = Jupiter::Socket::pton4(static_cast<std::string>(player->ip).c_str());
-				if (this->resolvesRDNS())
+				if (resolvesRDNS())
 				{
 					player->rdns_thread = std::thread(resolve_rdns, player);
-					++this->player_rdns_resolutions_pending;
+					++m_player_rdns_resolutions_pending;
 				}
 				recalcUUID = true;
 			}
@@ -1602,11 +1495,11 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 			}
 			if (recalcUUID)
 			{
-				this->setUUIDIfDifferent(*player, calc_uuid(*player));
+				setUUIDIfDifferent(*player, m_calc_uuid(*player));
 				if (player->isBot == false)
 				{
 					RenX::exemptionDatabase->exemption_check(*player);
-					this->banCheck(*player);
+					banCheck(*player);
 				}
 			}
 		}
@@ -1626,7 +1519,7 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 		if (index >= tokens.token_count)
 			return Jupiter::ReferenceString::empty;
 
-		const char delim = this->getVersion() >= 4 ? RenX::DelimC : RenX::DelimC3;
+		const char delim = getVersion() >= 4 ? RenX::DelimC : RenX::DelimC3;
 		const char *itr = line.ptr();
 
 		while (index != 0)
@@ -1640,10 +1533,11 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 	};
 	auto finished_connecting = [this, &xPlugins]()
 	{
-		this->fully_connected = true;
+		m_fully_connected = true;
 
-		for (size_t index = 0; index < xPlugins.size(); ++index)
-			xPlugins.get(index)->RenX_OnServerFullyConnected(*this);
+		for (const auto& plugin : xPlugins) {
+			plugin->RenX_OnServerFullyConnected(*this);
+		}
 	};
 
 	if (tokens.tokens[0].isNotEmpty())
@@ -1653,7 +1547,7 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 		switch (header)
 		{
 		case 'r':
-			if (this->lastCommand.equalsi("clientlist"_jrs))
+			if (m_lastCommand.equalsi("clientlist"_jrs))
 			{
 				// ID | IP | Steam ID | Admin Status | Team | Name
 				if (tokens.tokens[0].isNotEmpty())
@@ -1685,10 +1579,10 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 						getPlayerOrAdd(tokens.getToken(5), id, team, isBot, steamid, tokens.getToken(1), Jupiter::ReferenceString::empty)->adminType = adminToken;
 				}
 			}
-			else if (this->lastCommand.equalsi("clientvarlist"_jrs))
+			else if (m_lastCommand.equalsi("clientvarlist"_jrs))
 			{
-				if (this->commandListFormat.token_count == 0)
-					this->commandListFormat = tokens;
+				if (m_commandListFormat.token_count == 0)
+					m_commandListFormat = tokens;
 				else
 				{
 					/*e
@@ -1699,7 +1593,7 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 					std::unordered_map<Jupiter::StringS, Jupiter::StringS, Jupiter::default_hash_function> table;
 					size_t i = tokens.token_count;
 					while (i-- != 0)
-						table[this->commandListFormat.getToken(i)] = tokens.getToken(i);
+						table[m_commandListFormat.getToken(i)] = tokens.getToken(i);
 
 					auto table_get = [&table](const Jupiter::ReadableString& in_key) -> Jupiter::StringS* {
 						auto value = table.find(in_key);
@@ -1788,7 +1682,7 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 									if (steamid != 0)
 									{
 										player->steamid = steamid;
-										this->setUUIDIfDifferent(*player, calc_uuid(*player));
+										setUUIDIfDifferent(*player, m_calc_uuid(*player));
 									}
 								}
 
@@ -1822,7 +1716,7 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 									if (steamid != 0)
 									{
 										player->steamid = steamid;
-										this->setUUIDIfDifferent(*player, calc_uuid(*player));
+										setUUIDIfDifferent(*player, m_calc_uuid(*player));
 									}
 								}
 
@@ -1843,18 +1737,18 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 					}
 				}
 			}
-			else if (this->lastCommand.equalsi("botlist"))
+			else if (m_lastCommand.equalsi("botlist"))
 			{
 				// Team,ID,Name
-				if (this->commandListFormat.token_count == 0)
-					this->commandListFormat = tokens;
+				if (m_commandListFormat.token_count == 0)
+					m_commandListFormat = tokens;
 				else
 					parseGetPlayerOrAdd(tokens.tokens[0]);
 			}
-			else if (this->lastCommand.equalsi("botvarlist"))
+			else if (m_lastCommand.equalsi("botvarlist"))
 			{
-				if (this->commandListFormat.token_count == 0)
-					this->commandListFormat = tokens;
+				if (m_commandListFormat.token_count == 0)
+					m_commandListFormat = tokens;
 				else
 				{
 					/*
@@ -1865,7 +1759,7 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 					std::unordered_map<Jupiter::StringS, Jupiter::StringS, Jupiter::default_hash_function> table;
 					size_t i = tokens.token_count;
 					while (i-- != 0)
-						table[this->commandListFormat.getToken(i)] = tokens.getToken(i);
+						table[m_commandListFormat.getToken(i)] = tokens.getToken(i);
 
 					auto table_get = [&table](const Jupiter::ReadableString& in_key) -> Jupiter::StringS* {
 						auto value = table.find(in_key);
@@ -1967,10 +1861,10 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 					}
 				}
 			}
-			else if (this->lastCommand.equalsi("binfo") || this->lastCommand.equalsi("buildinginfo") || this->lastCommand.equalsi("blist") || this->lastCommand.equalsi("buildinglist"))
+			else if (m_lastCommand.equalsi("binfo") || m_lastCommand.equalsi("buildinginfo") || m_lastCommand.equalsi("blist") || m_lastCommand.equalsi("buildinglist"))
 			{
-				if (this->commandListFormat.token_count == 0)
-					this->commandListFormat = tokens;
+				if (m_commandListFormat.token_count == 0)
+					m_commandListFormat = tokens;
 				else
 				{
 					/*
@@ -1981,7 +1875,7 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 					std::unordered_map<Jupiter::StringS, Jupiter::StringS, Jupiter::default_hash_function> table;
 					size_t i = tokens.token_count;
 					while (i-- != 0)
-						table[this->commandListFormat.getToken(i)] = tokens.getToken(i);
+						table[m_commandListFormat.getToken(i)] = tokens.getToken(i);
 
 					auto table_get = [&table](const Jupiter::ReadableString& in_key) -> Jupiter::StringS* {
 						auto value = table.find(in_key);
@@ -1998,11 +1892,11 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 					value = table_get("Building"_jrs);
 					if (value != nullptr)
 					{
-						building = this->getBuildingByName(*value);
+						building = getBuildingByName(*value);
 						if (building == nullptr)
 						{
 							building = new RenX::BuildingInfo();
-							RenX::Server::buildings.add(building);
+							RenX::Server::buildings.emplace_back(building);
 							building->name = *value;
 						}
 
@@ -2036,131 +1930,122 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 					}
 				}
 			}
-			else if (this->lastCommand.equalsi("ping"))
+			else if (m_lastCommand.equalsi("ping"))
 			{
 				if (tokens.getToken(1).equals("srv_init_done"_jrs))
 					finished_connecting();
 				else
-					RenX::Server::awaitingPong = false;
+					m_awaitingPong = false;
 			}
-			else if (this->lastCommand.equalsi("map"))
+			else if (m_lastCommand.equalsi("map"))
 			{
 				// Map | Guid
-				this->map.name = tokens.getToken(0);
+				m_map.name = tokens.getToken(0);
 				const Jupiter::ReferenceString guid_token = tokens.getToken(1);
 
 				if (guid_token.size() == 32U)
 				{
-					this->map.guid[0] = guid_token.substring(size_t{ 0 }, 16U).asUnsignedLongLong(16);
-					this->map.guid[1] = guid_token.substring(16U).asUnsignedLongLong(16);
+					m_map.guid[0] = guid_token.substring(size_t{ 0 }, 16U).asUnsignedLongLong(16);
+					m_map.guid[1] = guid_token.substring(16U).asUnsignedLongLong(16);
 				}
 			}
-			else if (this->lastCommand.equalsi("serverinfo"))
+			else if (m_lastCommand.equalsi("serverinfo"))
 			{
-				if (this->lastCommandParams.isEmpty())
+				if (m_lastCommandParams.isEmpty())
 				{
 					// "Port"�| Port |�"Name" |�Name |�"Level"�| Level | "Players" | Players�| "Bots" | Bots | "LevelGUID" | Level GUID
-					this->port = static_cast<unsigned short>(tokens.getToken(1).asUnsignedInt(10));
-					this->serverName = tokens.getToken(3);
-					this->map.name = tokens.getToken(5);
+					m_port = static_cast<unsigned short>(tokens.getToken(1).asUnsignedInt(10));
+					m_serverName = tokens.getToken(3);
+					m_map.name = tokens.getToken(5);
 
 					const Jupiter::ReferenceString guid_token = tokens.getToken(11);
 					if (guid_token.size() == 32U)
 					{
-						this->map.guid[0] = guid_token.substring(size_t{ 0 }, 16U).asUnsignedLongLong(16);
-						this->map.guid[1] = guid_token.substring(16U).asUnsignedLongLong(16);
+						m_map.guid[0] = guid_token.substring(size_t{ 0 }, 16U).asUnsignedLongLong(16);
+						m_map.guid[1] = guid_token.substring(16U).asUnsignedLongLong(16);
 					}
 				}
 			}
-			else if (this->lastCommand.equalsi("gameinfo"_jrs))
+			else if (m_lastCommand.equalsi("gameinfo"_jrs))
 			{
-				if (this->lastCommandParams.isEmpty())
+				if (m_lastCommandParams.isEmpty())
 				{
 					// "PlayerLimit" | PlayerLimit | "VehicleLimit" | VehicleLimit | "MineLimit" | MineLimit | "TimeLimit" | TimeLimit | "bPassworded" | bPassworded | "bSteamRequired" | bSteamRequired | "bPrivateMessageTeamOnly" | bPrivateMessageTeamOnly | "bAllowPrivateMessaging" | bAllowPrivateMessaging | "TeamMode" | TeamMode | "bSpawnCrates" | bSpawnCrates | "CrateRespawnAfterPickup" | CrateRespawnAfterPickup | bIsCompetitive | "bIsCompetitive"
-					this->playerLimit = tokens.getToken(1).asInt();
-					this->vehicleLimit = tokens.getToken(3).asInt();
-					this->mineLimit = tokens.getToken(5).asInt();
-					this->timeLimit = tokens.getToken(7).asInt();
-					this->passworded = tokens.getToken(9).asBool();
-					this->steamRequired = tokens.getToken(11).asBool();
-					this->privateMessageTeamOnly = tokens.getToken(13).asBool();
-					this->allowPrivateMessaging = tokens.getToken(15).asBool();
-					this->m_team_mode = this->rconVersion >= 4 ? tokens.getToken(17).asInt() : true;
-					this->spawnCrates = tokens.getToken(19).asBool();
-					this->crateRespawnAfterPickup = tokens.getToken(21).asDouble();
+					m_playerLimit = tokens.getToken(1).asInt();
+					m_vehicleLimit = tokens.getToken(3).asInt();
+					m_mineLimit = tokens.getToken(5).asInt();
+					m_timeLimit = tokens.getToken(7).asInt();
+					m_passworded = tokens.getToken(9).asBool();
+					m_steamRequired = tokens.getToken(11).asBool();
+					m_privateMessageTeamOnly = tokens.getToken(13).asBool();
+					m_allowPrivateMessaging = tokens.getToken(15).asBool();
+					m_team_mode = m_rconVersion >= 4 ? tokens.getToken(17).asInt() : true;
+					m_spawnCrates = tokens.getToken(19).asBool();
+					m_crateRespawnAfterPickup = tokens.getToken(21).asDouble();
 
-					if (this->rconVersion >= 4)
+					if (m_rconVersion >= 4)
 					{
-						this->competitive = tokens.getToken(23).asBool();
+						m_competitive = tokens.getToken(23).asBool();
 
 						const Jupiter::ReadableString &match_state_token = tokens.getToken(25);
 						if (match_state_token.equalsi("PendingMatch"_jrs))
-							this->match_state = 0;
+							m_match_state = 0;
 						else if (match_state_token.equalsi("MatchInProgress"_jrs))
-							this->match_state = 1;
+							m_match_state = 1;
 						else if (match_state_token.equalsi("RoundOver"_jrs) || match_state_token.equalsi("MatchOver"_jrs))
-							this->match_state = 2;
+							m_match_state = 2;
 						else if (match_state_token.equalsi("TravelTheWorld"_jrs))
-							this->match_state = 3;
+							m_match_state = 3;
 						else // Unknown state -- assume it's in progress
-							this->match_state = 1;
+							m_match_state = 1;
 
-						this->botsEnabled = tokens.getToken(27).asBool();
-						this->m_game_type = tokens.getToken(29).asInt();
+						m_botsEnabled = tokens.getToken(27).asBool();
+						m_game_type = tokens.getToken(29).asInt();
 					}
 				}
 			}
-			else if (this->lastCommand.equalsi("mutatorlist"_jrs))
-			{
+			else if (m_lastCommand.equalsi("mutatorlist"_jrs)) {
 				// "The following mutators are loaded:" [ | Mutator [ | Mutator [ ... ] ] ]
-				if (tokens.token_count == 1)
-					RenX::Server::pure = true;
-				else if (tokens.token_count == 0)
-					RenX::Server::disconnect(RenX::DisconnectReason::ProtocolError);
-				else
-				{
-					RenX::Server::mutators.emptyAndDelete();
+				if (tokens.token_count == 1) {
+					m_pure = true;
+				}
+				else if (tokens.token_count == 0) {
+					disconnect(RenX::DisconnectReason::ProtocolError);
+				}
+				else {
+					RenX::Server::mutators.clear();
 					size_t index = tokens.token_count;
 					while (--index != 0)
-						RenX::Server::mutators.add(new Jupiter::StringS(tokens.tokens[index]));
+						RenX::Server::mutators.emplace_back(tokens.tokens[index]);
 				}
 			}
-			else if (this->lastCommand.equalsi("rotation"_jrs))
-			{
+			else if (m_lastCommand.equalsi("rotation"_jrs)) {
 				// Map | Guid
 				const Jupiter::ReadableString &in_map = tokens.getToken(0);
-				if (this->hasMapInRotation(in_map) == false)
-				{
-					const Jupiter::ReferenceString guid_token = tokens.getToken(1);
+				if (hasMapInRotation(in_map) == false) {
+					this->maps.emplace_back(in_map);
 
-					if (guid_token.size() == 32U)
-					{
-						RenX::Map *map = new RenX::Map(in_map);
-						map->guid[0] = guid_token.substring(size_t{ 0 }, 16U).asUnsignedLongLong(16);
-						map->guid[1] = guid_token.substring(16U).asUnsignedLongLong(16);
-						this->maps.add(map);
+					const Jupiter::ReferenceString guid_token = tokens.getToken(1);
+					if (guid_token.size() == 32U) {
+						this->maps.back().guid[0] = guid_token.substring(size_t{ 0 }, 16U).asUnsignedLongLong(16);
+						this->maps.back().guid[1] = guid_token.substring(16U).asUnsignedLongLong(16);
 					}
-					else
-						this->maps.add(new RenX::Map(in_map));
 				}
 			}
-			else if (this->lastCommand.equalsi("changename"))
-			{
+			else if (m_lastCommand.equalsi("changename")) {
 				RenX::PlayerInfo *player = parseGetPlayerOrAdd(tokens.getToken(0));
 				Jupiter::StringS newName = tokens.getToken(2);
-				for (size_t i = 0; i < xPlugins.size(); i++)
-					xPlugins.get(i)->RenX_OnNameChange(*this, *player, newName);
+				for (const auto& plugin : xPlugins) {
+					plugin->RenX_OnNameChange(*this, *player, newName);
+				}
 				player->name = tokens.getToken(2).gotoToken(2, ',');
 			}
 			break;
 		case 'l':
-			if (RenX::Server::rconVersion >= 3)
-			{
+			if (m_rconVersion >= 3) {
 				Jupiter::ReferenceString subHeader = tokens.getToken(1);
-				if (tokens.tokens[0].equals("GAME"))
-				{
-					if (subHeader.equals("Deployed;"))
-					{
+				if (tokens.tokens[0].equals("GAME")) {
+					if (subHeader.equals("Deployed;")) {
 						// Object (Beacon/Mine) | Player
 						// Object (Beacon/Mine) | Player | "on" | Surface
 						RenX::PlayerInfo *player = parseGetPlayerOrAdd(tokens.getToken(4));
@@ -2169,12 +2054,12 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 							++player->beaconPlacements;
 						else if (objectType.equals("Rx_Weapon_DeployedProxyC4"_jrs))
 							++player->proxy_placements;
-						for (size_t i = 0; i < xPlugins.size(); i++)
-							xPlugins.get(i)->RenX_OnDeploy(*this, *player, objectType);
+						for (const auto& plugin : xPlugins) {
+							plugin->RenX_OnDeploy(*this, *player, objectType);
+						}
 						onAction();
 					}
-					else if (subHeader.equals("Disarmed;"))
-					{
+					else if (subHeader.equals("Disarmed;")) {
 						// Object (Beacon/Mine) | "by" | Player
 						// Object (Beacon/Mine) | "by" | Player | "owned by" | Owner
 						RenX::PlayerInfo *player = parseGetPlayerOrAdd(tokens.getToken(4));
@@ -2184,19 +2069,20 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 						else if (objectType.equals("Rx_Weapon_DeployedProxyC4"_jrs))
 							++player->proxy_disarms;
 
-						if (tokens.getToken(5).equals("owned by"))
-						{
+						if (tokens.getToken(5).equals("owned by")) {
 							RenX::PlayerInfo *victim = parseGetPlayerOrAdd(tokens.getToken(6));
-							for (size_t i = 0; i < xPlugins.size(); i++)
-								xPlugins.get(i)->RenX_OnDisarm(*this, *player, objectType, *victim);
+							for (const auto& plugin : xPlugins) {
+								plugin->RenX_OnDisarm(*this, *player, objectType, *victim);
+							}
 						}
-						else
-							for (size_t i = 0; i < xPlugins.size(); i++)
-								xPlugins.get(i)->RenX_OnDisarm(*this, *player, objectType);
+						else {
+							for (const auto& plugin: xPlugins) {
+								plugin->RenX_OnDisarm(*this, *player, objectType);
+							}
+						}
 						onAction();
 					}
-					else if (subHeader.equals("Exploded;"))
-					{
+					else if (subHeader.equals("Exploded;")) {
 						// Pre-5.15:
 						// Explosive | "at" | Location
 						// Explosive | "at" | Location | "by" | Owner
@@ -2204,70 +2090,73 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 						// Explosive | "near" | Spot Location | "at" | Location | "by" | Owner
 						// Explosive | "near" | Spot Location | "at" | Location
 						Jupiter::ReferenceString explosive = tokens.getToken(2);
-						if (tokens.getToken(5).equals("at")) // 5.15+
-						{
-							if (tokens.getToken(7).equals("by")) // Player information specified
-							{
+						if (tokens.getToken(5).equals("at")) { // 5.15+
+							if (tokens.getToken(7).equals("by")) { // Player information specified
 								RenX::PlayerInfo *player = parseGetPlayerOrAdd(tokens.getToken(8));
-								for (size_t i = 0; i < xPlugins.size(); i++)
-									xPlugins.get(i)->RenX_OnExplode(*this, *player, explosive);
+								for (const auto& plugin : xPlugins) {
+									plugin->RenX_OnExplode(*this, *player, explosive);
+								}
 							}
-							else // No player information specified
-								for (size_t i = 0; i < xPlugins.size(); i++)
-									xPlugins.get(i)->RenX_OnExplode(*this, explosive);
+							else { // No player information specified
+								for (const auto& plugin: xPlugins) {
+									plugin->RenX_OnExplode(*this, explosive);
+								}
+							}
 						}
-						else if (tokens.getToken(5).equals("by")) // Pre-5.15 with player information specified
-						{
+						else if (tokens.getToken(5).equals("by")) { // Pre-5.15 with player information specified
 							RenX::PlayerInfo *player = parseGetPlayerOrAdd(tokens.getToken(6));
-							for (size_t i = 0; i < xPlugins.size(); i++)
-								xPlugins.get(i)->RenX_OnExplode(*this, *player, explosive);
+							for (const auto& plugin : xPlugins) {
+								plugin->RenX_OnExplode(*this, *player, explosive);
+							}
 						}
-						else // Pre-5.15 with no player information specified
-							for (size_t i = 0; i < xPlugins.size(); i++)
-								xPlugins.get(i)->RenX_OnExplode(*this, explosive);
+						else { // Pre-5.15 with no player information specified
+							for (const auto& plugin: xPlugins) {
+								plugin->RenX_OnExplode(*this, explosive);
+							}
+						}
 						onAction();
 					}
-					else if (subHeader.equals("ProjectileExploded;"))
-					{
+					else if (subHeader.equals("ProjectileExploded;")) {
 						// Explosive | "at" | Location
 						// Explosive | "at" | Location | "by" | Owner
 						Jupiter::ReferenceString explosive = tokens.getToken(2);
-						if (tokens.getToken(5).equals("by"))
-						{
+						if (tokens.getToken(5).equals("by")) {
 							RenX::PlayerInfo *player = parseGetPlayerOrAdd(tokens.getToken(6));
-							for (size_t i = 0; i < xPlugins.size(); i++)
-								xPlugins.get(i)->RenX_OnExplode(*this, *player, explosive);
+							for (const auto& plugin : xPlugins) {
+								plugin->RenX_OnExplode(*this, *player, explosive);
+							}
 						}
-						else
-							for (size_t i = 0; i < xPlugins.size(); i++)
-								xPlugins.get(i)->RenX_OnExplode(*this, explosive);
+						else {
+							for (const auto& plugin: xPlugins) {
+								plugin->RenX_OnExplode(*this, explosive);
+							}
+						}
 						onAction();
 					}
-					else if (subHeader.equals("Captured;"))
-					{
+					else if (subHeader.equals("Captured;")) {
 						// Team ',' Building | "id" | Building ID | "by" | Player
 						Jupiter::ReferenceString teamBuildingToken = tokens.getToken(2);
 						Jupiter::ReferenceString building = teamBuildingToken.getToken(1, ',');
 						TeamType oldTeam = RenX::getTeam(teamBuildingToken.getToken(0, ','));
 						RenX::PlayerInfo *player = parseGetPlayerOrAdd(tokens.getToken(6));
 						player->captures++;
-						for (size_t i = 0; i < xPlugins.size(); i++)
-							xPlugins.get(i)->RenX_OnCapture(*this, *player, building, oldTeam);
+						for (const auto& plugin : xPlugins) {
+							plugin->RenX_OnCapture(*this, *player, building, oldTeam);
+						}
 						onAction();
 					}
-					else if (subHeader.equals("Neutralized;"))
-					{
+					else if (subHeader.equals("Neutralized;")) {
 						// Team ',' Building | "id" | Building ID | "by" | Player
 						Jupiter::ReferenceString teamBuildingToken = tokens.getToken(2);
 						Jupiter::ReferenceString building = teamBuildingToken.getToken(1, ',');
 						TeamType oldTeam = RenX::getTeam(teamBuildingToken.getToken(0, ','));
 						RenX::PlayerInfo *player = parseGetPlayerOrAdd(tokens.getToken(6));
-						for (size_t i = 0; i < xPlugins.size(); i++)
-							xPlugins.get(i)->RenX_OnNeutralize(*this, *player, building, oldTeam);
+						for (const auto& plugin : xPlugins) {
+							plugin->RenX_OnNeutralize(*this, *player, building, oldTeam);
+						}
 						onAction();
 					}
-					else if (subHeader.equals("Purchase;"))
-					{
+					else if (subHeader.equals("Purchase;")) {
 						// "character" | Character | "by" | Player
 						// "item" | Item | "by" | Player
 						// "weapon" | Weapon | "by" | Player
@@ -2275,65 +2164,64 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 						// "vehicle" | Vehicle | "by" | Player
 						Jupiter::ReferenceString type = tokens.getToken(2);
 						Jupiter::ReferenceString obj = tokens.getToken(3);
-						if (type.equals("character"))
-						{
+						if (type.equals("character")) {
 							RenX::PlayerInfo *player = parseGetPlayerOrAdd(tokens.getToken(5));
-							for (size_t i = 0; i < xPlugins.size(); i++)
-								xPlugins.get(i)->RenX_OnCharacterPurchase(*this, *player, obj);
+							for (const auto& plugin : xPlugins) {
+								plugin->RenX_OnCharacterPurchase(*this, *player, obj);
+							}
 							player->character = obj;
 						}
-						else if (type.equals("item"))
-						{
+						else if (type.equals("item")) {
 							RenX::PlayerInfo *player = parseGetPlayerOrAdd(tokens.getToken(5));
-							for (size_t i = 0; i < xPlugins.size(); i++)
-								xPlugins.get(i)->RenX_OnItemPurchase(*this, *player, obj);
+							for (const auto& plugin : xPlugins) {
+								plugin->RenX_OnItemPurchase(*this, *player, obj);
+							}
 						}
-						else if (type.equals("weapon"))
-						{
+						else if (type.equals("weapon")) {
 							RenX::PlayerInfo *player = parseGetPlayerOrAdd(tokens.getToken(5));
-							for (size_t i = 0; i < xPlugins.size(); i++)
-								xPlugins.get(i)->RenX_OnWeaponPurchase(*this, *player, obj);
+							for (const auto& plugin : xPlugins) {
+								plugin->RenX_OnWeaponPurchase(*this, *player, obj);
+							}
 						}
-						else if (type.equals("refill"))
-						{
+						else if (type.equals("refill")) {
 							RenX::PlayerInfo *player = parseGetPlayerOrAdd(obj);
-							for (size_t i = 0; i < xPlugins.size(); i++)
-								xPlugins.get(i)->RenX_OnRefillPurchase(*this, *player);
+							for (const auto& plugin : xPlugins) {
+								plugin->RenX_OnRefillPurchase(*this, *player);
+							}
 						}
-						else if (type.equals("vehicle"))
-						{
+						else if (type.equals("vehicle")) {
 							RenX::PlayerInfo *player = parseGetPlayerOrAdd(tokens.getToken(5));
-							for (size_t i = 0; i < xPlugins.size(); i++)
-								xPlugins.get(i)->RenX_OnVehiclePurchase(*this, *player, obj);
+							for (const auto& plugin : xPlugins) {
+								plugin->RenX_OnVehiclePurchase(*this, *player, obj);
+							}
 						}
 					}
-					else if (subHeader.equals("Spawn;"))
-					{
+					else if (subHeader.equals("Spawn;")) {
 						// "vehicle" | Vehicle Team, Vehicle
 						// "player" | Player | "character" | Character
 						// "bot" | Player
-						if (tokens.getToken(2).equals("vehicle"))
-						{
+						if (tokens.getToken(2).equals("vehicle")) {
 							Jupiter::ReferenceString vehicle = tokens.getToken(3);
 							Jupiter::ReferenceString vehicleTeamToken = vehicle.getToken(0, ',');
 							vehicle.shiftRight(vehicleTeamToken.size() + 1);
 							TeamType team = RenX::getTeam(vehicleTeamToken);
-							for (size_t i = 0; i < xPlugins.size(); i++)
-								xPlugins.get(i)->RenX_OnVehicleSpawn(*this, team, vehicle);
+							for (const auto& plugin : xPlugins) {
+								plugin->RenX_OnVehicleSpawn(*this, team, vehicle);
+							}
 						}
-						else if (tokens.getToken(2).equals("player"))
-						{
+						else if (tokens.getToken(2).equals("player")) {
 							RenX::PlayerInfo *player = parseGetPlayerOrAdd(tokens.getToken(3));
 							Jupiter::ReferenceString character = tokens.getToken(5);
 							player->character = character;
-							for (size_t i = 0; i < xPlugins.size(); i++)
-								xPlugins.get(i)->RenX_OnSpawn(*this, *player, character);
+							for (const auto& plugin : xPlugins) {
+								plugin->RenX_OnSpawn(*this, *player, character);
+							}
 						}
-						else if (tokens.getToken(2).equals("bot"))
-						{
+						else if (tokens.getToken(2).equals("bot")) {
 							RenX::PlayerInfo *bot = parseGetPlayerOrAdd(tokens.getToken(3));
-							for (size_t i = 0; i < xPlugins.size(); i++)
-								xPlugins.get(i)->RenX_OnBotJoin(*this, *bot);
+							for (const auto& plugin : xPlugins) {
+								plugin->RenX_OnBotJoin(*this, *bot);
+							}
 						}
 					}
 					else if (subHeader.equals("Crate;"))
@@ -2355,97 +2243,112 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 						{
 							Jupiter::ReferenceString vehicle = tokens.getToken(3);
 							RenX::PlayerInfo *player = parseGetPlayerOrAdd(tokens.getToken(5));
-							for (size_t i = 0; i < xPlugins.size(); i++)
-								xPlugins.get(i)->RenX_OnVehicleCrate(*this, *player, vehicle);
+							for (const auto& plugin : xPlugins) {
+								plugin->RenX_OnVehicleCrate(*this, *player, vehicle);
+							}
 						}
 						else if (type.equals("tsvehicle"))
 						{
 							Jupiter::ReferenceString vehicle = tokens.getToken(3);
 							RenX::PlayerInfo *player = parseGetPlayerOrAdd(tokens.getToken(5));
-							for (size_t i = 0; i < xPlugins.size(); i++)
-								xPlugins.get(i)->RenX_OnVehicleCrate(*this, *player, vehicle);
+							for (const auto& plugin : xPlugins) {
+								plugin->RenX_OnVehicleCrate(*this, *player, vehicle);
+							}
 						}
 						else if (type.equals("ravehicle"))
 						{
 							Jupiter::ReferenceString vehicle = tokens.getToken(3);
 							RenX::PlayerInfo *player = parseGetPlayerOrAdd(tokens.getToken(5));
-							for (size_t i = 0; i < xPlugins.size(); i++)
-								xPlugins.get(i)->RenX_OnVehicleCrate(*this, *player, vehicle);
+							for (const auto& plugin : xPlugins) {
+								plugin->RenX_OnVehicleCrate(*this, *player, vehicle);
+							}
 						}
 						else if (type.equals("death") || type.equals("suicide"))
 						{
 							RenX::PlayerInfo *player = parseGetPlayerOrAdd(tokens.getToken(4));
-							for (size_t i = 0; i < xPlugins.size(); i++)
-								xPlugins.get(i)->RenX_OnDeathCrate(*this, *player);
+							for (const auto& plugin : xPlugins) {
+								plugin->RenX_OnDeathCrate(*this, *player);
+							}
 						}
 						else if (type.equals("money"))
 						{
 							int amount = tokens.getToken(3).asInt();
 							RenX::PlayerInfo *player = parseGetPlayerOrAdd(tokens.getToken(5));
-							for (size_t i = 0; i < xPlugins.size(); i++)
-								xPlugins.get(i)->RenX_OnMoneyCrate(*this, *player, amount);
+							for (const auto& plugin : xPlugins) {
+								plugin->RenX_OnMoneyCrate(*this, *player, amount);
+							}
 						}
 						else if (type.equals("character"))
 						{
 							Jupiter::ReferenceString character = tokens.getToken(3);
 							RenX::PlayerInfo *player = parseGetPlayerOrAdd(tokens.getToken(5));
-							for (size_t i = 0; i < xPlugins.size(); i++)
-								xPlugins.get(i)->RenX_OnCharacterCrate(*this, *player, character);
+							for (const auto& plugin : xPlugins) {
+								plugin->RenX_OnCharacterCrate(*this, *player, character);
+							}
 							player->character = character;
 						}
 						else if (type.equals("spy"))
 						{
 							Jupiter::ReferenceString character = tokens.getToken(3);
 							RenX::PlayerInfo *player = parseGetPlayerOrAdd(tokens.getToken(5));
-							for (size_t i = 0; i < xPlugins.size(); i++)
-								xPlugins.get(i)->RenX_OnSpyCrate(*this, *player, character);
+							for (const auto& plugin : xPlugins) {
+								plugin->RenX_OnSpyCrate(*this, *player, character);
+							}
 							player->character = character;
 						}
 						else if (type.equals("refill"))
 						{
 							RenX::PlayerInfo *player = parseGetPlayerOrAdd(tokens.getToken(4));
-							for (size_t i = 0; i < xPlugins.size(); i++)
-								xPlugins.get(i)->RenX_OnRefillCrate(*this, *player);
+							for (const auto& plugin : xPlugins) {
+								plugin->RenX_OnRefillCrate(*this, *player);
+							}
 						}
 						else if (type.equals("timebomb"))
 						{
 							RenX::PlayerInfo *player = parseGetPlayerOrAdd(tokens.getToken(4));
-							for (size_t i = 0; i < xPlugins.size(); i++)
-								xPlugins.get(i)->RenX_OnTimeBombCrate(*this, *player);
+							for (const auto& plugin : xPlugins) {
+								plugin->RenX_OnTimeBombCrate(*this, *player);
+							}
 						}
 						else if (type.equals("speed"))
 						{
 							RenX::PlayerInfo *player = parseGetPlayerOrAdd(tokens.getToken(4));
-							for (size_t i = 0; i < xPlugins.size(); i++)
-								xPlugins.get(i)->RenX_OnSpeedCrate(*this, *player);
+							for (const auto& plugin : xPlugins) {
+								plugin->RenX_OnSpeedCrate(*this, *player);
+							}
 						}
 						else if (type.equals("nuke"))
 						{
 							RenX::PlayerInfo *player = parseGetPlayerOrAdd(tokens.getToken(4));
-							for (size_t i = 0; i < xPlugins.size(); i++)
-								xPlugins.get(i)->RenX_OnNukeCrate(*this, *player);
+							for (const auto& plugin : xPlugins) {
+								plugin->RenX_OnNukeCrate(*this, *player);
+							}
 						}
 						else if (type.equals("abduction"))
 						{
 							RenX::PlayerInfo *player = parseGetPlayerOrAdd(tokens.getToken(4));
-							for (size_t i = 0; i < xPlugins.size(); i++)
-								xPlugins.get(i)->RenX_OnAbductionCrate(*this, *player);
+							for (const auto& plugin : xPlugins) {
+								plugin->RenX_OnAbductionCrate(*this, *player);
+							}
 						}
 						else if (type.equals("by"))
 						{
 							RenX::PlayerInfo *player = parseGetPlayerOrAdd(tokens.getToken(3));
-							for (size_t i = 0; i < xPlugins.size(); i++)
-								xPlugins.get(i)->RenX_OnUnspecifiedCrate(*this, *player);
+							for (const auto& plugin : xPlugins) {
+								plugin->RenX_OnUnspecifiedCrate(*this, *player);
+							}
 						}
-						else
-						{
+						else {
 							RenX::PlayerInfo *player = nullptr;
-							if (tokens.getToken(3).equals("by"))
+							if (tokens.getToken(3).equals("by")) {
 								player = parseGetPlayerOrAdd(tokens.getToken(4));
+							}
 
-							if (player != nullptr)
-								for (size_t i = 0; i < xPlugins.size(); i++)
-									xPlugins.get(i)->RenX_OnOtherCrate(*this, *player, type);
+							if (player != nullptr) {
+								for (const auto& plugin: xPlugins) {
+									plugin->RenX_OnOtherCrate(*this, *player, type);
+								}
+							}
 						}
 					}
 					else if (subHeader.equals("Death;"))
@@ -2470,8 +2373,9 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 								if (kIDToken.equals("ai") || kIDToken.isEmpty())
 								{
 									player->deaths++;
-									for (size_t i = 0; i < xPlugins.size(); i++)
-										xPlugins.get(i)->RenX_OnKill(*this, kName, vTeam, *player, damageType);
+									for (const auto& plugin : xPlugins) {
+										plugin->RenX_OnKill(*this, kName, vTeam, *player, damageType);
+									}
 								}
 								else
 								{
@@ -2489,26 +2393,30 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 										kID = kIDToken.asInt();
 									RenX::PlayerInfo *killer = getPlayerOrAdd(kName, kID, vTeam, kIsBot, 0, Jupiter::ReferenceString::empty, Jupiter::ReferenceString::empty);
 									killer->kills++;
-									if (damageType.equals("Rx_DmgType_Headshot"))
+									if (damageType.equals("Rx_DmgType_Headshot")) {
 										killer->headshots++;
-									for (size_t i = 0; i < xPlugins.size(); i++)
-										xPlugins.get(i)->RenX_OnKill(*this, *killer, *player, damageType);
+									}
+									for (const auto& plugin : xPlugins) {
+										plugin->RenX_OnKill(*this, *killer, *player, damageType);
+									}
 								}
 							}
 							else if (type.equals("died by"))
 							{
 								player->deaths++;
 								damageType = tokens.getToken(5);
-								for (size_t i = 0; i < xPlugins.size(); i++)
-									xPlugins.get(i)->RenX_OnDie(*this, *player, damageType);
+								for (const auto& plugin : xPlugins) {
+									plugin->RenX_OnDie(*this, *player, damageType);
+								}
 							}
 							else if (type.equals("suicide by"))
 							{
 								player->deaths++;
 								player->suicides++;
 								damageType = tokens.getToken(5);
-								for (size_t i = 0; i < xPlugins.size(); i++)
-									xPlugins.get(i)->RenX_OnSuicide(*this, *player, damageType);
+								for (const auto& plugin : xPlugins) {
+									plugin->RenX_OnSuicide(*this, *player, damageType);
+								}
 							}
 							player->character = Jupiter::ReferenceString::empty;
 						}
@@ -2524,8 +2432,9 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 						{
 							RenX::PlayerInfo *player = parseGetPlayerOrAdd(tokens.getToken(4));
 							player->steals++;
-							for (size_t i = 0; i < xPlugins.size(); i++)
-								xPlugins.get(i)->RenX_OnSteal(*this, *player, vehicle);
+							for (const auto& plugin : xPlugins) {
+								plugin->RenX_OnSteal(*this, *player, vehicle);
+							}
 						}
 						else if (byLine.equals("bound to"))
 						{
@@ -2533,8 +2442,9 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 							RenX::PlayerInfo *player = parseGetPlayerOrAdd(tokens.getToken(6));
 							player->steals++;
 							victim->stolen++;
-							for (size_t i = 0; i < xPlugins.size(); i++)
-								xPlugins.get(i)->RenX_OnSteal(*this, *player, vehicle, *victim);
+							for (const auto& plugin : xPlugins) {
+								plugin->RenX_OnSteal(*this, *player, vehicle, *victim);
+							}
 						}
 						onAction();
 					}
@@ -2565,9 +2475,11 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 
 								RenX::TeamType team = RenX::getTeam(killerToken.getToken(0, ','));
 
-								if (idToken.equals("ai") || idToken.isEmpty())
-									for (size_t i = 0; i < xPlugins.size(); i++)
-										xPlugins.get(i)->RenX_OnDestroy(*this, name, team, objectName, RenX::getEnemy(team), damageType, type);
+								if (idToken.equals("ai") || idToken.isEmpty()) {
+									for (const auto& plugin : xPlugins) {
+										plugin->RenX_OnDestroy(*this, name, team, objectName, RenX::getEnemy(team), damageType, type);
+									}
+								}
 								else
 								{
 									int id;
@@ -2591,7 +2503,7 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 											RenX::BuildingInfo *building;
 											if (objectName.findi(internalsStr) != Jupiter::INVALID_INDEX)
 												objectName.truncate(internalsStr.size());
-											building = RenX::Server::getBuildingByName(objectName);
+											building = getBuildingByName(objectName);
 											if (building != nullptr)
 											{
 												building->health = 0;
@@ -2608,8 +2520,9 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 									default:
 										break;
 									}
-									for (size_t i = 0; i < xPlugins.size(); i++)
-										xPlugins.get(i)->RenX_OnDestroy(*this, *player, objectName, RenX::getEnemy(player->team), damageType, type);
+									for (const auto& plugin : xPlugins) {
+										plugin->RenX_OnDestroy(*this, *player, objectName, RenX::getEnemy(player->team), damageType, type);
+									}
 								}
 							}
 						}
@@ -2623,8 +2536,9 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 							double amount = tokens.getToken(2).asDouble();
 							RenX::PlayerInfo *player = parseGetPlayerOrAdd(tokens.getToken(4));
 							RenX::PlayerInfo *donor = parseGetPlayerOrAdd(tokens.getToken(6));
-							for (size_t i = 0; i < xPlugins.size(); i++)
-								xPlugins.get(i)->RenX_OnDonate(*this, *donor, *player, amount);
+							for (const auto& plugin : xPlugins) {
+								plugin->RenX_OnDonate(*this, *donor, *player, amount);
+							}
 						}
 					}
 					else if (subHeader.equals("OverMine;"))
@@ -2633,15 +2547,16 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 						RenX::PlayerInfo *player = parseGetPlayerOrAdd(tokens.getToken(2));
 						Jupiter::ReferenceString location = tokens.getToken(4);
 
-						for (size_t i = 0; i < xPlugins.size(); i++)
-							xPlugins.get(i)->RenX_OnOverMine(*this, *player, location);
+						for (const auto& plugin : xPlugins) {
+							plugin->RenX_OnOverMine(*this, *player, location);
+						}
 					}
 					else if (subHeader.equals("MatchEnd;"))
 					{
 						// "winner" | Winner | Reason("TimeLimit" etc) | "GDI=" GDI Score | "Nod=" Nod Score
 						// "tie" | Reason | "GDI=" GDI Score | "Nod=" Nod Score
 						Jupiter::ReferenceString winTieToken = tokens.getToken(2);
-						this->match_state = 2;
+						m_match_state = 2;
 
 						if (winTieToken.equals("winner"))
 						{
@@ -2662,23 +2577,26 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 							int nScore = tokens.getToken(6).getToken(1, '=').asInt();
 
 							onPreGameOver(winType, team, gScore, nScore);
-							for (size_t i = 0; i < xPlugins.size(); i++)
-								xPlugins.get(i)->RenX_OnGameOver(*this, winType, team, gScore, nScore);
+							for (const auto& plugin : xPlugins) {
+								plugin->RenX_OnGameOver(*this, winType, team, gScore, nScore);
+							}
 						}
 						else if (winTieToken.equals("tie"))
 						{
 							int gScore = tokens.getToken(4).getToken(1, '=').asInt();
 							int nScore = tokens.getToken(5).getToken(1, '=').asInt();
-							for (size_t i = 0; i < xPlugins.size(); i++)
-								xPlugins.get(i)->RenX_OnGameOver(*this, RenX::WinType::Tie, RenX::TeamType::None, gScore, nScore);
+							for (const auto& plugin : xPlugins) {
+								plugin->RenX_OnGameOver(*this, RenX::WinType::Tie, RenX::TeamType::None, gScore, nScore);
+							}
 						}
-						this->gameover_pending = false;
+						m_gameover_pending = false;
 					}
 					else
 					{
 						Jupiter::ReferenceString raw = gotoToken(1);
-						for (size_t i = 0; i < xPlugins.size(); i++)
-							xPlugins.get(i)->RenX_OnGame(*this, raw);
+						for (const auto& plugin : xPlugins) {
+							plugin->RenX_OnGame(*this, raw);
+						}
 					}
 				}
 				else if (tokens.tokens[0].equals("CHAT"))
@@ -2688,8 +2606,9 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 						RenX::PlayerInfo *player = parseGetPlayerOrAdd(tokens.getToken(2));
 						Jupiter::ReferenceString message = tokens.getToken(4);
 						onChat(*player, message);
-						for (size_t i = 0; i < xPlugins.size(); i++)
-							xPlugins.get(i)->RenX_OnChat(*this, *player, message);
+						for (const auto& plugin : xPlugins) {
+							plugin->RenX_OnChat(*this, *player, message);
+						}
 						onAction();
 					}
 					else if (subHeader.equals("TeamSay;"))
@@ -2697,32 +2616,36 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 						RenX::PlayerInfo *player = parseGetPlayerOrAdd(tokens.getToken(2));
 						Jupiter::ReferenceString message = tokens.getToken(4);
 						onChat(*player, message);
-						for (size_t i = 0; i < xPlugins.size(); i++)
-							xPlugins.get(i)->RenX_OnTeamChat(*this, *player, message);
+						for (const auto& plugin : xPlugins) {
+							plugin->RenX_OnTeamChat(*this, *player, message);
+						}
 						onAction();
 					}
 					else if (subHeader.equals("Radio;"))
 					{
 						RenX::PlayerInfo *player = parseGetPlayerOrAdd(tokens.getToken(2));
 						Jupiter::ReferenceString message = tokens.getToken(4);
-						for (size_t i = 0; i < xPlugins.size(); i++)
-							xPlugins.get(i)->RenX_OnRadioChat(*this, *player, message);
+						for (const auto& plugin : xPlugins) {
+							plugin->RenX_OnRadioChat(*this, *player, message);
+						}
 						onAction();
 					}
 					else if (subHeader.equals("AdminMsg;"))
 					{
 						RenX::PlayerInfo *player = parseGetPlayerOrAdd(tokens.getToken(2));
 						Jupiter::ReferenceString message = tokens.getToken(4);
-						for (size_t i = 0; i < xPlugins.size(); i++)
-							xPlugins.get(i)->RenX_OnAdminMessage(*this, *player, message);
+						for (const auto& plugin : xPlugins) {
+							plugin->RenX_OnAdminMessage(*this, *player, message);
+						}
 						onAction();
 					}
 					else if (subHeader.equals("AdminWarn;"))
 					{
 						RenX::PlayerInfo *player = parseGetPlayerOrAdd(tokens.getToken(2));
 						Jupiter::ReferenceString message = tokens.getToken(4);
-						for (size_t i = 0; i < xPlugins.size(); i++)
-							xPlugins.get(i)->RenX_OnWarnMessage(*this, *player, message);
+						for (const auto& plugin : xPlugins) {
+							plugin->RenX_OnWarnMessage(*this, *player, message);
+						}
 						onAction();
 					}
 					else if (subHeader.equals("PAdminMsg;"))
@@ -2730,8 +2653,9 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 						RenX::PlayerInfo *player = parseGetPlayerOrAdd(tokens.getToken(2));
 						RenX::PlayerInfo *target = parseGetPlayerOrAdd(tokens.getToken(4));
 						Jupiter::ReferenceString message = tokens.getToken(6);
-						for (size_t i = 0; i < xPlugins.size(); i++)
-							xPlugins.get(i)->RenX_OnAdminPMessage(*this, *player, *target, message);
+						for (const auto& plugin : xPlugins) {
+							plugin->RenX_OnAdminPMessage(*this, *player, *target, message);
+						}
 						onAction();
 					}
 					else if (subHeader.equals("PAdminWarn;"))
@@ -2739,45 +2663,52 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 						RenX::PlayerInfo *player = parseGetPlayerOrAdd(tokens.getToken(2));
 						RenX::PlayerInfo *target = parseGetPlayerOrAdd(tokens.getToken(4));
 						Jupiter::ReferenceString message = tokens.getToken(6);
-						for (size_t i = 0; i < xPlugins.size(); i++)
-							xPlugins.get(i)->RenX_OnWarnPMessage(*this, *player, *target, message);
+						for (const auto& plugin : xPlugins) {
+							plugin->RenX_OnWarnPMessage(*this, *player, *target, message);
+						}
 						onAction();
 					}
 					else if (subHeader.equals("HostSay;"))
 					{
 						Jupiter::ReferenceString message = tokens.getToken(3);
-						for (size_t i = 0; i < xPlugins.size(); i++)
-							xPlugins.get(i)->RenX_OnHostChat(*this, message);
+						for (const auto& plugin : xPlugins) {
+							plugin->RenX_OnHostChat(*this, message);
+						}
 					}
 					else if (subHeader.equals("HostPMsg;")) {
 						RenX::PlayerInfo *player = parseGetPlayerOrAdd(tokens.getToken(2));
 						Jupiter::ReferenceString message = tokens.getToken(4);
-						for (size_t i = 0; i < xPlugins.size(); i++)
-							xPlugins.get(i)->RenX_OnHostPage(*this, *player, message);
+						for (const auto& plugin : xPlugins) {
+							plugin->RenX_OnHostPage(*this, *player, message);
+						}
 					}
 					else if (subHeader.equals("HostAdminMsg;"))
 					{
 						Jupiter::ReferenceString message = tokens.getToken(3);
-						for (size_t i = 0; i < xPlugins.size(); i++)
-							xPlugins.get(i)->RenX_OnHostAdminMessage(*this, message);
+						for (const auto& plugin : xPlugins) {
+							plugin->RenX_OnHostAdminMessage(*this, message);
+						}
 					}
 					else if (subHeader.equals("HostAdminWarn;"))
 					{
 						Jupiter::ReferenceString message = tokens.getToken(3);
-						for (size_t i = 0; i < xPlugins.size(); i++)
-							xPlugins.get(i)->RenX_OnHostWarnMessage(*this, message);
+						for (const auto& plugin : xPlugins) {
+							plugin->RenX_OnHostWarnMessage(*this, message);
+						}
 					}
 					else if (subHeader.equals("HostPAdminMsg;")) {
 						RenX::PlayerInfo *player = parseGetPlayerOrAdd(tokens.getToken(2));
 						Jupiter::ReferenceString message = tokens.getToken(4);
-						for (size_t i = 0; i < xPlugins.size(); i++)
-							xPlugins.get(i)->RenX_OnHostAdminPMessage(*this, *player, message);
+						for (const auto& plugin : xPlugins) {
+							plugin->RenX_OnHostAdminPMessage(*this, *player, message);
+						}
 					}
 					else if (subHeader.equals("HostPAdminWarn;")) {
 						RenX::PlayerInfo *player = parseGetPlayerOrAdd(tokens.getToken(2));
 						Jupiter::ReferenceString message = tokens.getToken(4);
-						for (size_t i = 0; i < xPlugins.size(); i++)
-							xPlugins.get(i)->RenX_OnHostWarnPMessage(*this, *player, message);
+						for (const auto& plugin : xPlugins) {
+							plugin->RenX_OnHostWarnPMessage(*this, *player, message);
+						}
 					}
 					/*else if (subHeader.equals("AdminSay;"))
 					{
@@ -2792,8 +2723,9 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 					else
 					{
 						Jupiter::ReferenceString raw = gotoToken(1);
-						for (size_t i = 0; i < xPlugins.size(); i++)
-							xPlugins.get(i)->RenX_OnOtherChat(*this, raw);
+						for (const auto& plugin : xPlugins) {
+							plugin->RenX_OnOtherChat(*this, raw);
+						}
 					}
 				}
 				else if (tokens.tokens[0].equals("PLAYER"))
@@ -2829,11 +2761,11 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 								if (itr->steam_id == steamid)
 								{
 									player->local_rank = itr->rank;
-									if (this->devBot)
+									if (m_devBot)
 									{
 										player->global_rank = itr->rank;
-										if (this->rconVersion >= 4)
-											this->sendData(Jupiter::StringS::Format("dset_rank %d %d\n", player->id, player->global_rank));
+										if (m_rconVersion >= 4)
+											sendData(Jupiter::StringS::Format("dset_rank %d %d\n", player->id, player->global_rank));
 									}
 									break;
 								}
@@ -2841,8 +2773,9 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 								itr = itr->next;
 							}
 						}
-						for (size_t i = 0; i < xPlugins.size(); i++)
-							xPlugins.get(i)->RenX_OnJoin(*this, *player);
+						for (const auto& plugin : xPlugins) {
+							plugin->RenX_OnJoin(*this, *player);
+						}
 					}
 					else if (subHeader.equals("TeamJoin;"))
 					{
@@ -2854,8 +2787,9 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 						{
 							RenX::TeamType oldTeam = RenX::getTeam(tokens.getToken(6));
 							if (oldTeam != RenX::TeamType::None)
-								for (size_t i = 0; i < xPlugins.size(); i++)
-									xPlugins.get(i)->RenX_OnTeamChange(*this, *player, oldTeam);
+								for (const auto& plugin : xPlugins) {
+									plugin->RenX_OnTeamChange(*this, *player, oldTeam);
+								}
 						}
 					}
 					else if (subHeader.equals("HWID;"))
@@ -2868,15 +2802,19 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 						RenX::PlayerInfo *player = parseGetPlayerOrAdd(tokens.getToken(2 + offset));
 						player->hwid = tokens.getToken(4 + offset);
 
-						if (player->isBot == false)
-							this->banCheck(*player);
+						if (player->isBot == false) {
+							banCheck(*player);
+						}
 
-						for (size_t index = 0; index < xPlugins.size(); ++index)
-							xPlugins.get(index)->RenX_OnHWID(*this, *player);
+						for (const auto& plugin : xPlugins) {
+							plugin->RenX_OnHWID(*this, *player);
+						}
 
-						if (player->rdns.isNotEmpty())
-							for (size_t index = 0; index < xPlugins.size(); ++index)
-								xPlugins.get(index)->RenX_OnPlayerIdentify(*this, *player);
+						if (player->rdns.isNotEmpty()) {
+							for (const auto& plugin : xPlugins) {
+								plugin->RenX_OnPlayerIdentify(*this, *player);
+							}
+						}
 					}
 					else if (subHeader.equals("Exit;"))
 					{
@@ -2889,30 +2827,33 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 
 						if (player != nullptr)
 						{
-							for (size_t i = 0; i < xPlugins.size(); i++)
-								xPlugins.get(i)->RenX_OnPart(*this, *player);
+							for (const auto& plugin : xPlugins) {
+								plugin->RenX_OnPart(*this, *player);
+							}
 
-							this->removePlayer(*player);
+							removePlayer(*player);
 						}
 
-						if (this->gameover_when_empty && this->players.size() == this->getBotCount())
-							this->gameover();
+						if (m_gameover_when_empty && this->players.size() == getBotCount())
+							gameover();
 					}
 					else if (subHeader.equals("Kick;"))
 					{
 						// Player | "for" | Reason
 						const Jupiter::ReadableString &reason = tokens.getToken(4);
 						RenX::PlayerInfo *player = parseGetPlayerOrAdd(tokens.getToken(2));
-						for (size_t i = 0; i < xPlugins.size(); i++)
-							xPlugins.get(i)->RenX_OnKick(*this, *player, reason);
+						for (const auto& plugin : xPlugins) {
+							plugin->RenX_OnKick(*this, *player, reason);
+						}
 					}
 					else if (subHeader.equals("NameChange;"))
 					{
 						// Player | "to:" | New Name
 						RenX::PlayerInfo *player = parseGetPlayerOrAdd(tokens.getToken(2));
 						Jupiter::StringS newName = tokens.getToken(4);
-						for (size_t i = 0; i < xPlugins.size(); i++)
-							xPlugins.get(i)->RenX_OnNameChange(*this, *player, newName);
+						for (const auto& plugin : xPlugins) {
+							plugin->RenX_OnNameChange(*this, *player, newName);
+						}
 						player->name = newName;
 						onAction();
 					}
@@ -2920,35 +2861,37 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 					{
 						// "to" | New ID | "from" | Old ID
 						int oldID = tokens.getToken(5).asInt();
-						RenX::PlayerInfo *player = this->getPlayer(oldID);
+						RenX::PlayerInfo *player = getPlayer(oldID);
 						if (player != nullptr)
 						{
 							player->id = tokens.getToken(3).asInt();
 
 							if (player->isBot == false)
-								this->banCheck(*player);
+								banCheck(*player);
 
-							if (this->devBot && player->global_rank != 0U)
+							if (m_devBot && player->global_rank != 0U)
 							{
-								if (this->rconVersion >= 4)
-									this->sendData(Jupiter::StringS::Format("dset_rank %d %d\n", player->id, player->global_rank));
+								if (m_rconVersion >= 4)
+									sendData(Jupiter::StringS::Format("dset_rank %d %d\n", player->id, player->global_rank));
 							}
 
-							for (size_t i = 0; i < xPlugins.size(); i++)
-								xPlugins.get(i)->RenX_OnIDChange(*this, *player, oldID);
+							for (const auto& plugin : xPlugins) {
+								plugin->RenX_OnIDChange(*this, *player, oldID);
+							}
 						}
 					}
 					else if (subHeader.equals("Rank;"))
 					{
 						// Player | Rank
-						if (this->devBot == false)
+						if (m_devBot == false)
 						{
 							RenX::PlayerInfo *player = parseGetPlayerOrAdd(tokens.getToken(2));
 							if (player != nullptr)
 								player->global_rank = tokens.getToken(3).asUnsignedInt();
 
-							for (size_t i = 0; i < xPlugins.size(); i++)
-								xPlugins.get(i)->RenX_OnRank(*this, *player);
+							for (const auto& plugin : xPlugins) {
+								plugin->RenX_OnRank(*this, *player);
+							}
 						}
 					}
 					else if (subHeader.equals("Dev;"))
@@ -2958,15 +2901,17 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 						if (player != nullptr)
 							player->is_dev = tokens.getToken(3).asBool();
 
-						for (size_t i = 0; i < xPlugins.size(); i++)
-							xPlugins.get(i)->RenX_OnDev(*this, *player);
+						for (const auto& plugin : xPlugins) {
+							plugin->RenX_OnDev(*this, *player);
+						}
 					}
 					else if (subHeader.equals("SpeedHack;"))
 					{
 						// Player
 						RenX::PlayerInfo *player = parseGetPlayerOrAdd(tokens.getToken(2));
-						for (size_t i = 0; i < xPlugins.size(); i++)
-							xPlugins.get(i)->RenX_OnSpeedHack(*this, *player);
+						for (const auto& plugin : xPlugins) {
+							plugin->RenX_OnSpeedHack(*this, *player);
+						}
 					}
 					else if (subHeader.equals("Command;"))
 					{
@@ -2974,16 +2919,18 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 						RenX::PlayerInfo *player = parseGetPlayerOrAdd(tokens.getToken(2));
 						Jupiter::ReferenceString message = gotoToken(3);
 
-						RenX::GameCommand *command = this->triggerCommand(Jupiter::ReferenceString::getWord(message, 0, WHITESPACE), *player, Jupiter::ReferenceString::gotoWord(message, 1, WHITESPACE));
+						RenX::GameCommand *command = triggerCommand(Jupiter::ReferenceString::getWord(message, 0, WHITESPACE), *player, Jupiter::ReferenceString::gotoWord(message, 1, WHITESPACE));
 
-						for (size_t i = 0; i < xPlugins.size(); i++)
-							xPlugins.get(i)->RenX_OnPlayerCommand(*this, *player, message, command);
+						for (const auto& plugin : xPlugins) {
+							plugin->RenX_OnPlayerCommand(*this, *player, message, command);
+						}
 					}
 					else
 					{
 						Jupiter::ReferenceString raw = gotoToken(1);
-						for (size_t i = 0; i < xPlugins.size(); i++)
-							xPlugins.get(i)->RenX_OnPlayer(*this, raw);
+						for (const auto& plugin : xPlugins) {
+							plugin->RenX_OnPlayer(*this, raw);
+						}
 					}
 				}
 				else if (tokens.tokens[0].equals("RCON"))
@@ -2997,13 +2944,14 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 							Jupiter::ReferenceString command = gotoToken(4);
 							Jupiter::ReferenceString cmd = command.getWord(0, " ");
 
-							for (size_t i = 0; i < xPlugins.size(); i++)
-								xPlugins.get(i)->RenX_OnExecute(*this, user, command);
+							for (const auto& plugin : xPlugins) {
+								plugin->RenX_OnExecute(*this, user, command);
+							}
 
-							if (this->rconUser.equals(user))
+							if (m_rconUser.equals(user))
 							{
-								this->lastCommand = cmd;
-								this->lastCommandParams = command.gotoWord(1, " ");
+								m_lastCommand = cmd;
+								m_lastCommandParams = command.gotoWord(1, " ");
 							}
 						}
 					}
@@ -3012,101 +2960,114 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 						// User
 						Jupiter::ReferenceString user = tokens.getToken(2);
 
-						if (user.equals(this->rconUser))
-							this->subscribed = true;
+						if (user.equals(m_rconUser))
+							m_subscribed = true;
 
-						for (size_t i = 0; i < xPlugins.size(); i++)
-							xPlugins.get(i)->RenX_OnSubscribe(*this, user);
+						for (const auto& plugin : xPlugins) {
+							plugin->RenX_OnSubscribe(*this, user);
+						}
 					}
 					else if (subHeader.equals("Unsubscribed;"))
 					{
 						// User
 						Jupiter::ReferenceString user = tokens.getToken(2);
 
-						if (user.equals(this->rconUser))
-							this->subscribed = false;
+						if (user.equals(m_rconUser))
+							m_subscribed = false;
 
-						for (size_t i = 0; i < xPlugins.size(); i++)
-							xPlugins.get(i)->RenX_OnUnsubscribe(*this, user);
+						for (const auto& plugin : xPlugins) {
+							plugin->RenX_OnUnsubscribe(*this, user);
+						}
 					}
 					else if (subHeader.equals("Blocked;"))
 					{
 						// User | Reason="(Denied by IP Policy)" / "(Not on Whitelist)"
 						Jupiter::ReferenceString user = tokens.getToken(2);
 						Jupiter::ReferenceString message = tokens.getToken(3);
-						for (size_t i = 0; i < xPlugins.size(); i++)
-							xPlugins.get(i)->RenX_OnBlock(*this, user, message);
+						for (const auto& plugin : xPlugins) {
+							plugin->RenX_OnBlock(*this, user, message);
+						}
 					}
 					else if (subHeader.equals("Connected;"))
 					{
 						// User
 						Jupiter::ReferenceString user = tokens.getToken(2);
-						for (size_t i = 0; i < xPlugins.size(); i++)
-							xPlugins.get(i)->RenX_OnConnect(*this, user);
+						for (const auto& plugin : xPlugins) {
+							plugin->RenX_OnConnect(*this, user);
+						}
 					}
 					else if (subHeader.equals("Authenticated;"))
 					{
 						// User
 						Jupiter::ReferenceString user = tokens.getToken(2);
-						for (size_t i = 0; i < xPlugins.size(); i++)
-							xPlugins.get(i)->RenX_OnAuthenticate(*this, user);
+						for (const auto& plugin : xPlugins) {
+							plugin->RenX_OnAuthenticate(*this, user);
+						}
 					}
 					else if (subHeader.equals("Banned;"))
 					{
 						// User | "reason" | Reason="(Too many password attempts)"
 						Jupiter::ReferenceString user = tokens.getToken(2);
 						Jupiter::ReferenceString message = tokens.getToken(4);
-						for (size_t i = 0; i < xPlugins.size(); i++)
-							xPlugins.get(i)->RenX_OnBan(*this, user, message);
+						for (const auto& plugin : xPlugins) {
+							plugin->RenX_OnBan(*this, user, message);
+						}
 					}
 					else if (subHeader.equals("InvalidPassword;"))
 					{
 						// User
 						Jupiter::ReferenceString user = tokens.getToken(2);
-						for (size_t i = 0; i < xPlugins.size(); i++)
-							xPlugins.get(i)->RenX_OnInvalidPassword(*this, user);
+						for (const auto& plugin : xPlugins) {
+							plugin->RenX_OnInvalidPassword(*this, user);
+						}
 					}
 					else if (subHeader.equals("Dropped;"))
 					{
 						// User | "reason" | Reason="(Auth Timeout)"
 						Jupiter::ReferenceString user = tokens.getToken(2);
 						Jupiter::ReferenceString message = tokens.getToken(4);
-						for (size_t i = 0; i < xPlugins.size(); i++)
-							xPlugins.get(i)->RenX_OnDrop(*this, user, message);
+						for (const auto& plugin : xPlugins) {
+							plugin->RenX_OnDrop(*this, user, message);
+						}
 					}
 					else if (subHeader.equals("Disconnected;"))
 					{
 						// User
 						Jupiter::ReferenceString user = tokens.getToken(2);
-						for (size_t i = 0; i < xPlugins.size(); i++)
-							xPlugins.get(i)->RenX_OnDisconnect(*this, user);
+						for (const auto& plugin : xPlugins) {
+							plugin->RenX_OnDisconnect(*this, user);
+						}
 					}
 					else if (subHeader.equals("StoppedListen;"))
 					{
 						// Reason="(Reached Connection Limit)"
 						Jupiter::ReferenceString message = tokens.getToken(2);
-						for (size_t i = 0; i < xPlugins.size(); i++)
-							xPlugins.get(i)->RenX_OnStopListen(*this, message);
+						for (const auto& plugin : xPlugins) {
+							plugin->RenX_OnStopListen(*this, message);
+						}
 					}
 					else if (subHeader.equals("ResumedListen;"))
 					{
 						// Reason="(No longer at Connection Limit)"
 						Jupiter::ReferenceString message = tokens.getToken(2);
-						for (size_t i = 0; i < xPlugins.size(); i++)
-							xPlugins.get(i)->RenX_OnResumeListen(*this, message);
+						for (const auto& plugin : xPlugins) {
+							plugin->RenX_OnResumeListen(*this, message);
+						}
 					}
 					else if (subHeader.equals("Warning;"))
 					{
 						// Warning="(Hit Max Attempt Records - You should investigate Rcon attempts and/or decrease prune time)"
 						Jupiter::ReferenceString message = tokens.getToken(2);
-						for (size_t i = 0; i < xPlugins.size(); i++)
-							xPlugins.get(i)->RenX_OnWarning(*this, message);
+						for (const auto& plugin : xPlugins) {
+							plugin->RenX_OnWarning(*this, message);
+						}
 					}
 					else
 					{
 						Jupiter::ReferenceString raw = gotoToken(1);
-						for (size_t i = 0; i < xPlugins.size(); i++)
-							xPlugins.get(i)->RenX_OnRCON(*this, raw);
+						for (const auto& plugin : xPlugins) {
+							plugin->RenX_OnRCON(*this, raw);
+						}
 					}
 				}
 				else if (tokens.tokens[0].equals("ADMIN"))
@@ -3118,8 +3079,9 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 						{
 							RenX::PlayerInfo *player = parseGetPlayerOrAdd(tokens.getToken(2));
 							Jupiter::ReferenceString cmd = gotoToken(4);
-							for (size_t i = 0; i < xPlugins.size(); i++)
-								xPlugins.get(i)->RenX_OnExecute(*this, *player, cmd);
+							for (const auto& plugin : xPlugins) {
+								plugin->RenX_OnExecute(*this, *player, cmd);
+							}
 						}
 					}
 					else if (subHeader.equals("Login;"))
@@ -3127,16 +3089,18 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 						// Player | "as" | Type="moderator" / "administrator"
 						RenX::PlayerInfo *player = parseGetPlayerOrAdd(tokens.getToken(2));
 						player->adminType = tokens.getToken(4);
-						for (size_t i = 0; i < xPlugins.size(); i++)
-							xPlugins.get(i)->RenX_OnAdminLogin(*this, *player);
+						for (const auto& plugin : xPlugins) {
+							plugin->RenX_OnAdminLogin(*this, *player);
+						}
 					}
 					else if (subHeader.equals("Logout;"))
 					{
 						// Player | "as" | Type="moderator" / "administrator"
 						RenX::PlayerInfo *player = parseGetPlayerOrAdd(tokens.getToken(2));
 
-						for (size_t i = 0; i < xPlugins.size(); i++)
-							xPlugins.get(i)->RenX_OnAdminLogout(*this, *player);
+						for (const auto& plugin : xPlugins) {
+							plugin->RenX_OnAdminLogout(*this, *player);
+						}
 
 						player->adminType.erase();
 					}
@@ -3145,14 +3109,16 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 						// Player | "as" | Type="moderator" / "administrator"
 						RenX::PlayerInfo *player = parseGetPlayerOrAdd(tokens.getToken(2));
 						player->adminType = tokens.getToken(4);
-						for (size_t i = 0; i < xPlugins.size(); i++)
-							xPlugins.get(i)->RenX_OnAdminGrant(*this, *player);
+						for (const auto& plugin : xPlugins) {
+							plugin->RenX_OnAdminGrant(*this, *player);
+						}
 					}
 					else
 					{
 						Jupiter::ReferenceString raw = gotoToken(1);
-						for (size_t i = 0; i < xPlugins.size(); i++)
-							xPlugins.get(i)->RenX_OnAdmin(*this, raw);
+						for (const auto& plugin : xPlugins) {
+							plugin->RenX_OnAdmin(*this, raw);
+						}
 					}
 				}
 				else if (tokens.tokens[0].equals("VOTE"))
@@ -3190,17 +3156,18 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 							RenX::PlayerInfo *player = parseGetPlayerOrAdd(tokens.getToken(tokens.token_count - 1));
 
 							if ((player->ban_flags & RenX::BanDatabase::Entry::FLAG_TYPE_VOTE) != 0)
-								RenX::Server::sendData(Jupiter::StringS::Format("ccancelvote %.*s\n", teamToken.size(), teamToken.ptr()));
+								sendData(Jupiter::StringS::Format("ccancelvote %.*s\n", teamToken.size(), teamToken.ptr()));
 
-							for (size_t i = 0; i < xPlugins.size(); i++)
-								xPlugins.get(i)->RenX_OnVoteOther(*this, team, voteType, *player);
+							for (const auto& plugin : xPlugins) {
+								plugin->RenX_OnVoteOther(*this, team, voteType, *player);
+							}
 						}
 						else // 5.15+ (or empty)
 						{
 							RenX::PlayerInfo *player = parseGetPlayerOrAdd(tokens.getToken(5));
 
 							if ((player->ban_flags & RenX::BanDatabase::Entry::FLAG_TYPE_VOTE) != 0)
-								RenX::Server::sendData(Jupiter::StringS::Format("ccancelvote %.*s\n", teamToken.size(), teamToken.ptr()));
+								sendData(Jupiter::StringS::Format("ccancelvote %.*s\n", teamToken.size(), teamToken.ptr()));
 
 							// PARSE PARAMETERS HERE
 
@@ -3224,25 +3191,29 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 									int amount = tokens.getToken(9).asInt(10);
 									int skill = tokens.getToken(11).asInt(10);
 
-									for (size_t i = 0; i < xPlugins.size(); i++)
-										xPlugins.get(i)->RenX_OnVoteAddBots(*this, team, *player, victim, amount, skill);
+									for (const auto& plugin : xPlugins) {
+										plugin->RenX_OnVoteAddBots(*this, team, *player, victim, amount, skill);
+									}
 								}
 								else if (voteType.equals("ChangeMap"_jrs))
 								{
-									for (size_t i = 0; i < xPlugins.size(); i++)
-										xPlugins.get(i)->RenX_OnVoteChangeMap(*this, team, *player);
+									for (const auto& plugin : xPlugins) {
+										plugin->RenX_OnVoteChangeMap(*this, team, *player);
+									}
 								}
 								else if (voteType.equals("Kick"_jrs))
 								{
 									RenX::PlayerInfo *victim = parseGetPlayerOrAdd(tokens.getToken(7));
-									for (size_t i = 0; i < xPlugins.size(); i++)
-										xPlugins.get(i)->RenX_OnVoteKick(*this, team, *player, *victim);
+									for (const auto& plugin : xPlugins) {
+										plugin->RenX_OnVoteKick(*this, team, *player, *victim);
+									}
 								}
 								else if (voteType.equals("MineBan"_jrs))
 								{
 									RenX::PlayerInfo *victim = parseGetPlayerOrAdd(tokens.getToken(7));
-									for (size_t i = 0; i < xPlugins.size(); i++)
-										xPlugins.get(i)->RenX_OnVoteMineBan(*this, team, *player, *victim);
+									for (const auto& plugin : xPlugins) {
+										plugin->RenX_OnVoteMineBan(*this, team, *player, *victim);
+									}
 								}
 								else if (voteType.equals("RemoveBots"_jrs))
 								{
@@ -3259,35 +3230,42 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 
 									int amount = tokens.getToken(9).asInt(10);
 
-									for (size_t i = 0; i < xPlugins.size(); i++)
-										xPlugins.get(i)->RenX_OnVoteRemoveBots(*this, team, *player, victim, amount);
+									for (const auto& plugin : xPlugins) {
+										plugin->RenX_OnVoteRemoveBots(*this, team, *player, victim, amount);
+									}
 								}
 								else if (voteType.equals("RestartMap"_jrs))
 								{
-									for (size_t i = 0; i < xPlugins.size(); i++)
-										xPlugins.get(i)->RenX_OnVoteRestartMap(*this, team, *player);
+									for (const auto& plugin : xPlugins) {
+										plugin->RenX_OnVoteRestartMap(*this, team, *player);
+									}
 								}
 								else if (voteType.equals("Surrender"_jrs))
 								{
-									for (size_t i = 0; i < xPlugins.size(); i++)
-										xPlugins.get(i)->RenX_OnVoteSurrender(*this, team, *player);
+									for (const auto& plugin : xPlugins) {
+										plugin->RenX_OnVoteSurrender(*this, team, *player);
+									}
 								}
 								else if (voteType.equals("Survey"_jrs))
 								{
 									const Jupiter::ReadableString &text = tokens.getToken(7);
-									for (size_t i = 0; i < xPlugins.size(); i++)
-										xPlugins.get(i)->RenX_OnVoteSurvey(*this, team, *player, text);
+									for (const auto& plugin : xPlugins) {
+										plugin->RenX_OnVoteSurvey(*this, team, *player, text);
+									}
 								}
 								else
 								{
 									voteType.shiftLeft(18);
-									for (size_t i = 0; i < xPlugins.size(); i++)
-										xPlugins.get(i)->RenX_OnVoteOther(*this, team, voteType, *player);
+									for (const auto& plugin : xPlugins) {
+										plugin->RenX_OnVoteOther(*this, team, voteType, *player);
+									}
 								}
 							}
-							else
-								for (size_t i = 0; i < xPlugins.size(); i++)
-									xPlugins.get(i)->RenX_OnVoteOther(*this, team, voteType, *player);
+							else {
+								for (const auto& plugin: xPlugins) {
+									plugin->RenX_OnVoteOther(*this, team, voteType, *player);
+								}
+							}
 						}
 						onAction();
 					}
@@ -3326,8 +3304,9 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 							noVotes = votes_token.asInt();
 						}
 
-						for (size_t i = 0; i < xPlugins.size(); i++)
-							xPlugins.get(i)->RenX_OnVoteOver(*this, team, voteType, success, yesVotes, noVotes);
+						for (const auto& plugin : xPlugins) {
+							plugin->RenX_OnVoteOver(*this, team, voteType, success, yesVotes, noVotes);
+						}
 					}
 					else if (subHeader.equals("Cancelled;"))
 					{
@@ -3344,14 +3323,16 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 						else
 							team = TeamType::Other;
 
-						for (size_t i = 0; i < xPlugins.size(); i++)
-							xPlugins.get(i)->RenX_OnVoteCancel(*this, team, voteType);
+						for (const auto& plugin : xPlugins) {
+							plugin->RenX_OnVoteCancel(*this, team, voteType);
+						}
 					}
 					else
 					{
 						Jupiter::ReferenceString raw = gotoToken(1);
-						for (size_t i = 0; i < xPlugins.size(); i++)
-							xPlugins.get(i)->RenX_OnVote(*this, raw);
+						for (const auto& plugin : xPlugins) {
+							plugin->RenX_OnVote(*this, raw);
+						}
 					}
 				}
 				else if (tokens.tokens[0].equals("MAP"))
@@ -3361,16 +3342,17 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 						// Map | Mode="seamless" / "nonseamless"
 						Jupiter::ReferenceString map = tokens.getToken(2);
 
-						this->match_state = 3;
+						m_match_state = 3;
 						if (tokens.getToken(3).equals("seamless"))
-							this->seamless = true;
+							m_seamless = true;
 						else
-							this->seamless = false;
+							m_seamless = false;
 
-						for (size_t i = 0; i < xPlugins.size(); i++)
-							xPlugins.get(i)->RenX_OnMapChange(*this, map, seamless);
+						for (const auto& plugin : xPlugins) {
+							plugin->RenX_OnMapChange(*this, map, m_seamless);
+						}
 
-						this->map = map;
+						m_map = map;
 						onMapChange();
 					}
 					else if (subHeader.equals("Loaded;"))
@@ -3378,30 +3360,33 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 						// Map
 						Jupiter::ReferenceString map = tokens.getToken(2);
 
-						this->match_state = 0;
-						this->map = map;
+						m_match_state = 0;
+						m_map = map;
 
-						for (size_t i = 0; i < xPlugins.size(); i++)
-							xPlugins.get(i)->RenX_OnMapLoad(*this, map);
+						for (const auto& plugin : xPlugins) {
+							plugin->RenX_OnMapLoad(*this, map);
+						}
 					}
 					else if (subHeader.equals("Start;"))
 					{
 						// Map
 						Jupiter::ReferenceString map = tokens.getToken(2);
 
-						this->match_state = 1;
-						this->reliable = true;
-						this->gameStart = std::chrono::steady_clock::now();
-						this->map = map;
+						m_match_state = 1;
+						m_reliable = true;
+						m_gameStart = std::chrono::steady_clock::now();
+						m_map = map;
 
-						for (size_t i = 0; i < xPlugins.size(); i++)
-							xPlugins.get(i)->RenX_OnMapStart(*this, map);
+						for (const auto& plugin : xPlugins) {
+							plugin->RenX_OnMapStart(*this, map);
+						}
 					}
 					else
 					{
 						Jupiter::ReferenceString raw = gotoToken(1);
-						for (size_t i = 0; i < xPlugins.size(); i++)
-							xPlugins.get(i)->RenX_OnMap(*this, raw);
+						for (const auto& plugin : xPlugins) {
+							plugin->RenX_OnMap(*this, raw);
+						}
 					}
 				}
 				else if (tokens.tokens[0].equals("DEMO"))
@@ -3415,27 +3400,31 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 						if (type.equals("client request by") || type.equals("admin command by"))
 						{
 							RenX::PlayerInfo *player = parseGetPlayerOrAdd(tokens.getToken(3));
-							for (size_t i = 0; i < xPlugins.size(); i++)
-								xPlugins.get(i)->RenX_OnDemoRecord(*this, *player);
+							for (const auto& plugin : xPlugins) {
+								plugin->RenX_OnDemoRecord(*this, *player);
+							}
 						}
 						else
 						{
 							Jupiter::ReferenceString user = tokens.getToken(3); // not actually used, but here for possible future usage
-							for (size_t i = 0; i < xPlugins.size(); i++)
-								xPlugins.get(i)->RenX_OnDemoRecord(*this, user);
+							for (const auto& plugin : xPlugins) {
+								plugin->RenX_OnDemoRecord(*this, user);
+							}
 						}
 					}
 					else if (subHeader.equals("RecordStop;"))
 					{
 						// Empty
-						for (size_t i = 0; i < xPlugins.size(); i++)
-							xPlugins.get(i)->RenX_OnDemoRecordStop(*this);
+						for (const auto& plugin : xPlugins) {
+							plugin->RenX_OnDemoRecordStop(*this);
+						}
 					}
 					else
 					{
 						Jupiter::ReferenceString raw = gotoToken(1);
-						for (size_t i = 0; i < xPlugins.size(); i++)
-							xPlugins.get(i)->RenX_OnDemo(*this, raw);
+						for (const auto& plugin : xPlugins) {
+							plugin->RenX_OnDemo(*this, raw);
+						}
 					}
 				}
 				/*else if (tokens.tokens[0].equals("ERROR;")) // Decided to disable this entirely, since it's unreachable anyways.
@@ -3446,8 +3435,9 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 				else
 				{
 					Jupiter::ReferenceString raw = Jupiter::ReferenceString::substring(line, 1);
-					for (size_t i = 0; i < xPlugins.size(); i++)
-						xPlugins.get(i)->RenX_OnLog(*this, raw);
+					for (const auto& plugin : xPlugins) {
+						plugin->RenX_OnLog(*this, raw);
+					}
 				}
 			}
 			break;
@@ -3461,159 +3451,157 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line)
 		case 'c':
 			{
 				Jupiter::ReferenceString raw = Jupiter::ReferenceString::substring(line, 1);
-				for (size_t i = 0; i < xPlugins.size(); i++)
-					xPlugins.get(i)->RenX_OnCommand(*this, raw);
-				this->commandListFormat.erase();
-				this->lastCommand = Jupiter::ReferenceString::empty;
-				this->lastCommandParams = Jupiter::ReferenceString::empty;
+				for (const auto& plugin : xPlugins) {
+					plugin->RenX_OnCommand(*this, raw);
+				}
+				m_commandListFormat.erase();
+				m_lastCommand = Jupiter::ReferenceString::empty;
+				m_lastCommandParams = Jupiter::ReferenceString::empty;
 			}
 			break;
 
 		case 'e':
 			{
 				Jupiter::ReferenceString raw = Jupiter::ReferenceString::substring(line, 1);
-				for (size_t i = 0; i < xPlugins.size(); i++)
-					xPlugins.get(i)->RenX_OnError(*this, raw);
+				for (const auto& plugin : xPlugins) {
+					plugin->RenX_OnError(*this, raw);
+				}
 			}
 			break;
 
 		case 'v':
 			{
 				Jupiter::ReferenceString raw = Jupiter::ReferenceString::substring(line, 1);
-				this->rconVersion = raw.asInt(10);
+				m_rconVersion = raw.asInt(10);
 				
-				if (this->rconVersion >= 3)
+				if (m_rconVersion >= 3)
 				{
-					if (this->rconVersion == 3) // Old format: 003Open Beta 5.12
-						this->gameVersion = raw.substring(3);
+					if (m_rconVersion == 3) // Old format: 003Open Beta 5.12
+						m_gameVersion = raw.substring(3);
 					else // New format: 004 | Game Version Number | Game Version
 					{
-						this->gameVersionNumber = tokens.getToken(1).asInt(10);
-						this->gameVersion = tokens.getToken(2);
+						m_gameVersionNumber = tokens.getToken(1).asInt(10);
+						m_gameVersion = tokens.getToken(2);
 
-						if (this->gameVersion.isEmpty())
+						if (m_gameVersion.isEmpty())
 						{
-							RenX::Server::sendLogChan(STRING_LITERAL_AS_REFERENCE(IRCCOLOR "04[Error]" IRCCOLOR " Disconnected from Renegade-X server (Protocol Error)."));
-							this->disconnect(RenX::DisconnectReason::ProtocolError);
+							sendLogChan(STRING_LITERAL_AS_REFERENCE(IRCCOLOR "04[Error]" IRCCOLOR " Disconnected from Renegade-X server (Protocol Error)."));
+							disconnect(RenX::DisconnectReason::ProtocolError);
 							break;
 						}
 					}
 
-					RenX::Server::sendSocket("s\n"_jrs);
-					RenX::Server::send("serverinfo"_jrs);
-					RenX::Server::send("gameinfo"_jrs);
-					RenX::Server::send("gameinfo bIsCompetitive"_jrs);
-					RenX::Server::send("mutatorlist"_jrs);
-					RenX::Server::send("rotation"_jrs);
-					RenX::Server::fetchClientList();
-					RenX::Server::updateBuildingList();
-					RenX::Server::send("ping srv_init_done"_jrs);
+					sendSocket("s\n"_jrs);
+					send("serverinfo"_jrs);
+					send("gameinfo"_jrs);
+					send("gameinfo bIsCompetitive"_jrs);
+					send("mutatorlist"_jrs);
+					send("rotation"_jrs);
+					fetchClientList();
+					updateBuildingList();
+					send("ping srv_init_done"_jrs);
 
-					RenX::Server::gameStart = std::chrono::steady_clock::now();
-					this->seamless = true;
+					m_gameStart = std::chrono::steady_clock::now();
+					m_seamless = true;
 
-					for (size_t i = 0; i < xPlugins.size(); i++)
-						xPlugins.get(i)->RenX_OnVersion(*this, raw);
+					for (const auto& plugin : xPlugins) {
+						plugin->RenX_OnVersion(*this, raw);
+					}
 				}
 				else
 				{
-					RenX::Server::sendLogChan(STRING_LITERAL_AS_REFERENCE(IRCCOLOR "04[Error]" IRCCOLOR " Disconnected from Renegade-X server (incompatible RCON version)."));
-					this->disconnect(RenX::DisconnectReason::IncompatibleVersion);
+					sendLogChan(STRING_LITERAL_AS_REFERENCE(IRCCOLOR "04[Error]" IRCCOLOR " Disconnected from Renegade-X server (incompatible RCON version)."));
+					disconnect(RenX::DisconnectReason::IncompatibleVersion);
 				}
 			}
 			break;
 
 		case 'a':
 			{
-				RenX::Server::rconUser = Jupiter::ReferenceString::substring(line, 1);
-				if (rconUser.equals(RenX::DevBotName))
-					RenX::Server::devBot = true;
+				m_rconUser = Jupiter::ReferenceString::substring(line, 1);
+				if (m_rconUser.equals(RenX::DevBotName))
+					m_devBot = true;
 
-				for (size_t i = 0; i < xPlugins.size(); i++)
-					xPlugins.get(i)->RenX_OnAuthorized(*this, RenX::Server::rconUser);
+				for (const auto& plugin : xPlugins) {
+					plugin->RenX_OnAuthorized(*this, m_rconUser);
+				}
 			}
 			break;
 
 		default:
 			{
 				Jupiter::ReferenceString raw = Jupiter::ReferenceString::substring(line, 1);
-				for (size_t i = 0; i < xPlugins.size(); i++)
-					xPlugins.get(i)->RenX_OnOther(*this, header, raw);
+				for (const auto& plugin : xPlugins) {
+					plugin->RenX_OnOther(*this, header, raw);
+				}
 			}
 			break;
 		}
-		for (size_t i = 0; i < xPlugins.size(); i++)
-			xPlugins.get(i)->RenX_OnRaw(*this, line);
+		for (const auto& plugin : xPlugins) {
+			plugin->RenX_OnRaw(*this, line);
+		}
 	}
 }
 
-void RenX::Server::disconnect(RenX::DisconnectReason reason)
-{
-	RenX::Server::connected = false;
+void RenX::Server::disconnect(RenX::DisconnectReason reason) {
+	m_connected = false;
 
-	Jupiter::ArrayList<RenX::Plugin> &xPlugins = *RenX::getCore()->getPlugins();
-	for (size_t i = 0; i < xPlugins.size(); i++)
-		xPlugins.get(i)->RenX_OnServerDisconnect(*this, reason);
+	for (const auto& plugin : RenX::getCore()->getPlugins()) {
+		plugin->RenX_OnServerDisconnect(*this, reason);
+	}
 
-	RenX::Server::sock.close();
-	RenX::Server::wipeData();
+	m_sock.close();
+	wipeData();
 }
 
-bool RenX::Server::connect()
-{
-	RenX::Server::lastAttempt = std::chrono::steady_clock::now();
-	if (RenX::Server::sock.connect(RenX::Server::hostname.c_str(), RenX::Server::port, RenX::Server::clientHostname.empty() ? nullptr : RenX::Server::clientHostname.c_str()))
+bool RenX::Server::connect() {
+	m_lastAttempt = std::chrono::steady_clock::now();
+	if (m_sock.connect(m_hostname.c_str(), m_port, m_clientHostname.empty() ? nullptr : m_clientHostname.c_str()))
 	{
-		RenX::Server::sock.setBlocking(false);
-		RenX::Server::sendSocket(Jupiter::StringS::Format("a%.*s\n", RenX::Server::pass.size(), RenX::Server::pass.ptr()));
-		RenX::Server::connected = true;
-		RenX::Server::attempts = 0;
+		m_sock.setBlocking(false);
+		sendSocket(Jupiter::StringS::Format("a%.*s\n", m_pass.size(), m_pass.ptr()));
+		m_connected = true;
+		m_attempts = 0;
 		return true;
 	}
-	RenX::Server::connected = false;
-	++RenX::Server::attempts;
+	m_connected = false;
+	++m_attempts;
 	return false;
 }
 
-bool RenX::Server::reconnect(RenX::DisconnectReason reason)
-{
-	RenX::Server::disconnect(static_cast<RenX::DisconnectReason>(static_cast<unsigned int>(reason) | 0x01));
-	return RenX::Server::connect();
+bool RenX::Server::reconnect(RenX::DisconnectReason reason) {
+	disconnect(static_cast<RenX::DisconnectReason>(static_cast<unsigned int>(reason) | 0x01));
+	return connect();
 }
 
-void RenX::Server::wipeData()
-{
-	RenX::Server::wipePlayers();
-	RenX::Server::reliable = false;
-	RenX::Server::m_team_mode = 3;
-	RenX::Server::m_game_type = 1;
-	RenX::Server::m_ranked = false;
-	RenX::Server::botsEnabled = true;
-	RenX::Server::match_state = 1;
-	RenX::Server::subscribed = false;
-	RenX::Server::fully_connected = false;
-	RenX::Server::bot_count = 0;
-	RenX::Server::player_rdns_resolutions_pending = 0;
-	RenX::Server::buildings.emptyAndDelete();
-	RenX::Server::mutators.emptyAndDelete();
-	RenX::Server::maps.emptyAndDelete();
-	RenX::Server::awaitingPong = false;
-	RenX::Server::rconVersion = 0;
-	RenX::Server::rconUser.truncate(RenX::Server::rconUser.size());
+void RenX::Server::wipeData() {
+	wipePlayers();
+	m_reliable = false;
+	m_team_mode = 3;
+	m_game_type = 1;
+	m_ranked = false;
+	m_botsEnabled = true;
+	m_match_state = 1;
+	m_subscribed = false;
+	m_fully_connected = false;
+	m_bot_count = 0;
+	m_player_rdns_resolutions_pending = 0;
+	this->buildings.clear();
+	this->mutators.clear();
+	this->maps.clear();
+	m_awaitingPong = false;
+	m_rconVersion = 0;
+	m_rconUser.truncate(m_rconUser.size());
 }
 
-void RenX::Server::wipePlayers()
-{
-	Jupiter::ArrayList<RenX::Plugin> &xPlugins = *RenX::getCore()->getPlugins();
+void RenX::Server::wipePlayers() {
+	while (this->players.size() != 0) {
+		for (const auto& plugin : RenX::getCore()->getPlugins()) {
+			plugin->RenX_OnPlayerDelete(*this, this->players.front());
+		}
 
-	while (RenX::Server::players.size() != 0)
-	{
-		for (size_t index = 0; index < xPlugins.size(); ++index)
-			xPlugins.get(index)->RenX_OnPlayerDelete(*this, this->players.front());
-
-		if (this->players.front().rdns_thread.joinable()) // Close the RDNS thread, if one exists
-		{
-			--this->player_rdns_resolutions_pending;
+		if (this->players.front().rdns_thread.joinable()) { // Close the RDNS thread, if one exists
+			--m_player_rdns_resolutions_pending;
 			this->players.front().rdns_thread.join();
 		}
 
@@ -3621,89 +3609,82 @@ void RenX::Server::wipePlayers()
 	}
 }
 
-void RenX::Server::startPing()
-{
-	RenX::Server::lastActivity = std::chrono::steady_clock::now();
-	RenX::Server::sendSocket("cping\n"_jrs);
-	RenX::Server::awaitingPong = true;
+void RenX::Server::startPing() {
+	m_lastActivity = std::chrono::steady_clock::now();
+	sendSocket("cping\n"_jrs);
+	m_awaitingPong = true;
 }
 
-unsigned int RenX::Server::getVersion() const
-{
-	return RenX::Server::rconVersion;
+unsigned int RenX::Server::getVersion() const {
+	return m_rconVersion;
 }
 
-unsigned int RenX::Server::getGameVersionNumber() const
-{
-	return RenX::Server::gameVersionNumber;
+unsigned int RenX::Server::getGameVersionNumber() const {
+	return m_gameVersionNumber;
 }
 
-const Jupiter::ReadableString &RenX::Server::getGameVersion() const
-{
-	return RenX::Server::gameVersion;
+const Jupiter::ReadableString &RenX::Server::getGameVersion() const {
+	return m_gameVersion;
 }
 
-const Jupiter::ReadableString &RenX::Server::getRCONUsername() const
-{
-	return RenX::Server::rconUser;
+const Jupiter::ReadableString &RenX::Server::getRCONUsername() const {
+	return m_rconUser;
 }
 
-RenX::Server::Server(Jupiter::Socket &&socket, const Jupiter::ReadableString &configurationSection) : Server(configurationSection)
-{
-	RenX::Server::sock = std::move(socket);
-	RenX::Server::hostname = RenX::Server::sock.getRemoteHostname();
-	RenX::Server::sendSocket(Jupiter::StringS::Format("a%.*s\n", RenX::Server::pass.size(), RenX::Server::pass.ptr()));
-	RenX::Server::connected = true;
+RenX::Server::Server(Jupiter::Socket &&socket, const Jupiter::ReadableString &configurationSection) : Server(configurationSection) {
+	m_sock = std::move(socket);
+	m_hostname = m_sock.getRemoteHostname();
+	sendSocket(Jupiter::StringS::Format("a%.*s\n", m_pass.size(), m_pass.ptr()));
+	m_connected = true;
 }
 
-RenX::Server::Server(const Jupiter::ReadableString &configurationSection)
-{
-	RenX::Server::configSection = configurationSection;
-	RenX::Server::calc_uuid = RenX::default_uuid_func;
-	init(*RenX::getCore()->getConfig().getSection(RenX::Server::configSection));
-	Jupiter::ArrayList<RenX::Plugin> &xPlugins = *RenX::getCore()->getPlugins();
-	for (size_t i = 0; i < xPlugins.size(); i++)
-		xPlugins.get(i)->RenX_OnServerCreate(*this);
+RenX::Server::Server(const Jupiter::ReadableString &configurationSection) {
+	m_configSection = configurationSection;
+	m_calc_uuid = RenX::default_uuid_func;
+	init(*RenX::getCore()->getConfig().getSection(m_configSection));
+	for (const auto& plugin : RenX::getCore()->getPlugins()) {
+		plugin->RenX_OnServerCreate(*this);
+	}
 }
 
-void RenX::Server::init(const Jupiter::Config &config)
-{
-	RenX::Server::hostname = static_cast<std::string>(config.get("Hostname"_jrs, "localhost"_jrs));
-	RenX::Server::port = config.get<unsigned short>("Port"_jrs, 7777);
-	RenX::Server::clientHostname = static_cast<std::string>(config.get("ClientAddress"_jrs));
-	RenX::Server::pass = config.get("Password"_jrs, "renx"_jrs);
+void RenX::Server::init(const Jupiter::Config &config) {
+	m_hostname = static_cast<std::string>(config.get("Hostname"_jrs, "localhost"_jrs));
+	m_port = config.get<unsigned short>("Port"_jrs, 7777);
+	m_clientHostname = static_cast<std::string>(config.get("ClientAddress"_jrs));
+	m_pass = config.get("Password"_jrs, "renx"_jrs);
 
-	RenX::Server::logChanType = config.get<int>("ChanType"_jrs);
-	RenX::Server::adminLogChanType = config.get<int>("AdminChanType"_jrs);
+	m_logChanType = config.get<int>("ChanType"_jrs);
+	m_adminLogChanType = config.get<int>("AdminChanType"_jrs);
 
-	RenX::Server::setCommandPrefix(config.get("CommandPrefix"_jrs));
-	RenX::Server::setPrefix(config.get("IRCPrefix"_jrs));
+	setCommandPrefix(config.get("CommandPrefix"_jrs));
+	setPrefix(config.get("IRCPrefix"_jrs));
 
-	RenX::Server::ban_from_str = config.get("BanFromStr"_jrs, "the server"_jrs);
-	RenX::Server::rules = config.get("Rules"_jrs, "Anarchy!"_jrs);
-	RenX::Server::delay = std::chrono::milliseconds(config.get<long long>("ReconnectDelay"_jrs, 10000));
-	RenX::Server::maxAttempts = config.get<int>("MaxReconnectAttempts"_jrs, -1);
-	RenX::Server::rconBan = config.get<bool>("RCONBan"_jrs, false);
-	RenX::Server::localSteamBan = config.get<bool>("LocalSteamBan"_jrs, true);
-	RenX::Server::localIPBan = config.get<bool>("LocalIPBan"_jrs, true);
-	RenX::Server::localHWIDBan = config.get<bool>("LocalHWIDBan"_jrs, true);
-	RenX::Server::localRDNSBan = config.get<bool>("LocalRDNSBan"_jrs, false);
-	RenX::Server::localNameBan = config.get<bool>("LocalNameBan"_jrs, false);
-	RenX::Server::localBan = RenX::Server::localIPBan || RenX::Server::localRDNSBan || RenX::Server::localSteamBan || RenX::Server::localNameBan;
-	RenX::Server::steamFormat = config.get<int>("SteamFormat"_jrs, 16);
-	RenX::Server::neverSay = config.get<bool>("NeverSay"_jrs, false);
-	RenX::Server::resolve_player_rdns = config.get<bool>("ResolvePlayerRDNS"_jrs, true);
-	RenX::Server::clientUpdateRate = std::chrono::milliseconds(config.get<long long>("ClientUpdateRate"_jrs, 2500));
-	RenX::Server::buildingUpdateRate = std::chrono::milliseconds(config.get<long long>("BuildingUpdateRate"_jrs, 7500));
-	RenX::Server::pingRate = std::chrono::milliseconds(config.get<long long>("PingUpdateRate"_jrs, 60000));
-	RenX::Server::pingTimeoutThreshold = std::chrono::milliseconds(config.get<long long>("PingTimeoutThreshold"_jrs, 10000));
+	m_ban_from_str = config.get("BanFromStr"_jrs, "the server"_jrs);
+	m_rules = config.get("Rules"_jrs, "Anarchy!"_jrs);
+	m_delay = std::chrono::milliseconds(config.get<long long>("ReconnectDelay"_jrs, 10000));
+	m_maxAttempts = config.get<int>("MaxReconnectAttempts"_jrs, -1);
+	m_rconBan = config.get<bool>("RCONBan"_jrs, false);
+	m_localSteamBan = config.get<bool>("LocalSteamBan"_jrs, true);
+	m_localIPBan = config.get<bool>("LocalIPBan"_jrs, true);
+	m_localHWIDBan = config.get<bool>("LocalHWIDBan"_jrs, true);
+	m_localRDNSBan = config.get<bool>("LocalRDNSBan"_jrs, false);
+	m_localNameBan = config.get<bool>("LocalNameBan"_jrs, false);
+	m_localBan = m_localIPBan || m_localRDNSBan || m_localSteamBan || m_localNameBan;
+	m_steamFormat = config.get<int>("SteamFormat"_jrs, 16);
+	m_neverSay = config.get<bool>("NeverSay"_jrs, false);
+	m_resolve_player_rdns = config.get<bool>("ResolvePlayerRDNS"_jrs, true);
+	m_clientUpdateRate = std::chrono::milliseconds(config.get<long long>("ClientUpdateRate"_jrs, 2500));
+	m_buildingUpdateRate = std::chrono::milliseconds(config.get<long long>("BuildingUpdateRate"_jrs, 7500));
+	m_pingRate = std::chrono::milliseconds(config.get<long long>("PingUpdateRate"_jrs, 60000));
+	m_pingTimeoutThreshold = std::chrono::milliseconds(config.get<long long>("PingTimeoutThreshold"_jrs, 10000));
 
 	Jupiter::Config &commandsFile = RenX::getCore()->getCommandsFile();
-	RenX::Server::commandAccessLevels = commandsFile.getSection(RenX::Server::configSection);
-	RenX::Server::commandAliases = commandsFile.getSection(RenX::Server::configSection + ".Aliases"_jrs);
+	m_commandAccessLevels = commandsFile.getSection(m_configSection);
+	m_commandAliases = commandsFile.getSection(m_configSection + ".Aliases"_jrs);
 
-	for (size_t i = 0; i != RenX::GameMasterCommandList->size(); ++i)
-		RenX::Server::addCommand(RenX::GameMasterCommandList->get(i)->copy());
+	for (const auto& command : RenX::GameMasterCommandList) {
+		addCommand(command->copy());
+	}
 
 	auto load_basic_commands = [this, &commandsFile](const Jupiter::ReadableString &section_prefix)
 	{
@@ -3713,26 +3694,25 @@ void RenX::Server::init(const Jupiter::Config &config)
 			Jupiter::Config *basic_commands_help = commandsFile.getSection(section_prefix + ".Basic.Help"_jrs);
 
 			for (auto& command : basic_commands->getTable()) {
-				if (this->getCommand(command.first) == nullptr) {
+				if (getCommand(command.first) == nullptr) {
 					const auto& help_str = basic_commands_help == nullptr ? ""_jrs : basic_commands_help->get(command.second, ""_jrs);
-					this->addCommand(new RenX::BasicGameCommand(command.first, command.second,help_str));
+					addCommand(new RenX::BasicGameCommand(command.first, command.second,help_str));
 				}
 			}
 		}
 	};
 
-	load_basic_commands(RenX::Server::configSection);
+	load_basic_commands(m_configSection);
 	load_basic_commands("Default"_jrs);
 }
 
-RenX::Server::~Server()
-{
+RenX::Server::~Server() {
+	// TODO: This does nothing
 	if (RenX::GameCommand::selected_server == nullptr)
 		RenX::GameCommand::selected_server = nullptr;
 	if (RenX::GameCommand::active_server == nullptr)
 		RenX::GameCommand::active_server = RenX::GameCommand::selected_server;
 
-	sock.close();
-	RenX::Server::wipeData();
-	RenX::Server::commands.emptyAndDelete();
+	m_sock.close();
+	wipeData();
 }

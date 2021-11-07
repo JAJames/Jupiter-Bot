@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2016 Jessica James.
+ * Copyright (C) 2016-2021 Jessica James.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -58,7 +58,7 @@ public:
 	~IRCCorePlugin();
 
 private:
-	Jupiter::ArrayList<GenericCommandWrapperIRCCommand> m_wrapped_commands;
+	std::vector<GenericCommandWrapperIRCCommand> m_wrapped_commands;
 };
 
 #endif // _IRC_CORE_H_HEADER

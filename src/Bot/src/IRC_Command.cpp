@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2013-2016 Jessica James.
+ * Copyright (C) 2013-2021 Jessica James.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -18,42 +18,37 @@
 
 #include "IRC_Command.h"
 
-Jupiter::ArrayList<IRCCommand> _IRCMasterCommandList;
-Jupiter::ArrayList<IRCCommand> *IRCMasterCommandList = &_IRCMasterCommandList;
+std::vector<IRCCommand*> g_IRCMasterCommandList;
+std::vector<IRCCommand*>& IRCMasterCommandList = g_IRCMasterCommandList;
 
 /** IRCCommand */
 
-IRCCommand::IRCCommand()
-{
-	IRCCommand::access = 0;
-	IRCMasterCommandList->add(this);
+IRCCommand::IRCCommand() {
+	m_access = 0;
+	IRCMasterCommandList.push_back(this);
 }
 
-IRCCommand::IRCCommand(const IRCCommand &command)
-{
-	IRCCommand::access = command.access;
-	size_t i;
+IRCCommand::IRCCommand(const IRCCommand &command) {
+	m_access = command.m_access;
 
-	for (i = 0; i < command.channels.size(); i++)
-		IRCCommand::channels.add(new IRCCommand::ChannelAccessPair(*command.channels.get(i)));
+	for (const auto& channel : command.m_channels) {
+		m_channels.emplace_back(channel);
+	}
 
-	for (i = 0; i < command.types.size(); i++)
-		IRCCommand::types.add(new IRCCommand::TypeAccessPair(*command.types.get(i)));
+	for (const auto& type : command.m_types) {
+		m_types.emplace_back(type);
+	}
 }
 
-IRCCommand::~IRCCommand()
-{
-	for (size_t i = 0; i != IRCMasterCommandList->size(); i++)
-	{
-		if (IRCMasterCommandList->get(i) == this)
-		{
+IRCCommand::~IRCCommand() {
+	// Remove any weak references to this
+	for (auto itr = IRCMasterCommandList.begin(); itr != IRCMasterCommandList.end(); ++itr) {
+		if (*itr == this) {
 			serverManager->removeCommand(this);
-			IRCMasterCommandList->remove(i);
+			IRCMasterCommandList.erase(itr);
 			break;
 		}
 	}
-	IRCCommand::channels.emptyAndDelete();
-	IRCCommand::types.emptyAndDelete();
 }
 
 IRC_Bot *IRCCommand::active_server = nullptr;
@@ -61,102 +56,92 @@ IRC_Bot *IRCCommand::selected_server = nullptr;
 
 // IRC Command Functions
 
-int IRCCommand::getAccessLevel()
-{
-	return IRCCommand::access;
+int IRCCommand::getAccessLevel() {
+	return m_access;
 }
 
-int IRCCommand::getAccessLevel(int type)
-{
-	for (size_t i = 0; i != IRCCommand::types.size(); i++)
-		if (IRCCommand::types.get(i)->type == type)
-			return IRCCommand::types.get(i)->access;
-	return IRCCommand::access;
-}
-
-int IRCCommand::getAccessLevel(const Jupiter::ReadableString &channel)
-{
-	IRCCommand::ChannelAccessPair *pair;
-	for (size_t i = 0; i != IRCCommand::channels.size(); i++)
-	{
-		pair = IRCCommand::channels.get(i);
-		if (pair->channel.equalsi(channel))
-			return pair->access;
-	}
-	return IRCCommand::access;
-}
-
-int IRCCommand::getAccessLevel(Jupiter::IRC::Client::Channel *channel)
-{
-	IRCCommand::ChannelAccessPair *pair;
-	for (size_t i = 0; i != IRCCommand::channels.size(); i++)
-	{
-		pair = IRCCommand::channels.get(i);
-		if (pair->channel.equalsi(channel->getName()))
-			return pair->access;
+int IRCCommand::getAccessLevel(int type) {
+	for (const auto& pair : m_types) {
+		if (pair.type == type) {
+			return pair.access;
+		}
 	}
 
-	for (size_t i = 0; i != IRCCommand::types.size(); i++)
-		if (IRCCommand::types.get(i)->type == channel->getType())
-			return IRCCommand::types.get(i)->access;
-
-	return IRCCommand::access;
+	return m_access;
 }
 
-void IRCCommand::setAccessLevel(int accessLevel)
-{
-	IRCCommand::access = accessLevel;
+int IRCCommand::getAccessLevel(const Jupiter::ReadableString &channel) {
+	for (const auto& pair : m_channels) {
+		if (pair.channel.equalsi(channel)) {
+			return pair.access;
+		}
+	}
+
+	return m_access;
 }
 
-void IRCCommand::setAccessLevel(int type, int accessLevel)
-{
-	IRCCommand::TypeAccessPair *pair = new IRCCommand::TypeAccessPair();
-	pair->type = type;
-	pair->access = accessLevel;
-	IRCCommand::types.add(pair);
+int IRCCommand::getAccessLevel(Jupiter::IRC::Client::Channel *channel) {
+	for (const auto& pair : m_channels) {
+		if (pair.channel.equalsi(channel->getName())) {
+			return pair.access;
+		}
+	}
+
+	for (const auto& pair : m_types) {
+		if (pair.type == channel->getType()) {
+			return pair.access;
+		}
+	}
+
+	return m_access;
 }
 
-void IRCCommand::setAccessLevel(const Jupiter::ReadableString &channel, int accessLevel)
-{
-	IRCCommand::ChannelAccessPair *pair = new IRCCommand::ChannelAccessPair();
-	pair->channel = channel;
-	pair->access = accessLevel;
-	IRCCommand::channels.add(pair);
+void IRCCommand::setAccessLevel(int accessLevel) {
+	m_access = accessLevel;
 }
 
-void IRCCommand::create()
-{
+void IRCCommand::setAccessLevel(int type, int accessLevel) {
+	m_types.push_back({type, accessLevel});
+}
+
+void IRCCommand::setAccessLevel(const Jupiter::ReadableString &channel, int accessLevel) {
+	m_channels.push_back({ channel, accessLevel });
+}
+
+void IRCCommand::create() {
 }
 
 /** GenericCommandWrapperIRCCommand */
 
-GenericCommandWrapperIRCCommand::GenericCommandWrapperIRCCommand(const GenericCommandWrapperIRCCommand &in_command) : IRCCommand(in_command)
-{
-	GenericCommandWrapperIRCCommand::m_command = in_command.m_command;
+GenericCommandWrapperIRCCommand::GenericCommandWrapperIRCCommand(const GenericCommandWrapperIRCCommand &in_command)
+	: IRCCommand(in_command) {
+	m_command = in_command.m_command;
 
 	// Copy triggers
-	for (size_t index = 0; index != GenericCommandWrapperIRCCommand::m_command->getTriggerCount(); ++index)
-		this->addTrigger(GenericCommandWrapperIRCCommand::m_command->getTrigger(index));
+	for (size_t index = 0; index != m_command->getTriggerCount(); ++index) {
+		this->addTrigger(m_command->getTrigger(index));
+	}
 }
 
-GenericCommandWrapperIRCCommand::GenericCommandWrapperIRCCommand(Jupiter::GenericCommand &in_command) : IRCCommand()
-{
-	GenericCommandWrapperIRCCommand::m_command = &in_command;
+GenericCommandWrapperIRCCommand::GenericCommandWrapperIRCCommand(Jupiter::GenericCommand &in_command)
+	: IRCCommand() {
+	m_command = &in_command;
 
 	// Copy triggers
-	for (size_t index = 0; index != GenericCommandWrapperIRCCommand::m_command->getTriggerCount(); ++index)
-		this->addTrigger(GenericCommandWrapperIRCCommand::m_command->getTrigger(index));
+	for (size_t index = 0; index != m_command->getTriggerCount(); ++index) {
+		this->addTrigger(m_command->getTrigger(index));
+	}
 
-	if (serverManager != nullptr)
+	if (serverManager != nullptr) {
 		serverManager->addCommand(this);
+	}
 }
 
 // GenericCommandWrapperIRCCommand functions
 
-void GenericCommandWrapperIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &in_channel, const Jupiter::ReadableString &in_nick, const Jupiter::ReadableString &in_parameters)
-{
+void GenericCommandWrapperIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &in_channel, const Jupiter::ReadableString &in_nick, const Jupiter::ReadableString &in_parameters) {
 	Jupiter::GenericCommand::ResponseLine *del;
-	Jupiter::GenericCommand::ResponseLine *result = GenericCommandWrapperIRCCommand::m_command->trigger(in_parameters);
+	Jupiter::GenericCommand::ResponseLine *result = m_command->trigger(in_parameters);
 
 	while (result != nullptr)
 	{
@@ -181,17 +166,14 @@ void GenericCommandWrapperIRCCommand::trigger(IRC_Bot *source, const Jupiter::Re
 	}
 }
 
-const Jupiter::ReadableString &GenericCommandWrapperIRCCommand::getHelp(const Jupiter::ReadableString &parameters)
-{
+const Jupiter::ReadableString &GenericCommandWrapperIRCCommand::getHelp(const Jupiter::ReadableString &parameters) {
 	return GenericCommandWrapperIRCCommand::m_command->getHelp(parameters);
 }
 
-IRCCommand *GenericCommandWrapperIRCCommand::copy()
-{
+IRCCommand *GenericCommandWrapperIRCCommand::copy() {
 	return new GenericCommandWrapperIRCCommand(*this);
 }
 
-const Jupiter::GenericCommand &GenericCommandWrapperIRCCommand::getGenericCommand() const
-{
+const Jupiter::GenericCommand &GenericCommandWrapperIRCCommand::getGenericCommand() const {
 	return *GenericCommandWrapperIRCCommand::m_command;
 }

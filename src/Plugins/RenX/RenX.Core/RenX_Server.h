@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2014-2017 Jessica James.
+ * Copyright (C) 2014-2021 Jessica James.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -27,7 +27,6 @@
 #include <chrono>
 #include <list>
 #include "Jupiter/TCPSocket.h"
-#include "Jupiter/ArrayList.h"
 #include "Jupiter/String.hpp"
 #include "Jupiter/Config.h"
 #include "Jupiter/Thinker.h"
@@ -83,9 +82,9 @@ namespace RenX
 
 	public: // RenX::Server
 		std::list<RenX::PlayerInfo> players; /** A list of players in the server */
-		Jupiter::ArrayList<RenX::BuildingInfo> buildings; /** A list of buildings in the server */
-		Jupiter::ArrayList<Jupiter::StringS> mutators; /** A list of buildings the server is running */
-		Jupiter::ArrayList<RenX::Map> maps; /** A list of maps in the server's rotation */
+		std::vector<std::unique_ptr<RenX::BuildingInfo>> buildings; /** A list of buildings in the server */
+		std::vector<Jupiter::StringS> mutators; /** A list of buildings the server is running */
+		std::vector<RenX::Map> maps; /** A list of maps in the server's rotation */
 		Jupiter::Config varData; /** Variable data. */
 
 		/**
@@ -1068,89 +1067,90 @@ namespace RenX
 		void startPing();
 
 		/** Tracking variables */
-		bool gameover_when_empty = false;
-		bool gameover_pending = false;
-		bool pure = false;
-		bool connected = false;
-		bool subscribed = false;
-		bool fully_connected = false;
-		bool seamless = false;
-		bool firstKill = false;
-		bool firstDeath = false;
-		bool firstAction = false;
-		bool awaitingPong = false;
-		bool passworded = false;
-		bool steamRequired = false;
-		bool privateMessageTeamOnly = false;
-		bool allowPrivateMessaging = true;
-		bool spawnCrates = true;
-		bool botsEnabled = true;
-		bool competitive = false;
-		bool devBot = false;
-		bool reliable = false;
+		bool m_gameover_when_empty = false;
+		bool m_gameover_pending = false;
+		bool m_pure = false;
+		bool m_connected = false;
+		bool m_subscribed = false;
+		bool m_fully_connected = false;
+		bool m_seamless = false;
+		bool m_firstKill = false;
+		bool m_firstDeath = false;
+		bool m_firstAction = false;
+		bool m_awaitingPong = false;
+		bool m_passworded = false;
+		bool m_steamRequired = false;
+		bool m_privateMessageTeamOnly = false;
+		bool m_allowPrivateMessaging = true;
+		bool m_spawnCrates = true;
+		bool m_botsEnabled = true;
+		bool m_competitive = false;
+		bool m_devBot = false;
+		bool m_reliable = false;
 		bool m_ranked = false;
+		// TODO: Why aren't these enums?
 		int m_team_mode = 3; /** 0 = static, 1 = swap, 2 = random swap, 3 = shuffle, 4 = traditional (assign as players connect) */
-		int match_state = 1; /** 0 = pending, 1 = in progress, 2 = over, 3 = travelling */
+		int m_match_state = 1; /** 0 = pending, 1 = in progress, 2 = over, 3 = travelling */
 		int m_game_type = 1; /** < 0 = Invalid, 0 = Main Menu, 1 = Rx_Game, 2 = TS_Game, > 2 = Unassigned */
-		int attempts = 0;
-		int playerLimit = 0;
-		int vehicleLimit = 0;
-		int mineLimit = 0;
-		int timeLimit = 0;
-		size_t bot_count = 0;
-		size_t player_rdns_resolutions_pending = 0;
-		unsigned int rconVersion = 0;
-		unsigned int gameVersionNumber = 0;
-		double crateRespawnAfterPickup = 0.0;
-		uuid_func calc_uuid;
-		std::chrono::steady_clock::time_point lastAttempt = std::chrono::steady_clock::now();
-		std::chrono::steady_clock::time_point gameStart = std::chrono::steady_clock::now();
-		std::chrono::steady_clock::time_point lastClientListUpdate = std::chrono::steady_clock::now();
-		std::chrono::steady_clock::time_point lastBuildingListUpdate = std::chrono::steady_clock::now();
-		std::chrono::steady_clock::time_point lastActivity = std::chrono::steady_clock::now();
-		std::chrono::steady_clock::time_point lastSendActivity = std::chrono::steady_clock::now();
-		std::chrono::steady_clock::time_point gameover_time;
-		Jupiter::String lastLine;
-		Jupiter::StringS rconUser;
-		Jupiter::StringS gameVersion;
-		Jupiter::StringS serverName;
-		Jupiter::StringS lastCommand;
-		Jupiter::StringS lastCommandParams;
-		RenX::Map map;
-		Jupiter::TCPSocket sock;
-		Jupiter::ReadableString::TokenizeResult<Jupiter::String_Strict> commandListFormat;
-		Jupiter::ArrayList<RenX::GameCommand> commands;
+		int m_attempts = 0;
+		int m_playerLimit = 0;
+		int m_vehicleLimit = 0;
+		int m_mineLimit = 0;
+		int m_timeLimit = 0;
+		size_t m_bot_count = 0;
+		size_t m_player_rdns_resolutions_pending = 0;
+		unsigned int m_rconVersion = 0;
+		unsigned int m_gameVersionNumber = 0;
+		double m_crateRespawnAfterPickup = 0.0;
+		uuid_func m_calc_uuid;
+		std::chrono::steady_clock::time_point m_lastAttempt = std::chrono::steady_clock::now();
+		std::chrono::steady_clock::time_point m_gameStart = std::chrono::steady_clock::now();
+		std::chrono::steady_clock::time_point m_lastClientListUpdate = std::chrono::steady_clock::now();
+		std::chrono::steady_clock::time_point m_lastBuildingListUpdate = std::chrono::steady_clock::now();
+		std::chrono::steady_clock::time_point m_lastActivity = std::chrono::steady_clock::now();
+		std::chrono::steady_clock::time_point m_lastSendActivity = std::chrono::steady_clock::now();
+		std::chrono::steady_clock::time_point m_gameover_time;
+		Jupiter::String m_lastLine;
+		Jupiter::StringS m_rconUser;
+		Jupiter::StringS m_gameVersion;
+		Jupiter::StringS m_serverName;
+		Jupiter::StringS m_lastCommand;
+		Jupiter::StringS m_lastCommandParams;
+		RenX::Map m_map;
+		Jupiter::TCPSocket m_sock;
+		Jupiter::ReadableString::TokenizeResult<Jupiter::String_Strict> m_commandListFormat;
+		std::vector<std::unique_ptr<RenX::GameCommand>> m_commands;
 
 		/** Configuration variables */
-		bool rconBan;
-		bool localBan;
-		bool localSteamBan;
-		bool localIPBan;
-		bool localHWIDBan;
-		bool localRDNSBan;
-		bool localNameBan;
-		bool neverSay;
-		bool resolve_player_rdns;
-		unsigned short port;
-		int logChanType;
-		int adminLogChanType;
-		int maxAttempts;
-		int steamFormat; /** 16 = hex, 10 = base 10, 8 = octal, -2 = SteamID 2, -3 = SteamID 3 */
-		std::chrono::milliseconds delay;
-		std::chrono::milliseconds clientUpdateRate;
-		std::chrono::milliseconds buildingUpdateRate;
-		std::chrono::milliseconds pingRate;
-		std::chrono::milliseconds pingTimeoutThreshold;
-		std::string clientHostname;
-		std::string hostname;
-		Jupiter::StringS pass;
-		Jupiter::StringS configSection;
-		Jupiter::StringS rules;
-		Jupiter::StringS ban_from_str;
-		Jupiter::StringS IRCPrefix;
-		Jupiter::StringS CommandPrefix;
-		Jupiter::Config *commandAccessLevels;
-		Jupiter::Config *commandAliases;
+		bool m_rconBan;
+		bool m_localBan;
+		bool m_localSteamBan;
+		bool m_localIPBan;
+		bool m_localHWIDBan;
+		bool m_localRDNSBan;
+		bool m_localNameBan;
+		bool m_neverSay;
+		bool m_resolve_player_rdns;
+		unsigned short m_port;
+		int m_logChanType;
+		int m_adminLogChanType;
+		int m_maxAttempts;
+		int m_steamFormat; /** 16 = hex, 10 = base 10, 8 = octal, -2 = SteamID 2, -3 = SteamID 3 */
+		std::chrono::milliseconds m_delay;
+		std::chrono::milliseconds m_clientUpdateRate;
+		std::chrono::milliseconds m_buildingUpdateRate;
+		std::chrono::milliseconds m_pingRate;
+		std::chrono::milliseconds m_pingTimeoutThreshold;
+		std::string m_clientHostname;
+		std::string m_hostname;
+		Jupiter::StringS m_pass;
+		Jupiter::StringS m_configSection;
+		Jupiter::StringS m_rules;
+		Jupiter::StringS m_ban_from_str;
+		Jupiter::StringS m_IRCPrefix;
+		Jupiter::StringS m_CommandPrefix;
+		Jupiter::Config* m_commandAccessLevels;
+		Jupiter::Config* m_commandAliases;
 	};
 
 }

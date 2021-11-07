@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2013-2017 Jessica James.
+ * Copyright (C) 2013-2021 Jessica James.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -44,8 +44,7 @@ std::chrono::steady_clock::time_point Jupiter::g_start_time = std::chrono::stead
 
 #define INPUT_BUFFER_SIZE 2048
 
-struct ConsoleInput
-{
+struct ConsoleInput {
 	Jupiter::String input;
 	std::mutex input_mutex;
 	bool awaiting_processing = false;
@@ -53,23 +52,19 @@ struct ConsoleInput
 	ConsoleInput() : input(INPUT_BUFFER_SIZE) {}
 } console_input;
 
-void onTerminate()
-{
+void onTerminate() {
 	puts("Terminate signal received...");
 }
 
-void onExit()
-{
+void onExit() {
 	puts("Exit signal received; Cleaning up...");
 	Jupiter::Socket::cleanup();
 	puts("Clean-up complete. Closing...");
 }
 
-void inputLoop()
-{
+void inputLoop() {
 	std::string input;
-	while (ftell(stdin) != -1 || errno != EBADF)
-	{
+	while (ftell(stdin) != -1 || errno != EBADF) {
 		std::getline(std::cin, input);
 
 	check_input_processing:
@@ -88,13 +83,45 @@ void inputLoop()
 	}
 }
 
-int main(int argc, const char **args)
-{
+[[noreturn]] void main_loop() {
+	Jupiter::ReferenceString command;
+	size_t index;
+	while (1) {
+		index = 0;
+		while (index < Jupiter::plugins.size()) {
+			if (Jupiter::plugins[index]->shouldRemove() || Jupiter::plugins[index]->think() != 0) {
+				Jupiter::Plugin::free(index);
+			}
+			else {
+				++index;
+			}
+		}
+		Jupiter::Timer::check();
+
+		if (console_input.input_mutex.try_lock()) {
+			if (console_input.awaiting_processing) {
+				console_input.awaiting_processing = false;
+				command = Jupiter::ReferenceString::getWord(console_input.input, 0, WHITESPACE);
+
+				ConsoleCommand *cmd = getConsoleCommand(command);
+				if (cmd != nullptr) {
+					cmd->trigger(Jupiter::ReferenceString::gotoWord(console_input.input, 1, WHITESPACE));
+				}
+				else {
+					printf("Error: Command \"%.*s\" not found." ENDL, command.size(), command.ptr());
+				}
+			}
+			console_input.input_mutex.unlock();
+		}
+		std::this_thread::sleep_for((std::chrono::milliseconds(1)));
+	}
+}
+
+int main(int argc, const char **args) {
 	atexit(onExit);
 	std::set_terminate(onTerminate);
 	std::thread inputThread(inputLoop);
-	Jupiter::ReferenceString command, plugins_directory, configs_directory;
-	size_t index;
+	Jupiter::ReferenceString plugins_directory, configs_directory;
 
 #if defined SIGPIPE
 	std::signal(SIGPIPE, SIG_IGN);
@@ -110,10 +137,8 @@ int main(int argc, const char **args)
 	puts(Jupiter::copyright);
 	const char *configFileName = "Config.ini";
 
-	for (int i = 1; i < argc; i++)
-	{
-		if ("-help"_jrs.equalsi(args[i]))
-		{
+	for (int i = 1; i < argc; i++) {
+		if ("-help"_jrs.equalsi(args[i])) {
 			puts("Help coming soon, to a theatre near you!");
 			return 0;
 		}
@@ -132,8 +157,7 @@ int main(int argc, const char **args)
 	std::chrono::steady_clock::time_point load_start = std::chrono::steady_clock::now();
 
 	puts("Loading config file...");
-	if (!o_config.read(configFileName))
-	{
+	if (!o_config.read(configFileName)) {
 		puts("Unable to read config file. Closing...");
 		exit(0);
 	}
@@ -148,14 +172,12 @@ int main(int argc, const char **args)
 	if (configs_directory.isEmpty())
 		configs_directory = o_config.get("ConfigsDirectory"_jrs);
 
-	if (plugins_directory.isNotEmpty())
-	{
+	if (plugins_directory.isNotEmpty()) {
 		Jupiter::Plugin::setDirectory(plugins_directory);
 		printf("Plugins will be loaded from \"%.*s\"." ENDL, plugins_directory.size(), plugins_directory.ptr());
 	}
 
-	if (configs_directory.isNotEmpty())
-	{
+	if (configs_directory.isNotEmpty()) {
 		Jupiter::Plugin::setConfigDirectory(configs_directory);
 		printf("Plugin configs will be loaded from \"%.*s\"." ENDL, configs_directory.size(), configs_directory.ptr());
 	}
@@ -164,16 +186,14 @@ int main(int argc, const char **args)
 	const Jupiter::ReadableString &pluginList = o_config.get("Plugins"_jrs);
 	if (pluginList.isEmpty())
 		puts("No plugins to load!");
-	else
-	{
+	else {
 		// initialize plugins
 		unsigned int nPlugins = pluginList.wordCount(WHITESPACE);
 		printf("Attempting to load %u plugins..." ENDL, nPlugins);
 
 		bool load_success;
 
-		for (unsigned int i = 0; i < nPlugins; i++)
-		{
+		for (unsigned int i = 0; i < nPlugins; i++) {
 			Jupiter::ReferenceString plugin = Jupiter::ReferenceString::getWord(pluginList, i, WHITESPACE);
 
 			load_start = std::chrono::steady_clock::now();
@@ -187,43 +207,20 @@ int main(int argc, const char **args)
 		}
 
 		// OnPostInitialize
-		for (index = 0; index != Jupiter::plugins->size(); ++index)
-			Jupiter::plugins->get(index)->OnPostInitialize();
+		for (const auto& plugin : Jupiter::plugins) {
+			plugin->OnPostInitialize();
+		}
 	}
 
 	printf("Initialization completed in %f milliseconds." ENDL, static_cast<double>(std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::steady_clock::now() - Jupiter::g_start_time).count()) / 1000.0 );
 
-	if (consoleCommands->size() > 0)
-		printf("%zu Console Commands have been initialized%s" ENDL, consoleCommands->size(), getConsoleCommand("help"_jrs) == nullptr ? "." : "; type \"help\" for more information.");
-	if (IRCMasterCommandList->size() > 0)
-		printf("%zu IRC Commands have been loaded into the master list." ENDL, IRCMasterCommandList->size());
-
-	while (1)
-	{
-		index = 0;
-		while (index < Jupiter::plugins->size())
-			if (Jupiter::plugins->get(index)->shouldRemove() || Jupiter::plugins->get(index)->think() != 0)
-				Jupiter::Plugin::free(index);
-			else
-				++index;
-		Jupiter::Timer::check();
-
-		if (console_input.input_mutex.try_lock())
-		{
-			if (console_input.awaiting_processing)
-			{
-				console_input.awaiting_processing = false;
-				command = Jupiter::ReferenceString::getWord(console_input.input, 0, WHITESPACE);
-
-				ConsoleCommand *cmd = getConsoleCommand(command);
-				if (cmd != nullptr)
-					cmd->trigger(Jupiter::ReferenceString::gotoWord(console_input.input, 1, WHITESPACE));
-				else
-					printf("Error: Command \"%.*s\" not found." ENDL, command.size(), command.ptr());
-			}
-			console_input.input_mutex.unlock();
-		}
-		std::this_thread::sleep_for((std::chrono::milliseconds(1)));
+	if (!consoleCommands.empty()) {
+		printf("%zu Console Commands have been initialized%s" ENDL, consoleCommands.size(), getConsoleCommand("help"_jrs) == nullptr ? "." : "; type \"help\" for more information.");
 	}
+	if (!IRCMasterCommandList.empty()) {
+		printf("%zu IRC Commands have been loaded into the master list." ENDL, IRCMasterCommandList.size());
+	}
+
+	main_loop();
 	return 0;
 }
