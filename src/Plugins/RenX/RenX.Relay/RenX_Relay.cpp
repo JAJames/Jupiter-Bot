@@ -321,8 +321,28 @@ void RenX_RelayPlugin::RenX_OnRaw(RenX::Server &server, const Jupiter::ReadableS
 			// This is the next command we're been waiting on; mark processing command and let this go through
 			front_server_info->m_processing_command = true;
 
-			// This is a command response from upstream; this is only relevant to one server: that server
-			process_renx_message(server, *front_server_info, line, tokens);
+			// This is a command response for an upstream command; this is only relevant to one server: that server
+			// Always echo the command back exactly as it was sent
+			Jupiter::StringS line_sanitized;
+			const auto& rcon_username = get_upstream_rcon_username(*front_server_info, server);
+			if (rcon_username == server.getRCONUsername()) {
+				// No need to recombine tokens
+				line_sanitized = line;
+			}
+			else {
+				// TODO: add assignment operators to Jupiter::string crap
+				tokens.tokens[2].set(rcon_username.data(), rcon_username.size());
+
+				// Construct line to send and send it
+				line_sanitized = tokens.tokens[0];
+				for (size_t index = 1; index != tokens.token_count; ++index) {
+					line_sanitized += RenX::DelimC;
+					line_sanitized += tokens.tokens[index];
+				}
+			}
+			line_sanitized += '\n';
+
+			send_upstream(*front_server_info, line_sanitized, server);
 			return;
 		}
 	}
