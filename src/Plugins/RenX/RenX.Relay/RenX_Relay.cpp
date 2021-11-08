@@ -9,6 +9,7 @@
 #include <memory>
 #include <string_view>
 #include <unordered_set>
+#include <cassert>
 #include "Jupiter/IRC.h"
 #include "RenX_Functions.h"
 #include "RenX_Server.h"
@@ -26,83 +27,79 @@ constexpr std::chrono::steady_clock::duration g_activity_timeout = std::chrono::
 int RenX_RelayPlugin::think() {
 	for (auto& server_pair : m_server_info_map) {
 		auto server = server_pair.first;
-		auto& server_info = server_pair.second;
-		auto& upstream_socket = server_info.m_socket;
-		const auto& upstream_name = get_upstream_name(server_info);
+		for (auto& server_info : server_pair.second) {
+			auto& upstream_socket = server_info.m_socket;
+			const auto& upstream_name = get_upstream_name(server_info);
 
-		if (!upstream_socket) {
-			// This should never happen
-			continue;
-		}
-
-		if (!server_info.m_connected) {
-			// Not connected; attempt retry if needed
-			if (std::chrono::steady_clock::now() >= server_info.m_last_connect_attempt + g_reconnect_delay) {
-				if (upstream_socket->connect(m_upstream_hostname.c_str(), m_upstream_port)) {
-					// There's some handshake garbage that needs to go on here so the upstream accepts us
-					upstream_connected(*server, server_info);
-					server->sendLogChan(IRCCOLOR "03[RenX]" IRCCOLOR " Socket successfully reconnected to %.*s; game server now listed.", upstream_name.size(), upstream_name.data());
-				}
-				else {
-					server->sendLogChan(IRCCOLOR "04[Error]" IRCCOLOR " Failed to reconnect to %.*s; game server not listed.", upstream_name.size(), upstream_name.data());
-				}
-
-				// Update our timings
-				server_info.m_last_connect_attempt = std::chrono::steady_clock::now();
-				server_info.m_last_activity = server_info.m_last_connect_attempt;
+			if (!upstream_socket) {
+				// This should never happen
+				continue;
 			}
-		}
-		else if (std::chrono::steady_clock::now() - server_info.m_last_activity >= g_activity_timeout) // ping timeout
-		{
-			// Ping timeout; disconnect immediately
-			server->sendLogChan(IRCCOLOR "04[Error]" IRCCOLOR " Disconnected from %.*s (ping timeout); game server is no longer listed.", upstream_name.size(), upstream_name.data());
-			upstream_disconnected(*server, server_info);
-		}
-		else {
-			// Connected and fine
-			if (upstream_socket->recv() > 0) // Data received
-			{
-				auto& buffer = upstream_socket->getBuffer();
-				Jupiter::ReadableString::TokenizeResult<Jupiter::Reference_String> result = Jupiter::ReferenceString::tokenize(buffer, '\n');
-				if (result.token_count != 0)
-				{
-					server_info.m_last_activity = std::chrono::steady_clock::now();
-					server_info.m_last_line.concat(result.tokens[0]);
-					if (result.token_count != 1)
-					{
-						// Process upstream message received
-						process_upstream_message(server, server_info.m_last_line, server_info);
-						server_info.m_last_line = result.tokens[result.token_count - 1];
 
-						for (size_t index = 1; index != result.token_count - 1; ++index)
-							process_upstream_message(server, result.tokens[index], server_info);
+			if (!server_info.m_connected) {
+				// Not connected; attempt retry if needed
+				if (std::chrono::steady_clock::now() >= server_info.m_last_connect_attempt + g_reconnect_delay) {
+					if (upstream_socket->connect(server_info.m_settings->m_upstream_hostname.c_str(), server_info.m_settings->m_upstream_port)) {
+						// There's some handshake garbage that needs to go on here so the upstream accepts us
+						upstream_connected(*server, server_info);
+						server->sendLogChan(IRCCOLOR "03[RenX]" IRCCOLOR " Socket successfully reconnected to %.*s; game server now listed.", upstream_name.size(), upstream_name.data());
+					}
+					else {
+						server->sendLogChan(IRCCOLOR "04[Error]" IRCCOLOR " Failed to reconnect to %.*s; game server not listed.", upstream_name.size(), upstream_name.data());
+					}
+
+					// Update our timings
+					server_info.m_last_connect_attempt = std::chrono::steady_clock::now();
+					server_info.m_last_activity = server_info.m_last_connect_attempt;
+				}
+			}
+			else if (std::chrono::steady_clock::now() - server_info.m_last_activity >= g_activity_timeout) { // ping timeout
+				// Ping timeout; disconnect immediately
+				server->sendLogChan(IRCCOLOR "04[Error]" IRCCOLOR " Disconnected from %.*s (ping timeout); game server is no longer listed.", upstream_name.size(), upstream_name.data());
+				upstream_disconnected(*server, server_info);
+			}
+			else {
+				// Connected and fine
+				if (upstream_socket->recv() > 0) { // Data received
+					auto& buffer = upstream_socket->getBuffer();
+					Jupiter::ReadableString::TokenizeResult<Jupiter::Reference_String> result = Jupiter::ReferenceString::tokenize(buffer, '\n');
+					if (result.token_count != 0) {
+						server_info.m_last_activity = std::chrono::steady_clock::now();
+						server_info.m_last_line.concat(result.tokens[0]);
+						if (result.token_count != 1) {
+							// Process upstream message received
+							process_upstream_message(server, server_info.m_last_line, server_info);
+							server_info.m_last_line = result.tokens[result.token_count - 1];
+
+							for (size_t index = 1; index != result.token_count - 1; ++index) {
+								process_upstream_message(server, result.tokens[index], server_info);
+							}
+						}
 					}
 				}
-			}
-			else if (Jupiter::Socket::getLastError() == JUPITER_SOCK_EWOULDBLOCK) // Operation would block (no new data)
-			{
-				if (std::chrono::steady_clock::now() - server_info.m_last_activity >= g_activity_timeout) {
+				else if (Jupiter::Socket::getLastError() == JUPITER_SOCK_EWOULDBLOCK) { // Operation would block (no new data)
+					if (std::chrono::steady_clock::now() - server_info.m_last_activity >= g_activity_timeout) {
+						upstream_disconnected(*server, server_info);
+					}
+				}
+				else { // This is a serious error
 					upstream_disconnected(*server, server_info);
-				}
-			}
-			else // This is a serious error
-			{
-				upstream_disconnected(*server, server_info);
 
-				server->sendLogChan(IRCCOLOR "07[Warning]" IRCCOLOR " Connection to %.*s lost. Reconnection attempt in progress.", upstream_name.size(), upstream_name.data());
-				if (upstream_socket->connect(m_upstream_hostname.c_str(), m_upstream_port)) {
-					upstream_connected(*server, server_info);
-					server->sendLogChan(IRCCOLOR "06[Progress]" IRCCOLOR " Connection to %.*s reestablished. Initializing Renegade-X RCON protocol...", upstream_name.size(), upstream_name.data());
-				}
-				else {
-					server->sendLogChan(IRCCOLOR "04[Error]" IRCCOLOR " Connection to %.*s lost. Reconnection attempt failed.", upstream_name.size(), upstream_name.data());
-				}
+					server->sendLogChan(IRCCOLOR "07[Warning]" IRCCOLOR " Connection to %.*s lost. Reconnection attempt in progress.", upstream_name.size(), upstream_name.data());
+					if (upstream_socket->connect(server_info.m_settings->m_upstream_hostname.c_str(), server_info.m_settings->m_upstream_port)) {
+						upstream_connected(*server, server_info);
+						server->sendLogChan(IRCCOLOR "06[Progress]" IRCCOLOR " Connection to %.*s reestablished. Initializing Renegade-X RCON protocol...", upstream_name.size(), upstream_name.data());
+					}
+					else {
+						server->sendLogChan(IRCCOLOR "04[Error]" IRCCOLOR " Connection to %.*s lost. Reconnection attempt failed.", upstream_name.size(), upstream_name.data());
+					}
 
-				// Update our timings
-				server_info.m_last_connect_attempt = std::chrono::steady_clock::now();
-				server_info.m_last_activity = server_info.m_last_connect_attempt;
+					// Update our timings
+					server_info.m_last_connect_attempt = std::chrono::steady_clock::now();
+					server_info.m_last_activity = server_info.m_last_connect_attempt;
 
-				return 0;
+					return 0;
+				}
 			}
 		}
 	}
@@ -174,45 +171,40 @@ bool RenX_RelayPlugin::initialize() {
 	// TODO: Add game data relay support (so players connect through this)
 	// 			* Drop packets for non-players when traffic spikes
 	//			* notify game server to set failover
-	m_upstream_hostname = config.get<std::string>("UpstreamHost"_jrs, "devbot.ren-x.com");
-	m_upstream_port = config.get<uint16_t>("UpstreamPort"_jrs, 21337);
-	m_fake_pings = config.get<bool>("FakePings"_jrs, true);
-	m_fake_ignored_commands = config.get<bool>("FakeSuppressedCommands"_jrs, true);
-	m_sanitize_names = config.get<bool>("SanitizeNames"_jrs, true);
-	m_sanitize_ips = config.get<bool>("SanitizeIPs"_jrs, true);
-	m_sanitize_hwids = config.get<bool>("SanitizeHWIDs"_jrs, true);
-	m_sanitize_steam_ids = config.get<bool>("SanitizeSteamIDs"_jrs, true);
-	m_suppress_unknown_commands = config.get<bool>("SuppressUnknownCmds"_jrs, true);
-	m_suppress_blacklisted_commands = config.get<bool>("SuppressBlacklistedCmds"_jrs, true);
-	m_suppress_chat_logs = config.get<bool>("SuppressChatLogs"_jrs, true);
-	m_suppress_rcon_command_logs = config.get<bool>("SuppressRconCommandLogs"_jrs, true);
 
-	// Populate fake command handlers
-	if (m_fake_pings) {
-		m_fake_command_table.emplace("ping", &handle_ping);
-	}
+	m_default_settings = get_settings(config);
 
-	if (m_fake_ignored_commands) {
-		if (m_suppress_blacklisted_commands) {
-			for(auto& command : g_blacklist_commands) {
-				m_fake_command_table.emplace(command, &noop_handler);
-			}
-
-			// Disable dropping in favor of faking
-			m_suppress_blacklisted_commands = false;
+	Jupiter::ReferenceString upstreams_list = config.get("Upstreams"_jrs, ""_jrs);
+	unsigned int upstream_count = upstreams_list.wordCount(WHITESPACE);
+	for (unsigned int word_index = 0; word_index != upstream_count; ++word_index) {
+		auto upstream_name = Jupiter::ReferenceString::getWord(upstreams_list, word_index, WHITESPACE);
+		auto upstream_config = config.getSection(upstream_name);
+		if (upstream_config == nullptr) {
+			upstream_config = &config;
 		}
+
+		auto upstream_settings = get_settings(*upstream_config);
+		upstream_settings.m_label = upstream_name;
+		m_configured_upstreams.push_back(std::move(upstream_settings));
 	}
 
-	return RenX::Plugin::initialize();
+	return !m_configured_upstreams.empty() && RenX::Plugin::initialize();
 }
 
 void RenX_RelayPlugin::RenX_OnServerFullyConnected(RenX::Server &server) {
-	auto& server_info = m_server_info_map[&server];
+	auto& server_infos = m_server_info_map[&server];
+	if (server_infos.empty()) {
+		for (const auto& settings : m_configured_upstreams) {
+			server_infos.emplace_back().m_settings = &settings;
+		}
+	}
 
-	if (!server_info.m_connected) {
-		server_info.m_socket = std::unique_ptr<Jupiter::TCPSocket>(new Jupiter::TCPSocket());
-		if (server_info.m_socket->connect(m_upstream_hostname.c_str(), m_upstream_port)) {
-			upstream_connected(server, server_info);
+	for (auto& server_info : server_infos) {
+		if (!server_info.m_connected) {
+			server_info.m_socket = std::unique_ptr<Jupiter::TCPSocket>(new Jupiter::TCPSocket());
+			if (server_info.m_socket->connect(server_info.m_settings->m_upstream_hostname.c_str(), server_info.m_settings->m_upstream_port)) {
+				upstream_connected(server, server_info);
+			}
 		}
 	}
 }
@@ -220,9 +212,8 @@ void RenX_RelayPlugin::RenX_OnServerFullyConnected(RenX::Server &server) {
 void RenX_RelayPlugin::RenX_OnServerDisconnect(RenX::Server &server, RenX::DisconnectReason reason) {
 	auto pair_itr = m_server_info_map.find(&server);
 	if (pair_itr != m_server_info_map.end()) {
-		auto& socket_ptr = pair_itr->second.m_socket;
-		if (socket_ptr) {
-			socket_ptr->close();
+		for (auto& upstream_info : pair_itr->second) {
+			upstream_disconnected(server, upstream_info);
 		}
 	}
 
@@ -287,8 +278,7 @@ std::string to_hex(T in_integer) {
 
 void RenX_RelayPlugin::RenX_OnRaw(RenX::Server &server, const Jupiter::ReadableString &line) {
 	// Not parsing any escape sequences, so data gets sent upstream exactly as it's received here. Copy tokens where needed to process escape sequences.
-	Jupiter::ReadableString::TokenizeResult<Jupiter::String_Strict> tokens = Jupiter::StringS::tokenize(line, RenX::DelimC);
-	bool required_sanitization = false;
+	Jupiter::ReadableString::TokenizeResult <Jupiter::String_Strict> tokens = Jupiter::StringS::tokenize(line, RenX::DelimC);
 
 	// Ensure valid message received
 	if (tokens.token_count == 0) {
@@ -302,41 +292,53 @@ void RenX_RelayPlugin::RenX_OnRaw(RenX::Server &server, const Jupiter::ReadableS
 		return;
 	}
 
-	upstream_server_info& server_info = server_info_map_itr->second;
-	Jupiter::TCPSocket* socket = server_info.m_socket.get();
-	if (!socket) {
-		// early out: no upstream RCON session
-		return;
-	}
-
-	if (m_suppress_chat_logs
-		&& tokens.getToken(0) == "lCHAT") {
-		return;
-	}
-
 	// Suppress unassociated command execution logs from going upstream
 	if (tokens.token_count >= 5
-		&& !server_info.m_response_queue.empty()
+		&& !m_command_tracker.empty()
 		&& tokens.tokens[0] == "lRCON"
 		&& tokens.tokens[1] == "Command;"
 		&& tokens.tokens[3] == "executed:"
 		&& tokens.tokens[4].isNotEmpty()) {
 		if (tokens.tokens[2] != server.getRCONUsername()) {
-			if (m_suppress_rcon_command_logs) {
+			if (m_default_settings.m_suppress_rcon_command_logs) { // TODO: move away from per-stream settings
 				// Suppress RCON command logs from other RCON users
 				return;
 			}
 		}
 		else {
 			// if m_processing_command is already true, there's an unhandled protocol error here, and something is likely to eventually go wrong
-			if (tokens.tokens[4] != server_info.m_response_queue.front().m_command) {
-				// This command response wasn't requested upstream; suppress it
+			upstream_server_info* front_server_info = m_command_tracker.front();
+			if (front_server_info == nullptr
+				|| tokens.tokens[4] != front_server_info->m_response_queue.front().m_command) {
+				// This command response wasn't requested by any current upstream connections; suppress it
 				return;
 			}
 
 			// This is the next command we're been waiting on; mark processing command and let this go through
-			server_info.m_processing_command = true;
+			front_server_info->m_processing_command = true;
 		}
+	}
+
+	for (auto& server_info : server_info_map_itr->second) {
+		// Pass tokens by copy so sanitizations can differ per-upstream
+		// TODO: optimize to only copy when needed
+		// TODO: only generate sanitized message once if all upstreams are configured the same (i.e: all match default)
+		process_renx_message(server, server_info, line, tokens);
+	}
+}
+
+void RenX_RelayPlugin::process_renx_message(RenX::Server& server, upstream_server_info& server_info, const Jupiter::ReadableString& line, Jupiter::ReadableString::TokenizeResult<Jupiter::String_Strict> tokens) {
+	bool required_sanitization = false;
+	Jupiter::TCPSocket* socket = server_info.m_socket.get();
+	if (!socket) {
+		// early out: no upstream RCON session
+		return;
+	}
+
+	const upstream_settings& settings = *server_info.m_settings;
+	if (settings.m_suppress_chat_logs
+		&& tokens.getToken(0) == "lCHAT") {
+		return;
 	}
 
 	// Suppress unassociated command responses from going upstream
@@ -393,7 +395,7 @@ void RenX_RelayPlugin::RenX_OnRaw(RenX::Server &server, const Jupiter::ReadableS
 		return nullptr;
 	};
 
-	if (m_sanitize_names) {
+	if (settings.m_sanitize_names) {
 		for (size_t index = 0; index != tokens.token_count; ++index) {
 			auto& token = tokens.tokens[index];
 			if (is_player_token(token.ptr(), token.ptr() + token.size())) {
@@ -419,14 +421,14 @@ void RenX_RelayPlugin::RenX_OnRaw(RenX::Server &server, const Jupiter::ReadableS
 		}
 	}
 
-	if (m_sanitize_ips || m_sanitize_hwids) {
+	if (settings.m_sanitize_ips || settings.m_sanitize_hwids) {
 		// It's way too much of a pain to check for command usages, and it's not full-proof either (an alias or similar could be added).
 		// So instead, we'll just search all messages for any tokens containing any player's IP or HWID.
 		// This isn't terribly efficient, but there's only up to 64 players, so not a huge concern
 		for (size_t index = 0; index != tokens.token_count; ++index) {
 			auto& token = tokens.tokens[index];
 			const RenX::PlayerInfo* player;
-			if (m_sanitize_ips) {
+			if (settings.m_sanitize_ips) {
 				player = findPlayerByIP(token);
 				if (player != nullptr) {
 					// Initialize the engine here using the init time, so that player fake IPs will be consistent
@@ -446,7 +448,7 @@ void RenX_RelayPlugin::RenX_OnRaw(RenX::Server &server, const Jupiter::ReadableS
 				}
 			}
 
-			if (m_sanitize_hwids) {
+			if (settings.m_sanitize_hwids) {
 				player = findPlayerByHWID(token);
 				if (player != nullptr) {
 					// Initialize the engine here using the init time, so that player fake HWIDs will be consistent
@@ -465,7 +467,7 @@ void RenX_RelayPlugin::RenX_OnRaw(RenX::Server &server, const Jupiter::ReadableS
 				}
 			}
 
-			if (m_sanitize_steam_ids) {
+			if (settings.m_sanitize_steam_ids) {
 				player = findPlayerBySteamID(token);
 				if (player != nullptr) {
 					token = g_blank_steamid;
@@ -504,8 +506,12 @@ void RenX_RelayPlugin::RenX_OnRaw(RenX::Server &server, const Jupiter::ReadableS
 			return;
 		}
 
-		// We've finished executing a command; pop it and go through any pending fakes
+		assert(m_command_tracker.front() == &server_info);
+
+		// We've finished executing a real command; pop it and go through any pending fakes
 		queue.pop_front();
+		m_command_tracker.pop_front();
+
 		std::string response;
 		while (!queue.empty() && queue.front().m_is_fake) {
 			response = queue.front().to_rcon(server.getRCONUsername());
@@ -515,8 +521,40 @@ void RenX_RelayPlugin::RenX_OnRaw(RenX::Server &server, const Jupiter::ReadableS
 	}
 }
 
-std::string_view RenX_RelayPlugin::get_upstream_name(const upstream_server_info&) {
-	return m_upstream_hostname; // Will point to stream-specific name later
+RenX_RelayPlugin::upstream_settings RenX_RelayPlugin::get_settings(const Jupiter::Config& in_config) {
+	upstream_settings result{};
+
+	// Read in settings
+	result.m_upstream_hostname = in_config.get<std::string>("UpstreamHost"_jrs, m_default_settings.m_upstream_hostname);
+	result.m_upstream_port = in_config.get<uint16_t>("UpstreamPort"_jrs, m_default_settings.m_upstream_port);
+	result.m_fake_pings = in_config.get<bool>("FakePings"_jrs, m_default_settings.m_fake_pings);
+	result.m_fake_ignored_commands = in_config.get<bool>("FakeSuppressedCommands"_jrs, m_default_settings.m_fake_ignored_commands);
+	result.m_sanitize_names = in_config.get<bool>("SanitizeNames"_jrs, m_default_settings.m_sanitize_names);
+	result.m_sanitize_ips = in_config.get<bool>("SanitizeIPs"_jrs, m_default_settings.m_sanitize_ips);
+	result.m_sanitize_hwids = in_config.get<bool>("SanitizeHWIDs"_jrs, m_default_settings.m_sanitize_hwids);
+	result.m_sanitize_steam_ids = in_config.get<bool>("SanitizeSteamIDs"_jrs, m_default_settings.m_sanitize_steam_ids);
+	result.m_suppress_unknown_commands = in_config.get<bool>("SuppressUnknownCmds"_jrs, m_default_settings.m_suppress_unknown_commands);
+	result.m_suppress_blacklisted_commands = in_config.get<bool>("SuppressBlacklistedCmds"_jrs, m_default_settings.m_suppress_blacklisted_commands);
+	result.m_suppress_chat_logs = in_config.get<bool>("SuppressChatLogs"_jrs, m_default_settings.m_suppress_chat_logs);
+	result.m_suppress_rcon_command_logs = in_config.get<bool>("SuppressRconCommandLogs"_jrs, m_default_settings.m_suppress_rcon_command_logs);
+
+	// Populate fake command handlers
+	if (result.m_fake_pings) {
+		result.m_fake_command_table.emplace("ping", &handle_ping);
+	}
+
+	if (result.m_fake_ignored_commands
+		&& result.m_suppress_blacklisted_commands) {
+		for(auto& command : g_blacklist_commands) {
+			result.m_fake_command_table.emplace(command, &noop_handler);
+		}
+	}
+
+	return result;
+}
+
+std::string_view RenX_RelayPlugin::get_upstream_name(const upstream_server_info& in_server_info) {
+	return in_server_info.m_settings->m_upstream_hostname; // Will point to stream-specific name later
 }
 
 void RenX_RelayPlugin::upstream_connected(RenX::Server& in_server, upstream_server_info& in_server_info) {
@@ -546,6 +584,13 @@ void RenX_RelayPlugin::upstream_connected(RenX::Server& in_server, upstream_serv
 void RenX_RelayPlugin::upstream_disconnected(RenX::Server&, upstream_server_info& in_server_info) {
 	in_server_info.m_connected = false;
 
+	// Clear references to `in_server_info`
+	for (auto& server_ptr : m_command_tracker) {
+		if (server_ptr == &in_server_info) {
+			server_ptr = nullptr;
+		}
+	}
+
 	if (in_server_info.m_socket) {
 		in_server_info.m_socket->close();
 	}
@@ -566,18 +611,28 @@ void RenX_RelayPlugin::process_upstream_message(RenX::Server* in_server, const J
 		return;
 	}
 
+	auto queue_command = [&in_server_info, this](UpstreamCommand&& in_command) {
+		if (!in_command.m_is_fake) {
+			m_command_tracker.push_back(&in_server_info);
+		}
+
+		in_server_info.m_response_queue.push_back(std::move(in_command));
+	};
+
+	const upstream_settings& settings = *in_server_info.m_settings;
+
 	// Sanitize unknown & blacklisted commands
 	if (in_line[0] == 'c' && in_line.size() > 1) {
 		// Sanitize unknown & blacklisted commands
-		if (m_suppress_unknown_commands || m_suppress_blacklisted_commands) {
+		if (settings.m_suppress_unknown_commands || (settings.m_suppress_blacklisted_commands && !settings.m_fake_ignored_commands)) {
 			Jupiter::ReferenceString command_str = Jupiter::ReferenceString::getToken(in_line, 0, ' ');
 			command_str.shiftRight(1);
 			std::string_view command_view{ command_str.ptr(), command_str.size() };
 
-			if (m_suppress_unknown_commands
+			if (settings.m_suppress_unknown_commands
 				&& g_known_commands.find(command_view) == g_known_commands.end()) {
 				// Command not in known commands list; ignore it
-				if (m_fake_ignored_commands) {
+				if (settings.m_fake_ignored_commands) {
 					// Queue a fake response if necessary
 					UpstreamCommand command;
 					command.m_command = command_view;
@@ -593,15 +648,15 @@ void RenX_RelayPlugin::process_upstream_message(RenX::Server* in_server, const J
 					}
 
 					// Other commands are waiting in the queue; tack this to the end to ensure command order
-					in_server_info.m_response_queue.push_back(std::move(command));
+					queue_command(std::move(command));
 					return;
 				}
 				return;
 			}
 
-			if (m_suppress_blacklisted_commands
+			if (settings.m_suppress_blacklisted_commands && !settings.m_fake_ignored_commands
 				&& g_blacklist_commands.find(command_view) != g_blacklist_commands.end()) {
-				// Command is blacklisted; ignore it
+				// Command is blacklisted and not gonna be faked out; ignore it
 				return;
 			}
 		}
@@ -616,8 +671,8 @@ void RenX_RelayPlugin::process_upstream_message(RenX::Server* in_server, const J
 		// Populate any fake responses (i.e: pings)
 		UpstreamCommand command;
 		command.m_command = command_line;
-		auto handler = m_fake_command_table.find(command_word_lower);
-		if (handler != m_fake_command_table.end()) {
+		auto handler = settings.m_fake_command_table.find(command_word_lower);
+		if (handler != settings.m_fake_command_table.end()) {
 			// Execute fake command
 			command.m_is_fake = handler->second(command_line, *in_server, command.m_response);
 			if (command.m_is_fake) {
@@ -629,13 +684,13 @@ void RenX_RelayPlugin::process_upstream_message(RenX::Server* in_server, const J
 				}
 
 				// Other commands are waiting in the queue; tack this to the end to ensure command order
-				in_server_info.m_response_queue.push_back(std::move(command));
+				queue_command(std::move(command));
 				return;
 			}
 		}
 
 		// This is not a fake command; queue it and send it
-		in_server_info.m_response_queue.push_back(std::move(command));
+		queue_command(std::move(command));
 	}
 
 	// Send line to game server
