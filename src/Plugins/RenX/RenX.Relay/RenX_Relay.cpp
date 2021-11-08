@@ -10,6 +10,7 @@
 #include <string_view>
 #include <unordered_set>
 #include <cassert>
+#include <fstream>
 #include "Jupiter/IRC.h"
 #include "RenX_Functions.h"
 #include "RenX_Server.h"
@@ -294,7 +295,6 @@ void RenX_RelayPlugin::RenX_OnRaw(RenX::Server &server, const Jupiter::ReadableS
 
 	// Suppress unassociated command execution logs from going upstream
 	if (tokens.token_count >= 5
-		&& !m_command_tracker.empty()
 		&& tokens.tokens[0] == "lRCON"
 		&& tokens.tokens[1] == "Command;"
 		&& tokens.tokens[3] == "executed:"
@@ -305,10 +305,14 @@ void RenX_RelayPlugin::RenX_OnRaw(RenX::Server &server, const Jupiter::ReadableS
 				return;
 			}
 		}
+		else if (m_command_tracker.empty()) {
+			// This command response wasn't requested by any current upstream connections; suppress it
+			return;
+		}
 		else {
-			// if m_processing_command is already true, there's an unhandled protocol error here, and something is likely to eventually go wrong
 			upstream_server_info* front_server_info = m_command_tracker.front();
 			if (front_server_info == nullptr
+				|| front_server_info->m_processing_command
 				|| tokens.tokens[4] != front_server_info->m_response_queue.front().m_command) {
 				// This command response wasn't requested by any current upstream connections; suppress it
 				return;
@@ -316,6 +320,10 @@ void RenX_RelayPlugin::RenX_OnRaw(RenX::Server &server, const Jupiter::ReadableS
 
 			// This is the next command we're been waiting on; mark processing command and let this go through
 			front_server_info->m_processing_command = true;
+
+			// This is a command response from upstream; this is only relevant to one server: that server
+			process_renx_message(server, *front_server_info, line, tokens);
+			return;
 		}
 	}
 
@@ -329,8 +337,7 @@ void RenX_RelayPlugin::RenX_OnRaw(RenX::Server &server, const Jupiter::ReadableS
 
 void RenX_RelayPlugin::process_renx_message(RenX::Server& server, upstream_server_info& server_info, const Jupiter::ReadableString& line, Jupiter::ReadableString::TokenizeResult<Jupiter::String_Strict> tokens) {
 	bool required_sanitization = false;
-	Jupiter::TCPSocket* socket = server_info.m_socket.get();
-	if (!socket) {
+	if (!server_info.m_socket) {
 		// early out: no upstream RCON session
 		return;
 	}
@@ -343,7 +350,7 @@ void RenX_RelayPlugin::process_renx_message(RenX::Server& server, upstream_serve
 
 	// Suppress unassociated command responses from going upstream
 	if (tokens.tokens[0].isNotEmpty()
-		&& tokens.tokens[0] == 'r'
+		&& (tokens.tokens[0][0] == 'r' || tokens.tokens[0][0] == 'c')
 		&& !server_info.m_processing_command) {
 		// This command response wasn't requested upstream; suppress it
 		return;
@@ -494,7 +501,7 @@ void RenX_RelayPlugin::process_renx_message(RenX::Server& server, upstream_serve
 	}
 
 	line_sanitized += '\n';
-	socket->send(line_sanitized);
+	send_upstream(server_info, line_sanitized, server);
 
 	if (line_sanitized[0] == 'c'
 		&& server_info.m_processing_command) {
@@ -514,8 +521,8 @@ void RenX_RelayPlugin::process_renx_message(RenX::Server& server, upstream_serve
 
 		std::string response;
 		while (!queue.empty() && queue.front().m_is_fake) {
-			response = queue.front().to_rcon(server.getRCONUsername());
-			server_info.m_socket->send(response.c_str(), response.size());
+			response = queue.front().to_rcon(get_upstream_rcon_username(server_info, server));
+			send_upstream(server_info, response, server);
 			queue.pop_front();
 		}
 	}
@@ -527,6 +534,8 @@ RenX_RelayPlugin::upstream_settings RenX_RelayPlugin::get_settings(const Jupiter
 	// Read in settings
 	result.m_upstream_hostname = in_config.get<std::string>("UpstreamHost"_jrs, m_default_settings.m_upstream_hostname);
 	result.m_upstream_port = in_config.get<uint16_t>("UpstreamPort"_jrs, m_default_settings.m_upstream_port);
+	result.m_rcon_username = in_config.get<std::string>("RconUsername"_jrs, m_default_settings.m_rcon_username);
+	result.m_log_traffic = in_config.get<bool>("LogTraffic"_jrs, m_default_settings.m_log_traffic);
 	result.m_fake_pings = in_config.get<bool>("FakePings"_jrs, m_default_settings.m_fake_pings);
 	result.m_fake_ignored_commands = in_config.get<bool>("FakeSuppressedCommands"_jrs, m_default_settings.m_fake_ignored_commands);
 	result.m_sanitize_names = in_config.get<bool>("SanitizeNames"_jrs, m_default_settings.m_sanitize_names);
@@ -553,8 +562,49 @@ RenX_RelayPlugin::upstream_settings RenX_RelayPlugin::get_settings(const Jupiter
 	return result;
 }
 
+std::string RenX_RelayPlugin::get_log_filename(RenX::Server& in_server, const upstream_server_info& in_server_info) {
+	return { "log__"s
+		+ in_server_info.m_settings->m_label
+		+ "__" + in_server.getSocketHostname()
+		+ "__" + std::to_string(in_server.getPort())
+		+ ".txt" };
+}
+
 std::string_view RenX_RelayPlugin::get_upstream_name(const upstream_server_info& in_server_info) {
 	return in_server_info.m_settings->m_upstream_hostname; // Will point to stream-specific name later
+}
+
+std::string_view RenX_RelayPlugin::get_upstream_rcon_username(const upstream_server_info& in_server_info, RenX::Server& in_server) {
+	const auto& rcon_username = in_server_info.m_settings->m_rcon_username;
+	if (rcon_username.empty()) {
+		const auto& real_rcon_username = in_server.getRCONUsername();
+		return real_rcon_username;
+	}
+
+	return rcon_username;
+}
+
+int RenX_RelayPlugin::send_upstream(upstream_server_info& in_server_info, std::string_view in_message, RenX::Server& in_server) {
+	if (in_server_info.m_settings->m_log_traffic) {
+		std::ofstream log_file{ get_log_filename(in_server, in_server_info), std::ios::out | std::ios::app | std::ios::binary };
+		if (log_file) {
+			log_file << '[' << getTimeFormat("%H:%M:%S") << "] (Jupiter -> " << in_server_info.m_settings->m_label << "): " << in_message << std::endl;
+		}
+	}
+
+	return in_server_info.m_socket->send(in_message.data(), in_message.size());
+}
+
+int RenX_RelayPlugin::send_downstream(RenX::Server& in_server, std::string_view in_message, upstream_server_info& in_server_info) {
+	if (in_server_info.m_settings->m_log_traffic) {
+		std::ofstream log_file{ get_log_filename(in_server, in_server_info), std::ios::out | std::ios::app | std::ios::binary };
+		if (log_file) {
+			log_file << '[' << getTimeFormat("%H:%M:%S") << "] (" << in_server_info.m_settings->m_label << " -> RenX::Server): " << in_message << std::endl;
+		}
+	}
+
+	// TODO: add a string_view constructor for ReferenceString, also add sendData(string_view) variant
+	return in_server.sendData(Jupiter::ReferenceString{ in_message.data(), in_message.size() });
 }
 
 void RenX_RelayPlugin::upstream_connected(RenX::Server& in_server, upstream_server_info& in_server_info) {
@@ -573,12 +623,12 @@ void RenX_RelayPlugin::upstream_connected(RenX::Server& in_server, upstream_serv
 	version_message += '\n';
 
 	// Tack on username auth
-	auto& username = in_server.getRCONUsername();
+	const auto& rcon_username = get_upstream_rcon_username(in_server_info, in_server);
 	version_message += 'a';
-	version_message.append(username.ptr(), username.size());
+	version_message += rcon_username;
 	version_message += '\n';
 
-	in_server_info.m_socket->send(version_message.c_str(), version_message.size());
+	send_upstream(in_server_info, version_message, in_server);
 }
 
 void RenX_RelayPlugin::upstream_disconnected(RenX::Server&, upstream_server_info& in_server_info) {
@@ -642,8 +692,8 @@ void RenX_RelayPlugin::process_upstream_message(RenX::Server* in_server, const J
 					// Push upstream or to queue
 					if (in_server_info.m_response_queue.empty()) {
 						// No commands are in the queue; go ahead and shove back the response
-						auto response = command.to_rcon(in_server->getRCONUsername());
-						in_server_info.m_socket->send(response.c_str(), response.size());
+						auto response = command.to_rcon(get_upstream_rcon_username(in_server_info, *in_server));
+						send_upstream(in_server_info, response, *in_server);
 						return;
 					}
 
@@ -678,8 +728,8 @@ void RenX_RelayPlugin::process_upstream_message(RenX::Server* in_server, const J
 			if (command.m_is_fake) {
 				if (in_server_info.m_response_queue.empty()) {
 					// No commands are in the queue; go ahead and shove back the response
-					auto response = command.to_rcon(in_server->getRCONUsername());
-					in_server_info.m_socket->send(response.c_str(), response.size());
+					auto response = command.to_rcon(get_upstream_rcon_username(in_server_info, *in_server));
+					send_upstream(in_server_info, response, *in_server);
 					return;
 				}
 
@@ -696,7 +746,7 @@ void RenX_RelayPlugin::process_upstream_message(RenX::Server* in_server, const J
 	// Send line to game server
 	Jupiter::StringS sanitized_message = in_line;
 	sanitized_message += '\n';
-	in_server->sendData(sanitized_message);
+	send_downstream(*in_server, sanitized_message, in_server_info);
 }
 
 std::string RenX_RelayPlugin::UpstreamCommand::to_rcon(const std::string_view& rcon_username) const {

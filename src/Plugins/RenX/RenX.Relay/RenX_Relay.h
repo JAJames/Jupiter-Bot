@@ -40,8 +40,10 @@ private:
 
 	struct upstream_settings {
 		std::string m_label{}; // config section name
-		std::string m_upstream_hostname{ "devbot.ren-x.com" };
+		std::string m_upstream_hostname{};
 		uint16_t m_upstream_port{ 21337u };
+		std::string m_rcon_username{};
+		bool m_log_traffic{ false };
 		bool m_fake_pings{ true };
 		bool m_fake_ignored_commands{ true };
 		bool m_sanitize_names{ true };
@@ -70,7 +72,11 @@ private:
 	};
 
 	upstream_settings get_settings(const Jupiter::Config& in_config);
+	std::string get_log_filename(RenX::Server& in_server, const upstream_server_info& in_server_info);
 	std::string_view get_upstream_name(const upstream_server_info& in_server_info);
+	std::string_view get_upstream_rcon_username(const upstream_server_info& in_server_info, RenX::Server& in_server);
+	int send_upstream(upstream_server_info& in_server_info, std::string_view in_message, RenX::Server& in_server);
+	int send_downstream(RenX::Server& in_server, std::string_view in_message, upstream_server_info& in_server_info);
 
 	void upstream_connected(RenX::Server& in_server, upstream_server_info& in_server_info);
 	void upstream_disconnected(RenX::Server& in_server, upstream_server_info& in_server_info);
