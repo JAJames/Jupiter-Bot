@@ -19,7 +19,7 @@
 #include <forward_list>
 #include <functional>
 #include "Jupiter/Functions.h"
-#include "duration.hpp"
+#include "jessilib/duration.hpp"
 #include "IRC_Bot.h"
 #include "RenX_Commands.h"
 #include "RenX_Core.h"

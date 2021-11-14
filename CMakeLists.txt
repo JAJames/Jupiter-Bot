@@ -15,15 +15,17 @@ include(build/CMakeLists.txt)
 # Setup source files
 add_subdirectory(src)
 
-# Add PackagedBuild target to package a release build
-add_custom_target(PackagedBuild)
-add_dependencies(PackagedBuild jupiter Bot)
+# Add PackagedBuild target to package a release build, and FullBotBuild to just build all plugins
+add_custom_target(FullBotBuild)
+add_dependencies(FullBotBuild jupiter Bot)
 
 if(NOT DEFINED PACKAGED_BUILD_PATH)
     set(PACKAGED_BUILD_PATH "${CMAKE_CURRENT_SOURCE_DIR}/bin")
 endif()
 message(STATUS "PackagedBuild Path: ${PACKAGED_BUILD_PATH}")
 
+add_custom_target(PackagedBuild)
+add_dependencies(PackagedBuild FullBotBuild)
 add_custom_command(TARGET PackagedBuild
         PRE_BUILD
         COMMAND ${CMAKE_COMMAND} -E rm -rf ${PACKAGED_BUILD_PATH})
@@ -38,7 +40,7 @@ add_custom_command(TARGET PackagedBuild
         COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_CURRENT_SOURCE_DIR}/baseline ${PACKAGED_BUILD_PATH}/)
 
 foreach(plugin ${JUPITER_PLUGINS})
-    add_dependencies(PackagedBuild ${plugin})
+    add_dependencies(FullBotBuild ${plugin})
     add_custom_command(TARGET PackagedBuild
             POST_BUILD
             COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:${plugin}> ${PACKAGED_BUILD_PATH}/Plugins/)
