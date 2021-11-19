@@ -44,7 +44,7 @@ void HelpConsoleCommand::trigger(const Jupiter::ReadableString &parameters) {
 	Jupiter::ReferenceString command = Jupiter::ReferenceString::getWord(parameters, 0, WHITESPACE);
 	ConsoleCommand *cmd = getConsoleCommand(command);
 	if (cmd == nullptr) {
-		printf("Error: Command \"%.*s\" not found." ENDL, command.size(), command.ptr());
+		printf("Error: Command \"%.*s\" not found." ENDL, static_cast<int>(command.size()), command.ptr());
 		return;
 	}
 
@@ -141,12 +141,12 @@ RehashGenericCommand::RehashGenericCommand() {
 }
 
 Jupiter::GenericCommand::ResponseLine *RehashGenericCommand::trigger(const Jupiter::ReadableString &parameters) {
-	unsigned int r = Jupiter::rehash();
+	size_t hash_errors = Jupiter::rehash();
 
-	if (r == 0)
+	if (hash_errors == 0)
 		return new Jupiter::GenericCommand::ResponseLine(Jupiter::StringS::Format("All %u objects were successfully rehashed.", Jupiter::getRehashableCount()), GenericCommand::DisplayType::PublicSuccess);
 
-	return new Jupiter::GenericCommand::ResponseLine(Jupiter::StringS::Format("%u of %u objects failed to successfully rehash.", r, Jupiter::getRehashableCount()), GenericCommand::DisplayType::PublicError);
+	return new Jupiter::GenericCommand::ResponseLine(Jupiter::StringS::Format("%u of %u objects failed to successfully rehash.", hash_errors, Jupiter::getRehashableCount()), GenericCommand::DisplayType::PublicError);
 }
 
 const Jupiter::ReadableString &RehashGenericCommand::getHelp(const Jupiter::ReadableString &) {

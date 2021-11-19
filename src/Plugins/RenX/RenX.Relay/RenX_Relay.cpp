@@ -460,7 +460,7 @@ void RenX_RelayPlugin::process_renx_message(RenX::Server& server, upstream_serve
 				if (player != nullptr) {
 					// Initialize the engine here using the init time, so that player fake IPs will be consistent
 					// Also include player ID so we get different IPs between players and for each match
-					std::mt19937 randgen(m_init_time.time_since_epoch().count() + (player->id * 2));
+					std::mt19937_64 randgen(m_init_time.time_since_epoch().count() + (player->id * 2));
 					std::uniform_int_distribution<uint32_t> dist(10, 200);
 
 					// Replace real IP with fake
@@ -480,7 +480,7 @@ void RenX_RelayPlugin::process_renx_message(RenX::Server& server, upstream_serve
 				if (player != nullptr) {
 					// Initialize the engine here using the init time, so that player fake HWIDs will be consistent
 					// Also include player ID so we get different HWIDs between players and for each match
-					std::mt19937 randgen(m_init_time.time_since_epoch().count() + (player->id * 2 + 69));
+					std::mt19937_64 randgen(m_init_time.time_since_epoch().count() + (player->id * 2 + 69));
 					std::uniform_int_distribution<uint64_t> dist(0, 0x0000FFFFFFFFFFFFULL);
 
 					HWID hwid{};

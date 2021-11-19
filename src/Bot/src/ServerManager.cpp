@@ -29,7 +29,7 @@ ServerManager *serverManager = &g_serverManager;
 int ServerManager::think() {
 	for (auto itr = m_servers.begin(); itr != m_servers.end();) {
 		if ((*itr)->think() != 0) {
-			itr = m_servers.erase(itr + 1);
+			itr = m_servers.erase(itr);
 			continue;
 		}
 		++itr;

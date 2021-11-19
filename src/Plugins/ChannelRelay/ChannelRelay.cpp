@@ -53,14 +53,14 @@ void ChannelRelayPlugin::OnChat(Jupiter::IRC::Client *server, const Jupiter::Rea
 		int type = chan->getType();
 		if (ChannelRelayPlugin::types.contains(type))
 		{
-			unsigned int serverCount = serverManager->size();
+			size_t serverCount = serverManager->size();
 			char prefix = chan->getUserPrefix(nick);
 			Jupiter::String str;
 			if (prefix == 0) {
 				str = "<"_jrs + nick + "> "_jrs + message;
 			}
 			else {
-				str = "<"_js + prefix + nick + "> "_jrs + message;
+				str = "<"_jrs + prefix + nick + "> "_jrs + message;
 			}
 
 			while (serverCount != 0) {

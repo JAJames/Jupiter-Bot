@@ -54,7 +54,7 @@ bool RenX::Core::initialize() {
 		server = std::make_unique<RenX::Server>(Jupiter::ReferenceString::getWord(serverList, i, WHITESPACE));
 
 		if (server->connect() == false) {
-			fprintf(stderr, "[RenX] ERROR: Failed to connect to %.*s on port %u. Error code: %d" ENDL, server->getHostname().size(), server->getHostname().c_str(), server->getPort(), Jupiter::Socket::getLastError());
+			fprintf(stderr, "[RenX] ERROR: Failed to connect to %s on port %u. Error code: %d" ENDL, server->getHostname().c_str(), server->getPort(), Jupiter::Socket::getLastError());
 			continue;
 		}
 
@@ -180,7 +180,7 @@ void RenX::Core::banCheck() {
 int RenX::Core::think() {
 	for (auto itr = m_servers.begin(); itr != m_servers.end();) {
 		if ((*itr)->think() != 0) {
-			itr = m_servers.erase(itr + 1);
+			itr = m_servers.erase(itr);
 			continue;
 		}
 		++itr;

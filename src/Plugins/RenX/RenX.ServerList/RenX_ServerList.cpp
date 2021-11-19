@@ -512,7 +512,7 @@ void RenX_ServerListPlugin::updateServerList() {
 void RenX_ServerListPlugin::updateMetadata() {
 	const auto& servers = RenX::getCore()->getServers();
 	unsigned int server_count{};
-	unsigned int player_count{};
+	size_t player_count{};
 
 	for (size_t index = 0; index != servers.size(); ++index) {
 		RenX::Server* server = servers[index];
@@ -522,10 +522,10 @@ void RenX_ServerListPlugin::updateMetadata() {
 		}
 	}
 
-	m_metadata_json.format(R"json({"player_count":%u,"server_count":%u})json",
+	m_metadata_json.format(R"json({"player_count":%zu,"server_count":%u})json",
 		player_count, server_count);
 
-	m_metadata_prometheus.format("player_count %u\nserver_count %u\n",
+	m_metadata_prometheus.format("player_count %zu\nserver_count %u\n",
 		player_count, server_count);
 }
 

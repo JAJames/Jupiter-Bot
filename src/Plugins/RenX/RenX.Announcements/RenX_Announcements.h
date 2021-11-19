@@ -38,7 +38,7 @@ public: // Jupiter::Plugin
 
 private:
 	bool random;
-	unsigned int lastLine;
+	size_t lastLine;
 	Jupiter::Timer *timer;
 	Jupiter::File announcementsFile;
 };

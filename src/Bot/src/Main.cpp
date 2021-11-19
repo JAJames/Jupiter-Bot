@@ -108,7 +108,7 @@ void inputLoop() {
 					cmd->trigger(Jupiter::ReferenceString::gotoWord(console_input.input, 1, WHITESPACE));
 				}
 				else {
-					printf("Error: Command \"%.*s\" not found." ENDL, command.size(), command.ptr());
+					printf("Error: Command \"%.*s\" not found." ENDL, static_cast<int>(command.size()), command.ptr());
 				}
 			}
 			console_input.input_mutex.unlock();
@@ -174,12 +174,12 @@ int main(int argc, const char **args) {
 
 	if (plugins_directory.isNotEmpty()) {
 		Jupiter::Plugin::setDirectory(plugins_directory);
-		printf("Plugins will be loaded from \"%.*s\"." ENDL, plugins_directory.size(), plugins_directory.ptr());
+		printf("Plugins will be loaded from \"%.*s\"." ENDL, static_cast<int>(plugins_directory.size()), plugins_directory.ptr());
 	}
 
 	if (configs_directory.isNotEmpty()) {
 		Jupiter::Plugin::setConfigDirectory(configs_directory);
-		printf("Plugin configs will be loaded from \"%.*s\"." ENDL, configs_directory.size(), configs_directory.ptr());
+		printf("Plugin configs will be loaded from \"%.*s\"." ENDL, static_cast<int>(configs_directory.size()), configs_directory.ptr());
 	}
 
 	puts("Loading plugins...");
@@ -201,9 +201,9 @@ int main(int argc, const char **args) {
 			time_taken = static_cast<double>(std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::steady_clock::now() - load_start).count()) / 1000.0;
 
 			if (load_success)
-				printf("\"%.*s\" loaded successfully (%fms)." ENDL, plugin.size(), plugin.ptr(), time_taken);
+				printf("\"%.*s\" loaded successfully (%fms)." ENDL, static_cast<int>(plugin.size()), plugin.ptr(), time_taken);
 			else
-				fprintf(stderr, "WARNING: Failed to load plugin \"%.*s\" (%fms)!" ENDL, plugin.size(), plugin.ptr(), time_taken);
+				fprintf(stderr, "WARNING: Failed to load plugin \"%.*s\" (%fms)!" ENDL, static_cast<int>(plugin.size()), plugin.ptr(), time_taken);
 		}
 
 		// OnPostInitialize

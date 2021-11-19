@@ -40,8 +40,8 @@ int RenX_ListenPlugin::think() {
 	if (sock != nullptr) {
 		sock->setBlocking(false);
 		std::unique_ptr<RenX::Server> server = std::make_unique<RenX::Server>(std::move(*sock), RenX_ListenPlugin::serverSection);
-		printf("Incoming server connected from %.*s:%u" ENDL, server->getSocketHostname().size(), server->getSocketHostname().c_str(), server->getSocketPort());
-		server->sendLogChan("Incoming server connected from " IRCCOLOR "12%.*s:%u", server->getSocketHostname().size(), server->getSocketHostname().c_str(), server->getSocketPort());
+		printf("Incoming server connected from %s:%u" ENDL, server->getSocketHostname().c_str(), server->getSocketPort());
+		server->sendLogChan("Incoming server connected from " IRCCOLOR "12%s:%u", server->getSocketHostname().c_str(), server->getSocketPort());
 		RenX::getCore()->addServer(std::move(server));
 		delete sock;
 	}
