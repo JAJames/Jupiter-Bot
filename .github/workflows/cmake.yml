@@ -7,7 +7,7 @@ env:
   BUILD_TYPE: Release
 
 jobs:
-  build:
+  ubuntu-build:
     # The CMake configure and build commands are platform agnostic and should work equally
     # well on Windows or Mac.  You can convert this to a matrix build if you need
     # cross-platform coverage.
@@ -28,16 +28,14 @@ jobs:
     - name: Configure CMake
       # Use a bash shell so we can use the same syntax for environment variable
       # access regardless of the host operating system
-      shell: bash
       working-directory: ${{github.workspace}}/build
       # Note the current convention is to use the -S and -B options here to specify source 
       # and build directories, but this is only available with CMake 3.13 and higher.  
       # The CMake binaries on the Github Actions machines are (as of this writing) 3.12
-      run: cmake $GITHUB_WORKSPACE -DCMAKE_BUILD_TYPE=$BUILD_TYPE "-DJUPITER_VERSION_SHORT=GHCI $(git rev-parse --short $GITHUB_SHA)"
+      run: cmake $GITHUB_WORKSPACE -DCMAKE_BUILD_TYPE=$BUILD_TYPE "-DJUPITER_VERSION_SHORT=Ubuntu.SHA-$(git rev-parse --short $GITHUB_SHA)"
 
     - name: Build
       working-directory: ${{github.workspace}}/build
-      shell: bash
       # Execute the build.  You can specify a specific target with "--target <NAME>"
       run: cmake --build . --config $BUILD_TYPE --target=PackagedBuild
 
@@ -46,3 +44,37 @@ jobs:
       with:
         name: build-package
         path: ${{github.workspace}}/bin/Jupiter Bot Binaries.*
+
+  windows-build:
+    runs-on: windows-latest
+
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          submodules: recursive
+
+
+      - name: Create Build Environment
+        # Some projects don't allow in-source building, so create a separate build directory
+        # We'll use this as our working directory for all subsequent commands
+        run: cmake -E make_directory ${{github.workspace}}/build
+
+      - name: Configure CMake
+        # Use a bash shell so we can use the same syntax for environment variable
+        # access regardless of the host operating system
+        working-directory: ${{github.workspace}}/build
+        # Note the current convention is to use the -S and -B options here to specify source
+        # and build directories, but this is only available with CMake 3.13 and higher.
+        # The CMake binaries on the Github Actions machines are (as of this writing) 3.12
+        run: cmake $GITHUB_WORKSPACE -DCMAKE_BUILD_TYPE=$BUILD_TYPE "-DJUPITER_VERSION_SHORT=Win.SHA-$(git rev-parse --short $GITHUB_SHA)"
+
+      - name: Build
+        working-directory: ${{github.workspace}}/build
+        # Execute the build.  You can specify a specific target with "--target <NAME>"
+        run: cmake --build . --config $BUILD_TYPE --target=PackagedBuild
+
+      - name: Archive build package / binaries
+        uses: actions/upload-artifact@v2
+        with:
+          name: build-package
+          path: ${{github.workspace}}/bin/Jupiter Bot Binaries.*
