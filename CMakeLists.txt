@@ -30,7 +30,6 @@ if (NOT DEFINED JUPITER_VERSION_SHORT)
         elseif(JUPITER_VERSION_SHORT MATCHES "^release/*")
             # set JUPITER_VERSION_SHORT to end of release/
             string(REGEX REPLACE "^release/" "" JUPITER_VERSION_SHORT "${JUPITER_VERSION_SHORT}")
-            message(FATAL_ERROR "release JUPITER_VERSION_SHORT: ${JUPITER_VERSION_SHORT}")
         endif()
     endif()
 endif()
