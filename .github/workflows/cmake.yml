@@ -35,7 +35,7 @@ jobs:
     - name: Archive build package / binaries
       uses: actions/upload-artifact@v2
       with:
-        name: build-package
+        name: ubuntu-package
         path: ${{github.workspace}}/bin/Jupiter Bot Binaries.*
 
   windows-build:
@@ -64,5 +64,5 @@ jobs:
       - name: Archive build package / binaries
         uses: actions/upload-artifact@v2
         with:
-          name: build-package
+          name: windows-package
           path: ${{github.workspace}}/bin/Jupiter Bot Binaries.*
