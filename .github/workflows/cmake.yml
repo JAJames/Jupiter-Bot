@@ -51,7 +51,7 @@ jobs:
         # Create working directory & install non-default dependencies (openssl)
         run: |
           cmake -E make_directory ${{github.workspace}}/build
-          choco install openssl
+          choco install openssl -y --limit-output
 
       - name: Configure CMake
         working-directory: ${{github.workspace}}/build
