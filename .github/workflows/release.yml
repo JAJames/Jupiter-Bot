@@ -1,0 +1,45 @@
+name: Windows Release
+
+# Run release builds only on release branches
+on:
+  push:
+    branches:
+      - release/*
+
+env:
+  # Customize the CMake build type here (Release, Debug, RelWithDebInfo, etc.)
+  BUILD_TYPE: Release
+
+jobs:
+  # Only want Windows release builds for now; Linux users can very easily install from source
+  windows-build:
+    runs-on: windows-latest
+
+    steps:
+      # Checkout git repo & submodules
+      - uses: actions/checkout@v2
+        with:
+          submodules: recursive
+
+      # Create working directory & install non-default dependencies (openssl)
+      - name: Create Build Environment
+        run: |
+          cmake -E make_directory ${{github.workspace}}/build
+          choco install openssl
+
+      # Generate make files
+      - name: Configure CMake
+        working-directory: ${{github.workspace}}/build
+        run: cmake $env:GITHUB_WORKSPACE -DCMAKE_BUILD_TYPE=$env:BUILD_TYPE
+
+      # Make
+      - name: Build
+        working-directory: ${{github.workspace}}/build
+        run: cmake --build . --config $env:BUILD_TYPE --target=PackagedBuild
+
+      # Publish build as an artifact
+      - name: Archive build package / binaries
+        uses: actions/upload-artifact@v2
+        with:
+          name: windows-package
+          path: ${{github.workspace}}/bin/Jupiter Bot Binaries.*

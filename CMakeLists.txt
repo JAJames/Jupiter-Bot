@@ -3,6 +3,39 @@ project(jupiter_bot)
 
 set(CMAKE_CXX_STANDARD 20)
 
+# Try to set JUPITER_VERSION_SHORT if it isn't already
+if (NOT DEFINED JUPITER_VERSION_SHORT)
+    find_package(Git)
+    if (GIT_FOUND)
+        execute_process(
+            COMMAND ${GIT_EXECUTABLE} symbolic-ref --short -q HEAD
+            OUTPUT_VARIABLE JUPITER_VERSION_SHORT
+            RESULT_VARIABLE git_result
+        )
+        string(STRIP "${JUPITER_VERSION_SHORT}" JUPITER_VERSION_SHORT)
+
+        # Append sha1 if not release/
+        if (git_result EQUAL 0
+            AND NOT JUPITER_VERSION_SHORT MATCHES "^release/.*")
+            execute_process(
+                COMMAND ${GIT_EXECUTABLE} rev-parse --short HEAD
+                OUTPUT_VARIABLE GIT_REVISION
+                RESULT_VARIABLE git_result
+            )
+            string(STRIP "${GIT_REVISION}" GIT_REVISION)
+
+            if (git_result EQUAL 0)
+                set(JUPITER_VERSION_SHORT "${JUPITER_VERSION_SHORT}-${GIT_REVISION}")
+            endif()
+        elseif(JUPITER_VERSION_SHORT MATCHES "^release/*")
+            # set JUPITER_VERSION_SHORT to end of release/
+            string(REGEX REPLACE "^release/" "" JUPITER_VERSION_SHORT "${JUPITER_VERSION_SHORT}")
+            message(FATAL_ERROR "release JUPITER_VERSION_SHORT: ${JUPITER_VERSION_SHORT}")
+        endif()
+    endif()
+endif()
+
+message(FATAL_ERROR "JUPITER_VERSION_SHORT: >${JUPITER_VERSION_SHORT}<")
 if (DEFINED JUPITER_VERSION_SHORT)
     add_compile_definitions(JUPITER_VERSION_SHORT="${JUPITER_VERSION_SHORT}")
 endif()
