@@ -231,6 +231,88 @@ Jupiter::StringS RenX_ServerListPlugin::server_as_json(const RenX::Server &serve
 	return server_json_block;
 }
 
+Jupiter::StringS RenX_ServerListPlugin::server_as_server_details_json(const RenX::Server& server) {
+	Jupiter::StringS server_json_block;
+
+	server_json_block = '{';
+
+	// Levels
+	if (server.maps.size() != 0) {
+		server_json_block += "\"Levels\":["_jrs;
+
+		server_json_block += "{\"Name\":\""_jrs;
+		server_json_block += jsonify(server.maps[0].name);
+		server_json_block += "\",\"GUID\":\""_jrs;
+		server_json_block += RenX::formatGUID(server.maps[0]);
+		server_json_block += "\"}"_jrs;
+
+		for (size_t index = 1; index != server.maps.size(); ++index) {
+			server_json_block += ",{\"Name\":\""_jrs;
+			server_json_block += jsonify(server.maps[index].name);
+			server_json_block += "\",\"GUID\":\""_jrs;
+			server_json_block += RenX::formatGUID(server.maps[index]);
+			server_json_block += "\"}"_jrs;
+		}
+
+		server_json_block += ']';
+	}
+
+	// Mutators
+	if (server.mutators.size() != 0) {
+		if (server.maps.size() != 0)
+			server_json_block += ","_jrs;
+		server_json_block += "\"Mutators\":["_jrs;
+
+		server_json_block += "{\"Name\":\""_jrs;
+		server_json_block += jsonify(server.mutators[0]);
+		server_json_block += "\"}"_jrs;
+
+		for (size_t index = 1; index != server.mutators.size(); ++index) {
+			server_json_block += ",{\"Name\":\""_jrs;
+			server_json_block += jsonify(server.mutators[index]);
+			server_json_block += "\"}"_jrs;
+		}
+
+		server_json_block += ']';
+	}
+
+	// Player List
+	if (server.players.size() != 0 && server.players.size() != server.getBotCount()) {
+		server_json_block += ",\"PlayerList\":["_jrs;
+
+		auto node = server.players.begin();
+
+		if (node != server.players.end()) {
+			server_json_block += "{\"Name\":\""_jrs;
+			server_json_block += jsonify(node->name);
+			server_json_block += "\", \"isBot\":"_jrs;
+			server_json_block += json_bool_as_cstring(node->isBot);
+			server_json_block += ", \"Team\":"_jrs;
+			server_json_block.aformat("%d", static_cast<int>(node->team));
+			server_json_block += "}"_jrs;
+
+			++node;
+		}
+
+		while (node != server.players.end()) {
+			server_json_block += ",{\"Name\":\""_jrs;
+			server_json_block += jsonify(node->name);
+			server_json_block += "\", \"isBot\":"_jrs;
+			server_json_block += json_bool_as_cstring(node->isBot);
+			server_json_block += ", \"Team\":"_jrs;
+			server_json_block.aformat("%d", static_cast<int>(node->team));
+			server_json_block += "}"_jrs;
+
+			++node;
+		}
+
+		server_json_block += "]"_jrs;
+	}
+
+	server_json_block += '}';
+	return server_json_block;
+}
+
 Jupiter::StringS RenX_ServerListPlugin::server_as_long_json(const RenX::Server &server) {
 	Jupiter::String server_json_block(128);
 	ListServerInfo serverInfo = getListServerInfo(server);
@@ -391,86 +473,6 @@ void RenX_ServerListPlugin::addServerToServerList(RenX::Server &server) {
 	m_server_list_json += ']';
 	server_json_block.erase();
 
-	// add to individual listing
-
-	server_json_block = '{';
-
-	if (server.maps.size() != 0) {
-		server_json_block += "\"Levels\":["_jrs;
-
-		server_json_block += "{\"Name\":\""_jrs;
-		server_json_block += jsonify(server.maps[0].name);
-		server_json_block += "\",\"GUID\":\""_jrs;
-		server_json_block += RenX::formatGUID(server.maps[0]);
-		server_json_block += "\"}"_jrs;
-
-		for (size_t index = 1; index != server.maps.size(); ++index) {
-			server_json_block += ",{\"Name\":\""_jrs;
-			server_json_block += jsonify(server.maps[index].name);
-			server_json_block += "\",\"GUID\":\""_jrs;
-			server_json_block += RenX::formatGUID(server.maps[index]);
-			server_json_block += "\"}"_jrs;
-		}
-
-		server_json_block += ']';
-	}
-
-	// Mutators
-	if (server.mutators.size() != 0) {
-		if (server.maps.size() != 0)
-			server_json_block += ","_jrs;
-		server_json_block += "\"Mutators\":["_jrs;
-
-		server_json_block += "{\"Name\":\""_jrs;
-		server_json_block += jsonify(server.mutators[0]);
-		server_json_block += "\"}"_jrs;
-
-		for (size_t index = 1; index != server.mutators.size(); ++index) {
-			server_json_block += ",{\"Name\":\""_jrs;
-			server_json_block += jsonify(server.mutators[index]);
-			server_json_block += "\"}"_jrs;
-		}
-
-		server_json_block += ']';
-	}
-
-	// Player List
-	if (server.players.size() != 0 && server.players.size() != server.getBotCount()) {
-		server_json_block += ",\"PlayerList\":["_jrs;
-
-		auto node = server.players.begin();
-
-		if (node != server.players.end()) {
-			server_json_block += "{\"Name\":\""_jrs;
-			server_json_block += jsonify(node->name);
-			server_json_block += "\", \"isBot\":"_jrs;
-			server_json_block += json_bool_as_cstring(node->isBot);
-			server_json_block += ", \"Team\":"_jrs;
-			server_json_block.aformat("%d", static_cast<int>(node->team));
-			server_json_block += "}"_jrs;
-
-			++node;
-		}
-
-		while (node != server.players.end()) {
-			server_json_block += ",{\"Name\":\""_jrs;
-			server_json_block += jsonify(node->name);
-			server_json_block += "\", \"isBot\":"_jrs;
-			server_json_block += json_bool_as_cstring(node->isBot);
-			server_json_block += ", \"Team\":"_jrs;
-			server_json_block.aformat("%d", static_cast<int>(node->team));
-			server_json_block += "}"_jrs;
-
-			++node;
-		}
-
-		server_json_block += "]"_jrs;
-	}
-
-	server_json_block += '}';
-
-	server.varData[this->name].set("j"_jrs, server_json_block);
-
 	// Also update metadata so it reflects the now added server
 	updateMetadata();
 }
@@ -529,6 +531,18 @@ void RenX_ServerListPlugin::updateMetadata() {
 		player_count, server_count);
 }
 
+void RenX_ServerListPlugin::markStale(RenX::Server& in_server) {
+	in_server.varData[this->name].remove("j"_jrs);
+}
+
+void RenX_ServerListPlugin::touch(RenX::Server& in_server) {
+	auto& server_varData = in_server.varData[this->name];
+	if (server_varData.get("j"_jrs).isEmpty()) {
+		auto server_json_block = server_as_server_details_json(in_server);
+		server_varData.set("j"_jrs, server_json_block);
+	}
+}
+
 Jupiter::ReferenceString RenX_ServerListPlugin::getListServerAddress(const RenX::Server& server) {
 	Jupiter::ReferenceString serverHostname;
 	serverHostname = server.getSocketHostname();
@@ -582,21 +596,23 @@ void RenX_ServerListPlugin::RenX_OnServerFullyConnected(RenX::Server &server) {
 
 void RenX_ServerListPlugin::RenX_OnServerDisconnect(RenX::Server &server, RenX::DisconnectReason) {
 	this->updateServerList();
-
-	// remove from individual listing
-	server.varData[this->name].remove("j"_jrs);
+	markStale(server);
 }
 
-void RenX_ServerListPlugin::RenX_OnJoin(RenX::Server &, const RenX::PlayerInfo &) {
+void RenX_ServerListPlugin::RenX_OnJoin(RenX::Server& server, const RenX::PlayerInfo &) {
+	markStale(server);
 	this->updateServerList();
 }
 
 void RenX_ServerListPlugin::RenX_OnPart(RenX::Server &server, const RenX::PlayerInfo &) {
-	if (server.isTravelling() == false || server.isSeamless())
+	if (server.isTravelling() == false || server.isSeamless()) {
+		markStale(server);
 		this->updateServerList();
+	}
 }
 
 void RenX_ServerListPlugin::RenX_OnMapLoad(RenX::Server &server, const Jupiter::ReadableString &map) {
+	markStale(server);
 	this->updateServerList();
 }
 
@@ -673,6 +689,7 @@ Jupiter::ReadableString *handle_server_page(const Jupiter::ReadableString &query
 	}
 
 	// return server data
+	pluginInstance.touch(*server);
 	return new Jupiter::ReferenceString(server->varData[pluginInstance.getName()].get("j"_jrs));
 }
 

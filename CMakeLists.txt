@@ -5,6 +5,8 @@ set(CMAKE_CXX_STANDARD 20)
 
 # Try to set JUPITER_VERSION_SHORT if it isn't already
 if (NOT DEFINED JUPITER_VERSION_SHORT)
+    # Gets the version string portion a release/ branch name if on a release/ branch,
+    # gets "{branch_name}-{short_commit_hash}" otherwise
     find_package(Git)
     if (GIT_FOUND)
         execute_process(
