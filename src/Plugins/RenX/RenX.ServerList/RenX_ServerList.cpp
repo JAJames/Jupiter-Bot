@@ -531,11 +531,11 @@ void RenX_ServerListPlugin::updateMetadata() {
 		player_count, server_count);
 }
 
-void RenX_ServerListPlugin::markStale(RenX::Server& in_server) {
+void RenX_ServerListPlugin::markDetailsStale(RenX::Server& in_server) {
 	in_server.varData[this->name].remove("j"_jrs);
 }
 
-void RenX_ServerListPlugin::touch(RenX::Server& in_server) {
+void RenX_ServerListPlugin::touchDetails(RenX::Server& in_server) {
 	auto& server_varData = in_server.varData[this->name];
 	if (server_varData.get("j"_jrs).isEmpty()) {
 		auto server_json_block = server_as_server_details_json(in_server);
@@ -596,23 +596,23 @@ void RenX_ServerListPlugin::RenX_OnServerFullyConnected(RenX::Server &server) {
 
 void RenX_ServerListPlugin::RenX_OnServerDisconnect(RenX::Server &server, RenX::DisconnectReason) {
 	this->updateServerList();
-	markStale(server);
+	markDetailsStale(server);
 }
 
 void RenX_ServerListPlugin::RenX_OnJoin(RenX::Server& server, const RenX::PlayerInfo &) {
-	markStale(server);
+	markDetailsStale(server);
 	this->updateServerList();
 }
 
 void RenX_ServerListPlugin::RenX_OnPart(RenX::Server &server, const RenX::PlayerInfo &) {
 	if (server.isTravelling() == false || server.isSeamless()) {
-		markStale(server);
+		markDetailsStale(server);
 		this->updateServerList();
 	}
 }
 
 void RenX_ServerListPlugin::RenX_OnMapLoad(RenX::Server &server, const Jupiter::ReadableString &map) {
-	markStale(server);
+	markDetailsStale(server);
 	this->updateServerList();
 }
 
@@ -689,7 +689,7 @@ Jupiter::ReadableString *handle_server_page(const Jupiter::ReadableString &query
 	}
 
 	// return server data
-	pluginInstance.touch(*server);
+	pluginInstance.touchDetails(*server);
 	return new Jupiter::ReferenceString(server->varData[pluginInstance.getName()].get("j"_jrs));
 }
 

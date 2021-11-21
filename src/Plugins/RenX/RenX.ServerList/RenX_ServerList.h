@@ -42,8 +42,8 @@ public: // RenX_ServerListPlugin
 	void addServerToServerList(RenX::Server &server);
 	void updateServerList();
 	void updateMetadata();
-	void markStale(RenX::Server& in_server);
-	void touch(RenX::Server& in_server);
+	void markDetailsStale(RenX::Server& in_server);
+	void touchDetails(RenX::Server& in_server);
 	Jupiter::ReferenceString getListServerAddress(const RenX::Server& server);
 	ListServerInfo getListServerInfo(const RenX::Server& server);
 	Jupiter::StringS server_as_json(const RenX::Server &server);
