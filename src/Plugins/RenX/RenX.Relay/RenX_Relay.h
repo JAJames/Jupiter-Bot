@@ -59,7 +59,6 @@ private:
 	};
 
 	struct upstream_server_info {
-		std::string m_hostname;
 		uint16_t m_port;
 		std::unique_ptr<Jupiter::TCPSocket> m_socket;
 		bool m_connected{};
