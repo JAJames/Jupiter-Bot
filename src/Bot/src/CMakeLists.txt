@@ -15,7 +15,7 @@ add_executable(Bot ${SOURCE_FILES})
 target_include_directories(Bot PUBLIC ../include)
 
 # Setup additionally needed libs
-target_link_libraries(Bot jupiter jessilib)
+target_link_libraries(Bot jupiter)
 
 # Enable exports
 set_target_properties(Bot PROPERTIES

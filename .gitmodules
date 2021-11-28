@@ -1,6 +1,3 @@
 [submodule "Jupiter"]
 	path = src/Jupiter
 	url = https://github.com/JAJames/Jupiter.git
-[submodule "src/jessilib"]
-	path = src/jessilib
-	url = https://github.com/JAJames/jessilib.git
