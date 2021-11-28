@@ -28,6 +28,7 @@
 #include "Jupiter/Socket.h"
 #include "Jupiter/Plugin.h"
 #include "Jupiter/Timer.h"
+#include "jessilib/word_split.hpp"
 #include "IRC_Bot.h"
 #include "Console_Command.h"
 #include "IRC_Command.h"
@@ -82,6 +83,48 @@ void inputLoop() {
 		}
 	}
 }
+
+void initialize_plugins() {
+	std::cout << "Loading plugins..." << std::endl;
+	std::string_view plugin_list_str = Jupiter::g_config->get("Plugins"_jrs);
+	if (plugin_list_str.empty()) {
+		std::cout << "No plugins to load!" << std::endl;
+	}
+	else {
+		// initialize plugins
+		auto plugin_names = jessilib::word_split<std::vector, Jupiter::ReferenceString>(plugin_list_str, WHITESPACE_SV);
+		std::cout << "Attempting to load " << plugin_names.size() << " plugins..." << std::endl;
+
+		for (const auto& plugin_name : plugin_names) {
+			std::chrono::steady_clock::time_point load_start = std::chrono::steady_clock::now();
+			bool load_success = Jupiter::Plugin::load(plugin_name) != nullptr;
+			double time_taken = static_cast<double>(std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::steady_clock::now() - load_start).count()) / 1000.0;
+
+			if (load_success) {
+				std::cout << "\"" << plugin_name << "\" loaded successfully (" << time_taken << "ms)." << std::endl;
+			}
+			else {
+				std::cerr << "WARNING: Failed to load plugin \"" << plugin_name << "\" (" << time_taken << "ms)!" << std::endl;
+			}
+		}
+
+		// OnPostInitialize
+		for (const auto& plugin : Jupiter::plugins) {
+			plugin->OnPostInitialize();
+		}
+	}
+}
+
+namespace Jupiter {
+void reinitialize_plugins() {
+	// Uninitialize back -> front
+	while (!Jupiter::plugins.empty()) {
+		Jupiter::Plugin::free(Jupiter::plugins.size() - 1);
+	}
+
+	initialize_plugins();
+}
+} // namespace Jupiter
 
 [[noreturn]] void main_loop() {
 	Jupiter::ReferenceString command;
@@ -182,35 +225,7 @@ int main(int argc, const char **args) {
 		printf("Plugin configs will be loaded from \"%.*s\"." ENDL, static_cast<int>(configs_directory.size()), configs_directory.ptr());
 	}
 
-	puts("Loading plugins...");
-	const Jupiter::ReadableString &pluginList = o_config.get("Plugins"_jrs);
-	if (pluginList.isEmpty())
-		puts("No plugins to load!");
-	else {
-		// initialize plugins
-		unsigned int nPlugins = pluginList.wordCount(WHITESPACE);
-		printf("Attempting to load %u plugins..." ENDL, nPlugins);
-
-		bool load_success;
-
-		for (unsigned int i = 0; i < nPlugins; i++) {
-			Jupiter::ReferenceString plugin = Jupiter::ReferenceString::getWord(pluginList, i, WHITESPACE);
-
-			load_start = std::chrono::steady_clock::now();
-			load_success = Jupiter::Plugin::load(plugin) != nullptr;
-			time_taken = static_cast<double>(std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::steady_clock::now() - load_start).count()) / 1000.0;
-
-			if (load_success)
-				printf("\"%.*s\" loaded successfully (%fms)." ENDL, static_cast<int>(plugin.size()), plugin.ptr(), time_taken);
-			else
-				fprintf(stderr, "WARNING: Failed to load plugin \"%.*s\" (%fms)!" ENDL, static_cast<int>(plugin.size()), plugin.ptr(), time_taken);
-		}
-
-		// OnPostInitialize
-		for (const auto& plugin : Jupiter::plugins) {
-			plugin->OnPostInitialize();
-		}
-	}
+	initialize_plugins();
 
 	printf("Initialization completed in %f milliseconds." ENDL, static_cast<double>(std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::steady_clock::now() - Jupiter::g_start_time).count()) / 1000.0 );
 

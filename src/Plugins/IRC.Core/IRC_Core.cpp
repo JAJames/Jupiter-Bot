@@ -24,9 +24,14 @@
 using namespace Jupiter::literals;
 
 IRCCorePlugin::~IRCCorePlugin() {
+	// Destroy all IRC connections on plugin unload
+	while (serverManager->size()) {
+		serverManager->freeServer(size_t{0});
+	}
 }
 
 bool IRCCorePlugin::initialize() {
+	// TODO: initialize() isn't bringing in generic commands from already-loaded plugins
 	const Jupiter::ReadableString &serverList = this->config.get("Servers"_jrs);
 	if (serverList != nullptr) {
 		serverManager->setConfig(this->config);
@@ -53,12 +58,12 @@ int IRCCorePlugin::think() {
 }
 
 void IRCCorePlugin::OnGenericCommandAdd(Jupiter::GenericCommand &in_command) {
-	m_wrapped_commands.emplace_back(in_command);
+	m_wrapped_commands.emplace_back(new GenericCommandWrapperIRCCommand{in_command});
 }
 
 void IRCCorePlugin::OnGenericCommandRemove(Jupiter::GenericCommand &in_command) {
 	for (auto itr = m_wrapped_commands.begin(); itr != m_wrapped_commands.end(); ++itr) {
-		if (&itr->getGenericCommand() == &in_command) {
+		if (&(*itr)->getGenericCommand() == &in_command) {
 			m_wrapped_commands.erase(itr);
 			return;
 		}

@@ -44,16 +44,18 @@
 
 #include <chrono>
 
-/** Forward declaration */
-namespace Jupiter { class Config; }
+namespace Jupiter {
+	/** Forward declarations */
+	class Config;
 
-namespace Jupiter
-{
 	/** Application config file */
 	JUPITER_BOT_API extern Jupiter::Config *g_config;
 
 	/** Application start time */
 	JUPITER_BOT_API extern std::chrono::steady_clock::time_point g_start_time;
+
+	/** Reinitialize all application plugins, as if at program startup */
+	JUPITER_BOT_API void reinitialize_plugins();
 }
 
 #endif // __cplusplus

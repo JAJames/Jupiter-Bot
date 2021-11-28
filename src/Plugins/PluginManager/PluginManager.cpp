@@ -18,9 +18,13 @@
 
 #include <cstring>
 #include "Jupiter/Functions.h"
+#include "Jupiter/Timer.h" // This timer implementation isn't great, but it'll work for delaying reloads
+#include "jessilib/word_split.hpp"
+#include "jessilib/unicode.hpp"
 #include "PluginManager.h"
 
 using namespace Jupiter::literals;
+using namespace std::literals;
 
 // Plugin Generic Command
 PluginGenericCommand::PluginGenericCommand() {
@@ -42,36 +46,77 @@ Jupiter::GenericCommand::ResponseLine *PluginGenericCommand::trigger(const Jupit
 		return result;
 	}
 
-	if (parameters.matchi("load *")) {
-		if (Jupiter::Plugin::load(Jupiter::ReferenceString::gotoWord(parameters, 1, WHITESPACE)) == nullptr) {
+	auto find_plugin = [](std::string_view name) {
+		for (const auto& plugin : Jupiter::plugins) {
+			std::string_view plugin_name = plugin->getName();
+			if (jessilib::equalsi(plugin_name, name)) {
+				return plugin;
+			}
+		}
+
+		return static_cast<Jupiter::Plugin*>(nullptr);
+	};
+
+	auto parameters_view = static_cast<std::string_view>(parameters);
+	auto split_params = jessilib::word_split_once_view(parameters_view, WHITESPACE_SV);
+	if (jessilib::starts_withi(parameters_view, "load  "sv)) {
+		if (Jupiter::Plugin::load(split_params.second) == nullptr) {
 			return result->set("Error: Failed to load plugin."_jrs, GenericCommand::DisplayType::PublicError);
 		}
 
 		return result->set("Plugin successfully loaded."_jrs, GenericCommand::DisplayType::PublicSuccess);
 	}
 
-	if (parameters.matchi("unload *"))
-	{
-		Jupiter::ReferenceString pluginName = Jupiter::ReferenceString::gotoWord(parameters, 1, WHITESPACE);
-		if (Jupiter::Plugin::get(pluginName) == nullptr) {
+	if (jessilib::starts_withi(parameters_view, "unload "sv)) {
+		auto plugin = find_plugin(split_params.second);
+		if (plugin == nullptr) {
 			return result->set("Error: Plugin does not exist."_jrs, GenericCommand::DisplayType::PublicError);
 		}
 
-		if (Jupiter::Plugin::free(pluginName) == false) {
+		if (!Jupiter::Plugin::free(plugin)) {
 			return result->set("Error: Failed to unload plugin."_jrs, GenericCommand::DisplayType::PublicError);
 		}
 
 		return result->set("Plugin successfully unloaded."_jrs, GenericCommand::DisplayType::PublicSuccess);
 	}
-	return result->set("Error: Invalid Syntax. Syntax: plugin {[list], <load> <plugin>, <unload> <plugin>}"_jrs, GenericCommand::DisplayType::PrivateError);
+
+	if (jessilib::starts_withi(parameters_view, "reload"sv)) {
+		if (split_params.second.empty()
+			|| split_params.second == "*") {
+			// Reinitialize all plugins on next tick
+			new Jupiter::Timer(1, std::chrono::milliseconds{0}, [](unsigned int, void*) {
+				Jupiter::reinitialize_plugins();
+			}, true);
+
+			return result->set("Triggering full plugin reload..."_jrs, GenericCommand::DisplayType::PublicSuccess);
+		}
+		else {
+			// A specific plugin
+			auto plugin = find_plugin(split_params.second);
+			if (plugin == nullptr) {
+				return result->set("Error: Plugin does not exist."_jrs, GenericCommand::DisplayType::PublicError);
+			}
+
+			std::string_view plugin_name = plugin->getName();
+			if (!Jupiter::Plugin::free(plugin)) {
+				return result->set("Error: Failed to unload plugin."_jrs, GenericCommand::DisplayType::PublicError);
+			}
+
+			if (Jupiter::Plugin::load(plugin_name) == nullptr) {
+				return result->set("Error: Failed to load plugin."_jrs, GenericCommand::DisplayType::PublicError);
+			}
+
+			return result->set("Plugin successfully reloaded."_jrs, GenericCommand::DisplayType::PublicSuccess);
+		}
+	}
+	return result->set("Error: Invalid Syntax. Syntax: plugin {[list], <load> <plugin>, <unload> <plugin>, <reload> [all|plugin]}"_jrs, GenericCommand::DisplayType::PrivateError);
 }
 
-const Jupiter::ReadableString &PluginGenericCommand::getHelp(const Jupiter::ReadableString &parameters)
-{
+const Jupiter::ReadableString &PluginGenericCommand::getHelp(const Jupiter::ReadableString &parameters) {
 	static STRING_LITERAL_AS_NAMED_REFERENCE(loadHelp, "Loads a plugin by file name. Do not include a file extension. Syntax: plugin load <plugin>");
 	static STRING_LITERAL_AS_NAMED_REFERENCE(unloadHelp, "Unloads a plugin by name. Syntax: plugin unload <plugin>");
 	static STRING_LITERAL_AS_NAMED_REFERENCE(listHelp, "Lists all of the plugins currently loaded. Syntax: plugin [list]");
-	static STRING_LITERAL_AS_NAMED_REFERENCE(defaultHelp, "Manages plugins. Syntax: plugin {[list], <load> <plugin>, <unload> <plugin>}");
+	static STRING_LITERAL_AS_NAMED_REFERENCE(defaultHelp, "Manages plugins. Syntax: plugin {[list], <load> <plugin>, <unload> <plugin>, <reload> [plugin]}");
 
 	if (parameters.equalsi(STRING_LITERAL_AS_REFERENCE("load"))) {
 		return loadHelp;

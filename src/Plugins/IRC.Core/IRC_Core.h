@@ -58,7 +58,8 @@ public:
 	~IRCCorePlugin();
 
 private:
-	std::vector<GenericCommandWrapperIRCCommand> m_wrapped_commands;
+	// Wrapping in unique_ptr to workaround erroneous firing of events when vector resizes
+	std::vector<std::unique_ptr<GenericCommandWrapperIRCCommand>> m_wrapped_commands;
 };
 
 #endif // _IRC_CORE_H_HEADER
