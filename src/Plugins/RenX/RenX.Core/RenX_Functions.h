@@ -50,7 +50,7 @@ namespace RenX
 	* @param team Team name
 	* @return A corresponding TeamType.
 	*/
-	RENX_API TeamType getTeam(const Jupiter::ReadableString &team);
+	RENX_API TeamType getTeam(std::string_view team);
 
 	/**
 	* @brief Fetches the corresponding IRC color code for a team.

@@ -17,6 +17,7 @@
  */
 
 #include <ctime>
+#include "jessilib/unicode.hpp"
 #include "Jupiter/Functions.h"
 #include "IRC_Bot.h"
 #include "ServerManager.h"
@@ -26,6 +27,7 @@
 #include "RenX_PlayerInfo.h"
 
 using namespace Jupiter::literals;
+using namespace std::literals;
 
 /** Team color translations */
 Jupiter::ReferenceString NodColor = "04";
@@ -363,14 +365,19 @@ RenX::TeamType RenX::getTeam(int teamNum)
 	}
 }
 
-RenX::TeamType RenX::getTeam(const Jupiter::ReadableString &team)
-{
-	if (team.equalsi("GDI"))
+RenX::TeamType RenX::getTeam(std::string_view team) {
+	if (jessilib::equalsi(team, "GDI"sv)) {
 		return RenX::TeamType::GDI;
-	if (team.equalsi("Nod"))
+	}
+
+	if (jessilib::equalsi(team, "Nod"sv)) {
 		return RenX::TeamType::Nod;
-	if (team.isEmpty() || team.equalsi("Neutral") || team.equalsi("Civilians"))
+	}
+
+	if (team.empty() || jessilib::equalsi(team, "Neutral"sv) || jessilib::equalsi(team, "Civilians"sv)) {
 		return RenX::TeamType::None;
+	}
+
 	return RenX::TeamType::Other;
 }
 
