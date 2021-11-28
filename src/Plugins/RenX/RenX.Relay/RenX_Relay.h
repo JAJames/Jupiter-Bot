@@ -64,7 +64,7 @@ private:
 		bool m_connected{};
 		std::chrono::steady_clock::time_point m_last_connect_attempt{};
 		std::chrono::steady_clock::time_point m_last_activity{};
-		Jupiter::StringL m_last_line;
+		std::string m_last_line;
 		std::deque<UpstreamCommand> m_response_queue; // Contains both real & fake commands
 		bool m_processing_command{};
 		const upstream_settings* m_settings; // weak_ptr to upstream_settings owned by m_configured_upstreams
@@ -79,8 +79,8 @@ private:
 
 	void upstream_connected(RenX::Server& in_server, upstream_server_info& in_server_info);
 	void upstream_disconnected(RenX::Server& in_server, upstream_server_info& in_server_info);
-	void process_upstream_message(RenX::Server* in_server, const Jupiter::ReadableString& in_line, upstream_server_info& in_server_info);
-	void process_renx_message(RenX::Server& server, upstream_server_info& in_server_info, const Jupiter::ReadableString &raw, Jupiter::ReadableString::TokenizeResult<Jupiter::String_Strict> tokens);
+	void process_upstream_message(RenX::Server* in_server, std::string_view in_line, upstream_server_info& in_server_info);
+	void process_renx_message(RenX::Server& server, upstream_server_info& in_server_info, std::string_view raw, std::vector<std::string> tokens);
 
 	std::unordered_map<RenX::Server*, std::vector<upstream_server_info>> m_server_info_map;
 	std::deque<upstream_server_info*> m_command_tracker; // Tracks the order of REAL commands executed across upstreams, to keep things from getting fudged

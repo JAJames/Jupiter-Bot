@@ -1038,7 +1038,7 @@ namespace RenX
 		*
 		* @return String containing the RCON user name
 		*/
-		const Jupiter::ReadableString &getRCONUsername() const;
+		std::string_view getRCONUsername() const;
 
 		/**
 		* @brief Creates a server object using the provided socket, and loads settings from the specified configuration section.
@@ -1110,7 +1110,7 @@ namespace RenX
 		std::chrono::steady_clock::time_point m_lastActivity = std::chrono::steady_clock::now();
 		std::chrono::steady_clock::time_point m_lastSendActivity = std::chrono::steady_clock::now();
 		std::chrono::steady_clock::time_point m_gameover_time;
-		Jupiter::String m_lastLine;
+		std::string m_lastLine;
 		Jupiter::StringS m_rconUser;
 		Jupiter::StringS m_gameVersion;
 		Jupiter::StringS m_serverName;
@@ -1118,7 +1118,7 @@ namespace RenX
 		Jupiter::StringS m_lastCommandParams;
 		RenX::Map m_map;
 		Jupiter::TCPSocket m_sock;
-		Jupiter::ReadableString::TokenizeResult<Jupiter::String_Strict> m_commandListFormat;
+		std::vector<std::string> m_commandListFormat;
 		std::vector<std::unique_ptr<RenX::GameCommand>> m_commands;
 
 		/** Configuration variables */

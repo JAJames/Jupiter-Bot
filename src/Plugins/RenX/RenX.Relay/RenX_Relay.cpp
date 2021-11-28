@@ -11,6 +11,9 @@
 #include <unordered_set>
 #include <cassert>
 #include <fstream>
+#include "fmt/format.h" // TODO: replace with <format> later
+#include <charconv>
+#include "jessilib/split.hpp"
 #include "Jupiter/IRC.h"
 #include "RenX_Functions.h"
 #include "RenX_Server.h"
@@ -62,18 +65,17 @@ int RenX_RelayPlugin::think() {
 			else {
 				// Connected and fine
 				if (upstream_socket->recv() > 0) { // Data received
-					auto& buffer = upstream_socket->getBuffer();
-					Jupiter::ReadableString::TokenizeResult<Jupiter::Reference_String> result = Jupiter::ReferenceString::tokenize(buffer, '\n');
-					if (result.token_count != 0) {
+					auto tokens = jessilib::split_view(upstream_socket->getBuffer(), '\n');
+					if (!tokens.empty()) {
 						server_info.m_last_activity = std::chrono::steady_clock::now();
-						server_info.m_last_line.concat(result.tokens[0]);
-						if (result.token_count != 1) {
+						server_info.m_last_line += tokens[0];
+						if (tokens.size() != 1) {
 							// Process upstream message received
 							process_upstream_message(server, server_info.m_last_line, server_info);
-							server_info.m_last_line = result.tokens[result.token_count - 1];
+							server_info.m_last_line = tokens[tokens.size() - 1];
 
-							for (size_t index = 1; index != result.token_count - 1; ++index) {
-								process_upstream_message(server, result.tokens[index], server_info);
+							for (size_t index = 1; index != tokens.size() - 1; ++index) {
+								process_upstream_message(server, tokens[index], server_info);
 							}
 						}
 					}
@@ -279,10 +281,10 @@ std::string to_hex(T in_integer) {
 
 void RenX_RelayPlugin::RenX_OnRaw(RenX::Server &server, const Jupiter::ReadableString &line) {
 	// Not parsing any escape sequences, so data gets sent upstream exactly as it's received here. Copy tokens where needed to process escape sequences.
-	Jupiter::ReadableString::TokenizeResult <Jupiter::String_Strict> tokens = Jupiter::StringS::tokenize(line, RenX::DelimC);
+	auto tokens = jessilib::split(std::string_view{line}, RenX::DelimC);
 
 	// Ensure valid message received
-	if (tokens.token_count == 0) {
+	if (tokens.empty()) {
 		return;
 	}
 
@@ -294,12 +296,12 @@ void RenX_RelayPlugin::RenX_OnRaw(RenX::Server &server, const Jupiter::ReadableS
 	}
 
 	// Suppress unassociated command execution logs from going upstream
-	if (tokens.token_count >= 5
-		&& tokens.tokens[0] == "lRCON"
-		&& tokens.tokens[1] == "Command;"
-		&& tokens.tokens[3] == "executed:"
-		&& tokens.tokens[4].isNotEmpty()) {
-		if (tokens.tokens[2] != server.getRCONUsername()) {
+	if (tokens.size() >= 5
+		&& tokens[0] == "lRCON"
+		&& tokens[1] == "Command;"
+		&& tokens[3] == "executed:"
+		&& !tokens[4].empty()) {
+		if (tokens[2] != server.getRCONUsername()) {
 			if (m_default_settings.m_suppress_rcon_command_logs) { // TODO: move away from per-stream settings
 				// Suppress RCON command logs from other RCON users
 				return;
@@ -313,7 +315,7 @@ void RenX_RelayPlugin::RenX_OnRaw(RenX::Server &server, const Jupiter::ReadableS
 			upstream_server_info* front_server_info = m_command_tracker.front();
 			if (front_server_info == nullptr
 				|| front_server_info->m_processing_command
-				|| tokens.tokens[4] != front_server_info->m_response_queue.front().m_command) {
+				|| tokens[4] != front_server_info->m_response_queue.front().m_command) {
 				// This command response wasn't requested by any current upstream connections; suppress it
 				return;
 			}
@@ -331,13 +333,13 @@ void RenX_RelayPlugin::RenX_OnRaw(RenX::Server &server, const Jupiter::ReadableS
 			}
 			else {
 				// TODO: add assignment operators to Jupiter::string crap
-				tokens.tokens[2].set(rcon_username.data(), rcon_username.size());
+				tokens[2] = rcon_username;
 
 				// Construct line to send and send it
-				line_sanitized = tokens.tokens[0];
-				for (size_t index = 1; index != tokens.token_count; ++index) {
+				line_sanitized = tokens[0];
+				for (size_t index = 1; index != tokens.size(); ++index) {
 					line_sanitized += RenX::DelimC;
-					line_sanitized += tokens.tokens[index];
+					line_sanitized += tokens[index];
 				}
 			}
 			line_sanitized += '\n';
@@ -355,7 +357,7 @@ void RenX_RelayPlugin::RenX_OnRaw(RenX::Server &server, const Jupiter::ReadableS
 	}
 }
 
-void RenX_RelayPlugin::process_renx_message(RenX::Server& server, upstream_server_info& server_info, const Jupiter::ReadableString& line, Jupiter::ReadableString::TokenizeResult<Jupiter::String_Strict> tokens) {
+void RenX_RelayPlugin::process_renx_message(RenX::Server& server, upstream_server_info& server_info, std::string_view line, std::vector<std::string> tokens) {
 	bool required_sanitization = false;
 	if (!server_info.m_socket) {
 		// early out: no upstream RCON session
@@ -364,21 +366,21 @@ void RenX_RelayPlugin::process_renx_message(RenX::Server& server, upstream_serve
 
 	const upstream_settings& settings = *server_info.m_settings;
 	if (settings.m_suppress_chat_logs
-		&& tokens.getToken(0) == "lCHAT") {
+		&& tokens[0] == "lCHAT") {
 		return;
 	}
 
 	// Suppress unassociated command responses from going upstream
-	if (tokens.tokens[0].isNotEmpty()
-		&& (tokens.tokens[0][0] == 'r' || tokens.tokens[0][0] == 'c')
+	if (!tokens[0].empty()
+		&& (tokens[0][0] == 'r' || tokens[0][0] == 'c')
 		&& !server_info.m_processing_command) {
 		// This command response wasn't requested upstream; suppress it
 		return;
 	}
 
-	auto findPlayerByIP = [&server](const Jupiter::ReadableString& in_ip) -> const RenX::PlayerInfo* {
+	auto findPlayerByIP = [&server](std::string in_ip) -> const RenX::PlayerInfo* {
 		// Parse into integer so we're doing int comparisons instead of strings
-		auto ip32 = Jupiter::Socket::pton4(static_cast<std::string>(in_ip).c_str());
+		auto ip32 = Jupiter::Socket::pton4(in_ip.c_str());
 		if (ip32 == 0) {
 			return nullptr;
 		}
@@ -393,8 +395,8 @@ void RenX_RelayPlugin::process_renx_message(RenX::Server& server, upstream_serve
 		return nullptr;
 	};
 
-	auto findPlayerByHWID = [&server](const Jupiter::ReadableString& in_hwid) -> const RenX::PlayerInfo* {
-		if (in_hwid.isEmpty()) {
+	auto findPlayerByHWID = [&server](std::string_view in_hwid) -> const RenX::PlayerInfo* {
+		if (in_hwid.empty()) {
 			return nullptr;
 		}
 
@@ -407,8 +409,9 @@ void RenX_RelayPlugin::process_renx_message(RenX::Server& server, upstream_serve
 		return nullptr;
 	};
 
-	auto findPlayerBySteamID = [&server](const Jupiter::ReadableString& in_steamid) -> const RenX::PlayerInfo* {
-		uint64_t steamid = in_steamid.asUnsignedLongLong();
+	auto findPlayerBySteamID = [&server](std::string_view in_steamid) -> const RenX::PlayerInfo* {
+		uint64_t steamid{};
+		std::from_chars(in_steamid.data(), in_steamid.data() + in_steamid.size(), steamid);
 		if (steamid == 0) {
 			return nullptr;
 		}
@@ -423,19 +426,19 @@ void RenX_RelayPlugin::process_renx_message(RenX::Server& server, upstream_serve
 	};
 
 	if (settings.m_sanitize_names) {
-		for (size_t index = 0; index != tokens.token_count; ++index) {
-			auto& token = tokens.tokens[index];
-			if (is_player_token(token.ptr(), token.ptr() + token.size())) {
+		for (size_t index = 0; index != tokens.size(); ++index) {
+			auto& token = tokens[index];
+			if (is_player_token(token.data(), token.data() + token.size())) {
 				// Get token pieces
-				Jupiter::ReferenceString teamToken = Jupiter::ReferenceString::getToken(token, 0, ',');
-				Jupiter::ReferenceString idToken = Jupiter::ReferenceString::getToken(token, 1, ',');
+				auto player_tokens = jessilib::split_n_view(token, ',', 2);
+				std::string_view idToken = player_tokens[1];
 
-				Jupiter::StringS replacement_player = teamToken;
+				std::string replacement_player = static_cast<std::string>(player_tokens[0]);
 				replacement_player += ',';
 				replacement_player += idToken;
 				replacement_player += ',';
-				if (idToken.isNotEmpty() && idToken.get(0) == 'b') {
-					idToken.shiftRight(1);
+				if (!idToken.empty() && idToken.front() == 'b') {
+					idToken.remove_prefix(1);
 				}
 
 				// Name (sanitized)
@@ -452,8 +455,8 @@ void RenX_RelayPlugin::process_renx_message(RenX::Server& server, upstream_serve
 		// It's way too much of a pain to check for command usages, and it's not full-proof either (an alias or similar could be added).
 		// So instead, we'll just search all messages for any tokens containing any player's IP or HWID.
 		// This isn't terribly efficient, but there's only up to 64 players, so not a huge concern
-		for (size_t index = 0; index != tokens.token_count; ++index) {
-			auto& token = tokens.tokens[index];
+		for (size_t index = 0; index != tokens.size(); ++index) {
+			auto& token = tokens[index];
 			const RenX::PlayerInfo* player;
 			if (settings.m_sanitize_ips) {
 				player = findPlayerByIP(token);
@@ -464,7 +467,8 @@ void RenX_RelayPlugin::process_renx_message(RenX::Server& server, upstream_serve
 					std::uniform_int_distribution<uint32_t> dist(10, 200);
 
 					// Replace real IP with fake
-					token.format("%u.%u.%u.%u",
+					//token.format("%u.%u.%u.%u",
+					token = fmt::format("{}.{}.{}.{}",
 						static_cast<unsigned int>(dist(randgen)),
 						static_cast<unsigned int>(dist(randgen)),
 						static_cast<unsigned int>(dist(randgen)),
@@ -506,13 +510,13 @@ void RenX_RelayPlugin::process_renx_message(RenX::Server& server, upstream_serve
 		}
 	}
 
-	Jupiter::StringS line_sanitized;
+	std::string line_sanitized;
 	if (required_sanitization) {
 		// Construct line to send and send it
-		line_sanitized = tokens.tokens[0];
-		for (size_t index = 1; index != tokens.token_count; ++index) {
+		line_sanitized = tokens[0];
+		for (size_t index = 1; index != tokens.size(); ++index) {
 			line_sanitized += RenX::DelimC;
-			line_sanitized += tokens.tokens[index];
+			line_sanitized += tokens[index];
 		}
 	}
 	else {
@@ -666,17 +670,17 @@ void RenX_RelayPlugin::upstream_disconnected(RenX::Server&, upstream_server_info
 	}
 }
 
-void RenX_RelayPlugin::process_upstream_message(RenX::Server* in_server, const Jupiter::ReadableString& in_line, upstream_server_info& in_server_info) {
-	if (in_line.isEmpty()) {
+void RenX_RelayPlugin::process_upstream_message(RenX::Server* in_server, std::string_view in_line, upstream_server_info& in_server_info) {
+	if (in_line.empty()) {
 		return;
 	}
 
-	if (in_line == 's') {
+	if (in_line.front() == 's') {
 		// we're already subscribed
 		return;
 	}
 
-	if (in_line[0] == 'a') {
+	if (in_line.front() == 'a') {
 		// we're already authenticated
 		return;
 	}
@@ -695,10 +699,7 @@ void RenX_RelayPlugin::process_upstream_message(RenX::Server* in_server, const J
 	if (in_line[0] == 'c' && in_line.size() > 1) {
 		// Sanitize unknown & blacklisted commands
 		if (settings.m_suppress_unknown_commands || (settings.m_suppress_blacklisted_commands && !settings.m_fake_ignored_commands)) {
-			Jupiter::ReferenceString command_str = Jupiter::ReferenceString::getToken(in_line, 0, ' ');
-			command_str.shiftRight(1);
-			std::string_view command_view{ command_str.ptr(), command_str.size() };
-
+			std::string_view command_view = jessilib::split_once_view(in_line, ' ').first.substr(1);
 			if (settings.m_suppress_unknown_commands
 				&& g_known_commands.find(command_view) == g_known_commands.end()) {
 				// Command not in known commands list; ignore it
@@ -731,7 +732,7 @@ void RenX_RelayPlugin::process_upstream_message(RenX::Server* in_server, const J
 			}
 		}
 
-		std::string_view command_line{ in_line.ptr() + 1, in_line.size() - 1 };
+		std::string_view command_line = in_line.substr(1);
 		std::string_view command_word = command_line.substr(0, std::min(command_line.find(' '), command_line.size()));
 		std::string command_word_lower;
 		command_word_lower.reserve(command_word.size());
@@ -764,7 +765,7 @@ void RenX_RelayPlugin::process_upstream_message(RenX::Server* in_server, const J
 	}
 
 	// Send line to game server
-	Jupiter::StringS sanitized_message = in_line;
+	std::string sanitized_message = static_cast<std::string>(in_line);
 	sanitized_message += '\n';
 	send_downstream(*in_server, sanitized_message, in_server_info);
 }

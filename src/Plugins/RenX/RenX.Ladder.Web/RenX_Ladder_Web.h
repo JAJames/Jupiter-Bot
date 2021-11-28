@@ -39,9 +39,9 @@ public:
 
 	Jupiter::StringS header;
 	Jupiter::StringS footer;
-	Jupiter::String *generate_ladder_page(RenX::LadderDatabase *db, uint8_t format, size_t start_index, size_t count, const Jupiter::HTTP::HTMLFormResponse::TableType &query_params);
-	Jupiter::String *generate_search_page(RenX::LadderDatabase *db, uint8_t format, size_t start_index, size_t count, const Jupiter::ReadableString &name, const Jupiter::HTTP::HTMLFormResponse::TableType &query_params);
-	Jupiter::String *generate_profile_page(RenX::LadderDatabase *db, uint8_t format, uint64_t steam_id, const Jupiter::HTTP::HTMLFormResponse::TableType &query_params);
+	Jupiter::String *generate_ladder_page(RenX::LadderDatabase *db, uint8_t format, size_t start_index, size_t count, const Jupiter::HTTP::HTMLFormResponse& query_params);
+	Jupiter::String *generate_search_page(RenX::LadderDatabase *db, uint8_t format, size_t start_index, size_t count, std::string_view name, const Jupiter::HTTP::HTMLFormResponse& query_params);
+	Jupiter::String *generate_profile_page(RenX::LadderDatabase *db, uint8_t format, uint64_t steam_id, const Jupiter::HTTP::HTMLFormResponse& query_params);
 	inline size_t getEntriesPerPage() const { return this->entries_per_page; }
 	inline size_t getMinSearchNameLength() const { return this->min_search_name_length; };
 
@@ -57,9 +57,9 @@ private:
 	/** Configuration variables */
 	size_t entries_per_page;
 	size_t min_search_name_length;
-	Jupiter::StringS ladder_page_name, search_page_name, profile_page_name, ladder_table_header, ladder_table_footer;
-	Jupiter::StringS web_hostname;
-	Jupiter::StringS web_path;
+	std::string ladder_page_name, search_page_name, profile_page_name, ladder_table_header, ladder_table_footer;
+	std::string web_hostname;
+	std::string web_path;
 	std::string web_header_filename;
 	std::string web_footer_filename;
 	std::string web_profile_filename;
@@ -69,8 +69,8 @@ private:
 	Jupiter::StringS entry_table_row, entry_profile, entry_profile_previous, entry_profile_next;
 };
 
-Jupiter::ReadableString *handle_ladder_page(const Jupiter::ReadableString &parameters);
-Jupiter::ReadableString *handle_search_page(const Jupiter::ReadableString &parameters);
-Jupiter::ReadableString *handle_profile_page(const Jupiter::ReadableString &parameters);
+Jupiter::ReadableString *handle_ladder_page(std::string_view query_string);
+Jupiter::ReadableString *handle_search_page(std::string_view query_string);
+Jupiter::ReadableString *handle_profile_page(std::string_view query_string);
 
 #endif // _RENX_LADDER_WEB_H

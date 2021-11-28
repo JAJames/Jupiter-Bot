@@ -17,6 +17,7 @@
  */
 
 #include <ctime>
+#include "jessilib/split.hpp"
 #include "Jupiter/String.hpp"
 #include "ServerManager.h"
 #include "IRC_Bot.h"
@@ -94,16 +95,16 @@ int RenX::Server::think() {
 		if (m_sock.recv() > 0) { // Data received
 			cycle_player_rdns();
 
-			Jupiter::ReadableString::TokenizeResult<Jupiter::Reference_String> result = Jupiter::ReferenceString::tokenize(m_sock.getBuffer(), '\n');
-			if (result.token_count != 0) {
+			auto tokens = jessilib::split_view(m_sock.getBuffer(), '\n');
+			if (!tokens.empty()) {
 				m_lastActivity = std::chrono::steady_clock::now();
-				m_lastLine.concat(result.tokens[0]);
-				if (result.token_count != 1) {
-					processLine(m_lastLine);
-					m_lastLine = result.tokens[result.token_count - 1];
+				m_lastLine += tokens[0];
+				if (tokens.size() != 1) {
+					processLine(Jupiter::ReferenceString{m_lastLine});
+					m_lastLine = tokens[tokens.size() - 1];
 
-					for (size_t index = 1; index != result.token_count - 1; ++index) {
-						processLine(result.tokens[index]);
+					for (size_t index = 1; index != tokens.size() - 1; ++index) {
+						processLine(Jupiter::ReferenceString{tokens[index]});
 					}
 				}
 			}
@@ -1296,10 +1297,38 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line) {
 		return;
 
 	auto& xPlugins = RenX::getCore()->getPlugins();
-	Jupiter::ReadableString::TokenizeResult<Jupiter::String_Strict> tokens = Jupiter::StringS::tokenize(line, m_rconVersion == 3 ? RenX::DelimC3 : RenX::DelimC);
+	auto tokens_view = jessilib::split_view(std::string_view{line}, m_rconVersion == 3 ? RenX::DelimC3 : RenX::DelimC);
+	std::vector<Jupiter::StringS> tokens;
 
-	for (size_t index = 0; index != tokens.token_count; ++index)
-		tokens.tokens[index].processEscapeSequences();
+	for (auto& token : tokens_view) {
+		tokens.push_back(Jupiter::StringS{std::string(token)}); // TODO: remove this extraneous copy
+		tokens.back().processEscapeSequences();
+	}
+
+	// Safety checker for getting a token at an index
+	auto getToken = [&tokens](size_t index) -> Jupiter::ReferenceString {
+		if (index < tokens.size()) {
+			return tokens[index];
+		}
+
+		return {};
+	};
+
+	auto consume_tokens_as_command_list_format = [&tokens, this]() {
+		for (auto& token : tokens) {
+			m_commandListFormat.push_back(static_cast<std::string>(token));
+		}
+	};
+
+	auto tokens_as_command_table = [&tokens, this]() {
+		std::unordered_map<Jupiter::StringS, Jupiter::StringS, Jupiter::default_hash_function> table;
+		size_t total_tokens = std::min(tokens.size(), m_commandListFormat.size());
+		for (size_t index = 0; index != total_tokens; ++index) {
+			table[m_commandListFormat[index]] = tokens[index];
+		}
+
+		return table;
+	};
 
 	/** Local functions */
 	auto onPreGameOver = [this](RenX::WinType winType, RenX::TeamType team, int gScore, int nScore)
@@ -1516,7 +1545,7 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line) {
 	};
 	auto gotoToken = [&line, &tokens, this](size_t index)
 	{
-		if (index >= tokens.token_count)
+		if (index >= tokens.size())
 			return Jupiter::ReferenceString::empty;
 
 		const char delim = getVersion() >= 4 ? RenX::DelimC : RenX::DelimC3;
@@ -1540,49 +1569,50 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line) {
 		}
 	};
 
-	if (tokens.tokens[0].isNotEmpty())
+	if (tokens[0].isNotEmpty())
 	{
-		char header = tokens.tokens[0].get(0);
-		tokens.tokens[0].shiftRight(1);
+		char header = tokens[0].get(0);
+		tokens[0].shiftRight(1);
 		switch (header)
 		{
 		case 'r':
 			if (m_lastCommand.equalsi("clientlist"_jrs))
 			{
 				// ID | IP | Steam ID | Admin Status | Team | Name
-				if (tokens.tokens[0].isNotEmpty())
+				if (tokens[0].isNotEmpty())
 				{
 					bool isBot = false;
 					int id;
 					uint64_t steamid = 0;
 					RenX::TeamType team = TeamType::Other;
-					Jupiter::ReferenceString steamToken = tokens.getToken(2);
-					Jupiter::ReferenceString adminToken = tokens.getToken(3);
-					Jupiter::ReferenceString teamToken = tokens.getToken(4);
-					if (tokens.tokens[0].get(0) == 'b')
+					Jupiter::ReferenceString steamToken = getToken(2);
+					Jupiter::ReferenceString adminToken = getToken(3);
+					Jupiter::ReferenceString teamToken = getToken(4);
+					if (tokens[0].get(0) == 'b')
 					{
 						isBot = true;
-						tokens.tokens[0].shiftRight(1);
-						id = tokens.tokens[0].asInt();
-						tokens.tokens[0].shiftLeft(1);
+						tokens[0].shiftRight(1);
+						id = tokens[0].asInt();
+						tokens[0].shiftLeft(1);
 					}
 					else
-						id = tokens.tokens[0].asInt();
+						id = tokens[0].asInt();
 
 					if (steamToken.equals("-----NO-STEAM-----") == false)
 						steamid = steamToken.asUnsignedLongLong();
 					team = RenX::getTeam(teamToken);
 
 					if (adminToken.equalsi("None"_jrs))
-						getPlayerOrAdd(tokens.getToken(5), id, team, isBot, steamid, tokens.getToken(1), Jupiter::ReferenceString::empty);
+						getPlayerOrAdd(getToken(5), id, team, isBot, steamid, getToken(1), Jupiter::ReferenceString::empty);
 					else
-						getPlayerOrAdd(tokens.getToken(5), id, team, isBot, steamid, tokens.getToken(1), Jupiter::ReferenceString::empty)->adminType = adminToken;
+						getPlayerOrAdd(getToken(5), id, team, isBot, steamid, getToken(1), Jupiter::ReferenceString::empty)->adminType = adminToken;
 				}
 			}
 			else if (m_lastCommand.equalsi("clientvarlist"_jrs))
 			{
-				if (m_commandListFormat.token_count == 0)
-					m_commandListFormat = tokens;
+				if (m_commandListFormat.empty()) {
+					consume_tokens_as_command_list_format();
+				}
 				else
 				{
 					/*e
@@ -1590,10 +1620,7 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line) {
 					rPlayerLog�Kills�PlayerKills�BotKills�Deaths�Score�Credits�Character�BoundVehicle�Vehicle�Spy�RemoteC4�ATMine�KDR�Ping�Admin�Steam�IP�ID�Name�Team�TeamNum
 					rGDI,256,EKT-J�0�0�0�0�0�5217.9629�Rx_FamilyInfo_GDI_Soldier���False�0�0�0.0000�8�None�0x0110000104AE0666�127.0.0.1�256�EKT-J�GDI�0
 					*/
-					std::unordered_map<Jupiter::StringS, Jupiter::StringS, Jupiter::default_hash_function> table;
-					size_t i = tokens.token_count;
-					while (i-- != 0)
-						table[m_commandListFormat.getToken(i)] = tokens.getToken(i);
+					auto table = tokens_as_command_table();
 
 					auto table_get = [&table](const Jupiter::ReadableString& in_key) -> Jupiter::StringS* {
 						auto value = table.find(in_key);
@@ -1737,18 +1764,19 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line) {
 					}
 				}
 			}
-			else if (m_lastCommand.equalsi("botlist"))
-			{
+			else if (m_lastCommand.equalsi("botlist")) {
 				// Team,ID,Name
-				if (m_commandListFormat.token_count == 0)
-					m_commandListFormat = tokens;
-				else
-					parseGetPlayerOrAdd(tokens.tokens[0]);
+				if (m_commandListFormat.empty()) {
+					consume_tokens_as_command_list_format();
+				}
+				else {
+					parseGetPlayerOrAdd(tokens[0]);
+				}
 			}
-			else if (m_lastCommand.equalsi("botvarlist"))
-			{
-				if (m_commandListFormat.token_count == 0)
-					m_commandListFormat = tokens;
+			else if (m_lastCommand.equalsi("botvarlist")) {
+				if (m_commandListFormat.empty()) {
+					consume_tokens_as_command_list_format();
+				}
 				else
 				{
 					/*
@@ -1756,10 +1784,7 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line) {
 					rPlayerLog�Kills�PlayerKills�BotKills�Deaths�Score�Credits�Character�BoundVehicle�Vehicle�Spy�RemoteC4�ATMine�KDR�Ping�Admin�Steam�IP�ID�Name�Team�TeamNum
 					rGDI,256,EKT-J�0�0�0�0�0�5217.9629�Rx_FamilyInfo_GDI_Soldier���False�0�0�0.0000�8�None�0x0110000104AE0666�127.0.0.1�256�EKT-J�GDI�0
 					*/
-					std::unordered_map<Jupiter::StringS, Jupiter::StringS, Jupiter::default_hash_function> table;
-					size_t i = tokens.token_count;
-					while (i-- != 0)
-						table[m_commandListFormat.getToken(i)] = tokens.getToken(i);
+					auto table = tokens_as_command_table();
 
 					auto table_get = [&table](const Jupiter::ReadableString& in_key) -> Jupiter::StringS* {
 						auto value = table.find(in_key);
@@ -1863,8 +1888,9 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line) {
 			}
 			else if (m_lastCommand.equalsi("binfo") || m_lastCommand.equalsi("buildinginfo") || m_lastCommand.equalsi("blist") || m_lastCommand.equalsi("buildinglist"))
 			{
-				if (m_commandListFormat.token_count == 0)
-					m_commandListFormat = tokens;
+				if (m_commandListFormat.empty()) {
+					consume_tokens_as_command_list_format();
+				}
 				else
 				{
 					/*
@@ -1872,10 +1898,7 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line) {
 					rBuilding�Health�MaxHealth�Armor MaxArmor Team�Capturable Destroyed
 					rRx_Building_Refinery_GDI�2000�2000�2000 2000 GDI�False False
 					*/
-					std::unordered_map<Jupiter::StringS, Jupiter::StringS, Jupiter::default_hash_function> table;
-					size_t i = tokens.token_count;
-					while (i-- != 0)
-						table[m_commandListFormat.getToken(i)] = tokens.getToken(i);
+					auto table = tokens_as_command_table();
 
 					auto table_get = [&table](const Jupiter::ReadableString& in_key) -> Jupiter::StringS* {
 						auto value = table.find(in_key);
@@ -1932,7 +1955,7 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line) {
 			}
 			else if (m_lastCommand.equalsi("ping"))
 			{
-				if (tokens.getToken(1).equals("srv_init_done"_jrs))
+				if (getToken(1).equals("srv_init_done"_jrs))
 					finished_connecting();
 				else
 					m_awaitingPong = false;
@@ -1940,8 +1963,8 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line) {
 			else if (m_lastCommand.equalsi("map"))
 			{
 				// Map | Guid
-				m_map.name = tokens.getToken(0);
-				const Jupiter::ReferenceString guid_token = tokens.getToken(1);
+				m_map.name = getToken(0);
+				const Jupiter::ReferenceString guid_token = getToken(1);
 
 				if (guid_token.size() == 32U)
 				{
@@ -1954,11 +1977,11 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line) {
 				if (m_lastCommandParams.isEmpty())
 				{
 					// "Port"�| Port |�"Name" |�Name |�"Level"�| Level | "Players" | Players�| "Bots" | Bots | "LevelGUID" | Level GUID
-					m_port = static_cast<unsigned short>(tokens.getToken(1).asUnsignedInt(10));
-					m_serverName = tokens.getToken(3);
-					m_map.name = tokens.getToken(5);
+					m_port = static_cast<unsigned short>(getToken(1).asUnsignedInt(10));
+					m_serverName = getToken(3);
+					m_map.name = getToken(5);
 
-					const Jupiter::ReferenceString guid_token = tokens.getToken(11);
+					const Jupiter::ReferenceString guid_token = getToken(11);
 					if (guid_token.size() == 32U)
 					{
 						m_map.guid[0] = guid_token.substring(size_t{ 0 }, 16U).asUnsignedLongLong(16);
@@ -1971,23 +1994,23 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line) {
 				if (m_lastCommandParams.isEmpty())
 				{
 					// "PlayerLimit" | PlayerLimit | "VehicleLimit" | VehicleLimit | "MineLimit" | MineLimit | "TimeLimit" | TimeLimit | "bPassworded" | bPassworded | "bSteamRequired" | bSteamRequired | "bPrivateMessageTeamOnly" | bPrivateMessageTeamOnly | "bAllowPrivateMessaging" | bAllowPrivateMessaging | "TeamMode" | TeamMode | "bSpawnCrates" | bSpawnCrates | "CrateRespawnAfterPickup" | CrateRespawnAfterPickup | bIsCompetitive | "bIsCompetitive"
-					m_playerLimit = tokens.getToken(1).asInt();
-					m_vehicleLimit = tokens.getToken(3).asInt();
-					m_mineLimit = tokens.getToken(5).asInt();
-					m_timeLimit = tokens.getToken(7).asInt();
-					m_passworded = tokens.getToken(9).asBool();
-					m_steamRequired = tokens.getToken(11).asBool();
-					m_privateMessageTeamOnly = tokens.getToken(13).asBool();
-					m_allowPrivateMessaging = tokens.getToken(15).asBool();
-					m_team_mode = m_rconVersion >= 4 ? tokens.getToken(17).asInt() : true;
-					m_spawnCrates = tokens.getToken(19).asBool();
-					m_crateRespawnAfterPickup = tokens.getToken(21).asDouble();
+					m_playerLimit = getToken(1).asInt();
+					m_vehicleLimit = getToken(3).asInt();
+					m_mineLimit = getToken(5).asInt();
+					m_timeLimit = getToken(7).asInt();
+					m_passworded = getToken(9).asBool();
+					m_steamRequired = getToken(11).asBool();
+					m_privateMessageTeamOnly = getToken(13).asBool();
+					m_allowPrivateMessaging = getToken(15).asBool();
+					m_team_mode = m_rconVersion >= 4 ? getToken(17).asInt() : true;
+					m_spawnCrates = getToken(19).asBool();
+					m_crateRespawnAfterPickup = getToken(21).asDouble();
 
 					if (m_rconVersion >= 4)
 					{
-						m_competitive = tokens.getToken(23).asBool();
+						m_competitive = getToken(23).asBool();
 
-						const Jupiter::ReadableString &match_state_token = tokens.getToken(25);
+						const Jupiter::ReadableString &match_state_token = getToken(25);
 						if (match_state_token.equalsi("PendingMatch"_jrs))
 							m_match_state = 0;
 						else if (match_state_token.equalsi("MatchInProgress"_jrs))
@@ -1999,33 +2022,33 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line) {
 						else // Unknown state -- assume it's in progress
 							m_match_state = 1;
 
-						m_botsEnabled = tokens.getToken(27).asBool();
-						m_game_type = tokens.getToken(29).asInt();
+						m_botsEnabled = getToken(27).asBool();
+						m_game_type = getToken(29).asInt();
 					}
 				}
 			}
 			else if (m_lastCommand.equalsi("mutatorlist"_jrs)) {
 				// "The following mutators are loaded:" [ | Mutator [ | Mutator [ ... ] ] ]
-				if (tokens.token_count == 1) {
+				if (tokens.size() == 1) {
 					m_pure = true;
 				}
-				else if (tokens.token_count == 0) {
+				else if (tokens.size() == 0) {
 					disconnect(RenX::DisconnectReason::ProtocolError);
 				}
 				else {
 					RenX::Server::mutators.clear();
-					size_t index = tokens.token_count;
+					size_t index = tokens.size();
 					while (--index != 0)
-						RenX::Server::mutators.emplace_back(tokens.tokens[index]);
+						RenX::Server::mutators.emplace_back(tokens[index]);
 				}
 			}
 			else if (m_lastCommand.equalsi("rotation"_jrs)) {
 				// Map | Guid
-				const Jupiter::ReadableString &in_map = tokens.getToken(0);
+				const Jupiter::ReadableString &in_map = getToken(0);
 				if (hasMapInRotation(in_map) == false) {
 					this->maps.emplace_back(in_map);
 
-					const Jupiter::ReferenceString guid_token = tokens.getToken(1);
+					const Jupiter::ReferenceString guid_token = getToken(1);
 					if (guid_token.size() == 32U) {
 						this->maps.back().guid[0] = guid_token.substring(size_t{ 0 }, 16U).asUnsignedLongLong(16);
 						this->maps.back().guid[1] = guid_token.substring(16U).asUnsignedLongLong(16);
@@ -2033,23 +2056,23 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line) {
 				}
 			}
 			else if (m_lastCommand.equalsi("changename")) {
-				RenX::PlayerInfo *player = parseGetPlayerOrAdd(tokens.getToken(0));
-				Jupiter::StringS newName = tokens.getToken(2);
+				RenX::PlayerInfo *player = parseGetPlayerOrAdd(getToken(0));
+				Jupiter::StringS newName = getToken(2);
 				for (const auto& plugin : xPlugins) {
 					plugin->RenX_OnNameChange(*this, *player, newName);
 				}
-				player->name = tokens.getToken(2).gotoToken(2, ',');
+				player->name = getToken(2).gotoToken(2, ',');
 			}
 			break;
 		case 'l':
 			if (m_rconVersion >= 3) {
-				Jupiter::ReferenceString subHeader = tokens.getToken(1);
-				if (tokens.tokens[0].equals("GAME")) {
+				Jupiter::ReferenceString subHeader = getToken(1);
+				if (tokens[0].equals("GAME")) {
 					if (subHeader.equals("Deployed;")) {
 						// Object (Beacon/Mine) | Player
 						// Object (Beacon/Mine) | Player | "on" | Surface
-						RenX::PlayerInfo *player = parseGetPlayerOrAdd(tokens.getToken(4));
-						Jupiter::ReferenceString objectType = tokens.getToken(2);
+						RenX::PlayerInfo *player = parseGetPlayerOrAdd(getToken(4));
+						Jupiter::ReferenceString objectType = getToken(2);
 						if (objectType.match("*Beacon"))
 							++player->beaconPlacements;
 						else if (objectType.equals("Rx_Weapon_DeployedProxyC4"_jrs))
@@ -2062,15 +2085,15 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line) {
 					else if (subHeader.equals("Disarmed;")) {
 						// Object (Beacon/Mine) | "by" | Player
 						// Object (Beacon/Mine) | "by" | Player | "owned by" | Owner
-						RenX::PlayerInfo *player = parseGetPlayerOrAdd(tokens.getToken(4));
-						Jupiter::ReferenceString objectType = tokens.getToken(2);
+						RenX::PlayerInfo *player = parseGetPlayerOrAdd(getToken(4));
+						Jupiter::ReferenceString objectType = getToken(2);
 						if (objectType.match("*Beacon"))
 							++player->beaconDisarms;
 						else if (objectType.equals("Rx_Weapon_DeployedProxyC4"_jrs))
 							++player->proxy_disarms;
 
-						if (tokens.getToken(5).equals("owned by")) {
-							RenX::PlayerInfo *victim = parseGetPlayerOrAdd(tokens.getToken(6));
+						if (getToken(5).equals("owned by")) {
+							RenX::PlayerInfo *victim = parseGetPlayerOrAdd(getToken(6));
 							for (const auto& plugin : xPlugins) {
 								plugin->RenX_OnDisarm(*this, *player, objectType, *victim);
 							}
@@ -2089,10 +2112,10 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line) {
 						// 5.15+:
 						// Explosive | "near" | Spot Location | "at" | Location | "by" | Owner
 						// Explosive | "near" | Spot Location | "at" | Location
-						Jupiter::ReferenceString explosive = tokens.getToken(2);
-						if (tokens.getToken(5).equals("at")) { // 5.15+
-							if (tokens.getToken(7).equals("by")) { // Player information specified
-								RenX::PlayerInfo *player = parseGetPlayerOrAdd(tokens.getToken(8));
+						Jupiter::ReferenceString explosive = getToken(2);
+						if (getToken(5).equals("at")) { // 5.15+
+							if (getToken(7).equals("by")) { // Player information specified
+								RenX::PlayerInfo *player = parseGetPlayerOrAdd(getToken(8));
 								for (const auto& plugin : xPlugins) {
 									plugin->RenX_OnExplode(*this, *player, explosive);
 								}
@@ -2103,8 +2126,8 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line) {
 								}
 							}
 						}
-						else if (tokens.getToken(5).equals("by")) { // Pre-5.15 with player information specified
-							RenX::PlayerInfo *player = parseGetPlayerOrAdd(tokens.getToken(6));
+						else if (getToken(5).equals("by")) { // Pre-5.15 with player information specified
+							RenX::PlayerInfo *player = parseGetPlayerOrAdd(getToken(6));
 							for (const auto& plugin : xPlugins) {
 								plugin->RenX_OnExplode(*this, *player, explosive);
 							}
@@ -2119,9 +2142,9 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line) {
 					else if (subHeader.equals("ProjectileExploded;")) {
 						// Explosive | "at" | Location
 						// Explosive | "at" | Location | "by" | Owner
-						Jupiter::ReferenceString explosive = tokens.getToken(2);
-						if (tokens.getToken(5).equals("by")) {
-							RenX::PlayerInfo *player = parseGetPlayerOrAdd(tokens.getToken(6));
+						Jupiter::ReferenceString explosive = getToken(2);
+						if (getToken(5).equals("by")) {
+							RenX::PlayerInfo *player = parseGetPlayerOrAdd(getToken(6));
 							for (const auto& plugin : xPlugins) {
 								plugin->RenX_OnExplode(*this, *player, explosive);
 							}
@@ -2135,10 +2158,10 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line) {
 					}
 					else if (subHeader.equals("Captured;")) {
 						// Team ',' Building | "id" | Building ID | "by" | Player
-						Jupiter::ReferenceString teamBuildingToken = tokens.getToken(2);
+						Jupiter::ReferenceString teamBuildingToken = getToken(2);
 						Jupiter::ReferenceString building = teamBuildingToken.getToken(1, ',');
 						TeamType oldTeam = RenX::getTeam(teamBuildingToken.getToken(0, ','));
-						RenX::PlayerInfo *player = parseGetPlayerOrAdd(tokens.getToken(6));
+						RenX::PlayerInfo *player = parseGetPlayerOrAdd(getToken(6));
 						player->captures++;
 						for (const auto& plugin : xPlugins) {
 							plugin->RenX_OnCapture(*this, *player, building, oldTeam);
@@ -2147,10 +2170,10 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line) {
 					}
 					else if (subHeader.equals("Neutralized;")) {
 						// Team ',' Building | "id" | Building ID | "by" | Player
-						Jupiter::ReferenceString teamBuildingToken = tokens.getToken(2);
+						Jupiter::ReferenceString teamBuildingToken = getToken(2);
 						Jupiter::ReferenceString building = teamBuildingToken.getToken(1, ',');
 						TeamType oldTeam = RenX::getTeam(teamBuildingToken.getToken(0, ','));
-						RenX::PlayerInfo *player = parseGetPlayerOrAdd(tokens.getToken(6));
+						RenX::PlayerInfo *player = parseGetPlayerOrAdd(getToken(6));
 						for (const auto& plugin : xPlugins) {
 							plugin->RenX_OnNeutralize(*this, *player, building, oldTeam);
 						}
@@ -2162,23 +2185,23 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line) {
 						// "weapon" | Weapon | "by" | Player
 						// "refill" | Player
 						// "vehicle" | Vehicle | "by" | Player
-						Jupiter::ReferenceString type = tokens.getToken(2);
-						Jupiter::ReferenceString obj = tokens.getToken(3);
+						Jupiter::ReferenceString type = getToken(2);
+						Jupiter::ReferenceString obj = getToken(3);
 						if (type.equals("character")) {
-							RenX::PlayerInfo *player = parseGetPlayerOrAdd(tokens.getToken(5));
+							RenX::PlayerInfo *player = parseGetPlayerOrAdd(getToken(5));
 							for (const auto& plugin : xPlugins) {
 								plugin->RenX_OnCharacterPurchase(*this, *player, obj);
 							}
 							player->character = obj;
 						}
 						else if (type.equals("item")) {
-							RenX::PlayerInfo *player = parseGetPlayerOrAdd(tokens.getToken(5));
+							RenX::PlayerInfo *player = parseGetPlayerOrAdd(getToken(5));
 							for (const auto& plugin : xPlugins) {
 								plugin->RenX_OnItemPurchase(*this, *player, obj);
 							}
 						}
 						else if (type.equals("weapon")) {
-							RenX::PlayerInfo *player = parseGetPlayerOrAdd(tokens.getToken(5));
+							RenX::PlayerInfo *player = parseGetPlayerOrAdd(getToken(5));
 							for (const auto& plugin : xPlugins) {
 								plugin->RenX_OnWeaponPurchase(*this, *player, obj);
 							}
@@ -2190,7 +2213,7 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line) {
 							}
 						}
 						else if (type.equals("vehicle")) {
-							RenX::PlayerInfo *player = parseGetPlayerOrAdd(tokens.getToken(5));
+							RenX::PlayerInfo *player = parseGetPlayerOrAdd(getToken(5));
 							for (const auto& plugin : xPlugins) {
 								plugin->RenX_OnVehiclePurchase(*this, *player, obj);
 							}
@@ -2200,8 +2223,8 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line) {
 						// "vehicle" | Vehicle Team, Vehicle
 						// "player" | Player | "character" | Character
 						// "bot" | Player
-						if (tokens.getToken(2).equals("vehicle")) {
-							Jupiter::ReferenceString vehicle = tokens.getToken(3);
+						if (getToken(2).equals("vehicle")) {
+							Jupiter::ReferenceString vehicle = getToken(3);
 							Jupiter::ReferenceString vehicleTeamToken = vehicle.getToken(0, ',');
 							vehicle.shiftRight(vehicleTeamToken.size() + 1);
 							TeamType team = RenX::getTeam(vehicleTeamToken);
@@ -2209,16 +2232,16 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line) {
 								plugin->RenX_OnVehicleSpawn(*this, team, vehicle);
 							}
 						}
-						else if (tokens.getToken(2).equals("player")) {
-							RenX::PlayerInfo *player = parseGetPlayerOrAdd(tokens.getToken(3));
-							Jupiter::ReferenceString character = tokens.getToken(5);
+						else if (getToken(2).equals("player")) {
+							RenX::PlayerInfo *player = parseGetPlayerOrAdd(getToken(3));
+							Jupiter::ReferenceString character = getToken(5);
 							player->character = character;
 							for (const auto& plugin : xPlugins) {
 								plugin->RenX_OnSpawn(*this, *player, character);
 							}
 						}
-						else if (tokens.getToken(2).equals("bot")) {
-							RenX::PlayerInfo *bot = parseGetPlayerOrAdd(tokens.getToken(3));
+						else if (getToken(2).equals("bot")) {
+							RenX::PlayerInfo *bot = parseGetPlayerOrAdd(getToken(3));
 							for (const auto& plugin : xPlugins) {
 								plugin->RenX_OnBotJoin(*this, *bot);
 							}
@@ -2238,50 +2261,50 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line) {
 						// "nuke" | "by" | Player
 						// "abduction" | "by" | Player
 						// "by" | Player
-						Jupiter::ReferenceString type = tokens.getToken(2);
+						Jupiter::ReferenceString type = getToken(2);
 						if (type.equals("vehicle"))
 						{
-							Jupiter::ReferenceString vehicle = tokens.getToken(3);
-							RenX::PlayerInfo *player = parseGetPlayerOrAdd(tokens.getToken(5));
+							Jupiter::ReferenceString vehicle = getToken(3);
+							RenX::PlayerInfo *player = parseGetPlayerOrAdd(getToken(5));
 							for (const auto& plugin : xPlugins) {
 								plugin->RenX_OnVehicleCrate(*this, *player, vehicle);
 							}
 						}
 						else if (type.equals("tsvehicle"))
 						{
-							Jupiter::ReferenceString vehicle = tokens.getToken(3);
-							RenX::PlayerInfo *player = parseGetPlayerOrAdd(tokens.getToken(5));
+							Jupiter::ReferenceString vehicle = getToken(3);
+							RenX::PlayerInfo *player = parseGetPlayerOrAdd(getToken(5));
 							for (const auto& plugin : xPlugins) {
 								plugin->RenX_OnVehicleCrate(*this, *player, vehicle);
 							}
 						}
 						else if (type.equals("ravehicle"))
 						{
-							Jupiter::ReferenceString vehicle = tokens.getToken(3);
-							RenX::PlayerInfo *player = parseGetPlayerOrAdd(tokens.getToken(5));
+							Jupiter::ReferenceString vehicle = getToken(3);
+							RenX::PlayerInfo *player = parseGetPlayerOrAdd(getToken(5));
 							for (const auto& plugin : xPlugins) {
 								plugin->RenX_OnVehicleCrate(*this, *player, vehicle);
 							}
 						}
 						else if (type.equals("death") || type.equals("suicide"))
 						{
-							RenX::PlayerInfo *player = parseGetPlayerOrAdd(tokens.getToken(4));
+							RenX::PlayerInfo *player = parseGetPlayerOrAdd(getToken(4));
 							for (const auto& plugin : xPlugins) {
 								plugin->RenX_OnDeathCrate(*this, *player);
 							}
 						}
 						else if (type.equals("money"))
 						{
-							int amount = tokens.getToken(3).asInt();
-							RenX::PlayerInfo *player = parseGetPlayerOrAdd(tokens.getToken(5));
+							int amount = getToken(3).asInt();
+							RenX::PlayerInfo *player = parseGetPlayerOrAdd(getToken(5));
 							for (const auto& plugin : xPlugins) {
 								plugin->RenX_OnMoneyCrate(*this, *player, amount);
 							}
 						}
 						else if (type.equals("character"))
 						{
-							Jupiter::ReferenceString character = tokens.getToken(3);
-							RenX::PlayerInfo *player = parseGetPlayerOrAdd(tokens.getToken(5));
+							Jupiter::ReferenceString character = getToken(3);
+							RenX::PlayerInfo *player = parseGetPlayerOrAdd(getToken(5));
 							for (const auto& plugin : xPlugins) {
 								plugin->RenX_OnCharacterCrate(*this, *player, character);
 							}
@@ -2289,8 +2312,8 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line) {
 						}
 						else if (type.equals("spy"))
 						{
-							Jupiter::ReferenceString character = tokens.getToken(3);
-							RenX::PlayerInfo *player = parseGetPlayerOrAdd(tokens.getToken(5));
+							Jupiter::ReferenceString character = getToken(3);
+							RenX::PlayerInfo *player = parseGetPlayerOrAdd(getToken(5));
 							for (const auto& plugin : xPlugins) {
 								plugin->RenX_OnSpyCrate(*this, *player, character);
 							}
@@ -2298,50 +2321,50 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line) {
 						}
 						else if (type.equals("refill"))
 						{
-							RenX::PlayerInfo *player = parseGetPlayerOrAdd(tokens.getToken(4));
+							RenX::PlayerInfo *player = parseGetPlayerOrAdd(getToken(4));
 							for (const auto& plugin : xPlugins) {
 								plugin->RenX_OnRefillCrate(*this, *player);
 							}
 						}
 						else if (type.equals("timebomb"))
 						{
-							RenX::PlayerInfo *player = parseGetPlayerOrAdd(tokens.getToken(4));
+							RenX::PlayerInfo *player = parseGetPlayerOrAdd(getToken(4));
 							for (const auto& plugin : xPlugins) {
 								plugin->RenX_OnTimeBombCrate(*this, *player);
 							}
 						}
 						else if (type.equals("speed"))
 						{
-							RenX::PlayerInfo *player = parseGetPlayerOrAdd(tokens.getToken(4));
+							RenX::PlayerInfo *player = parseGetPlayerOrAdd(getToken(4));
 							for (const auto& plugin : xPlugins) {
 								plugin->RenX_OnSpeedCrate(*this, *player);
 							}
 						}
 						else if (type.equals("nuke"))
 						{
-							RenX::PlayerInfo *player = parseGetPlayerOrAdd(tokens.getToken(4));
+							RenX::PlayerInfo *player = parseGetPlayerOrAdd(getToken(4));
 							for (const auto& plugin : xPlugins) {
 								plugin->RenX_OnNukeCrate(*this, *player);
 							}
 						}
 						else if (type.equals("abduction"))
 						{
-							RenX::PlayerInfo *player = parseGetPlayerOrAdd(tokens.getToken(4));
+							RenX::PlayerInfo *player = parseGetPlayerOrAdd(getToken(4));
 							for (const auto& plugin : xPlugins) {
 								plugin->RenX_OnAbductionCrate(*this, *player);
 							}
 						}
 						else if (type.equals("by"))
 						{
-							RenX::PlayerInfo *player = parseGetPlayerOrAdd(tokens.getToken(3));
+							RenX::PlayerInfo *player = parseGetPlayerOrAdd(getToken(3));
 							for (const auto& plugin : xPlugins) {
 								plugin->RenX_OnUnspecifiedCrate(*this, *player);
 							}
 						}
 						else {
 							RenX::PlayerInfo *player = nullptr;
-							if (tokens.getToken(3).equals("by")) {
-								player = parseGetPlayerOrAdd(tokens.getToken(4));
+							if (getToken(3).equals("by")) {
+								player = parseGetPlayerOrAdd(getToken(4));
 							}
 
 							if (player != nullptr) {
@@ -2357,16 +2380,16 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line) {
 						// "player" | Player | "died by" | Damage Type
 						// "player" | Player | "suicide by" | Damage Type
 						//		NOTE: Filter these out when Player.isEmpty().
-						Jupiter::ReferenceString playerToken = tokens.getToken(3);
+						Jupiter::ReferenceString playerToken = getToken(3);
 						if (playerToken.isNotEmpty())
 						{
 							RenX::PlayerInfo *player = parseGetPlayerOrAdd(playerToken);
-							Jupiter::ReferenceString type = tokens.getToken(4);
+							Jupiter::ReferenceString type = getToken(4);
 							Jupiter::ReferenceString damageType;
 							if (type.equals("by"))
 							{
-								damageType = tokens.getToken(7);
-								Jupiter::ReferenceString killerData = tokens.getToken(5);
+								damageType = getToken(7);
+								Jupiter::ReferenceString killerData = getToken(5);
 								Jupiter::ReferenceString kName = killerData.getToken(2, ',');
 								Jupiter::ReferenceString kIDToken = killerData.getToken(1, ',');
 								RenX::TeamType vTeam = RenX::getTeam(killerData.getToken(0, ','));
@@ -2404,7 +2427,7 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line) {
 							else if (type.equals("died by"))
 							{
 								player->deaths++;
-								damageType = tokens.getToken(5);
+								damageType = getToken(5);
 								for (const auto& plugin : xPlugins) {
 									plugin->RenX_OnDie(*this, *player, damageType);
 								}
@@ -2413,7 +2436,7 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line) {
 							{
 								player->deaths++;
 								player->suicides++;
-								damageType = tokens.getToken(5);
+								damageType = getToken(5);
 								for (const auto& plugin : xPlugins) {
 									plugin->RenX_OnSuicide(*this, *player, damageType);
 								}
@@ -2426,11 +2449,11 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line) {
 					{
 						// Vehicle | "by" | Player
 						// Vehicle | "bound to" | Bound Player | "by" | Player
-						Jupiter::ReferenceString vehicle = tokens.getToken(2);
-						Jupiter::ReferenceString byLine = tokens.getToken(3);
+						Jupiter::ReferenceString vehicle = getToken(2);
+						Jupiter::ReferenceString byLine = getToken(3);
 						if (byLine.equals("by"))
 						{
-							RenX::PlayerInfo *player = parseGetPlayerOrAdd(tokens.getToken(4));
+							RenX::PlayerInfo *player = parseGetPlayerOrAdd(getToken(4));
 							player->steals++;
 							for (const auto& plugin : xPlugins) {
 								plugin->RenX_OnSteal(*this, *player, vehicle);
@@ -2438,8 +2461,8 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line) {
 						}
 						else if (byLine.equals("bound to"))
 						{
-							RenX::PlayerInfo *victim = parseGetPlayerOrAdd(tokens.getToken(4));
-							RenX::PlayerInfo *player = parseGetPlayerOrAdd(tokens.getToken(6));
+							RenX::PlayerInfo *victim = parseGetPlayerOrAdd(getToken(4));
+							RenX::PlayerInfo *player = parseGetPlayerOrAdd(getToken(6));
 							player->steals++;
 							victim->stolen++;
 							for (const auto& plugin : xPlugins) {
@@ -2454,7 +2477,7 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line) {
 						// "defence" | Defence | "by" | Killer | "with" | Damage Type
 						// "emplacement" | Emplacement | "by" | Killer Player | "with" | Damage Type
 						// "building" | Building | "by" | Killer | "with" | Damage Type
-						Jupiter::ReferenceString typeToken = tokens.getToken(2);
+						Jupiter::ReferenceString typeToken = getToken(2);
 						RenX::ObjectType type = ObjectType::None;
 						if (typeToken.equals("vehicle"))
 							type = ObjectType::Vehicle;
@@ -2465,13 +2488,13 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line) {
 
 						if (type != ObjectType::None)
 						{
-							Jupiter::ReferenceString objectName = tokens.getToken(3);
-							if (tokens.getToken(4).equals("by"))
+							Jupiter::ReferenceString objectName = getToken(3);
+							if (getToken(4).equals("by"))
 							{
-								Jupiter::ReferenceString killerToken = tokens.getToken(5);
+								Jupiter::ReferenceString killerToken = getToken(5);
 								Jupiter::ReferenceString idToken = killerToken.getToken(1, ',');
 								Jupiter::ReferenceString name = killerToken.gotoToken(2, ',');
-								Jupiter::ReferenceString damageType = tokens.getToken(7);
+								Jupiter::ReferenceString damageType = getToken(7);
 
 								RenX::TeamType team = RenX::getTeam(killerToken.getToken(0, ','));
 
@@ -2531,11 +2554,11 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line) {
 					else if (subHeader.equals("Donated;"))
 					{
 						// Amount | "to" | Recipient | "by" | Donor
-						if (tokens.getToken(5).equals("by"))
+						if (getToken(5).equals("by"))
 						{
-							double amount = tokens.getToken(2).asDouble();
-							RenX::PlayerInfo *player = parseGetPlayerOrAdd(tokens.getToken(4));
-							RenX::PlayerInfo *donor = parseGetPlayerOrAdd(tokens.getToken(6));
+							double amount = getToken(2).asDouble();
+							RenX::PlayerInfo *player = parseGetPlayerOrAdd(getToken(4));
+							RenX::PlayerInfo *donor = parseGetPlayerOrAdd(getToken(6));
 							for (const auto& plugin : xPlugins) {
 								plugin->RenX_OnDonate(*this, *donor, *player, amount);
 							}
@@ -2544,8 +2567,8 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line) {
 					else if (subHeader.equals("OverMine;"))
 					{
 						// Player | "near" | Location
-						RenX::PlayerInfo *player = parseGetPlayerOrAdd(tokens.getToken(2));
-						Jupiter::ReferenceString location = tokens.getToken(4);
+						RenX::PlayerInfo *player = parseGetPlayerOrAdd(getToken(2));
+						Jupiter::ReferenceString location = getToken(4);
 
 						for (const auto& plugin : xPlugins) {
 							plugin->RenX_OnOverMine(*this, *player, location);
@@ -2555,12 +2578,12 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line) {
 					{
 						// "winner" | Winner | Reason("TimeLimit" etc) | "GDI=" GDI Score | "Nod=" Nod Score
 						// "tie" | Reason | "GDI=" GDI Score | "Nod=" Nod Score
-						Jupiter::ReferenceString winTieToken = tokens.getToken(2);
+						Jupiter::ReferenceString winTieToken = getToken(2);
 						m_match_state = 2;
 
 						if (winTieToken.equals("winner"))
 						{
-							Jupiter::ReferenceString sWinType = tokens.getToken(4);
+							Jupiter::ReferenceString sWinType = getToken(4);
 							WinType winType = WinType::Unknown;
 							if (sWinType.equals("TimeLimit"))
 								winType = WinType::Score;
@@ -2571,10 +2594,10 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line) {
 							else if (sWinType.equals("Surrender"))
 								winType = WinType::Surrender;
 
-							TeamType team = RenX::getTeam(tokens.getToken(3));
+							TeamType team = RenX::getTeam(getToken(3));
 
-							int gScore = tokens.getToken(5).getToken(1, '=').asInt();
-							int nScore = tokens.getToken(6).getToken(1, '=').asInt();
+							int gScore = getToken(5).getToken(1, '=').asInt();
+							int nScore = getToken(6).getToken(1, '=').asInt();
 
 							onPreGameOver(winType, team, gScore, nScore);
 							for (const auto& plugin : xPlugins) {
@@ -2583,8 +2606,8 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line) {
 						}
 						else if (winTieToken.equals("tie"))
 						{
-							int gScore = tokens.getToken(4).getToken(1, '=').asInt();
-							int nScore = tokens.getToken(5).getToken(1, '=').asInt();
+							int gScore = getToken(4).getToken(1, '=').asInt();
+							int nScore = getToken(5).getToken(1, '=').asInt();
 							for (const auto& plugin : xPlugins) {
 								plugin->RenX_OnGameOver(*this, RenX::WinType::Tie, RenX::TeamType::None, gScore, nScore);
 							}
@@ -2599,12 +2622,12 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line) {
 						}
 					}
 				}
-				else if (tokens.tokens[0].equals("CHAT"))
+				else if (tokens[0].equals("CHAT"))
 				{
 					if (subHeader.equals("Say;"))
 					{
-						RenX::PlayerInfo *player = parseGetPlayerOrAdd(tokens.getToken(2));
-						Jupiter::ReferenceString message = tokens.getToken(4);
+						RenX::PlayerInfo *player = parseGetPlayerOrAdd(getToken(2));
+						Jupiter::ReferenceString message = getToken(4);
 						onChat(*player, message);
 						for (const auto& plugin : xPlugins) {
 							plugin->RenX_OnChat(*this, *player, message);
@@ -2613,8 +2636,8 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line) {
 					}
 					else if (subHeader.equals("TeamSay;"))
 					{
-						RenX::PlayerInfo *player = parseGetPlayerOrAdd(tokens.getToken(2));
-						Jupiter::ReferenceString message = tokens.getToken(4);
+						RenX::PlayerInfo *player = parseGetPlayerOrAdd(getToken(2));
+						Jupiter::ReferenceString message = getToken(4);
 						onChat(*player, message);
 						for (const auto& plugin : xPlugins) {
 							plugin->RenX_OnTeamChat(*this, *player, message);
@@ -2623,8 +2646,8 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line) {
 					}
 					else if (subHeader.equals("Radio;"))
 					{
-						RenX::PlayerInfo *player = parseGetPlayerOrAdd(tokens.getToken(2));
-						Jupiter::ReferenceString message = tokens.getToken(4);
+						RenX::PlayerInfo *player = parseGetPlayerOrAdd(getToken(2));
+						Jupiter::ReferenceString message = getToken(4);
 						for (const auto& plugin : xPlugins) {
 							plugin->RenX_OnRadioChat(*this, *player, message);
 						}
@@ -2632,8 +2655,8 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line) {
 					}
 					else if (subHeader.equals("AdminMsg;"))
 					{
-						RenX::PlayerInfo *player = parseGetPlayerOrAdd(tokens.getToken(2));
-						Jupiter::ReferenceString message = tokens.getToken(4);
+						RenX::PlayerInfo *player = parseGetPlayerOrAdd(getToken(2));
+						Jupiter::ReferenceString message = getToken(4);
 						for (const auto& plugin : xPlugins) {
 							plugin->RenX_OnAdminMessage(*this, *player, message);
 						}
@@ -2641,8 +2664,8 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line) {
 					}
 					else if (subHeader.equals("AdminWarn;"))
 					{
-						RenX::PlayerInfo *player = parseGetPlayerOrAdd(tokens.getToken(2));
-						Jupiter::ReferenceString message = tokens.getToken(4);
+						RenX::PlayerInfo *player = parseGetPlayerOrAdd(getToken(2));
+						Jupiter::ReferenceString message = getToken(4);
 						for (const auto& plugin : xPlugins) {
 							plugin->RenX_OnWarnMessage(*this, *player, message);
 						}
@@ -2650,9 +2673,9 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line) {
 					}
 					else if (subHeader.equals("PAdminMsg;"))
 					{
-						RenX::PlayerInfo *player = parseGetPlayerOrAdd(tokens.getToken(2));
-						RenX::PlayerInfo *target = parseGetPlayerOrAdd(tokens.getToken(4));
-						Jupiter::ReferenceString message = tokens.getToken(6);
+						RenX::PlayerInfo *player = parseGetPlayerOrAdd(getToken(2));
+						RenX::PlayerInfo *target = parseGetPlayerOrAdd(getToken(4));
+						Jupiter::ReferenceString message = getToken(6);
 						for (const auto& plugin : xPlugins) {
 							plugin->RenX_OnAdminPMessage(*this, *player, *target, message);
 						}
@@ -2660,9 +2683,9 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line) {
 					}
 					else if (subHeader.equals("PAdminWarn;"))
 					{
-						RenX::PlayerInfo *player = parseGetPlayerOrAdd(tokens.getToken(2));
-						RenX::PlayerInfo *target = parseGetPlayerOrAdd(tokens.getToken(4));
-						Jupiter::ReferenceString message = tokens.getToken(6);
+						RenX::PlayerInfo *player = parseGetPlayerOrAdd(getToken(2));
+						RenX::PlayerInfo *target = parseGetPlayerOrAdd(getToken(4));
+						Jupiter::ReferenceString message = getToken(6);
 						for (const auto& plugin : xPlugins) {
 							plugin->RenX_OnWarnPMessage(*this, *player, *target, message);
 						}
@@ -2670,42 +2693,42 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line) {
 					}
 					else if (subHeader.equals("HostSay;"))
 					{
-						Jupiter::ReferenceString message = tokens.getToken(3);
+						Jupiter::ReferenceString message = getToken(3);
 						for (const auto& plugin : xPlugins) {
 							plugin->RenX_OnHostChat(*this, message);
 						}
 					}
 					else if (subHeader.equals("HostPMsg;")) {
-						RenX::PlayerInfo *player = parseGetPlayerOrAdd(tokens.getToken(2));
-						Jupiter::ReferenceString message = tokens.getToken(4);
+						RenX::PlayerInfo *player = parseGetPlayerOrAdd(getToken(2));
+						Jupiter::ReferenceString message = getToken(4);
 						for (const auto& plugin : xPlugins) {
 							plugin->RenX_OnHostPage(*this, *player, message);
 						}
 					}
 					else if (subHeader.equals("HostAdminMsg;"))
 					{
-						Jupiter::ReferenceString message = tokens.getToken(3);
+						Jupiter::ReferenceString message = getToken(3);
 						for (const auto& plugin : xPlugins) {
 							plugin->RenX_OnHostAdminMessage(*this, message);
 						}
 					}
 					else if (subHeader.equals("HostAdminWarn;"))
 					{
-						Jupiter::ReferenceString message = tokens.getToken(3);
+						Jupiter::ReferenceString message = getToken(3);
 						for (const auto& plugin : xPlugins) {
 							plugin->RenX_OnHostWarnMessage(*this, message);
 						}
 					}
 					else if (subHeader.equals("HostPAdminMsg;")) {
-						RenX::PlayerInfo *player = parseGetPlayerOrAdd(tokens.getToken(2));
-						Jupiter::ReferenceString message = tokens.getToken(4);
+						RenX::PlayerInfo *player = parseGetPlayerOrAdd(getToken(2));
+						Jupiter::ReferenceString message = getToken(4);
 						for (const auto& plugin : xPlugins) {
 							plugin->RenX_OnHostAdminPMessage(*this, *player, message);
 						}
 					}
 					else if (subHeader.equals("HostPAdminWarn;")) {
-						RenX::PlayerInfo *player = parseGetPlayerOrAdd(tokens.getToken(2));
-						Jupiter::ReferenceString message = tokens.getToken(4);
+						RenX::PlayerInfo *player = parseGetPlayerOrAdd(getToken(2));
+						Jupiter::ReferenceString message = getToken(4);
 						for (const auto& plugin : xPlugins) {
 							plugin->RenX_OnHostWarnPMessage(*this, *player, message);
 						}
@@ -2728,29 +2751,29 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line) {
 						}
 					}
 				}
-				else if (tokens.tokens[0].equals("PLAYER"))
+				else if (tokens[0].equals("PLAYER"))
 				{
 					if (subHeader.equals("Enter;"))
 					{
-						PARSE_PLAYER_DATA_P(tokens.getToken(2));
+						PARSE_PLAYER_DATA_P(getToken(2));
 						uint64_t steamid = 0;
 						RenX::PlayerInfo *player;
 
-						if (tokens.getToken(5).equals("hwid"))
+						if (getToken(5).equals("hwid"))
 						{
 							// New format
-							if (tokens.getToken(7).equals("steamid"))
-								steamid = tokens.getToken(8).asUnsignedLongLong();
+							if (getToken(7).equals("steamid"))
+								steamid = getToken(8).asUnsignedLongLong();
 
-							player = getPlayerOrAdd(name, id, team, isBot, steamid, tokens.getToken(4), tokens.getToken(6));
+							player = getPlayerOrAdd(name, id, team, isBot, steamid, getToken(4), getToken(6));
 						}
 						else
 						{
 							// Old format
-							if (tokens.getToken(5).equals("steamid"))
-								steamid = tokens.getToken(6).asUnsignedLongLong();
+							if (getToken(5).equals("steamid"))
+								steamid = getToken(6).asUnsignedLongLong();
 
-							player = getPlayerOrAdd(name, id, team, isBot, steamid, tokens.getToken(4), Jupiter::ReferenceString::empty);
+							player = getPlayerOrAdd(name, id, team, isBot, steamid, getToken(4), Jupiter::ReferenceString::empty);
 						}
 
 						if (steamid != 0ULL && default_ladder_database != nullptr && (player->ban_flags & RenX::BanDatabase::Entry::FLAG_TYPE_LADDER) == 0)
@@ -2781,11 +2804,11 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line) {
 					{
 						// Player | "joined" | Team | "score" | Score | "last round score" | Score | "time" | Timestamp
 						// Player | "joined" | Team | "left" | Old Team | "score" | Score | "last round score" | Score | "time" | Timestamp
-						RenX::PlayerInfo *player = parseGetPlayerOrAdd(tokens.getToken(2));
+						RenX::PlayerInfo *player = parseGetPlayerOrAdd(getToken(2));
 						player->character = Jupiter::ReferenceString::empty;
-						if (tokens.getToken(5) == "left")
+						if (getToken(5) == "left")
 						{
-							RenX::TeamType oldTeam = RenX::getTeam(tokens.getToken(6));
+							RenX::TeamType oldTeam = RenX::getTeam(getToken(6));
 							if (oldTeam != RenX::TeamType::None)
 								for (const auto& plugin : xPlugins) {
 									plugin->RenX_OnTeamChange(*this, *player, oldTeam);
@@ -2796,11 +2819,11 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line) {
 					{
 						// ["player" |] Player | "hwid" | HWID
 						size_t offset = 0;
-						if (tokens.getToken(2).equals("player"))
+						if (getToken(2).equals("player"))
 							offset = 1;
 
-						RenX::PlayerInfo *player = parseGetPlayerOrAdd(tokens.getToken(2 + offset));
-						player->hwid = tokens.getToken(4 + offset);
+						RenX::PlayerInfo *player = parseGetPlayerOrAdd(getToken(2 + offset));
+						player->hwid = getToken(4 + offset);
 
 						if (player->isBot == false) {
 							banCheck(*player);
@@ -2819,11 +2842,11 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line) {
 					else if (subHeader.equals("Exit;"))
 					{
 						// Player
-						Jupiter::ReferenceString playerToken = tokens.getToken(2);
+						Jupiter::ReferenceString playerToken = getToken(2);
 						PARSE_PLAYER_DATA_P(playerToken);
 
 						RenX::PlayerInfo *player = getPlayer(id);
-						//RenX::PlayerInfo *player = parseGetPlayerOrAdd(tokens.getToken(2));
+						//RenX::PlayerInfo *player = parseGetPlayerOrAdd(getToken(2));
 
 						if (player != nullptr)
 						{
@@ -2840,8 +2863,8 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line) {
 					else if (subHeader.equals("Kick;"))
 					{
 						// Player | "for" | Reason
-						const Jupiter::ReadableString &reason = tokens.getToken(4);
-						RenX::PlayerInfo *player = parseGetPlayerOrAdd(tokens.getToken(2));
+						const Jupiter::ReadableString &reason = getToken(4);
+						RenX::PlayerInfo *player = parseGetPlayerOrAdd(getToken(2));
 						for (const auto& plugin : xPlugins) {
 							plugin->RenX_OnKick(*this, *player, reason);
 						}
@@ -2849,8 +2872,8 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line) {
 					else if (subHeader.equals("NameChange;"))
 					{
 						// Player | "to:" | New Name
-						RenX::PlayerInfo *player = parseGetPlayerOrAdd(tokens.getToken(2));
-						Jupiter::StringS newName = tokens.getToken(4);
+						RenX::PlayerInfo *player = parseGetPlayerOrAdd(getToken(2));
+						Jupiter::StringS newName = getToken(4);
 						for (const auto& plugin : xPlugins) {
 							plugin->RenX_OnNameChange(*this, *player, newName);
 						}
@@ -2860,11 +2883,11 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line) {
 					else if (subHeader.equals("ChangeID;"))
 					{
 						// "to" | New ID | "from" | Old ID
-						int oldID = tokens.getToken(5).asInt();
+						int oldID = getToken(5).asInt();
 						RenX::PlayerInfo *player = getPlayer(oldID);
 						if (player != nullptr)
 						{
-							player->id = tokens.getToken(3).asInt();
+							player->id = getToken(3).asInt();
 
 							if (player->isBot == false)
 								banCheck(*player);
@@ -2885,9 +2908,9 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line) {
 						// Player | Rank
 						if (m_devBot == false)
 						{
-							RenX::PlayerInfo *player = parseGetPlayerOrAdd(tokens.getToken(2));
+							RenX::PlayerInfo *player = parseGetPlayerOrAdd(getToken(2));
 							if (player != nullptr)
-								player->global_rank = tokens.getToken(3).asUnsignedInt();
+								player->global_rank = getToken(3).asUnsignedInt();
 
 							for (const auto& plugin : xPlugins) {
 								plugin->RenX_OnRank(*this, *player);
@@ -2897,9 +2920,9 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line) {
 					else if (subHeader.equals("Dev;"))
 					{
 						// Player | true/false
-						RenX::PlayerInfo *player = parseGetPlayerOrAdd(tokens.getToken(2));
+						RenX::PlayerInfo *player = parseGetPlayerOrAdd(getToken(2));
 						if (player != nullptr)
-							player->is_dev = tokens.getToken(3).asBool();
+							player->is_dev = getToken(3).asBool();
 
 						for (const auto& plugin : xPlugins) {
 							plugin->RenX_OnDev(*this, *player);
@@ -2908,7 +2931,7 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line) {
 					else if (subHeader.equals("SpeedHack;"))
 					{
 						// Player
-						RenX::PlayerInfo *player = parseGetPlayerOrAdd(tokens.getToken(2));
+						RenX::PlayerInfo *player = parseGetPlayerOrAdd(getToken(2));
 						for (const auto& plugin : xPlugins) {
 							plugin->RenX_OnSpeedHack(*this, *player);
 						}
@@ -2916,7 +2939,7 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line) {
 					else if (subHeader.equals("Command;"))
 					{
 						// Player | Command
-						RenX::PlayerInfo *player = parseGetPlayerOrAdd(tokens.getToken(2));
+						RenX::PlayerInfo *player = parseGetPlayerOrAdd(getToken(2));
 						Jupiter::ReferenceString message = gotoToken(3);
 
 						RenX::GameCommand *command = triggerCommand(Jupiter::ReferenceString::getWord(message, 0, WHITESPACE), *player, Jupiter::ReferenceString::gotoWord(message, 1, WHITESPACE));
@@ -2933,13 +2956,13 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line) {
 						}
 					}
 				}
-				else if (tokens.tokens[0].equals("RCON"))
+				else if (tokens[0].equals("RCON"))
 				{
 					if (subHeader.equals("Command;"))
 					{
 						// User | "executed:" | Command
-						Jupiter::ReferenceString user = tokens.getToken(2);
-						if (tokens.getToken(3).equals("executed:"))
+						Jupiter::ReferenceString user = getToken(2);
+						if (getToken(3).equals("executed:"))
 						{
 							Jupiter::ReferenceString command = gotoToken(4);
 							Jupiter::ReferenceString cmd = command.getWord(0, " ");
@@ -2958,7 +2981,7 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line) {
 					else if (subHeader.equals("Subscribed;"))
 					{
 						// User
-						Jupiter::ReferenceString user = tokens.getToken(2);
+						Jupiter::ReferenceString user = getToken(2);
 
 						if (user.equals(m_rconUser))
 							m_subscribed = true;
@@ -2970,7 +2993,7 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line) {
 					else if (subHeader.equals("Unsubscribed;"))
 					{
 						// User
-						Jupiter::ReferenceString user = tokens.getToken(2);
+						Jupiter::ReferenceString user = getToken(2);
 
 						if (user.equals(m_rconUser))
 							m_subscribed = false;
@@ -2982,8 +3005,8 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line) {
 					else if (subHeader.equals("Blocked;"))
 					{
 						// User | Reason="(Denied by IP Policy)" / "(Not on Whitelist)"
-						Jupiter::ReferenceString user = tokens.getToken(2);
-						Jupiter::ReferenceString message = tokens.getToken(3);
+						Jupiter::ReferenceString user = getToken(2);
+						Jupiter::ReferenceString message = getToken(3);
 						for (const auto& plugin : xPlugins) {
 							plugin->RenX_OnBlock(*this, user, message);
 						}
@@ -2991,7 +3014,7 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line) {
 					else if (subHeader.equals("Connected;"))
 					{
 						// User
-						Jupiter::ReferenceString user = tokens.getToken(2);
+						Jupiter::ReferenceString user = getToken(2);
 						for (const auto& plugin : xPlugins) {
 							plugin->RenX_OnConnect(*this, user);
 						}
@@ -2999,7 +3022,7 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line) {
 					else if (subHeader.equals("Authenticated;"))
 					{
 						// User
-						Jupiter::ReferenceString user = tokens.getToken(2);
+						Jupiter::ReferenceString user = getToken(2);
 						for (const auto& plugin : xPlugins) {
 							plugin->RenX_OnAuthenticate(*this, user);
 						}
@@ -3007,8 +3030,8 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line) {
 					else if (subHeader.equals("Banned;"))
 					{
 						// User | "reason" | Reason="(Too many password attempts)"
-						Jupiter::ReferenceString user = tokens.getToken(2);
-						Jupiter::ReferenceString message = tokens.getToken(4);
+						Jupiter::ReferenceString user = getToken(2);
+						Jupiter::ReferenceString message = getToken(4);
 						for (const auto& plugin : xPlugins) {
 							plugin->RenX_OnBan(*this, user, message);
 						}
@@ -3016,7 +3039,7 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line) {
 					else if (subHeader.equals("InvalidPassword;"))
 					{
 						// User
-						Jupiter::ReferenceString user = tokens.getToken(2);
+						Jupiter::ReferenceString user = getToken(2);
 						for (const auto& plugin : xPlugins) {
 							plugin->RenX_OnInvalidPassword(*this, user);
 						}
@@ -3024,8 +3047,8 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line) {
 					else if (subHeader.equals("Dropped;"))
 					{
 						// User | "reason" | Reason="(Auth Timeout)"
-						Jupiter::ReferenceString user = tokens.getToken(2);
-						Jupiter::ReferenceString message = tokens.getToken(4);
+						Jupiter::ReferenceString user = getToken(2);
+						Jupiter::ReferenceString message = getToken(4);
 						for (const auto& plugin : xPlugins) {
 							plugin->RenX_OnDrop(*this, user, message);
 						}
@@ -3033,7 +3056,7 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line) {
 					else if (subHeader.equals("Disconnected;"))
 					{
 						// User
-						Jupiter::ReferenceString user = tokens.getToken(2);
+						Jupiter::ReferenceString user = getToken(2);
 						for (const auto& plugin : xPlugins) {
 							plugin->RenX_OnDisconnect(*this, user);
 						}
@@ -3041,7 +3064,7 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line) {
 					else if (subHeader.equals("StoppedListen;"))
 					{
 						// Reason="(Reached Connection Limit)"
-						Jupiter::ReferenceString message = tokens.getToken(2);
+						Jupiter::ReferenceString message = getToken(2);
 						for (const auto& plugin : xPlugins) {
 							plugin->RenX_OnStopListen(*this, message);
 						}
@@ -3049,7 +3072,7 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line) {
 					else if (subHeader.equals("ResumedListen;"))
 					{
 						// Reason="(No longer at Connection Limit)"
-						Jupiter::ReferenceString message = tokens.getToken(2);
+						Jupiter::ReferenceString message = getToken(2);
 						for (const auto& plugin : xPlugins) {
 							plugin->RenX_OnResumeListen(*this, message);
 						}
@@ -3057,7 +3080,7 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line) {
 					else if (subHeader.equals("Warning;"))
 					{
 						// Warning="(Hit Max Attempt Records - You should investigate Rcon attempts and/or decrease prune time)"
-						Jupiter::ReferenceString message = tokens.getToken(2);
+						Jupiter::ReferenceString message = getToken(2);
 						for (const auto& plugin : xPlugins) {
 							plugin->RenX_OnWarning(*this, message);
 						}
@@ -3070,14 +3093,14 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line) {
 						}
 					}
 				}
-				else if (tokens.tokens[0].equals("ADMIN"))
+				else if (tokens[0].equals("ADMIN"))
 				{
 					if (subHeader.equals("Rcon;"))
 					{
 						// Player | "executed:" | Command
-						if (tokens.getToken(3).equals("executed:"))
+						if (getToken(3).equals("executed:"))
 						{
-							RenX::PlayerInfo *player = parseGetPlayerOrAdd(tokens.getToken(2));
+							RenX::PlayerInfo *player = parseGetPlayerOrAdd(getToken(2));
 							Jupiter::ReferenceString cmd = gotoToken(4);
 							for (const auto& plugin : xPlugins) {
 								plugin->RenX_OnExecute(*this, *player, cmd);
@@ -3087,8 +3110,8 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line) {
 					else if (subHeader.equals("Login;"))
 					{
 						// Player | "as" | Type="moderator" / "administrator"
-						RenX::PlayerInfo *player = parseGetPlayerOrAdd(tokens.getToken(2));
-						player->adminType = tokens.getToken(4);
+						RenX::PlayerInfo *player = parseGetPlayerOrAdd(getToken(2));
+						player->adminType = getToken(4);
 						for (const auto& plugin : xPlugins) {
 							plugin->RenX_OnAdminLogin(*this, *player);
 						}
@@ -3096,7 +3119,7 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line) {
 					else if (subHeader.equals("Logout;"))
 					{
 						// Player | "as" | Type="moderator" / "administrator"
-						RenX::PlayerInfo *player = parseGetPlayerOrAdd(tokens.getToken(2));
+						RenX::PlayerInfo *player = parseGetPlayerOrAdd(getToken(2));
 
 						for (const auto& plugin : xPlugins) {
 							plugin->RenX_OnAdminLogout(*this, *player);
@@ -3107,8 +3130,8 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line) {
 					else if (subHeader.equals("Granted;"))
 					{
 						// Player | "as" | Type="moderator" / "administrator"
-						RenX::PlayerInfo *player = parseGetPlayerOrAdd(tokens.getToken(2));
-						player->adminType = tokens.getToken(4);
+						RenX::PlayerInfo *player = parseGetPlayerOrAdd(getToken(2));
+						player->adminType = getToken(4);
 						for (const auto& plugin : xPlugins) {
 							plugin->RenX_OnAdminGrant(*this, *player);
 						}
@@ -3121,7 +3144,7 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line) {
 						}
 					}
 				}
-				else if (tokens.tokens[0].equals("VOTE"))
+				else if (tokens[0].equals("VOTE"))
 				{
 					if (subHeader.equals("Called;"))
 					{
@@ -3139,8 +3162,8 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line) {
 						// TeamType="Global" / "GDI" / "Nod" / "" | "Rx_VoteMenuChoice_Surrender" | "by" | Player
 						// TeamType="Global" / "GDI" / "Nod" / "" | "Rx_VoteMenuChoice_Survey" | "by" | Player | "text" | Survey Text
 
-						Jupiter::ReferenceString voteType = tokens.getToken(3);
-						Jupiter::ReferenceString teamToken = tokens.getToken(2);
+						Jupiter::ReferenceString voteType = getToken(3);
+						Jupiter::ReferenceString teamToken = getToken(2);
 						RenX::TeamType team;
 						if (teamToken.equals("Global"))
 							team = TeamType::None;
@@ -3151,9 +3174,9 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line) {
 						else
 							team = TeamType::Other;
 
-						if (tokens.getToken(4).equals("parameters")) // Pre-5.15 style parameters; throw away parameters
+						if (getToken(4).equals("parameters")) // Pre-5.15 style parameters; throw away parameters
 						{
-							RenX::PlayerInfo *player = parseGetPlayerOrAdd(tokens.getToken(tokens.token_count - 1));
+							RenX::PlayerInfo *player = parseGetPlayerOrAdd(getToken(tokens.size() - 1));
 
 							if ((player->ban_flags & RenX::BanDatabase::Entry::FLAG_TYPE_VOTE) != 0)
 								sendData(Jupiter::StringS::Format("ccancelvote %.*s\n", teamToken.size(), teamToken.ptr()));
@@ -3164,7 +3187,7 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line) {
 						}
 						else // 5.15+ (or empty)
 						{
-							RenX::PlayerInfo *player = parseGetPlayerOrAdd(tokens.getToken(5));
+							RenX::PlayerInfo *player = parseGetPlayerOrAdd(getToken(5));
 
 							if ((player->ban_flags & RenX::BanDatabase::Entry::FLAG_TYPE_VOTE) != 0)
 								sendData(Jupiter::StringS::Format("ccancelvote %.*s\n", teamToken.size(), teamToken.ptr()));
@@ -3177,7 +3200,7 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line) {
 
 								if (voteType.equals("AddBots"_jrs))
 								{
-									Jupiter::ReferenceString victimToken = tokens.getToken(7);
+									Jupiter::ReferenceString victimToken = getToken(7);
 									RenX::TeamType victim;
 									if (teamToken.equals("Global"))
 										victim = TeamType::None;
@@ -3188,8 +3211,8 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line) {
 									else
 										victim = TeamType::Other;
 
-									int amount = tokens.getToken(9).asInt(10);
-									int skill = tokens.getToken(11).asInt(10);
+									int amount = getToken(9).asInt(10);
+									int skill = getToken(11).asInt(10);
 
 									for (const auto& plugin : xPlugins) {
 										plugin->RenX_OnVoteAddBots(*this, team, *player, victim, amount, skill);
@@ -3203,21 +3226,21 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line) {
 								}
 								else if (voteType.equals("Kick"_jrs))
 								{
-									RenX::PlayerInfo *victim = parseGetPlayerOrAdd(tokens.getToken(7));
+									RenX::PlayerInfo *victim = parseGetPlayerOrAdd(getToken(7));
 									for (const auto& plugin : xPlugins) {
 										plugin->RenX_OnVoteKick(*this, team, *player, *victim);
 									}
 								}
 								else if (voteType.equals("MineBan"_jrs))
 								{
-									RenX::PlayerInfo *victim = parseGetPlayerOrAdd(tokens.getToken(7));
+									RenX::PlayerInfo *victim = parseGetPlayerOrAdd(getToken(7));
 									for (const auto& plugin : xPlugins) {
 										plugin->RenX_OnVoteMineBan(*this, team, *player, *victim);
 									}
 								}
 								else if (voteType.equals("RemoveBots"_jrs))
 								{
-									Jupiter::ReferenceString victimToken = tokens.getToken(7);
+									Jupiter::ReferenceString victimToken = getToken(7);
 									RenX::TeamType victim;
 									if (teamToken.equals("Global"))
 										victim = TeamType::None;
@@ -3228,7 +3251,7 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line) {
 									else
 										victim = TeamType::Other;
 
-									int amount = tokens.getToken(9).asInt(10);
+									int amount = getToken(9).asInt(10);
 
 									for (const auto& plugin : xPlugins) {
 										plugin->RenX_OnVoteRemoveBots(*this, team, *player, victim, amount);
@@ -3248,7 +3271,7 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line) {
 								}
 								else if (voteType.equals("Survey"_jrs))
 								{
-									const Jupiter::ReadableString &text = tokens.getToken(7);
+									const Jupiter::ReadableString &text = getToken(7);
 									for (const auto& plugin : xPlugins) {
 										plugin->RenX_OnVoteSurvey(*this, team, *player, text);
 									}
@@ -3272,8 +3295,8 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line) {
 					else if (subHeader.equals("Results;"))
 					{
 						// TeamType="Global" / "GDI" / "Nod" / "" | VoteType="Rx_VoteMenuChoice_"... | Success="pass" / "fail" | "Yes=" Yes votes | "No=" No votes
-						Jupiter::ReferenceString voteType = tokens.getToken(3);
-						Jupiter::ReferenceString teamToken = tokens.getToken(2);
+						Jupiter::ReferenceString voteType = getToken(3);
+						Jupiter::ReferenceString teamToken = getToken(2);
 						RenX::TeamType team;
 						if (teamToken.equals("Global"))
 							team = TeamType::None;
@@ -3285,11 +3308,11 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line) {
 							team = TeamType::Other;
 
 						bool success = true;
-						if (tokens.getToken(4).equals("fail"))
+						if (getToken(4).equals("fail"))
 							success = false;
 
 						int yesVotes = 0;
-						Jupiter::ReferenceString votes_token = tokens.getToken(5);
+						Jupiter::ReferenceString votes_token = getToken(5);
 						if (votes_token.size() > 4)
 						{
 							votes_token.shiftRight(4);
@@ -3297,7 +3320,7 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line) {
 						}
 
 						int noVotes = 0;
-						votes_token = tokens.getToken(6);
+						votes_token = getToken(6);
 						if (votes_token.size() > 3)
 						{
 							votes_token.shiftRight(3);
@@ -3311,8 +3334,8 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line) {
 					else if (subHeader.equals("Cancelled;"))
 					{
 						// TeamType="Global" / "GDI" / "Nod" | VoteType="Rx_VoteMenuChoice_"...
-						Jupiter::ReferenceString voteType = tokens.getToken(3);
-						Jupiter::ReferenceString teamToken = tokens.getToken(2);
+						Jupiter::ReferenceString voteType = getToken(3);
+						Jupiter::ReferenceString teamToken = getToken(2);
 						RenX::TeamType team;
 						if (teamToken.equals("Global"))
 							team = TeamType::None;
@@ -3335,15 +3358,15 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line) {
 						}
 					}
 				}
-				else if (tokens.tokens[0].equals("MAP"))
+				else if (tokens[0].equals("MAP"))
 				{
 					if (subHeader.equals("Changing;"))
 					{
 						// Map | Mode="seamless" / "nonseamless"
-						Jupiter::ReferenceString map = tokens.getToken(2);
+						Jupiter::ReferenceString map = getToken(2);
 
 						m_match_state = 3;
-						if (tokens.getToken(3).equals("seamless"))
+						if (getToken(3).equals("seamless"))
 							m_seamless = true;
 						else
 							m_seamless = false;
@@ -3358,7 +3381,7 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line) {
 					else if (subHeader.equals("Loaded;"))
 					{
 						// Map
-						Jupiter::ReferenceString map = tokens.getToken(2);
+						Jupiter::ReferenceString map = getToken(2);
 
 						m_match_state = 0;
 						m_map = map;
@@ -3370,7 +3393,7 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line) {
 					else if (subHeader.equals("Start;"))
 					{
 						// Map
-						Jupiter::ReferenceString map = tokens.getToken(2);
+						Jupiter::ReferenceString map = getToken(2);
 
 						m_match_state = 1;
 						m_reliable = true;
@@ -3389,24 +3412,24 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line) {
 						}
 					}
 				}
-				else if (tokens.tokens[0].equals("DEMO"))
+				else if (tokens[0].equals("DEMO"))
 				{
 					if (subHeader.equals("Record;"))
 					{
 						// "client request by" | Player
 						// "admin command by" | Player
 						// "rcon command"
-						Jupiter::ReferenceString type = tokens.getToken(2);
+						Jupiter::ReferenceString type = getToken(2);
 						if (type.equals("client request by") || type.equals("admin command by"))
 						{
-							RenX::PlayerInfo *player = parseGetPlayerOrAdd(tokens.getToken(3));
+							RenX::PlayerInfo *player = parseGetPlayerOrAdd(getToken(3));
 							for (const auto& plugin : xPlugins) {
 								plugin->RenX_OnDemoRecord(*this, *player);
 							}
 						}
 						else
 						{
-							Jupiter::ReferenceString user = tokens.getToken(3); // not actually used, but here for possible future usage
+							Jupiter::ReferenceString user = getToken(3); // not actually used, but here for possible future usage
 							for (const auto& plugin : xPlugins) {
 								plugin->RenX_OnDemoRecord(*this, user);
 							}
@@ -3427,7 +3450,7 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line) {
 						}
 					}
 				}
-				/*else if (tokens.tokens[0].equals("ERROR;")) // Decided to disable this entirely, since it's unreachable anyways.
+				/*else if (tokens[0].equals("ERROR;")) // Decided to disable this entirely, since it's unreachable anyways.
 				{
 					// Should be under RCON.
 					// "Could not open TCP Port" Port "- Rcon Disabled"
@@ -3454,7 +3477,7 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line) {
 				for (const auto& plugin : xPlugins) {
 					plugin->RenX_OnCommand(*this, raw);
 				}
-				m_commandListFormat.erase();
+				m_commandListFormat.clear();
 				m_lastCommand = Jupiter::ReferenceString::empty;
 				m_lastCommandParams = Jupiter::ReferenceString::empty;
 			}
@@ -3480,8 +3503,8 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line) {
 						m_gameVersion = raw.substring(3);
 					else // New format: 004 | Game Version Number | Game Version
 					{
-						m_gameVersionNumber = tokens.getToken(1).asInt(10);
-						m_gameVersion = tokens.getToken(2);
+						m_gameVersionNumber = getToken(1).asInt(10);
+						m_gameVersion = getToken(2);
 
 						if (m_gameVersion.isEmpty())
 						{
@@ -3627,7 +3650,7 @@ const Jupiter::ReadableString &RenX::Server::getGameVersion() const {
 	return m_gameVersion;
 }
 
-const Jupiter::ReadableString &RenX::Server::getRCONUsername() const {
+std::string_view RenX::Server::getRCONUsername() const {
 	return m_rconUser;
 }
 

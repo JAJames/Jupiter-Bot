@@ -16,6 +16,7 @@
  * Written by Jessica James <jessica.aj@outlook.com>
  */
 
+#include "jessilib/split.hpp"
 #include "Jupiter/IRC_Client.h"
 #include "Jupiter/HTTP.h"
 #include "Jupiter/HTTP_QueryString.h"
@@ -27,6 +28,7 @@
 #include "RenX_ServerList.h"
 
 using namespace Jupiter::literals;
+using namespace std::literals;
 
 static STRING_LITERAL_AS_NAMED_REFERENCE(CONTENT_TYPE_APPLICATION_JSON, "application/json");
 
@@ -190,9 +192,9 @@ Jupiter::StringS RenX_ServerListPlugin::server_as_json(const RenX::Server &serve
 		server_attributes.reserve(16 * serverInfo.attributes.size() + 16);
 		server_attributes = R"json("Attributes":[)json";
 
-		for (Jupiter::ReferenceString& attribute : serverInfo.attributes) {
+		for (std::string_view attribute : serverInfo.attributes) {
 			server_attributes += '\"';
-			server_attributes.append(attribute.ptr(), attribute.size());
+			server_attributes += attribute;
 			server_attributes += "\",";
 		}
 
@@ -331,12 +333,12 @@ Jupiter::StringS RenX_ServerListPlugin::server_as_long_json(const RenX::Server &
 		server_attributes = "[";
 
 		const char* comma = "\n";
-		for (Jupiter::ReferenceString& attribute : serverInfo.attributes) {
+		for (std::string_view attribute : serverInfo.attributes) {
 			server_attributes += comma;
 			comma = ",\n";
 
 			server_attributes += "\t\t\t\"";
-			server_attributes.append(attribute.ptr(), attribute.size());
+			server_attributes += attribute;
 			server_attributes += "\"";
 		}
 
@@ -567,11 +569,9 @@ RenX_ServerListPlugin::ListServerInfo RenX_ServerListPlugin::getListServerInfo(c
 		result.namePrefix = section->get("ListNamePrefix"_jrs, result.namePrefix);
 
 		// Attributes
-		Jupiter::ReferenceString attributes_str = section->get("ListAttributes"_jrs);
-		if (attributes_str.isNotEmpty()) {
-			// TODO: Make tokenize just return a vector instead of this crap
-			Jupiter::ReadableString::TokenizeResult<Jupiter::Reference_String> attributes = Jupiter::ReferenceString::tokenize(attributes_str, ' ');
-			result.attributes.assign(attributes.tokens, attributes.tokens + attributes.token_count);
+		std::string_view attributes_str = section->get("ListAttributes"_jrs);
+		if (!attributes_str.empty()) {
+			result.attributes = jessilib::split_view(attributes_str, ' ');
 		}
 	};
 
@@ -619,11 +619,11 @@ void RenX_ServerListPlugin::RenX_OnMapLoad(RenX::Server &server, const Jupiter::
 // Plugin instantiation and entry point.
 RenX_ServerListPlugin pluginInstance;
 
-Jupiter::ReadableString *handle_server_list_page(const Jupiter::ReadableString &) {
+Jupiter::ReadableString *handle_server_list_page(std::string_view) {
 	return pluginInstance.getServerListJSON();
 }
 
-Jupiter::ReadableString *handle_server_list_long_page(const Jupiter::ReadableString &) {
+Jupiter::ReadableString *handle_server_list_long_page(std::string_view) {
 	const auto& servers = RenX::getCore()->getServers();
 	size_t index = 0;
 	RenX::Server *server;
@@ -657,7 +657,7 @@ Jupiter::ReadableString *handle_server_list_long_page(const Jupiter::ReadableStr
 	return server_list_long_json;
 }
 
-Jupiter::ReadableString *handle_server_page(const Jupiter::ReadableString &query_string) {
+Jupiter::ReadableString *handle_server_page(std::string_view query_string) {
 	Jupiter::HTTP::HTMLFormResponse html_form_response(query_string);
 	Jupiter::ReferenceString address;
 	int port = 0;
@@ -669,8 +669,8 @@ Jupiter::ReadableString *handle_server_page(const Jupiter::ReadableString &query
 		return new Jupiter::ReferenceString();
 
 	if (html_form_response.table.size() != 0) {
-		address = html_form_response.tableGet("ip"_jrs, address);
-		port = html_form_response.tableGetCast<int>("port"_jrs, port);
+		address = html_form_response.tableGet("ip"sv, address);
+		port = html_form_response.tableGetCast<int>("port"sv, port);
 	}
 
 	// search for server
@@ -693,11 +693,11 @@ Jupiter::ReadableString *handle_server_page(const Jupiter::ReadableString &query
 	return new Jupiter::ReferenceString(server->varData[pluginInstance.getName()].get("j"_jrs));
 }
 
-Jupiter::ReadableString *handle_metadata_page(const Jupiter::ReadableString&) {
+Jupiter::ReadableString *handle_metadata_page(std::string_view) {
 	return pluginInstance.getMetadataJSON();
 }
 
-Jupiter::ReadableString *handle_metadata_prometheus_page(const Jupiter::ReadableString&) {
+Jupiter::ReadableString *handle_metadata_prometheus_page(std::string_view) {
 	return pluginInstance.getMetadataPrometheus();
 }
 

@@ -30,7 +30,7 @@ public: // RenX_ServerListPlugin
 		Jupiter::ReferenceString hostname;
 		unsigned short port;
 		Jupiter::ReferenceString namePrefix;
-		std::vector<Jupiter::ReferenceString> attributes;
+		std::vector<std::string_view> attributes;
 	};
 
 	size_t getListedPlayerCount(const RenX::Server& server);
@@ -62,14 +62,14 @@ public: // RenX::Plugin
 
 private:
 	Jupiter::StringS m_server_list_json, m_metadata_json, m_metadata_prometheus;
-	Jupiter::StringS m_web_hostname, m_web_path;
-	Jupiter::StringS m_server_list_page_name, m_server_list_long_page_name, m_server_page_name, m_metadata_page_name, m_metadata_prometheus_page_name;
+	std::string m_web_hostname, m_web_path;
+	std::string m_server_list_page_name, m_server_list_long_page_name, m_server_page_name, m_metadata_page_name, m_metadata_prometheus_page_name;
 };
 
-Jupiter::ReadableString *handle_server_list_page(const Jupiter::ReadableString &);
-Jupiter::ReadableString *handle_server_list_long_page(const Jupiter::ReadableString &);
-Jupiter::ReadableString *handle_server_page(const Jupiter::ReadableString &);
-Jupiter::ReadableString *handle_metadata_page(const Jupiter::ReadableString &);
-Jupiter::ReadableString *handle_metadata_prometheus_page(const Jupiter::ReadableString&);
+Jupiter::ReadableString *handle_server_list_page(std::string_view);
+Jupiter::ReadableString *handle_server_list_long_page(std::string_view);
+Jupiter::ReadableString *handle_server_page(std::string_view);
+Jupiter::ReadableString *handle_metadata_page(std::string_view);
+Jupiter::ReadableString *handle_metadata_prometheus_page(std::string_view);
 
 #endif // _RENX_SERVERLIST_H_HEADER
