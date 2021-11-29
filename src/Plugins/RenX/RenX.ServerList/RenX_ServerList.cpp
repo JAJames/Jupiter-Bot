@@ -36,8 +36,8 @@ const Jupiter::ReferenceString server_list_game_header = "<html><body>"_jrs;
 const Jupiter::ReferenceString server_list_game_footer = "\n</body></html>"_jrs;
 
 // TODO: can probably replace with some of the jessilib stuff
-Jupiter::String jsonify(const Jupiter::ReadableString &in_str) {
-	const unsigned char *ptr = reinterpret_cast<const unsigned char *>(in_str.ptr());
+Jupiter::String jsonify(std::string_view in_str) {
+	const unsigned char *ptr = reinterpret_cast<const unsigned char *>(in_str.data());
 	const unsigned char *end_ptr = ptr + in_str.size();
 	Jupiter::String result(in_str.size());
 
@@ -233,8 +233,8 @@ Jupiter::StringS RenX_ServerListPlugin::server_as_json(const RenX::Server &serve
 	return server_json_block;
 }
 
-Jupiter::StringS RenX_ServerListPlugin::server_as_server_details_json(const RenX::Server& server) {
-	Jupiter::StringS server_json_block;
+std::string RenX_ServerListPlugin::server_as_server_details_json(const RenX::Server& server) {
+	std::string server_json_block;
 
 	server_json_block = '{';
 
@@ -290,7 +290,7 @@ Jupiter::StringS RenX_ServerListPlugin::server_as_server_details_json(const RenX
 			server_json_block += "\", \"isBot\":"_jrs;
 			server_json_block += json_bool_as_cstring(node->isBot);
 			server_json_block += ", \"Team\":"_jrs;
-			server_json_block.aformat("%d", static_cast<int>(node->team));
+			server_json_block += std::to_string(static_cast<int>(node->team));
 			server_json_block += "}"_jrs;
 
 			++node;
@@ -302,7 +302,7 @@ Jupiter::StringS RenX_ServerListPlugin::server_as_server_details_json(const RenX
 			server_json_block += "\", \"isBot\":"_jrs;
 			server_json_block += json_bool_as_cstring(node->isBot);
 			server_json_block += ", \"Team\":"_jrs;
-			server_json_block.aformat("%d", static_cast<int>(node->team));
+			server_json_block += std::to_string(static_cast<int>(node->team));
 			server_json_block += "}"_jrs;
 
 			++node;
@@ -539,13 +539,13 @@ void RenX_ServerListPlugin::markDetailsStale(RenX::Server& in_server) {
 
 void RenX_ServerListPlugin::touchDetails(RenX::Server& in_server) {
 	auto& server_varData = in_server.varData[this->name];
-	if (server_varData.get("j"_jrs).isEmpty()) {
+	if (server_varData.get("j"_jrs).empty()) {
 		auto server_json_block = server_as_server_details_json(in_server);
 		server_varData.set("j"_jrs, server_json_block);
 	}
 }
 
-Jupiter::ReferenceString RenX_ServerListPlugin::getListServerAddress(const RenX::Server& server) {
+std::string_view RenX_ServerListPlugin::getListServerAddress(const RenX::Server& server) {
 	Jupiter::ReferenceString serverHostname;
 	serverHostname = server.getSocketHostname();
 
@@ -682,7 +682,7 @@ Jupiter::ReadableString *handle_server_page(std::string_view query_string) {
 			return new Jupiter::ReferenceString();
 
 		server = servers[index];
-		if (address.equals(pluginInstance.getListServerAddress(*server)) && server->getPort() == port)
+		if (address == pluginInstance.getListServerAddress(*server) && server->getPort() == port)
 			break;
 
 		++index;

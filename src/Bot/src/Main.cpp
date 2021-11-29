@@ -189,7 +189,7 @@ int main(int argc, const char **args) {
 			configFileName = args[i];
 		else if ("-pluginsdir"_jrs.equalsi(args[i]) && ++i < argc)
 			plugins_directory = args[i];
-		else if ("-configsdir"_jrs.equals(args[i]) && ++i < argc)
+		else if ("-configsdir"_jrs.equalsi(args[i]) && ++i < argc)
 			configs_directory = args[i];
 		else if ("-configFormat"_jrs.equalsi(args[i]) && ++i < argc)
 			puts("Feature not yet supported!");

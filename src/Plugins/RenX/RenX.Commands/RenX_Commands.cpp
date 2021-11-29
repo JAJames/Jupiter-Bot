@@ -20,6 +20,7 @@
 #include <functional>
 #include "Jupiter/Functions.h"
 #include "jessilib/duration.hpp"
+#include "jessilib/unicode.hpp"
 #include "IRC_Bot.h"
 #include "RenX_Commands.h"
 #include "RenX_Core.h"
@@ -33,11 +34,12 @@
 
 using namespace Jupiter::literals;
 using namespace jessilib::literals;
+using namespace std::literals;
 
 const Jupiter::ReferenceString RxCommandsSection = "RenX.Commands"_jrs;
 
 bool togglePhasing(RenX::Server *server, bool newState) {
-	server->varData[RxCommandsSection].set("phasing"_jrs, newState ? "true"_jrs : "false"_jrs);
+	server->varData[RxCommandsSection].set("phasing"sv, newState ? "true"s : "false"s);
 	return newState;
 }
 
@@ -660,9 +662,9 @@ void PlayerTableIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableStri
 				auto output_player = [server, type, source, &channel, maxNickLen, idColLen, scoreColLen, creditColLen](RenX::PlayerInfo *player, const Jupiter::ReadableString &color)
 				{
 					if (server->isAdminLogChanType(type))
-						source->sendMessage(channel, Jupiter::StringS::Format(IRCCOLOR "%.*s%*.*s" IRCCOLOR " " IRCCOLOR "03|" IRCCOLOR " %*d " IRCCOLOR "03|" IRCCOLOR " %*.0f " IRCCOLOR "03|" IRCCOLOR " %*.0f " IRCCOLOR "03|" IRCNORMAL " %.*s", color.size(), color.ptr(), maxNickLen, player->name.size(), player->name.ptr(), idColLen, player->id, scoreColLen, player->score, creditColLen, player->credits, player->ip.size(), player->ip.ptr()));
+						source->sendMessage(channel, Jupiter::StringS::Format(IRCCOLOR "%.*s%*.*s" IRCCOLOR " " IRCCOLOR "03|" IRCCOLOR " %*d " IRCCOLOR "03|" IRCCOLOR " %*.0f " IRCCOLOR "03|" IRCCOLOR " %*.0f " IRCCOLOR "03|" IRCNORMAL " %.*s", color.size(), color.ptr(), maxNickLen, player->name.size(), player->name.data(), idColLen, player->id, scoreColLen, player->score, creditColLen, player->credits, player->ip.size(), player->ip.ptr()));
 					else
-						source->sendMessage(channel, Jupiter::StringS::Format(IRCCOLOR "%.*s%*.*s" IRCCOLOR " " IRCCOLOR "03|" IRCCOLOR " %*d " IRCCOLOR "03|" IRCCOLOR " %*.0f " IRCCOLOR "03|" IRCCOLOR " %*.0f", color.size(), color.ptr(), maxNickLen, player->name.size(), player->name.ptr(), idColLen, player->id, scoreColLen, player->score, creditColLen, player->credits));
+						source->sendMessage(channel, Jupiter::StringS::Format(IRCCOLOR "%.*s%*.*s" IRCCOLOR " " IRCCOLOR "03|" IRCCOLOR " %*d " IRCCOLOR "03|" IRCCOLOR " %*.0f " IRCCOLOR "03|" IRCCOLOR " %*.0f", color.size(), color.ptr(), maxNickLen, player->name.size(), player->name.data(), idColLen, player->id, scoreColLen, player->score, creditColLen, player->credits));
 				};
 
 				for (auto node = gPlayers.begin(); node != gPlayers.end(); ++node)
@@ -723,7 +725,7 @@ void PlayerInfoIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableStrin
 				server = RenX::getCore()->getServer(index++);
 				if (server->isLogChanType(type) && server->players.size() != 0) {
 					for (auto node = server->players.begin(); node != server->players.end(); ++node) {
-						if (node->name.findi(parameters) != Jupiter::INVALID_INDEX) {
+						if (jessilib::findi(node->name, std::string_view{parameters}) != std::string::npos) {
 							msg = player_info_format;
 							RenX::processTags(msg, server, &*node);
 							source->sendMessage(channel, msg);
@@ -895,7 +897,7 @@ void RotationIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString 
 			if (server->isLogChanType(type)) {
 				list = STRING_LITERAL_AS_REFERENCE(IRCCOLOR "03[Rotation]" IRCNORMAL);
 				for (const auto& map : server->maps) {
-					if (server->getMap().name.equalsi(map.name)) {
+					if (jessilib::equalsi(server->getMap().name, map.name)) {
 						list += STRING_LITERAL_AS_REFERENCE(" " IRCBOLD "[") + map.name + STRING_LITERAL_AS_REFERENCE("]" IRCBOLD);
 					}
 					else {
@@ -981,7 +983,7 @@ void GameInfoIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString 
 				match = true;
 				const RenX::Map &map = server->getMap();
 				std::chrono::seconds time = std::chrono::duration_cast<std::chrono::seconds>(server->getGameTime());
-				source->sendMessage(channel, IRCCOLOR "03[GameInfo] "_jrs IRCCOLOR + server->getGameVersion());
+				source->sendMessage(channel, Jupiter::StringS::Format(IRCCOLOR "03[GameInfo] " IRCCOLOR "%.*s", server->getGameVersion().size(), server->getGameVersion().data()));
 				source->sendMessage(channel, IRCCOLOR "03[GameInfo] " IRCCOLOR "10Map" IRCCOLOR ": "_jrs + map.name + "; " IRCCOLOR "10GUID" IRCCOLOR ": "_jrs + RenX::formatGUID(map));
 				source->sendMessage(channel, Jupiter::StringS::Format(IRCCOLOR "03[GameInfo] " IRCCOLOR "10Elapsed time" IRCCOLOR ": %.2lld:%.2lld:%.2lld", time.count() / 3600, (time.count() % 3600) / 60, time.count() % 60));
 				source->sendMessage(channel, Jupiter::StringS::Format(IRCCOLOR "03[GameInfo] " IRCCOLOR "There are " IRCCOLOR "10%d" IRCCOLOR " players online.", server->players.size()));
@@ -1024,7 +1026,7 @@ void SteamIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &ch
 				{
 					for (auto node = server->players.begin(); node != server->players.end(); ++node)
 					{
-						if (node->name.findi(parameters) != Jupiter::INVALID_INDEX)
+						if (jessilib::findi(node->name, Jupiter::ReferenceString{parameters}) != std::string::npos)
 						{
 							Jupiter::String playerName = RenX::getFormattedPlayerName(*node);
 							msg.format(IRCCOLOR "03[Steam] " IRCCOLOR "%.*s (ID: %d) ", playerName.size(), playerName.ptr(), node->id);
@@ -1110,7 +1112,7 @@ void KillDeathRatioIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableS
 				{
 					for (auto node = server->players.begin(); node != server->players.end(); ++node)
 					{
-						if (node->name.findi(parameters) != Jupiter::INVALID_INDEX)
+						if (jessilib::findi(node->name, Jupiter::ReferenceString{parameters}) != std::string::npos)
 						{
 							Jupiter::String playerName = RenX::getFormattedPlayerName(*node);
 							msg.format(IRCBOLD "%.*s" IRCBOLD IRCCOLOR ": Kills: %u - Deaths: %u - KDR: %.2f", playerName.size(), playerName.ptr(), node->kills, node->deaths, static_cast<double>(node->kills) / (node->deaths == 0 ? 1.0f : static_cast<double>(node->deaths)));
@@ -1431,7 +1433,7 @@ void SetMapIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &c
 		Jupiter::IRC::Client::Channel *chan = source->getChannel(channel);
 		if (chan != nullptr)
 		{
-			const Jupiter::ReadableString *map_name = nullptr;
+			std::string_view map_name;
 			int type = chan->getType();
 			for (unsigned int i = 0; i != RenX::getCore()->getServerCount(); i++)
 			{
@@ -1439,9 +1441,9 @@ void SetMapIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &c
 				if (server->isLogChanType(type))
 				{
 					map_name = server->getMapName(parameters);
-					if (map_name == nullptr)
+					if (map_name.empty())
 						source->sendMessage(channel, STRING_LITERAL_AS_REFERENCE("Error: Map not in rotation."));
-					else if (server->setMap(*map_name) == false)
+					else if (server->setMap(map_name) == false)
 						source->sendMessage(channel, STRING_LITERAL_AS_REFERENCE("Error: Transmission error."));
 				}
 			}
@@ -1903,15 +1905,15 @@ void BanSearchIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString
 				case 2:	// IP
 					return entry->ip == params.asUnsignedInt();
 				case 3: // HWID
-					return entry->hwid.equals(params);
+					return entry->hwid == std::string_view{params};
 				case 4: // RDNS
-					return entry->rdns.equals(params);
+					return entry->rdns == std::string_view{params};
 				case 5:	// STEAM
 					return entry->steamid == params.asUnsignedLongLong();
 				case 6:	// NAME
 					return entry->name.equalsi(params);
 				case 7:	// BANNER
-					return entry->banner.equalsi(params);
+					return jessilib::equalsi(entry->banner, params);
 				case 8:	// ACTIVE
 					return params.asBool() == entry->is_active();
 				}
@@ -1919,7 +1921,7 @@ void BanSearchIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString
 
 			unsigned int type;
 			Jupiter::ReferenceString type_str = Jupiter::ReferenceString::getWord(parameters, 0, WHITESPACE);
-			if (type_str.equalsi(STRING_LITERAL_AS_REFERENCE("all")) || type_str.equals('*'))
+			if (type_str.equalsi(STRING_LITERAL_AS_REFERENCE("all")) || type_str == '*')
 				type = 1;
 			else if (type_str.equalsi(STRING_LITERAL_AS_REFERENCE("ip")))
 				type = 2;
@@ -1986,14 +1988,14 @@ void BanSearchIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString
 
 					out.format("ID: %lu (" IRCCOLOR "%sactive" IRCCOLOR "); Added: %s; Expires: %s; IP: %.*s/%u; HWID: %.*s; Steam: %llu; Types:%.*s Name: %.*s; Banner: %.*s",
 						i, entry->is_active() ? "12" : "04in", dateStr, expireStr, ip_str.size(), ip_str.ptr(), entry->prefix_length, entry->hwid.size(), entry->hwid.ptr(), entry->steamid,
-						types.size(), types.ptr(), entry->name.size(), entry->name.ptr(), entry->banner.size(), entry->banner.ptr());
+						types.size(), types.ptr(), entry->name.size(), entry->name.ptr(), entry->banner.size(), entry->banner.data());
 
 					if (entry->rdns.isNotEmpty())
 					{
 						out.concat("; RDNS: "_jrs);
 						out.concat(entry->rdns);
 					}
-					if (entry->reason.isNotEmpty())
+					if (!entry->reason.empty())
 					{
 						out.concat("; Reason: "_jrs);
 						out.concat(entry->reason);
@@ -2492,7 +2494,7 @@ void ExemptionSearchIRCCommand::trigger(IRC_Bot *source, const Jupiter::Readable
 
 			unsigned int type;
 			Jupiter::ReferenceString type_str = Jupiter::ReferenceString::getWord(parameters, 0, WHITESPACE);
-			if (type_str.equalsi(STRING_LITERAL_AS_REFERENCE("all")) || type_str.equals('*'))
+			if (type_str.equalsi(STRING_LITERAL_AS_REFERENCE("all")) || type_str == '*')
 				type = 1;
 			else if (type_str.equalsi(STRING_LITERAL_AS_REFERENCE("ip")))
 				type = 2;
@@ -3043,7 +3045,7 @@ void RefundIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &c
 						if (server->giveCredits(*player, credits)) {
 							msg.format("You have been refunded %.0f credits by %.*s.", credits, nick.size(), nick.ptr());
 							server->sendMessage(*player, msg);
-							msg.format("%.*s has been refunded %.0f credits.", player->name.size(), player->name.ptr(), credits);
+							msg.format("%.*s has been refunded %.0f credits.", player->name.size(), player->name.data(), credits);
 						}
 						else {
 							msg.set("Error: Server does not support refunds.");
@@ -3097,7 +3099,7 @@ void TeamChangeIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableStrin
 				{
 					for (auto node = server->players.begin(); node != server->players.end(); ++node)
 					{
-						if (node->name.findi(playerName) != Jupiter::INVALID_INDEX)
+						if (jessilib::findi(node->name, playerName) != std::string::npos)
 						{
 							playerFound = true;
 							if (server->changeTeam(*node) == false)
@@ -3150,7 +3152,7 @@ void TeamChange2IRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableStri
 				{
 					for (auto node = server->players.begin(); node != server->players.end(); ++node)
 					{
-						if (node->name.findi(playerName) != Jupiter::INVALID_INDEX)
+						if (jessilib::findi(node->name, playerName) != std::string::npos)
 						{
 							playerFound = true;
 							if (server->changeTeam(*node, false) == false)
@@ -3351,7 +3353,7 @@ void HelpGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *player, co
 	unsigned int cmdCount = 0;
 	auto getAccessCommands = [&](int accessLevel)
 	{
-		Jupiter::String list;
+		std::string list;
 		unsigned int i = 0;
 		while (i != source->getCommandCount())
 		{
@@ -3359,7 +3361,8 @@ void HelpGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *player, co
 			if (cmd->getAccessLevel() == accessLevel)
 			{
 				cmdCount++;
-				list.format("Access level %d commands: %.*s", accessLevel, cmd->getTrigger().size(), cmd->getTrigger().ptr());
+				list = "Access level "s + std::to_string(accessLevel) + " commands: "s;
+				list += cmd->getTrigger();
 				break;
 			}
 		}
@@ -3381,7 +3384,7 @@ void HelpGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *player, co
 		for (int i = 0; i <= player->access; i++)
 		{
 			auto msg = getAccessCommands(i);
-			if (msg.isNotEmpty())
+			if (!msg.empty())
 				source->sendMessage(*player, getAccessCommands(i));
 		}
 		if (cmdCount == 0)
@@ -3435,7 +3438,7 @@ void ModsGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *, const Ju
 		msg += "No "_jrs + staff_word + "s are in-game"_jrs;
 		RenX::GameCommand *cmd = source->getCommand(STRING_LITERAL_AS_REFERENCE("modrequest"));
 		if (cmd != nullptr)
-			msg.aformat("; please use \"%.*s%.*s\" if you require assistance.", source->getCommandPrefix().size(), source->getCommandPrefix().ptr(), cmd->getTrigger().size(), cmd->getTrigger().ptr());
+			msg.aformat("; please use \"%.*s%.*s\" if you require assistance.", source->getCommandPrefix().size(), source->getCommandPrefix().data(), cmd->getTrigger().size(), cmd->getTrigger().data());
 		else msg += '.';
 	}
 	source->sendMessage(msg);
@@ -3498,7 +3501,7 @@ void ModRequestGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *play
 
 		for (auto& user : channel.getUsers()) {
 			if (channel.getUserPrefix(*user.second) != 0 // If the user has a prefix...
-				&& !user.second->getNickname().equals(server.getNickname())) { // And the user isn't this bot...
+				&& user.second->getNickname() != server.getNickname()) { // And the user isn't this bot...
 				// Alert the user
 				server.sendMessage(user.second->getNickname(), user_message);
 				++total_user_alerts;

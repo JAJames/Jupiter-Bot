@@ -47,7 +47,7 @@ Jupiter::ReferenceString OtherLongName = "Unknown";
 /** RenegadeX RCON protocol message deliminator */
 const char RenX::DelimC = '\x02';
 const char RenX::DelimC3 = '\xA0';
-const Jupiter::ReferenceString RenX::DevBotName = "DevBot"_jrs;
+const std::string_view RenX::DevBotName = "DevBot"sv;
 
 /** WinType translations */
 
@@ -453,51 +453,51 @@ const Jupiter::ReferenceString &translateCharacter(Jupiter::ReferenceString &obj
 	if (object.find(STRING_LITERAL_AS_REFERENCE("GDI_")) == 0)
 	{
 		object.shiftRight(4);
-		if (object.equals(STRING_LITERAL_AS_REFERENCE("Deadeye"))) return translated_GDI_Deadeye;
-		if (object.equals(STRING_LITERAL_AS_REFERENCE("Engineer"))) return translated_GDI_Engineer;
-		if (object.equals(STRING_LITERAL_AS_REFERENCE("Grenadier"))) return translated_GDI_Grenadier;
-		if (object.equals(STRING_LITERAL_AS_REFERENCE("Gunner"))) return translated_GDI_Gunner;
-		if (object.equals(STRING_LITERAL_AS_REFERENCE("Havoc"))) return translated_GDI_Havoc;
-		if (object.equals(STRING_LITERAL_AS_REFERENCE("Hotwire"))) return translated_GDI_Hotwire;
-		if (object.equals(STRING_LITERAL_AS_REFERENCE("Marksman"))) return translated_GDI_Marksman;
-		if (object.equals(STRING_LITERAL_AS_REFERENCE("McFarland"))) return translated_GDI_McFarland;
-		if (object.equals(STRING_LITERAL_AS_REFERENCE("Mobius"))) return translated_GDI_Mobius;
-		if (object.equals(STRING_LITERAL_AS_REFERENCE("Officer"))) return translated_GDI_Officer;
-		if (object.equals(STRING_LITERAL_AS_REFERENCE("Patch"))) return translated_GDI_Patch;
-		if (object.equals(STRING_LITERAL_AS_REFERENCE("RocketSoldier"))) return translated_GDI_RocketSoldier;
-		if (object.equals(STRING_LITERAL_AS_REFERENCE("Shotgunner"))) return translated_GDI_Shotgunner;
-		if (object.equals(STRING_LITERAL_AS_REFERENCE("Soldier"))) return translated_GDI_Soldier;
-		if (object.equals(STRING_LITERAL_AS_REFERENCE("Sydney"))) return translated_GDI_Sydney;
+		if (object == "Deadeye"sv) return translated_GDI_Deadeye;
+		if (object == "Engineer"sv) return translated_GDI_Engineer;
+		if (object == "Grenadier"sv) return translated_GDI_Grenadier;
+		if (object == "Gunner"sv) return translated_GDI_Gunner;
+		if (object == "Havoc"sv) return translated_GDI_Havoc;
+		if (object == "Hotwire"sv) return translated_GDI_Hotwire;
+		if (object == "Marksman"sv) return translated_GDI_Marksman;
+		if (object == "McFarland"sv) return translated_GDI_McFarland;
+		if (object == "Mobius"sv) return translated_GDI_Mobius;
+		if (object == "Officer"sv) return translated_GDI_Officer;
+		if (object == "Patch"sv) return translated_GDI_Patch;
+		if (object == "RocketSoldier"sv) return translated_GDI_RocketSoldier;
+		if (object == "Shotgunner"sv) return translated_GDI_Shotgunner;
+		if (object == "Soldier"sv) return translated_GDI_Soldier;
+		if (object == "Sydney"sv) return translated_GDI_Sydney;
 	}
 	else if (object.find(STRING_LITERAL_AS_REFERENCE("Nod_")) == 0)
 	{
 		object.shiftRight(4);
-		if (object.equals(STRING_LITERAL_AS_REFERENCE("BlackHandSniper"))) return translated_Nod_BlackHandSniper;
-		if (object.equals(STRING_LITERAL_AS_REFERENCE("ChemicalTrooper"))) return translated_Nod_ChemicalTrooper;
-		if (object.equals(STRING_LITERAL_AS_REFERENCE("Engineer"))) return translated_Nod_Engineer;
-		if (object.equals(STRING_LITERAL_AS_REFERENCE("FlameTrooper"))) return translated_Nod_FlameTrooper;
-		if (object.equals(STRING_LITERAL_AS_REFERENCE("LaserChainGunner"))) return translated_Nod_LaserChainGunner;
-		if (object.equals(STRING_LITERAL_AS_REFERENCE("Marksman"))) return translated_Nod_Marksman;
-		if (object.equals(STRING_LITERAL_AS_REFERENCE("Mendoza"))) return translated_Nod_Mendoza;
-		if (object.equals(STRING_LITERAL_AS_REFERENCE("Officer"))) return translated_Nod_Officer;
-		if (object.equals(STRING_LITERAL_AS_REFERENCE("Raveshaw"))) return translated_Nod_Raveshaw;
-		if (object.equals(STRING_LITERAL_AS_REFERENCE("RocketSoldier"))) return translated_Nod_RocketSoldier;
-		if (object.equals(STRING_LITERAL_AS_REFERENCE("Sakura"))) return translated_Nod_Sakura;
-		if (object.equals(STRING_LITERAL_AS_REFERENCE("Shotgunner"))) return translated_Nod_Shotgunner;
-		if (object.equals(STRING_LITERAL_AS_REFERENCE("Soldier"))) return translated_Nod_Soldier;
-		if (object.equals(STRING_LITERAL_AS_REFERENCE("StealthBlackHand"))) return translated_Nod_StealthBlackHand;
-		if (object.equals(STRING_LITERAL_AS_REFERENCE("Technician"))) return translated_Nod_Technician;
+		if (object == "BlackHandSniper"sv) return translated_Nod_BlackHandSniper;
+		if (object == "ChemicalTrooper"sv) return translated_Nod_ChemicalTrooper;
+		if (object == "Engineer"sv) return translated_Nod_Engineer;
+		if (object == "FlameTrooper"sv) return translated_Nod_FlameTrooper;
+		if (object == "LaserChainGunner"sv) return translated_Nod_LaserChainGunner;
+		if (object == "Marksman"sv) return translated_Nod_Marksman;
+		if (object == "Mendoza"sv) return translated_Nod_Mendoza;
+		if (object == "Officer"sv) return translated_Nod_Officer;
+		if (object == "Raveshaw"sv) return translated_Nod_Raveshaw;
+		if (object == "RocketSoldier"sv) return translated_Nod_RocketSoldier;
+		if (object == "Sakura"sv) return translated_Nod_Sakura;
+		if (object == "Shotgunner"sv) return translated_Nod_Shotgunner;
+		if (object == "Soldier"sv) return translated_Nod_Soldier;
+		if (object == "StealthBlackHand"sv) return translated_Nod_StealthBlackHand;
+		if (object == "Technician"sv) return translated_Nod_Technician;
 	}
 
 	return object;
 }
 
-const Jupiter::ReferenceString RenX::translateName(const Jupiter::ReadableString &obj)
+std::string_view RenX::translateName(std::string_view obj)
 {
-	if (obj.isEmpty())
+	if (obj.empty())
 		return Jupiter::ReferenceString::empty;
 
-	Jupiter::ReferenceString iniTranslation = RenX::getCore()->getConfig()["Name"_jrs].get(obj);
+	Jupiter::ReferenceString iniTranslation = RenX::getCore()->getConfig()["Name"_jrs].get(Jupiter::ReferenceString{obj});
 	if (iniTranslation.isNotEmpty())
 		return iniTranslation;
 
@@ -516,71 +516,71 @@ const Jupiter::ReferenceString RenX::translateName(const Jupiter::ReadableString
 		object.shiftRight(8);
 
 		/** Nod Vehicles */
-		if (object.equals(STRING_LITERAL_AS_REFERENCE("Harvester_Nod"))) return translated_Vehicle_Harvester_Nod;
-		if (object.equals(STRING_LITERAL_AS_REFERENCE("Buggy"))) return translated_Vehicle_Buggy;
-		if (object.equals(STRING_LITERAL_AS_REFERENCE("Artillery"))) return translated_Vehicle_Artillery;
-		if (object.equals(STRING_LITERAL_AS_REFERENCE("APC_Nod"))) return translated_Vehicle_APC_Nod;
-		if (object.equals(STRING_LITERAL_AS_REFERENCE("LightTank"))) return translated_Vehicle_LightTank;
-		if (object.equals(STRING_LITERAL_AS_REFERENCE("FlameTank"))) return translated_Vehicle_FlameTank;
-		if (object.equals(STRING_LITERAL_AS_REFERENCE("StealthTank"))) return translated_Vehicle_StealthTank;
-		if (object.equals(STRING_LITERAL_AS_REFERENCE("Chinook_Nod"))) return translated_Vehicle_Chinook_Nod;
-		if (object.equals(STRING_LITERAL_AS_REFERENCE("Apache"))) return translated_Vehicle_Apache;
+		if (object == "Harvester_Nod"sv) return translated_Vehicle_Harvester_Nod;
+		if (object == "Buggy"sv) return translated_Vehicle_Buggy;
+		if (object == "Artillery"sv) return translated_Vehicle_Artillery;
+		if (object == "APC_Nod"sv) return translated_Vehicle_APC_Nod;
+		if (object == "LightTank"sv) return translated_Vehicle_LightTank;
+		if (object == "FlameTank"sv) return translated_Vehicle_FlameTank;
+		if (object == "StealthTank"sv) return translated_Vehicle_StealthTank;
+		if (object == "Chinook_Nod"sv) return translated_Vehicle_Chinook_Nod;
+		if (object == "Apache"sv) return translated_Vehicle_Apache;
 
-		if (object.equals(STRING_LITERAL_AS_REFERENCE("ReconBike"))) return translated_Vehicle_ReconBike;
-		if (object.equals(STRING_LITERAL_AS_REFERENCE("TickTank"))) return translated_Vehicle_TickTank;
+		if (object == "ReconBike"sv) return translated_Vehicle_ReconBike;
+		if (object == "TickTank"sv) return translated_Vehicle_TickTank;
 
 		/** GDI Vehicles */
-		if (object.equals(STRING_LITERAL_AS_REFERENCE("Harvester_GDI"))) return translated_Vehicle_Harvester_GDI;
-		if (object.equals(STRING_LITERAL_AS_REFERENCE("Humvee"))) return translated_Vehicle_Humvee;
-		if (object.equals(STRING_LITERAL_AS_REFERENCE("MRLS"))) return translated_Vehicle_MRLS;
-		if (object.equals(STRING_LITERAL_AS_REFERENCE("APC_GDI"))) return translated_Vehicle_APC_GDI;
-		if (object.equals(STRING_LITERAL_AS_REFERENCE("MediumTank"))) return translated_Vehicle_MediumTank;
-		if (object.equals(STRING_LITERAL_AS_REFERENCE("MammothTank"))) return translated_Vehicle_MammothTank;
-		if (object.equals(STRING_LITERAL_AS_REFERENCE("Chinook_GDI"))) return translated_Vehicle_Chinook_GDI;
-		if (object.equals(STRING_LITERAL_AS_REFERENCE("Orca"))) return translated_Vehicle_Orca;
+		if (object == "Harvester_GDI"sv) return translated_Vehicle_Harvester_GDI;
+		if (object == "Humvee"sv) return translated_Vehicle_Humvee;
+		if (object == "MRLS"sv) return translated_Vehicle_MRLS;
+		if (object == "APC_GDI"sv) return translated_Vehicle_APC_GDI;
+		if (object == "MediumTank"sv) return translated_Vehicle_MediumTank;
+		if (object == "MammothTank"sv) return translated_Vehicle_MammothTank;
+		if (object == "Chinook_GDI"sv) return translated_Vehicle_Chinook_GDI;
+		if (object == "Orca"sv) return translated_Vehicle_Orca;
 
-		if (object.equals(STRING_LITERAL_AS_REFERENCE("HoverMRLS"))) return translated_Vehicle_HoverMRLS;
-		if (object.equals(STRING_LITERAL_AS_REFERENCE("Titan"))) return translated_Vehicle_Titan;
-		if (object.equals(STRING_LITERAL_AS_REFERENCE("Wolverine"))) return translated_Vehicle_Wolverine;
+		if (object == "HoverMRLS"sv) return translated_Vehicle_HoverMRLS;
+		if (object == "Titan"sv) return translated_Vehicle_Titan;
+		if (object == "Wolverine"sv) return translated_Vehicle_Wolverine;
 
 		/** Other Vehicles */
-		if (object.equals(STRING_LITERAL_AS_REFERENCE("A10_DmgType_GattlingGun"))) return translated_Vehicle_A10_DmgType_GattlingGun;
-		if (object.equals(STRING_LITERAL_AS_REFERENCE("A10_DmgType_Bomb"))) return translated_Vehicle_A10_DmgType_Bomb;
-		if (object.equals(STRING_LITERAL_AS_REFERENCE("AC130_DmgType_HeavyCannon"))) return translated_Vehicle_AC130_DmgType_HeavyCannon;
-		if (object.equals(STRING_LITERAL_AS_REFERENCE("AC130_DmgType_AutoCannon"))) return translated_Vehicle_AC130_DmgType_AutoCannon;
+		if (object == "A10_DmgType_GattlingGun"sv) return translated_Vehicle_A10_DmgType_GattlingGun;
+		if (object == "A10_DmgType_Bomb"sv) return translated_Vehicle_A10_DmgType_Bomb;
+		if (object == "AC130_DmgType_HeavyCannon"sv) return translated_Vehicle_AC130_DmgType_HeavyCannon;
+		if (object == "AC130_DmgType_AutoCannon"sv) return translated_Vehicle_AC130_DmgType_AutoCannon;
 	}
 	else if (object.find(STRING_LITERAL_AS_REFERENCE("Weapon_")) == 0)
 	{
 		object.shiftRight(7);
-		if (object.equals(STRING_LITERAL_AS_REFERENCE("HeavyPistol"))) return translated_Weapon_HeavyPistol;
-		if (object.equals(STRING_LITERAL_AS_REFERENCE("Carbine"))) return translated_Weapon_Carbine;
-		if (object.equals(STRING_LITERAL_AS_REFERENCE("Airstrike_GDI"))) return translated_Weapon_Airstrike_GDI;
-		if (object.equals(STRING_LITERAL_AS_REFERENCE("Airstrike_Nod"))) return translated_Weapon_Airstrike_Nod;
-		if (object.equals(STRING_LITERAL_AS_REFERENCE("TiberiumFlechetteRifle"))) return translated_Weapon_TiberiumFlechetteRifle;
-		if (object.equals(STRING_LITERAL_AS_REFERENCE("TiberiumAutoRifle"))) return translated_Weapon_TiberiumAutoRifle;
-		if (object.equals(STRING_LITERAL_AS_REFERENCE("TiberiumAutoRifle_Blue"))) return translated_Weapon_TiberiumAutoRifle_Blue;
-		if (object.equals(STRING_LITERAL_AS_REFERENCE("EMPGrenade"))) return translated_Weapon_EMPGrenade;
-		if (object.equals(STRING_LITERAL_AS_REFERENCE("SmokeGrenade"))) return translated_Weapon_SmokeGrenade;
-		if (object.equals(STRING_LITERAL_AS_REFERENCE("TimedC4"))) return translated_Weapon_TimedC4;
-		if (object.equals(STRING_LITERAL_AS_REFERENCE("RemoteC4"))) return translated_Weapon_RemoteC4;
-		if (object.equals(STRING_LITERAL_AS_REFERENCE("ProxyC4"))) return translated_Weapon_ProxyC4;
-		if (object.equals(STRING_LITERAL_AS_REFERENCE("ATMine"))) return translated_Weapon_ATMine;
-		if (object.equals(STRING_LITERAL_AS_REFERENCE("IonCannonBeacon"))) return translated_Weapon_IonCannonBeacon;
-		if (object.equals(STRING_LITERAL_AS_REFERENCE("NukeBeacon"))) return translated_Weapon_NukeBeacon;
-		if (object.equals(STRING_LITERAL_AS_REFERENCE("DeployedC4"))) return translated_Weapon_DeployedC4;
-		if (object.equals(STRING_LITERAL_AS_REFERENCE("DeployedTimedC4"))) return translated_Weapon_DeployedTimedC4;
-		if (object.equals(STRING_LITERAL_AS_REFERENCE("DeployedRemoteC4"))) return translated_Weapon_DeployedRemoteC4;
-		if (object.equals(STRING_LITERAL_AS_REFERENCE("DeployedProxyC4"))) return translated_Weapon_DeployedProxyC4;
-		if (object.equals(STRING_LITERAL_AS_REFERENCE("DeployedATMine"))) return translated_Weapon_DeployedATMine;
-		if (object.equals(STRING_LITERAL_AS_REFERENCE("DeployedIonCannonBeacon"))) return translated_Weapon_DeployedIonCannonBeacon;
-		if (object.equals(STRING_LITERAL_AS_REFERENCE("DeployedNukeBeacon"))) return translated_Weapon_DeployedNukeBeacon;
-		if (object.equals(STRING_LITERAL_AS_REFERENCE("CrateNuke"))) return translated_Weapon_CrateNuke;
+		if (object == "HeavyPistol"sv) return translated_Weapon_HeavyPistol;
+		if (object == "Carbine"sv) return translated_Weapon_Carbine;
+		if (object == "Airstrike_GDI"sv) return translated_Weapon_Airstrike_GDI;
+		if (object == "Airstrike_Nod"sv) return translated_Weapon_Airstrike_Nod;
+		if (object == "TiberiumFlechetteRifle"sv) return translated_Weapon_TiberiumFlechetteRifle;
+		if (object == "TiberiumAutoRifle"sv) return translated_Weapon_TiberiumAutoRifle;
+		if (object == "TiberiumAutoRifle_Blue"sv) return translated_Weapon_TiberiumAutoRifle_Blue;
+		if (object == "EMPGrenade"sv) return translated_Weapon_EMPGrenade;
+		if (object == "SmokeGrenade"sv) return translated_Weapon_SmokeGrenade;
+		if (object == "TimedC4"sv) return translated_Weapon_TimedC4;
+		if (object == "RemoteC4"sv) return translated_Weapon_RemoteC4;
+		if (object == "ProxyC4"sv) return translated_Weapon_ProxyC4;
+		if (object == "ATMine"sv) return translated_Weapon_ATMine;
+		if (object == "IonCannonBeacon"sv) return translated_Weapon_IonCannonBeacon;
+		if (object == "NukeBeacon"sv) return translated_Weapon_NukeBeacon;
+		if (object == "DeployedC4"sv) return translated_Weapon_DeployedC4;
+		if (object == "DeployedTimedC4"sv) return translated_Weapon_DeployedTimedC4;
+		if (object == "DeployedRemoteC4"sv) return translated_Weapon_DeployedRemoteC4;
+		if (object == "DeployedProxyC4"sv) return translated_Weapon_DeployedProxyC4;
+		if (object == "DeployedATMine"sv) return translated_Weapon_DeployedATMine;
+		if (object == "DeployedIonCannonBeacon"sv) return translated_Weapon_DeployedIonCannonBeacon;
+		if (object == "DeployedNukeBeacon"sv) return translated_Weapon_DeployedNukeBeacon;
+		if (object == "CrateNuke"sv) return translated_Weapon_CrateNuke;
 	}
 	else if (object.find(STRING_LITERAL_AS_REFERENCE("Projectile_")) == 0)
 	{
 		object.shiftRight(11);
-		if (object.equals(STRING_LITERAL_AS_REFERENCE("EMPGrenade"))) return translated_Projectile_EMPGrenade;
-		if (object.equals(STRING_LITERAL_AS_REFERENCE("SmokeGrenade"))) return translated_Projectile_SmokeGrenade;
+		if (object == "EMPGrenade"sv) return translated_Projectile_EMPGrenade;
+		if (object == "SmokeGrenade"sv) return translated_Projectile_SmokeGrenade;
 	}
 	else if (object.find(STRING_LITERAL_AS_REFERENCE("InventoryManager_")) == 0)
 	{
@@ -597,196 +597,196 @@ const Jupiter::ReferenceString RenX::translateName(const Jupiter::ReadableString
 		object.shiftRight(8);
 
 		/** Non-weapon damage types */
-		if (object.equals(STRING_LITERAL_AS_REFERENCE("Suicided"))) return translated_DmgType_Suicided;
-		if (object.equals(STRING_LITERAL_AS_REFERENCE("Fell"))) return translated_DmgType_Fell;
-		if (object.equals(STRING_LITERAL_AS_REFERENCE("Tiberium"))) return translated_DmgType_Tiberium;
-		if (object.equals(STRING_LITERAL_AS_REFERENCE("TiberiumBleed"))) return translated_DmgType_TiberiumBleed;
-		if (object.equals(STRING_LITERAL_AS_REFERENCE("TiberiumBleed_Blue"))) return translated_DmgType_TiberiumBleed_Blue;
-		if (object.equals(STRING_LITERAL_AS_REFERENCE("RanOver"))) return translated_DmgType_RanOver;
+		if (object == "Suicided"sv) return translated_DmgType_Suicided;
+		if (object == "Fell"sv) return translated_DmgType_Fell;
+		if (object == "Tiberium"sv) return translated_DmgType_Tiberium;
+		if (object == "TiberiumBleed"sv) return translated_DmgType_TiberiumBleed;
+		if (object == "TiberiumBleed_Blue"sv) return translated_DmgType_TiberiumBleed_Blue;
+		if (object == "RanOver"sv) return translated_DmgType_RanOver;
 
 		/** Infantry weapons */
-		if (object.equals(STRING_LITERAL_AS_REFERENCE("Pistol"))) return translated_DmgType_Pistol;
-		if (object.equals(STRING_LITERAL_AS_REFERENCE("SMG"))) return translated_DmgType_SMG;
-		if (object.equals(STRING_LITERAL_AS_REFERENCE("HeavyPistol"))) return translated_DmgType_HeavyPistol;
-		if (object.equals(STRING_LITERAL_AS_REFERENCE("Carbine"))) return translated_DmgType_Carbine;
-		if (object.equals(STRING_LITERAL_AS_REFERENCE("TiberiumFlechetteRifle"))) return translated_DmgType_TiberiumFlechetteRifle; // Not a rifle.
-		if (object.equals(STRING_LITERAL_AS_REFERENCE("TiberiumAutoRifle"))) return translated_DmgType_TiberiumAutoRifle;
-		if (object.equals(STRING_LITERAL_AS_REFERENCE("TiberiumAutoRifle_Blue"))) return translated_DmgType_TiberiumAutoRifle_Blue;
-		if (object.equals(STRING_LITERAL_AS_REFERENCE("TiberiumAutoRifle_Flechette_Blue"))) return translated_DmgType_TiberiumAutoRifle_Flechette_Blue;
+		if (object == "Pistol"sv) return translated_DmgType_Pistol;
+		if (object == "SMG"sv) return translated_DmgType_SMG;
+		if (object == "HeavyPistol"sv) return translated_DmgType_HeavyPistol;
+		if (object == "Carbine"sv) return translated_DmgType_Carbine;
+		if (object == "TiberiumFlechetteRifle"sv) return translated_DmgType_TiberiumFlechetteRifle; // Not a rifle.
+		if (object == "TiberiumAutoRifle"sv) return translated_DmgType_TiberiumAutoRifle;
+		if (object == "TiberiumAutoRifle_Blue"sv) return translated_DmgType_TiberiumAutoRifle_Blue;
+		if (object == "TiberiumAutoRifle_Flechette_Blue"sv) return translated_DmgType_TiberiumAutoRifle_Flechette_Blue;
 
-		if (object.equals(STRING_LITERAL_AS_REFERENCE("Grenade"))) return translated_DmgType_Grenade;
-		if (object.equals(STRING_LITERAL_AS_REFERENCE("TimedC4"))) return translated_DmgType_TimedC4;
-		if (object.equals(STRING_LITERAL_AS_REFERENCE("RemoteC4"))) return translated_DmgType_RemoteC4;
-		if (object.equals(STRING_LITERAL_AS_REFERENCE("ProxyC4"))) return translated_DmgType_ProxyC4;
-		if (object.equals(STRING_LITERAL_AS_REFERENCE("ATMine"))) return translated_DmgType_ATMine;
-		if (object.equals(STRING_LITERAL_AS_REFERENCE("EMPGrenade"))) return translated_DmgType_EMPGrenade;
-		if (object.equals(STRING_LITERAL_AS_REFERENCE("BurnC4"))) return translated_DmgType_BurnC4;
-		if (object.equals(STRING_LITERAL_AS_REFERENCE("FireBleed"))) return translated_DmgType_FireBleed; // Caused by C4 or flame weapons
+		if (object == "Grenade"sv) return translated_DmgType_Grenade;
+		if (object == "TimedC4"sv) return translated_DmgType_TimedC4;
+		if (object == "RemoteC4"sv) return translated_DmgType_RemoteC4;
+		if (object == "ProxyC4"sv) return translated_DmgType_ProxyC4;
+		if (object == "ATMine"sv) return translated_DmgType_ATMine;
+		if (object == "EMPGrenade"sv) return translated_DmgType_EMPGrenade;
+		if (object == "BurnC4"sv) return translated_DmgType_BurnC4;
+		if (object == "FireBleed"sv) return translated_DmgType_FireBleed; // Caused by C4 or flame weapons
 
-		if (object.equals(STRING_LITERAL_AS_REFERENCE("AutoRifle"))) return translated_DmgType_AutoRifle;
-		if (object.equals(STRING_LITERAL_AS_REFERENCE("Shotgun"))) return translated_DmgType_Shotgun;
-		if (object.equals(STRING_LITERAL_AS_REFERENCE("FlameThrower"))) return translated_DmgType_FlameThrower;
-		if (object.equals(STRING_LITERAL_AS_REFERENCE("GrenadeLauncher"))) return translated_DmgType_GrenadeLauncher;
-		if (object.equals(STRING_LITERAL_AS_REFERENCE("MarksmanRifle"))) return translated_DmgType_MarksmanRifle;
+		if (object == "AutoRifle"sv) return translated_DmgType_AutoRifle;
+		if (object == "Shotgun"sv) return translated_DmgType_Shotgun;
+		if (object == "FlameThrower"sv) return translated_DmgType_FlameThrower;
+		if (object == "GrenadeLauncher"sv) return translated_DmgType_GrenadeLauncher;
+		if (object == "MarksmanRifle"sv) return translated_DmgType_MarksmanRifle;
 
-		if (object.equals(STRING_LITERAL_AS_REFERENCE("ChainGun"))) return translated_DmgType_ChainGun;
-		if (object.equals(STRING_LITERAL_AS_REFERENCE("MissileLauncher"))) return translated_DmgType_MissileLauncher;
-		if (object.equals(STRING_LITERAL_AS_REFERENCE("MissileLauncher_Alt"))) return translated_DmgType_MissileLauncher_Alt;
-		if (object.equals(STRING_LITERAL_AS_REFERENCE("ChemicalThrower"))) return translated_DmgType_ChemicalThrower;
-		if (object.equals(STRING_LITERAL_AS_REFERENCE("LaserRifle"))) return translated_DmgType_LaserRifle;
-		if (object.equals(STRING_LITERAL_AS_REFERENCE("TacticalRifle"))) return translated_DmgType_TacticalRifle;
-		if (object.equals(STRING_LITERAL_AS_REFERENCE("RocketLauncher"))) return translated_DmgType_RocketLauncher;
-		if (object.equals(STRING_LITERAL_AS_REFERENCE("LaserChainGun"))) return translated_DmgType_LaserChainGun;
-		if (object.equals(STRING_LITERAL_AS_REFERENCE("FlakCannon"))) return translated_DmgType_FlakCannon;
-		if (object.equals(STRING_LITERAL_AS_REFERENCE("FlakCannon_Alt"))) return translated_DmgType_FlakCannon_Alt;
-		if (object.equals(STRING_LITERAL_AS_REFERENCE("SniperRifle"))) return translated_DmgType_SniperRifle;
-		if (object.equals(STRING_LITERAL_AS_REFERENCE("RamjetRifle"))) return translated_DmgType_RamjetRifle;
-		if (object.equals(STRING_LITERAL_AS_REFERENCE("Railgun"))) return translated_DmgType_Railgun;
-		if (object.equals(STRING_LITERAL_AS_REFERENCE("PersonalIonCannon"))) return translated_DmgType_PersonalIonCannon;
-		if (object.equals(STRING_LITERAL_AS_REFERENCE("VoltRifle"))) return translated_DmgType_VoltRifle;
-		if (object.equals(STRING_LITERAL_AS_REFERENCE("VoltRifle_Alt"))) return translated_DmgType_VoltRifle_Alt;
-		if (object.equals(STRING_LITERAL_AS_REFERENCE("VoltAutoRifle"))) return translated_DmgType_VoltAutoRifle;
-		if (object.equals(STRING_LITERAL_AS_REFERENCE("VoltAutoRifle_Alt"))) return translated_DmgType_VoltAutoRifle_Alt;
+		if (object == "ChainGun"sv) return translated_DmgType_ChainGun;
+		if (object == "MissileLauncher"sv) return translated_DmgType_MissileLauncher;
+		if (object == "MissileLauncher_Alt"sv) return translated_DmgType_MissileLauncher_Alt;
+		if (object == "ChemicalThrower"sv) return translated_DmgType_ChemicalThrower;
+		if (object == "LaserRifle"sv) return translated_DmgType_LaserRifle;
+		if (object == "TacticalRifle"sv) return translated_DmgType_TacticalRifle;
+		if (object == "RocketLauncher"sv) return translated_DmgType_RocketLauncher;
+		if (object == "LaserChainGun"sv) return translated_DmgType_LaserChainGun;
+		if (object == "FlakCannon"sv) return translated_DmgType_FlakCannon;
+		if (object == "FlakCannon_Alt"sv) return translated_DmgType_FlakCannon_Alt;
+		if (object == "SniperRifle"sv) return translated_DmgType_SniperRifle;
+		if (object == "RamjetRifle"sv) return translated_DmgType_RamjetRifle;
+		if (object == "Railgun"sv) return translated_DmgType_Railgun;
+		if (object == "PersonalIonCannon"sv) return translated_DmgType_PersonalIonCannon;
+		if (object == "VoltRifle"sv) return translated_DmgType_VoltRifle;
+		if (object == "VoltRifle_Alt"sv) return translated_DmgType_VoltRifle_Alt;
+		if (object == "VoltAutoRifle"sv) return translated_DmgType_VoltAutoRifle;
+		if (object == "VoltAutoRifle_Alt"sv) return translated_DmgType_VoltAutoRifle_Alt;
 
 		/** Vehicle weapons */
-		if (object.equals(STRING_LITERAL_AS_REFERENCE("MammothTank_Missile"))) return translated_DmgType_MammothTank_Missile;
-		if (object.equals(STRING_LITERAL_AS_REFERENCE("MammothTank_Cannon"))) return translated_DmgType_MammothTank_Cannon;
-		if (object.equals(STRING_LITERAL_AS_REFERENCE("Orca_Missile"))) return translated_DmgType_Orca_Missile;
-		if (object.equals(STRING_LITERAL_AS_REFERENCE("Orca_Gun"))) return translated_DmgType_Orca_Gun;
-		if (object.equals(STRING_LITERAL_AS_REFERENCE("Orca_Passenger"))) return translated_DmgType_Orca_Passenger;
-		if (object.equals(STRING_LITERAL_AS_REFERENCE("Apache_Rocket"))) return translated_DmgType_Apache_Rocket;
-		if (object.equals(STRING_LITERAL_AS_REFERENCE("Apache_Gun"))) return translated_DmgType_Apache_Gun;
-		if (object.equals(STRING_LITERAL_AS_REFERENCE("Apache_Passenger"))) return translated_DmgType_Apache_Passenger;
+		if (object == "MammothTank_Missile"sv) return translated_DmgType_MammothTank_Missile;
+		if (object == "MammothTank_Cannon"sv) return translated_DmgType_MammothTank_Cannon;
+		if (object == "Orca_Missile"sv) return translated_DmgType_Orca_Missile;
+		if (object == "Orca_Gun"sv) return translated_DmgType_Orca_Gun;
+		if (object == "Orca_Passenger"sv) return translated_DmgType_Orca_Passenger;
+		if (object == "Apache_Rocket"sv) return translated_DmgType_Apache_Rocket;
+		if (object == "Apache_Gun"sv) return translated_DmgType_Apache_Gun;
+		if (object == "Apache_Passenger"sv) return translated_DmgType_Apache_Passenger;
 
 		/** Base Defence Weapons */
-		if (object.equals(STRING_LITERAL_AS_REFERENCE("AGT_MG"))) return translated_DmgType_AGT_MG;
-		if (object.equals(STRING_LITERAL_AS_REFERENCE("AGT_Rocket"))) return translated_DmgType_AGT_Rocket;
-		if (object.equals(STRING_LITERAL_AS_REFERENCE("Obelisk"))) return translated_DmgType_Obelisk;
+		if (object == "AGT_MG"sv) return translated_DmgType_AGT_MG;
+		if (object == "AGT_Rocket"sv) return translated_DmgType_AGT_Rocket;
+		if (object == "Obelisk"sv) return translated_DmgType_Obelisk;
 
 		/** Defence Structure Weapons */
-		if (object.equals(STRING_LITERAL_AS_REFERENCE("AGT_MG"))) return translated_DmgType_AGT_MG;
-		if (object.equals(STRING_LITERAL_AS_REFERENCE("AGT_Rocket"))) return translated_DmgType_AGT_Rocket;
-		if (object.equals(STRING_LITERAL_AS_REFERENCE("Obelisk"))) return translated_DmgType_Obelisk;
-		if (object.equals(STRING_LITERAL_AS_REFERENCE("GuardTower"))) return translated_DmgType_GuardTower;
-		if (object.equals(STRING_LITERAL_AS_REFERENCE("Turret"))) return translated_DmgType_Turret;
-		if (object.equals(STRING_LITERAL_AS_REFERENCE("SAMSite"))) return translated_DmgType_SAMSite;
-		if (object.equals(STRING_LITERAL_AS_REFERENCE("AATower"))) return translated_DmgType_AATower;
-		if (object.equals(STRING_LITERAL_AS_REFERENCE("GunEmpl"))) return translated_DmgType_GunEmpl;
-		if (object.equals(STRING_LITERAL_AS_REFERENCE("GunEmpl_Alt"))) return translated_DmgType_GunEmpl_Alt;
-		if (object.equals(STRING_LITERAL_AS_REFERENCE("RocketEmpl_Swarm"))) return translated_DmgType_RocketEmpl_Swarm;
-		if (object.equals(STRING_LITERAL_AS_REFERENCE("RocketEmpl_Missile"))) return translated_DmgType_RocketEmpl_Missile;
+		if (object == "AGT_MG"sv) return translated_DmgType_AGT_MG;
+		if (object == "AGT_Rocket"sv) return translated_DmgType_AGT_Rocket;
+		if (object == "Obelisk"sv) return translated_DmgType_Obelisk;
+		if (object == "GuardTower"sv) return translated_DmgType_GuardTower;
+		if (object == "Turret"sv) return translated_DmgType_Turret;
+		if (object == "SAMSite"sv) return translated_DmgType_SAMSite;
+		if (object == "AATower"sv) return translated_DmgType_AATower;
+		if (object == "GunEmpl"sv) return translated_DmgType_GunEmpl;
+		if (object == "GunEmpl_Alt"sv) return translated_DmgType_GunEmpl_Alt;
+		if (object == "RocketEmpl_Swarm"sv) return translated_DmgType_RocketEmpl_Swarm;
+		if (object == "RocketEmpl_Missile"sv) return translated_DmgType_RocketEmpl_Missile;
 
 		/** Other Weapons */
-		if (object.equals(STRING_LITERAL_AS_REFERENCE("Nuke"))) return translated_DmgType_Nuke;
-		if (object.equals(STRING_LITERAL_AS_REFERENCE("IonCannon"))) return translated_DmgType_IonCannon;
+		if (object == "Nuke"sv) return translated_DmgType_Nuke;
+		if (object == "IonCannon"sv) return translated_DmgType_IonCannon;
 
 		/** Nod Vehicles */
-		if (object.equals(STRING_LITERAL_AS_REFERENCE("Harvester_Nod"))) return translated_DmgType_Harvester_Nod;
-		if (object.equals(STRING_LITERAL_AS_REFERENCE("Buggy"))) return translated_DmgType_Buggy;
-		if (object.equals(STRING_LITERAL_AS_REFERENCE("Artillery"))) return translated_DmgType_Artillery;
-		if (object.equals(STRING_LITERAL_AS_REFERENCE("APC_Nod"))) return translated_DmgType_APC_Nod;
-		if (object.equals(STRING_LITERAL_AS_REFERENCE("LightTank"))) return translated_DmgType_LightTank;
-		if (object.equals(STRING_LITERAL_AS_REFERENCE("FlameTank"))) return translated_DmgType_FlameTank;
-		if (object.equals(STRING_LITERAL_AS_REFERENCE("StealthTank"))) return translated_DmgType_StealthTank;
-		if (object.equals(STRING_LITERAL_AS_REFERENCE("Chinook_Nod"))) return translated_DmgType_Chinook_Nod;
-		if (object.equals(STRING_LITERAL_AS_REFERENCE("Apache"))) return translated_DmgType_Apache;
+		if (object == "Harvester_Nod"sv) return translated_DmgType_Harvester_Nod;
+		if (object == "Buggy"sv) return translated_DmgType_Buggy;
+		if (object == "Artillery"sv) return translated_DmgType_Artillery;
+		if (object == "APC_Nod"sv) return translated_DmgType_APC_Nod;
+		if (object == "LightTank"sv) return translated_DmgType_LightTank;
+		if (object == "FlameTank"sv) return translated_DmgType_FlameTank;
+		if (object == "StealthTank"sv) return translated_DmgType_StealthTank;
+		if (object == "Chinook_Nod"sv) return translated_DmgType_Chinook_Nod;
+		if (object == "Apache"sv) return translated_DmgType_Apache;
 
 		/** GDI Vehicles */
-		if (object.equals(STRING_LITERAL_AS_REFERENCE("Harvester_GDI"))) return translated_DmgType_Harvester_GDI;
-		if (object.equals(STRING_LITERAL_AS_REFERENCE("Humvee"))) return translated_DmgType_Humvee;
-		if (object.equals(STRING_LITERAL_AS_REFERENCE("MRLS"))) return translated_DmgType_MRLS;
-		if (object.equals(STRING_LITERAL_AS_REFERENCE("APC_GDI"))) return translated_DmgType_APC_GDI;
-		if (object.equals(STRING_LITERAL_AS_REFERENCE("MediumTank"))) return translated_DmgType_MediumTank;
-		if (object.equals(STRING_LITERAL_AS_REFERENCE("MammothTank"))) return translated_DmgType_MammothTank;
-		if (object.equals(STRING_LITERAL_AS_REFERENCE("Chinook_GDI"))) return translated_DmgType_Chinook_GDI;
-		if (object.equals(STRING_LITERAL_AS_REFERENCE("Orca"))) return translated_DmgType_Orca;
+		if (object == "Harvester_GDI"sv) return translated_DmgType_Harvester_GDI;
+		if (object == "Humvee"sv) return translated_DmgType_Humvee;
+		if (object == "MRLS"sv) return translated_DmgType_MRLS;
+		if (object == "APC_GDI"sv) return translated_DmgType_APC_GDI;
+		if (object == "MediumTank"sv) return translated_DmgType_MediumTank;
+		if (object == "MammothTank"sv) return translated_DmgType_MammothTank;
+		if (object == "Chinook_GDI"sv) return translated_DmgType_Chinook_GDI;
+		if (object == "Orca"sv) return translated_DmgType_Orca;
 
 		/** Other Vehicles */
-		if (object.equals(STRING_LITERAL_AS_REFERENCE("A10_Missile"))) return translated_DmgType_A10_Missile;
+		if (object == "A10_Missile"sv) return translated_DmgType_A10_Missile;
 	}
 	else if (object.find(STRING_LITERAL_AS_REFERENCE("Building_")) == 0)
 	{
 		object.shiftRight(9);
 		/** Nod structures */
-		if (object.equals(STRING_LITERAL_AS_REFERENCE("HandOfNod"))) return translated_Building_HandOfNod;
-		if (object.equals(STRING_LITERAL_AS_REFERENCE("AirTower"))) return translated_Building_AirTower;
-		if (object.equals(STRING_LITERAL_AS_REFERENCE("Airstrip"))) return translated_Building_Airstrip;
-		if (object.equals(STRING_LITERAL_AS_REFERENCE("Refinery_Nod"))) return translated_Building_Refinery_Nod;
-		if (object.equals(STRING_LITERAL_AS_REFERENCE("PowerPlant_Nod"))) return translated_Building_PowerPlant_Nod;
-		if (object.equals(STRING_LITERAL_AS_REFERENCE("HandOfNod_Internals"))) return translated_Building_HandOfNod_Internals;
-		if (object.equals(STRING_LITERAL_AS_REFERENCE("AirTower_Internals"))) return translated_Building_AirTower_Internals;
-		if (object.equals(STRING_LITERAL_AS_REFERENCE("Airstrip_Internals"))) return translated_Building_Airstrip_Internals;
-		if (object.equals(STRING_LITERAL_AS_REFERENCE("Refinery_Nod_Internals"))) return translated_Building_Refinery_Nod_Internals;
-		if (object.equals(STRING_LITERAL_AS_REFERENCE("PowerPlant_Nod_Internals"))) return translated_Building_PowerPlant_Nod_Internals;
+		if (object == "HandOfNod"sv) return translated_Building_HandOfNod;
+		if (object == "AirTower"sv) return translated_Building_AirTower;
+		if (object == "Airstrip"sv) return translated_Building_Airstrip;
+		if (object == "Refinery_Nod"sv) return translated_Building_Refinery_Nod;
+		if (object == "PowerPlant_Nod"sv) return translated_Building_PowerPlant_Nod;
+		if (object == "HandOfNod_Internals"sv) return translated_Building_HandOfNod_Internals;
+		if (object == "AirTower_Internals"sv) return translated_Building_AirTower_Internals;
+		if (object == "Airstrip_Internals"sv) return translated_Building_Airstrip_Internals;
+		if (object == "Refinery_Nod_Internals"sv) return translated_Building_Refinery_Nod_Internals;
+		if (object == "PowerPlant_Nod_Internals"sv) return translated_Building_PowerPlant_Nod_Internals;
 		
 		/** GDI structures */
-		if (object.equals(STRING_LITERAL_AS_REFERENCE("Barracks"))) return translated_Building_Barracks;
-		if (object.equals(STRING_LITERAL_AS_REFERENCE("WeaponsFactory"))) return translated_Building_WeaponsFactory;
-		if (object.equals(STRING_LITERAL_AS_REFERENCE("Refinery_GDI"))) return translated_Building_Refinery_GDI;
-		if (object.equals(STRING_LITERAL_AS_REFERENCE("PowerPlant_GDI"))) return translated_Building_PowerPlant_GDI;
-		if (object.equals(STRING_LITERAL_AS_REFERENCE("Barracks_Internals"))) return translated_Building_Barracks_Internals;
-		if (object.equals(STRING_LITERAL_AS_REFERENCE("WeaponsFactory_Internals"))) return translated_Building_WeaponsFactory_Internals;
-		if (object.equals(STRING_LITERAL_AS_REFERENCE("Refinery_GDI_Internals"))) return translated_Building_Refinery_GDI_Internals;
-		if (object.equals(STRING_LITERAL_AS_REFERENCE("PowerPlant_GDI_Internals"))) return translated_Building_PowerPlant_GDI_Internals;
+		if (object == "Barracks"sv) return translated_Building_Barracks;
+		if (object == "WeaponsFactory"sv) return translated_Building_WeaponsFactory;
+		if (object == "Refinery_GDI"sv) return translated_Building_Refinery_GDI;
+		if (object == "PowerPlant_GDI"sv) return translated_Building_PowerPlant_GDI;
+		if (object == "Barracks_Internals"sv) return translated_Building_Barracks_Internals;
+		if (object == "WeaponsFactory_Internals"sv) return translated_Building_WeaponsFactory_Internals;
+		if (object == "Refinery_GDI_Internals"sv) return translated_Building_Refinery_GDI_Internals;
+		if (object == "PowerPlant_GDI_Internals"sv) return translated_Building_PowerPlant_GDI_Internals;
 
 		/** Defense structures */
-		if (object.equals(STRING_LITERAL_AS_REFERENCE("AdvancedGuardTower"))) return translated_Building_AdvancedGuardTower;
-		if (object.equals(STRING_LITERAL_AS_REFERENCE("Obelisk"))) return translated_Building_Obelisk;
-		if (object.equals(STRING_LITERAL_AS_REFERENCE("AdvancedGuardTower_Internals"))) return translated_Building_AdvancedGuardTower_Internals;
-		if (object.equals(STRING_LITERAL_AS_REFERENCE("Obelisk_Internals"))) return translated_Building_Obelisk_Internals;
+		if (object == "AdvancedGuardTower"sv) return translated_Building_AdvancedGuardTower;
+		if (object == "Obelisk"sv) return translated_Building_Obelisk;
+		if (object == "AdvancedGuardTower_Internals"sv) return translated_Building_AdvancedGuardTower_Internals;
+		if (object == "Obelisk_Internals"sv) return translated_Building_Obelisk_Internals;
 
 		/** Other structures */
-		if (object.equals(STRING_LITERAL_AS_REFERENCE("Silo"))) return translated_Building_Silo;
-		if (object.equals(STRING_LITERAL_AS_REFERENCE("CommCentre"))) return translated_Building_CommCentre;
-		if (object.equals(STRING_LITERAL_AS_REFERENCE("Silo_Internals"))) return translated_Building_Silo_Internals;
-		if (object.equals(STRING_LITERAL_AS_REFERENCE("CommCentre_Internals"))) return translated_Building_CommCentre_Internals;
+		if (object == "Silo"sv) return translated_Building_Silo;
+		if (object == "CommCentre"sv) return translated_Building_CommCentre;
+		if (object == "Silo_Internals"sv) return translated_Building_Silo_Internals;
+		if (object == "CommCentre_Internals"sv) return translated_Building_CommCentre_Internals;
 	}
 	else if (object.find(STRING_LITERAL_AS_REFERENCE("CapturableMCT_")) == 0)
 	{
 		object.shiftRight(14);
-		if (object.equals(STRING_LITERAL_AS_REFERENCE("Fort"))) return translated_CapturableMCT_Fort;
-		if (object.equals(STRING_LITERAL_AS_REFERENCE("MC"))) return translated_CapturableMCT_MC;
-		if (object.equals(STRING_LITERAL_AS_REFERENCE("Fort_Internals"))) return translated_CapturableMCT_Fort_Internals;
-		if (object.equals(STRING_LITERAL_AS_REFERENCE("MC_Internals"))) return translated_CapturableMCT_MC_Internals;
+		if (object == "Fort"sv) return translated_CapturableMCT_Fort;
+		if (object == "MC"sv) return translated_CapturableMCT_MC;
+		if (object == "Fort_Internals"sv) return translated_CapturableMCT_Fort_Internals;
+		if (object == "MC_Internals"sv) return translated_CapturableMCT_MC_Internals;
 	}
 	else if (object.find(STRING_LITERAL_AS_REFERENCE("Defence_")) == 0)
 	{
 		object.shiftRight(8);
-		if (object.equals(STRING_LITERAL_AS_REFERENCE("GuardTower"))) return translated_Defence_GuardTower;
-		if (object.equals(STRING_LITERAL_AS_REFERENCE("Turret"))) return translated_Defence_Turret;
-		if (object.equals(STRING_LITERAL_AS_REFERENCE("SAMSite"))) return translated_Defence_SAMSite;
-		if (object.equals(STRING_LITERAL_AS_REFERENCE("AATower"))) return translated_Defence_AATower;
-		if (object.equals(STRING_LITERAL_AS_REFERENCE("GunEmplacement"))) return translated_Defence_GunEmplacement;
-		if (object.equals(STRING_LITERAL_AS_REFERENCE("RocketEmplacement"))) return translated_Defence_RocketEmplacement;
+		if (object == "GuardTower"sv) return translated_Defence_GuardTower;
+		if (object == "Turret"sv) return translated_Defence_Turret;
+		if (object == "SAMSite"sv) return translated_Defence_SAMSite;
+		if (object == "AATower"sv) return translated_Defence_AATower;
+		if (object == "GunEmplacement"sv) return translated_Defence_GunEmplacement;
+		if (object == "RocketEmplacement"sv) return translated_Defence_RocketEmplacement;
 	}
 	else if (object.find(STRING_LITERAL_AS_REFERENCE("Sentinel_")) == 0)
 	{
 		object.shiftRight(9);
-		if (object.equals(STRING_LITERAL_AS_REFERENCE("AGT_MG_Base"))) return translated_Sentinel_AGT_MG_Base;
-		if (object.equals(STRING_LITERAL_AS_REFERENCE("AGT_Rockets_Base"))) return translated_Sentinel_AGT_Rockets_Base;
-		if (object.equals(STRING_LITERAL_AS_REFERENCE("Obelisk_Laser_Base"))) return translated_Sentinel_Obelisk_Laser_Base;
+		if (object == "AGT_MG_Base"sv) return translated_Sentinel_AGT_MG_Base;
+		if (object == "AGT_Rockets_Base"sv) return translated_Sentinel_AGT_Rockets_Base;
+		if (object == "Obelisk_Laser_Base"sv) return translated_Sentinel_Obelisk_Laser_Base;
 	}
 	else if (object.find(STRING_LITERAL_AS_REFERENCE("UTDmgType_")) == 0)
 	{
 		object.shiftRight(10);
-		if (object.equals(STRING_LITERAL_AS_REFERENCE("VehicleExplosion"))) return translated_UTDmgType_VehicleExplosion;
-		if (object.equals(STRING_LITERAL_AS_REFERENCE("Drowned"))) return translated_UTDmgType_Drowned;
+		if (object == "VehicleExplosion"sv) return translated_UTDmgType_VehicleExplosion;
+		if (object == "Drowned"sv) return translated_UTDmgType_Drowned;
 	}
 	else if (object.find(STRING_LITERAL_AS_REFERENCE("VoteMenuChoice_")) == 0)
 	{
 		object.shiftRight(15);
-		if (object.equals(STRING_LITERAL_AS_REFERENCE("AddBots"))) return translated_VoteMenuChoice_AddBots;
-		if (object.equals(STRING_LITERAL_AS_REFERENCE("ChangeMap"))) return translated_VoteMenuChoice_ChangeMap;
-		if (object.equals(STRING_LITERAL_AS_REFERENCE("Donate"))) return translated_VoteMenuChoice_Donate;
-		if (object.equals(STRING_LITERAL_AS_REFERENCE("Kick"))) return translated_VoteMenuChoice_Kick;
-		if (object.equals(STRING_LITERAL_AS_REFERENCE("RemoveBots"))) return translated_VoteMenuChoice_RemoveBots;
-		if (object.equals(STRING_LITERAL_AS_REFERENCE("RestartMatch"))) return translated_VoteMenuChoice_RestartMatch;
-		if (object.equals(STRING_LITERAL_AS_REFERENCE("StartMatch"))) return translated_VoteMenuChoice_StartMatch;
-		if (object.equals(STRING_LITERAL_AS_REFERENCE("Survey"))) return translated_VoteMenuChoice_Survey;
+		if (object == "AddBots"sv) return translated_VoteMenuChoice_AddBots;
+		if (object == "ChangeMap"sv) return translated_VoteMenuChoice_ChangeMap;
+		if (object == "Donate"sv) return translated_VoteMenuChoice_Donate;
+		if (object == "Kick"sv) return translated_VoteMenuChoice_Kick;
+		if (object == "RemoveBots"sv) return translated_VoteMenuChoice_RemoveBots;
+		if (object == "RestartMatch"sv) return translated_VoteMenuChoice_RestartMatch;
+		if (object == "StartMatch"sv) return translated_VoteMenuChoice_StartMatch;
+		if (object == "Survey"sv) return translated_VoteMenuChoice_Survey;
 	}
-	else if (object.equals(STRING_LITERAL_AS_REFERENCE("IonCannonBeacon"))) return translated_IonCannonBeacon;
-	else if (object.equals(STRING_LITERAL_AS_REFERENCE("NukeBeacon"))) return translated_NukeBeacon;
-	else if (object.equals(STRING_LITERAL_AS_REFERENCE("KillZDamageType"))) return translated_KillZDamageType;
+	else if (object == "IonCannonBeacon"sv) return translated_IonCannonBeacon;
+	else if (object == "NukeBeacon"sv) return translated_NukeBeacon;
+	else if (object == "KillZDamageType"sv) return translated_KillZDamageType;
 	return translateCharacter(object);
 }
 
@@ -912,9 +912,9 @@ double RenX::getHeadshotKillRatio(const RenX::PlayerInfo &player)
 	return static_cast<double>(player.headshots) / static_cast<double>(player.kills);
 }
 
-Jupiter::String RenX::escapifyRCON(const Jupiter::ReadableString &str)
+Jupiter::String RenX::escapifyRCON(std::string_view str)
 {
-	const char *ptr = str.ptr();
+	const char *ptr = str.data();
 	size_t length = str.size();
 	Jupiter::String result(str.size() + 32);
 	uint16_t value;

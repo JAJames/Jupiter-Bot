@@ -24,9 +24,9 @@
 #include "RenX_Functions.h"
 
 using namespace Jupiter::literals;
+using namespace std::literals;
 
-bool RenX_ExcessiveHeadshotsPlugin::initialize()
-{
+bool RenX_ExcessiveHeadshotsPlugin::initialize() {
 	RenX_ExcessiveHeadshotsPlugin::ratio = this->config.get<double>("HeadshotKillRatio"_jrs, 0.5);
 	RenX_ExcessiveHeadshotsPlugin::minKills = this->config.get<unsigned int>("Kills"_jrs, 10);
 	RenX_ExcessiveHeadshotsPlugin::minKD = this->config.get<double>("KillDeathRatio"_jrs, 5.0);
@@ -35,19 +35,16 @@ bool RenX_ExcessiveHeadshotsPlugin::initialize()
 	return true;
 }
 
-int RenX_ExcessiveHeadshotsPlugin::OnRehash()
-{
+int RenX_ExcessiveHeadshotsPlugin::OnRehash() {
 	RenX::Plugin::OnRehash();
 	return this->initialize() ? 0 : -1;
 }
 
-void RenX_ExcessiveHeadshotsPlugin::RenX_OnKill(RenX::Server &server, const RenX::PlayerInfo &player, const RenX::PlayerInfo &victim, const Jupiter::ReadableString &damageType)
-{
+void RenX_ExcessiveHeadshotsPlugin::RenX_OnKill(RenX::Server &server, const RenX::PlayerInfo &player, const RenX::PlayerInfo &victim, const Jupiter::ReadableString &damageType) {
 	if (player.kills < 3)
 		return;
 
-	if (damageType.equals("Rx_DmgType_Headshot"_jrs))
-	{
+	if (damageType == "Rx_DmgType_Headshot"sv) {
 		unsigned int flags = 0;
 		std::chrono::milliseconds game_time = server.getGameTime(player);
 		double kps = game_time == std::chrono::milliseconds::zero() ? static_cast<double>(player.kills) : static_cast<double>(player.kills) / static_cast<double>(game_time.count());
@@ -61,9 +58,9 @@ void RenX_ExcessiveHeadshotsPlugin::RenX_OnKill(RenX::Server &server, const RenX
 		if (flags >= RenX_ExcessiveHeadshotsPlugin::minFlags)
 		{
 			server.banPlayer(player, "Jupiter Bot"_jrs, "Aimbot detected"_jrs);
-			server.sendPubChan(IRCCOLOR "13[Aimbot]" IRCCOLOR " %.*s was banned from the server! Kills: %u - Deaths: %u - Headshots: %u", player.name.size(), player.name.ptr(), player.kills, player.deaths, player.headshots);
+			server.sendPubChan(IRCCOLOR "13[Aimbot]" IRCCOLOR " %.*s was banned from the server! Kills: %u - Deaths: %u - Headshots: %u", player.name.size(), player.name.data(), player.kills, player.deaths, player.headshots);
 			const Jupiter::ReadableString &steamid = server.formatSteamID(player);
-			server.sendAdmChan(IRCCOLOR "13[Aimbot]" IRCCOLOR " %.*s was banned from the server! Kills: %u - Deaths: %u - Headshots: %u - IP: " IRCBOLD "%.*s" IRCBOLD " - Steam ID: " IRCBOLD "%.*s" IRCBOLD, player.name.size(), player.name.ptr(), player.kills, player.deaths, player.headshots, player.ip.size(), player.ip.ptr(), steamid.size(), steamid.ptr());
+			server.sendAdmChan(IRCCOLOR "13[Aimbot]" IRCCOLOR " %.*s was banned from the server! Kills: %u - Deaths: %u - Headshots: %u - IP: " IRCBOLD "%.*s" IRCBOLD " - Steam ID: " IRCBOLD "%.*s" IRCBOLD, player.name.size(), player.name.data(), player.kills, player.deaths, player.headshots, player.ip.size(), player.ip.ptr(), steamid.size(), steamid.ptr());
 		}
 	}
 }

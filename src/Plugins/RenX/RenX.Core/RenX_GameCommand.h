@@ -125,15 +125,15 @@ namespace RenX
 	{
 	public:
 		void trigger(RenX::Server *source, RenX::PlayerInfo *player, const Jupiter::ReadableString &parameters);
-		const Jupiter::ReadableString &getHelp(const Jupiter::ReadableString &parameters);
+		const Jupiter::ReadableString &getHelp(const Jupiter::ReadableString &parameters) override;
 		BasicGameCommand *copy();
 		void create();
 		BasicGameCommand();
 		BasicGameCommand(BasicGameCommand &c);
-		BasicGameCommand(const Jupiter::ReadableString &trigger, const Jupiter::ReadableString &in_message, const Jupiter::ReadableString &in_help_message);
+		BasicGameCommand(std::string_view trigger, std::string_view in_message, std::string_view in_help_message);
 
 	private:
-		Jupiter::StringS m_message, m_help_message;
+		std::string m_message, m_help_message;
 	};
 }
 
@@ -143,7 +143,7 @@ namespace RenX
 #define BASE_GAME_COMMAND(CLASS) \
 	public: \
 	void trigger(RenX::Server *source, RenX::PlayerInfo *player, const Jupiter::ReadableString &parameters); \
-	const Jupiter::ReadableString &getHelp(const Jupiter::ReadableString &parameters); \
+	const Jupiter::ReadableString &getHelp(const Jupiter::ReadableString &parameters) override; \
 	CLASS *copy(); \
 	void create(); \
 	CLASS() { this->create(); RenX::getCore()->addCommand(this); }

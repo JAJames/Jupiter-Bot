@@ -446,8 +446,8 @@ double get_ratio(double num, double denom)
 void TagsImp::processTags(Jupiter::StringType &msg, const RenX::Server *server, const RenX::PlayerInfo *player, const RenX::PlayerInfo *victim, const RenX::BuildingInfo *building)
 {
 	size_t index;
-	PROCESS_TAG(this->INTERNAL_DATE_TAG, Jupiter::ReferenceString(getTimeFormat(this->dateFmt.c_str())));
-	PROCESS_TAG(this->INTERNAL_TIME_TAG, Jupiter::ReferenceString(getTimeFormat(this->timeFmt.c_str())));
+	PROCESS_TAG(this->INTERNAL_DATE_TAG, std::string_view(getTimeFormat(this->dateFmt.c_str())));
+	PROCESS_TAG(this->INTERNAL_TIME_TAG, std::string_view(getTimeFormat(this->timeFmt.c_str())));
 	if (server != nullptr)
 	{
 		PROCESS_TAG(this->INTERNAL_RCON_VERSION_TAG, Jupiter::StringS::Format("%u", server->getVersion()));
@@ -457,9 +457,9 @@ void TagsImp::processTags(Jupiter::StringType &msg, const RenX::Server *server, 
 		PROCESS_TAG(this->INTERNAL_SERVER_NAME_TAG, server->getName());
 		PROCESS_TAG(this->INTERNAL_MAP_TAG, server->getMap().name);
 		PROCESS_TAG(this->INTERNAL_MAP_GUID_TAG, RenX::formatGUID(server->getMap()));
-		PROCESS_TAG(this->INTERNAL_SERVER_HOSTNAME_TAG, Jupiter::ReferenceString(server->getHostname().c_str()));
+		PROCESS_TAG(this->INTERNAL_SERVER_HOSTNAME_TAG, server->getHostname());
 		PROCESS_TAG(this->INTERNAL_SERVER_PORT_TAG, Jupiter::StringS::Format("%u", server->getPort()));
-		PROCESS_TAG(this->INTERNAL_SOCKET_HOSTNAME_TAG, Jupiter::ReferenceString(server->getSocketHostname().c_str()));
+		PROCESS_TAG(this->INTERNAL_SOCKET_HOSTNAME_TAG, server->getSocketHostname());
 		PROCESS_TAG(this->INTERNAL_SOCKET_PORT_TAG, Jupiter::StringS::Format("%u", server->getSocketPort()));
 		PROCESS_TAG(this->INTERNAL_SERVER_PREFIX_TAG, server->getPrefix());
 		if (player != nullptr)

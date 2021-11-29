@@ -102,7 +102,7 @@ IRC_Bot *ServerManager::getServer(size_t serverIndex) {
 	return nullptr;
 }
 
-bool ServerManager::addServer(const Jupiter::ReadableString &serverConfig) {
+bool ServerManager::addServer(std::string_view serverConfig) {
 	auto server = std::make_unique<IRC_Bot>(m_config->getSection(serverConfig), m_config->getSection("Default"_jrs));
 	if (server->connect()) {
 		m_servers.push_back(std::move(server));

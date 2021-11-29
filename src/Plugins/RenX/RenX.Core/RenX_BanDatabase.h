@@ -90,8 +90,8 @@ namespace RenX
 			Jupiter::StringS hwid; /** Hardware ID of the banned player */
 			Jupiter::StringS rdns /** RDNS of the banned player */;
 			Jupiter::StringS name /** Name of the banned player */;
-			Jupiter::StringS banner /** Name of the user who initiated the ban */;
-			Jupiter::StringS reason /** Reason the player was banned */;
+			std::string banner /** Name of the user who initiated the ban */;
+			std::string reason /** Reason the player was banned */;
 			VarDataTableType varData; /** Variable entry data */
 
 			static const uint16_t FLAG_ACTIVE = 0x8000U;
@@ -144,7 +144,7 @@ namespace RenX
 		* @param player Data of the player to be banned
 		* @param length Duration of the ban
 		*/
-		void add(RenX::Server *server, const RenX::PlayerInfo &player, const Jupiter::ReadableString &banner, const Jupiter::ReadableString &reason, std::chrono::seconds length, uint16_t flags = RenX::BanDatabase::Entry::FLAG_TYPE_GAME);
+		void add(RenX::Server *server, const RenX::PlayerInfo &player, std::string_view banner, std::string_view reason, std::chrono::seconds length, uint16_t flags = RenX::BanDatabase::Entry::FLAG_TYPE_GAME);
 
 		/**
 		* @brief Adds a ban entry for a set of player information and immediately writes it to the database.
@@ -158,7 +158,7 @@ namespace RenX
 		* @param reason Reason the player is getting banned
 		* @param length Duration of the ban
 		*/
-		void add(const Jupiter::ReadableString &name, uint32_t ip, uint8_t prefix_length, uint64_t steamid, const Jupiter::ReadableString &hwid, const Jupiter::ReadableString &rdns, const Jupiter::ReadableString &banner, Jupiter::ReadableString &reason, std::chrono::seconds length, uint16_t flags = RenX::BanDatabase::Entry::FLAG_TYPE_GAME);
+		void add(const Jupiter::ReadableString &name, uint32_t ip, uint8_t prefix_length, uint64_t steamid, const Jupiter::ReadableString &hwid, const Jupiter::ReadableString &rdns, std::string_view banner, std::string_view reason, std::chrono::seconds length, uint16_t flags = RenX::BanDatabase::Entry::FLAG_TYPE_GAME);
 
 		/**
 		* @brief Upgrades the ban database to the current write_version.

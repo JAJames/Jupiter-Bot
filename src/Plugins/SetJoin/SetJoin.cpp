@@ -25,14 +25,11 @@ using namespace Jupiter::literals;
 
 void SetJoinPlugin::OnJoin(Jupiter::IRC::Client *server, const Jupiter::ReadableString &chan, const Jupiter::ReadableString &nick)
 {
-	const Jupiter::ReadableString &setjoin = this->config[server->getConfigSection()].get(nick);
-	if (setjoin.isNotEmpty())
-	{
-		if (setjoin == nullptr)
-			server->sendNotice(nick, "No setjoin has been set for you. To set one, use the !setjoin command"_jrs);
-		else
-			server->sendMessage(chan, Jupiter::StringS::Format(IRCBOLD IRCCOLOR "07[%.*s]" IRCCOLOR IRCBOLD ": %.*s", nick.size(), nick.ptr(), setjoin.size(), setjoin.ptr()));
-	}
+	std::string_view setjoin = this->config[server->getConfigSection()].get(nick);
+	if (setjoin.empty())
+		server->sendNotice(nick, "No setjoin has been set for you. To set one, use the !setjoin command"_jrs);
+	else
+		server->sendMessage(chan, Jupiter::StringS::Format(IRCBOLD IRCCOLOR "07[%.*s]" IRCCOLOR IRCBOLD ": %.*s", nick.size(), nick.ptr(), setjoin.size(), setjoin.data()));
 }
 
 SetJoinPlugin pluginInstance;
@@ -48,7 +45,7 @@ void SetJoinIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &
 {
 	if (parameters.isNotEmpty())
 	{
-		pluginInstance.setjoin_file[source->getConfigSection()].set(nick, parameters);
+		pluginInstance.setjoin_file[source->getConfigSection()].set(nick, static_cast<std::string>(parameters));
 		pluginInstance.setjoin_file.write();
 		source->sendMessage(channel, "Your join message has been set."_jrs);
 	}
@@ -74,12 +71,12 @@ void ViewJoinIRCCommand::create()
 void ViewJoinIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &channel, const Jupiter::ReadableString &nick, const Jupiter::ReadableString &parameters)
 {
 	const Jupiter::ReadableString &target = parameters.isEmpty() ? nick : parameters;
-	const Jupiter::ReadableString &r = pluginInstance.setjoin_file[source->getConfigSection()].get(target);
+	std::string_view setjoin = pluginInstance.setjoin_file[source->getConfigSection()].get(target);
 
-	if (r.isEmpty())
+	if (setjoin.empty())
 		source->sendMessage(channel, Jupiter::StringS::Format("No setjoin has been set for \"%.*s\".", target.size(), target.ptr()));
 	else
-		source->sendMessage(channel, Jupiter::StringS::Format(IRCBOLD IRCCOLOR "07[%.*s]" IRCCOLOR IRCBOLD ": %.*s", target.size(), target.ptr(), r.size(), r.ptr()));
+		source->sendMessage(channel, Jupiter::StringS::Format(IRCBOLD IRCCOLOR "07[%.*s]" IRCCOLOR IRCBOLD ": %.*s", target.size(), target.ptr(), setjoin.size(), setjoin.data()));
 }
 
 const Jupiter::ReadableString &ViewJoinIRCCommand::getHelp(const Jupiter::ReadableString &)

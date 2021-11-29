@@ -70,7 +70,7 @@ RenX::BasicGameCommand::BasicGameCommand() : RenX::GameCommand(nullptr) {
 RenX::BasicGameCommand::BasicGameCommand(BasicGameCommand &c) : RenX::GameCommand(c) {
 }
 
-RenX::BasicGameCommand::BasicGameCommand(const Jupiter::ReadableString &in_trigger, const Jupiter::ReadableString &in_message, const Jupiter::ReadableString &in_help_message)
+RenX::BasicGameCommand::BasicGameCommand(std::string_view in_trigger, std::string_view in_message, std::string_view in_help_message)
 	: RenX::GameCommand(nullptr) {
 	this->addTrigger(in_trigger);
 	m_message = in_message;
@@ -83,11 +83,13 @@ void RenX::BasicGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *pla
 
 const Jupiter::ReadableString &RenX::BasicGameCommand::getHelp(const Jupiter::ReadableString &) {
 	static STRING_LITERAL_AS_NAMED_REFERENCE(defaultHelp, "Returns a basic text string.");
-	if (m_help_message.isEmpty()) {
+	if (m_help_message.empty()) {
 		return defaultHelp;
 	}
 
-	return m_help_message;
+	static Jupiter::ReferenceString please_delete_this_later_jessica;
+	please_delete_this_later_jessica = m_help_message;
+	return please_delete_this_later_jessica;
 }
 
 RenX::BasicGameCommand *RenX::BasicGameCommand::copy() {

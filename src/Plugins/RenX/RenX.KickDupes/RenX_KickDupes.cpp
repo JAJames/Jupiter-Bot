@@ -16,6 +16,7 @@
  * Written by Jessica James <jessica.aj@outlook.com>
  */
 
+#include "jessilib/unicode.hpp"
 #include "RenX_Core.h"
 #include "RenX_Server.h"
 #include "RenX_Functions.h"
@@ -23,6 +24,7 @@
 #include "RenX_KickDupes.h"
 
 using namespace Jupiter::literals;
+using namespace std::literals;
 
 bool RenX_KickDupesPlugin::initialize() {
 	return true;
@@ -36,7 +38,7 @@ void RenX_KickDupesPlugin::RenX_OnPlayerIdentify(RenX::Server &in_server, const 
 	}
 
 	// Exempt development servers from this check
-	if (in_server.getGameVersion().findi("-DEV"_jrs) != Jupiter::INVALID_INDEX) {
+	if (jessilib::findi(in_server.getGameVersion(), "-DEV"sv) != std::string::npos) {
 		return;
 	}
 

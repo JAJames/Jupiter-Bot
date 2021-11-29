@@ -61,7 +61,7 @@ public:
 	* @param trigger Trigger of the command to remove
 	* @return True if a command is removed, false otherwise.
 	*/
-	bool freeCommand(const Jupiter::ReadableString &trigger);
+	bool freeCommand(std::string_view trigger);
 
 	/**
 	* @return Gets a command.
@@ -69,7 +69,7 @@ public:
 	* @param trigger Trigger of the command to find.
 	* @return First command using the specified trigger, nullptr otherwise.
 	*/
-	IRCCommand *getCommand(const Jupiter::ReadableString &trigger) const;
+	IRCCommand *getCommand(std::string_view trigger) const;
 
 	/**
 	* @brief Creates and returns a vector of IRC Commands with a specified access level.
@@ -86,7 +86,7 @@ public:
 	* @param cmds Commands to construct the string with.
 	* @return A string containing the triggers of the commands in a space-deliminated list.
 	*/
-	static Jupiter::StringL getTriggers(std::vector<IRCCommand*> &cmds);
+	static std::string getTriggers(std::vector<IRCCommand*> &cmds);
 
 	/**
 	* @brief Reloads some settings.
@@ -117,7 +117,7 @@ protected:
 	/** Private members for internal usage */
 private:
 	std::vector<std::unique_ptr<IRCCommand>> m_commands;
-	Jupiter::StringS m_commandPrefix;
+	std::string m_commandPrefix;
 };
 
 /** Re-enable warnings */

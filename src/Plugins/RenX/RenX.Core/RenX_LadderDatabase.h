@@ -79,7 +79,7 @@ namespace RenX {
 				top_score, top_kills, most_deaths, top_headshot_kills, top_vehicle_kills, top_building_kills, top_defence_kills, top_captures, top_game_time, top_beacon_placements, top_beacon_disarms, top_proxy_placements, top_proxy_disarms, // tops (13)
 				most_recent_ip; // other (1)
 			time_t last_game;
-			Jupiter::StringS most_recent_name;
+			std::string most_recent_name;
 			Entry *next = nullptr;
 			Entry *prev = nullptr;
 		};
@@ -106,8 +106,8 @@ namespace RenX {
 		* @param name Name to search ladder for
 		* @return Ladder entry with a matching name if one exists, nullptr otherwise.
 		*/
-		Entry *getPlayerEntryByName(const Jupiter::ReadableString &name) const;
-		std::pair<Entry *, size_t> getPlayerEntryAndIndexByName(const Jupiter::ReadableString &name) const;
+		Entry *getPlayerEntryByName(std::string_view name) const;
+		std::pair<Entry *, size_t> getPlayerEntryAndIndexByName(std::string_view name) const;
 
 		/**
 		* @brief Searches for a ladder entry by part name
@@ -115,8 +115,8 @@ namespace RenX {
 		* @param name Part of name to search ladder for
 		* @return Ladder entry with a matching name if one exists, nullptr otherwise.
 		*/
-		Entry *getPlayerEntryByPartName(const Jupiter::ReadableString &name) const;
-		std::pair<Entry *, size_t> getPlayerEntryAndIndexByPartName(const Jupiter::ReadableString &name) const;
+		Entry *getPlayerEntryByPartName(std::string_view name) const;
+		std::pair<Entry *, size_t> getPlayerEntryAndIndexByPartName(std::string_view name) const;
 
 		/**
 		* @brief Fetches all entries matching a part name.
@@ -125,8 +125,8 @@ namespace RenX {
 		* @param max Maximum number of entries to return
 		* @return List containing entries with matching names.
 		*/
-		std::forward_list<Entry> getPlayerEntriesByPartName(const Jupiter::ReadableString &name, size_t max) const;
-		std::forward_list<std::pair<Entry, size_t>> getPlayerEntriesAndIndexByPartName(const Jupiter::ReadableString &name, size_t max) const;
+		std::forward_list<Entry> getPlayerEntriesByPartName(std::string_view name, size_t max) const;
+		std::forward_list<std::pair<Entry, size_t>> getPlayerEntriesAndIndexByPartName(std::string_view name, size_t max) const;
 
 		/**
 		* @brief Fetches a ladder entry at a specified index
@@ -184,12 +184,12 @@ namespace RenX {
 		/**
 		* @brief Gets the name of this database.
 		*/
-		const Jupiter::ReadableString &getName() const;
+		std::string_view getName() const;
 
 		/**
 		* @brief Sets the name of this database.
 		*/
-		void setName(const Jupiter::ReadableString &in_name);
+		void setName(std::string_view in_name);
 
 		/**
 		* @brief Checks if this database outputs sort/write times when 'updateLadder' is called.
@@ -213,7 +213,7 @@ namespace RenX {
 		/**
 		* @brief Named constructor for the LadderDatabase class
 		*/
-		LadderDatabase(const Jupiter::ReadableString &in_name);
+		LadderDatabase(std::string_view in_name);
 
 		/**
 		* @brief Deconstructor for the LadderDatabase class
@@ -229,7 +229,7 @@ namespace RenX {
 		uint8_t m_read_version = m_write_version;
 
 		bool m_output_times = false;
-		Jupiter::StringS m_name;
+		std::string m_name;
 		std::chrono::steady_clock::time_point m_last_sort = std::chrono::steady_clock::now();
 		size_t m_entries = 0;
 		Entry* m_head = nullptr;

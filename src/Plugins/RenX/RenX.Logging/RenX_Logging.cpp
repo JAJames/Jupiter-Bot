@@ -138,7 +138,7 @@ bool RenX_LoggingPlugin::initialize()
 	RenX_LoggingPlugin::playerCommandSuccessFmt = this->config.get("PlayerCommandSuccessFormat"_jrs,
 		Jupiter::StringS::Format("%.*s" IRCCOLOR ": " IRCCOLOR "10%.*s", RenX::tags->nameTag.size(), RenX::tags->nameTag.ptr(), RenX::tags->messageTag.size(), RenX::tags->messageTag.ptr()));
 
-	RenX_LoggingPlugin::playerCommandFailFmt = this->config.get("PlayerCommandFailFormat"_jrs);
+	RenX_LoggingPlugin::playerCommandFailFmt = this->config.get("PlayerCommandFailFormat"_jrs, ""_jss);
 
 	RenX_LoggingPlugin::playerFmt = this->config.get("PlayerFormat"_jrs,
 		Jupiter::StringS::Format(IRCCOLOR "12[Player]" IRCCOLOR " %.*s", RenX::tags->messageTag.size(), RenX::tags->messageTag.ptr()));
@@ -341,7 +341,7 @@ bool RenX_LoggingPlugin::initialize()
 	RenX_LoggingPlugin::executeFmt = this->config.get("ExecuteFormat"_jrs,
 		Jupiter::StringS::Format(IRCCOLOR "07%.*s executed: %.*s", RenX::tags->nameTag.size(), RenX::tags->nameTag.ptr(), RenX::tags->messageTag.size(), RenX::tags->messageTag.ptr()));
 
-	RenX_LoggingPlugin::devBotExecuteFmt = this->config.get("DevBotExecuteFormat"_jrs);
+	RenX_LoggingPlugin::devBotExecuteFmt = this->config.get("DevBotExecuteFormat"_jrs, ""_jss);
 
 	RenX_LoggingPlugin::subscribeFmt = this->config.get("SubscribeFormat"_jrs,
 		Jupiter::StringS::Format(IRCCOLOR "03%.*s subscribed to the RCON data stream.", RenX::tags->nameTag.size(), RenX::tags->nameTag.ptr()));
@@ -1868,10 +1868,8 @@ void RenX_LoggingPlugin::RenX_OnGame(RenX::Server &server, const Jupiter::Readab
 	}
 }
 
-void RenX_LoggingPlugin::RenX_OnExecute(RenX::Server &server, const Jupiter::ReadableString &user, const Jupiter::ReadableString &command)
-{
-	if (RenX_LoggingPlugin::muteOwnExecute == false || server.getUser().equals(user) == false)
-	{
+void RenX_LoggingPlugin::RenX_OnExecute(RenX::Server &server, const Jupiter::ReadableString &user, const Jupiter::ReadableString &command) {
+	if (RenX_LoggingPlugin::muteOwnExecute == false || server.getUser() != user) {
 		logFuncType func;
 		if (RenX_LoggingPlugin::executePublic)
 			func = &RenX::Server::sendLogChan;
@@ -1879,7 +1877,7 @@ void RenX_LoggingPlugin::RenX_OnExecute(RenX::Server &server, const Jupiter::Rea
 			func = &RenX::Server::sendAdmChan;
 
 		Jupiter::String msg;
-		if (user.equals(RenX::DevBotName))
+		if (user == RenX::DevBotName)
 			msg = this->devBotExecuteFmt;
 		else
 			msg = this->executeFmt;

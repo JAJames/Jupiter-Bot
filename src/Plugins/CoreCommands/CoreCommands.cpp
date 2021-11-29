@@ -31,13 +31,13 @@ HelpConsoleCommand::HelpConsoleCommand() {
 
 void HelpConsoleCommand::trigger(const Jupiter::ReadableString &parameters) {
 	if (parameters.isEmpty()) {
-		fputs("Supported commands:", stdout);
+		std::cout << "Supported commands:";
 		for (const auto& command : consoleCommands) {
-			fputc(' ', stdout);
-			command->getTrigger().print(stdout);
+			std::cout << ' ' << command->getTrigger();
 		}
-		printf(ENDL "%s - %s" ENDL, Jupiter::version, Jupiter::copyright);
-		puts("For command-specific help, use: help <command>");
+		std::cout << std::endl
+			<< Jupiter::version << " - " << Jupiter::copyright << std::endl
+			<< "For command-specific help, use: help <command>" << std::endl;
 		return;
 	}
 
@@ -69,7 +69,7 @@ void HelpIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &in_
 	if (channel != nullptr)
 	{
 		int access = source->getAccessLevel(*channel, nick);
-		if (parameters == nullptr)
+		if (parameters.isEmpty())
 		{
 			for (int i = 0; i <= access; i++)
 			{

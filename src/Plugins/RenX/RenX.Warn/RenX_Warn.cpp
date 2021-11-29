@@ -77,18 +77,18 @@ void WarnIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &cha
 					switch (pluginInstance.m_warnAction) {
 					case -1:
 						server->kickPlayer(*player, Jupiter::StringS::Format("Warning limit reached (%d warnings)", warns));
-						source->sendNotice(nick, Jupiter::StringS::Format("%.*s has been kicked from the server for exceeding the warning limit (%d warnings).", player->name.size(), player->name.ptr(), warns));
+						source->sendNotice(nick, Jupiter::StringS::Format("%.*s has been kicked from the server for exceeding the warning limit (%d warnings).", player->name.size(), player->name.data(), warns));
 						break;
 					default:
 						server->banPlayer(*player, "Jupiter Bot/RenX.Warn"_jrs, Jupiter::StringS::Format("Warning limit reached (%d warnings)", warns), std::chrono::seconds(pluginInstance.m_warnAction));
-						source->sendNotice(nick, Jupiter::StringS::Format("%.*s has been banned from the server for exceeding the warning limit (%d warnings).", player->name.size(), player->name.ptr(), reason.size(), reason.ptr(), warns));
+						source->sendNotice(nick, Jupiter::StringS::Format("%.*s has been banned from the server for exceeding the warning limit (%d warnings).", player->name.size(), player->name.data(), reason.size(), reason.ptr(), warns));
 						break;
 					}
 				}
 				else {
-					player->varData[pluginInstance.getName()].set(WARNS_KEY, Jupiter::StringS::Format("%d", warns));
+					player->varData[pluginInstance.getName()].set(WARNS_KEY, std::to_string(warns));
 					server->sendWarnMessage(*player, Jupiter::StringS::Format("You have been warned by %.*s@IRC for: %.*s. You have %d warnings.", nick.size(), nick.ptr(), reason.size(), reason.ptr(), warns));
-					source->sendNotice(nick, Jupiter::StringS::Format("%.*s has been warned; they now have %d warnings.", player->name.size(), player->name.ptr(), warns));
+					source->sendNotice(nick, Jupiter::StringS::Format("%.*s has been warned; they now have %d warnings.", player->name.size(), player->name.data(), warns));
 				}
 			}
 		}
@@ -136,7 +136,7 @@ void PardonIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &c
 			if (player != nullptr) {
 				player->varData[pluginInstance.getName()].remove(WARNS_KEY);
 				server->sendMessage(*player, Jupiter::StringS::Format("You have been pardoned by %.*s@IRC; your warnings have been reset.", nick.size(), nick.ptr()));
-				source->sendNotice(nick, Jupiter::StringS::Format("%.*s has been pardoned; their warnings have been reset.", player->name.size(), player->name.ptr()));
+				source->sendNotice(nick, Jupiter::StringS::Format("%.*s has been pardoned; their warnings have been reset.", player->name.size(), player->name.data()));
 			}
 		}
 	}
@@ -169,18 +169,18 @@ void WarnGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *player, co
 				{
 				case -1:
 					source->kickPlayer(*target, Jupiter::StringS::Format("Warning limit reached (%d warnings)", warns));
-					source->sendMessage(*player, Jupiter::StringS::Format("%.*s has been kicked from the server for exceeding the warning limit (%d warnings).", target->name.size(), target->name.ptr(), warns));
+					source->sendMessage(*player, Jupiter::StringS::Format("%.*s has been kicked from the server for exceeding the warning limit (%d warnings).", target->name.size(), target->name.data(), warns));
 					break;
 				default:
 					source->banPlayer(*target, "Jupiter Bot/RenX.Warn"_jrs, Jupiter::StringS::Format("Warning limit reached (%d warnings)", warns), std::chrono::seconds(pluginInstance.m_warnAction));
-					source->sendMessage(*player, Jupiter::StringS::Format("%.*s has been banned from the server for exceeding the warning limit (%d warnings).", target->name.size(), target->name.ptr(), warns));
+					source->sendMessage(*player, Jupiter::StringS::Format("%.*s has been banned from the server for exceeding the warning limit (%d warnings).", target->name.size(), target->name.data(), warns));
 					break;
 				}
 			}
 			else {
-				target->varData[pluginInstance.getName()].set(WARNS_KEY, Jupiter::StringS::Format("%d", warns));
-				source->sendWarnMessage(*target, Jupiter::StringS::Format("You have been warned by %.*s for: %.*s. You have %d warnings.", player->name.size(), player->name.ptr(), reason.size(), reason.ptr(), warns));
-				source->sendMessage(*player, Jupiter::StringS::Format("%.*s has been warned; they now have %d warnings.", target->name.size(), target->name.ptr(), warns));
+				target->varData[pluginInstance.getName()].set(WARNS_KEY, std::to_string(warns));
+				source->sendWarnMessage(*target, Jupiter::StringS::Format("You have been warned by %.*s for: %.*s. You have %d warnings.", player->name.size(), player->name.data(), reason.size(), reason.ptr(), warns));
+				source->sendMessage(*player, Jupiter::StringS::Format("%.*s has been warned; they now have %d warnings.", target->name.size(), target->name.data(), warns));
 			}
 		}
 	}
@@ -209,12 +209,13 @@ void PardonGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *player, 
 		RenX::PlayerInfo *target = source->getPlayerByPartName(parameters);
 		if (target != nullptr) {
 			target->varData[pluginInstance.getName()].remove(WARNS_KEY);
-			source->sendMessage(*target, Jupiter::StringS::Format("You have been pardoned by %.*s@IRC; your warnings have been reset.", player->name.size(), player->name.ptr()));
-			source->sendMessage(*player, Jupiter::StringS::Format("%.*s has been pardoned; their warnings have been reset.", target->name.size(), target->name.ptr()));
+			source->sendMessage(*target, Jupiter::StringS::Format("You have been pardoned by %.*s@IRC; your warnings have been reset.", player->name.size(), player->name.data()));
+			source->sendMessage(*player, Jupiter::StringS::Format("%.*s has been pardoned; their warnings have been reset.", target->name.size(), target->name.data()));
 		}
 	}
-	else
-		this->trigger(source, player, player->name);
+	else {
+		this->trigger(source, player, Jupiter::ReferenceString{player->name});
+	}
 }
 
 const Jupiter::ReadableString &PardonGameCommand::getHelp(const Jupiter::ReadableString &) {

@@ -42,7 +42,7 @@ namespace RenX
 	*/
 	struct RENX_API BuildingInfo
 	{
-		Jupiter::StringS name;
+		std::string name;
 		TeamType team = TeamType::Other;
 		int health = 0;
 		int max_health = 0;

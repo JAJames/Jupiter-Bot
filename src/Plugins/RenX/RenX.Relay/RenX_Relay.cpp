@@ -638,12 +638,12 @@ void RenX_RelayPlugin::upstream_connected(RenX::Server& in_server, upstream_serv
 	in_server_info.m_last_activity = in_server_info.m_last_connect_attempt;
 
 	// New format: 004 | Game Version Number | Game Version
-	auto& version_str = in_server.getGameVersion();
+	const auto& version_str = in_server.getGameVersion();
 	std::string version_message = "v004";
 	version_message += RenX::DelimC;
 	version_message += std::to_string(in_server.getGameVersionNumber());
 	version_message += RenX::DelimC;
-	version_message.append(version_str.ptr(), version_str.size());
+	version_message.append(version_str.data(), version_str.size());
 	version_message += '\n';
 
 	// Tack on username auth

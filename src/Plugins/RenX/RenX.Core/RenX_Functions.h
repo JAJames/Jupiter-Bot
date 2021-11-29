@@ -101,7 +101,7 @@ namespace RenX
 	* @param object Preset to translate.
 	* @return Translated name of the preset.
 	*/
-	RENX_API const Jupiter::ReferenceString translateName(const Jupiter::ReadableString &object);
+	RENX_API std::string_view translateName(std::string_view object);
 
 	/**
 	* @brief Translates a WinType into a human-readable string.
@@ -187,12 +187,12 @@ namespace RenX
 	* @param str String to escapify
 	* @return Escapified version of str.
 	*/
-	RENX_API Jupiter::String escapifyRCON(const Jupiter::ReadableString &str);
+	RENX_API Jupiter::String escapifyRCON(std::string_view str);
 
 	/** Constant variables */
 	RENX_API extern const char DelimC; /** RCON message deliminator */
 	RENX_API extern const char DelimC3; /** RCON message deliminator for RCON version number 003 */
-	RENX_API extern const Jupiter::ReferenceString DevBotName;
+	RENX_API extern const std::string_view DevBotName;
 }
 
 #ifdef NDEBUG

@@ -23,6 +23,7 @@
 #include "IRC_Bot.h"
 
 using namespace Jupiter::literals;
+using namespace std::literals;
 
 // 8ball
 
@@ -78,7 +79,7 @@ void EightBallIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString
 		msg.set("Fuck your lineage."_jrs);
 		break;
 	case 13:
-		if (channel.equals("#Jail"_jrs))
+		if (channel == "#Jail"sv)
 			msg.set("Ask me those kind of questions in #Politics"_jrs);
 		else
 			msg.set("Ask me those kind of questions in #Jail"_jrs);

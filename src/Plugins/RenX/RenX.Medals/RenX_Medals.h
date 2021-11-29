@@ -63,7 +63,7 @@ public:
 	Jupiter::StringS recsTag;
 	Jupiter::StringS noobTag;
 	Jupiter::StringS worthTag;
-	Jupiter::StringS firstSection;
+	std::string firstSection;
 	Jupiter::StringS medalsFileName;
 	Jupiter::INIConfig medalsFile;
 

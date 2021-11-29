@@ -16,6 +16,7 @@
  * Written by Jessica James <jessica.aj@outlook.com>
  */
 
+#include "jessilib/word_split.hpp"
 #include "Jupiter/GenericCommand.h"
 #include "ServerManager.h"
 #include "IRC_Command.h"
@@ -32,13 +33,13 @@ IRCCorePlugin::~IRCCorePlugin() {
 
 bool IRCCorePlugin::initialize() {
 	// TODO: initialize() isn't bringing in generic commands from already-loaded plugins
-	const Jupiter::ReadableString &serverList = this->config.get("Servers"_jrs);
-	if (serverList != nullptr) {
+	std::string_view serverList = this->config.get("Servers"_jrs);
+	if (!serverList.empty()) {
 		serverManager->setConfig(this->config);
 
-		unsigned int server_count = serverList.wordCount(WHITESPACE);
-		for (unsigned int index = 0; index != server_count; ++index) {
-			serverManager->addServer(Jupiter::ReferenceString::getWord(serverList, index, WHITESPACE));
+		auto server_entries = jessilib::word_split(serverList, WHITESPACE_SV);
+		for (const auto& entry : server_entries) {
+			serverManager->addServer(entry);
 		}
 	}
 

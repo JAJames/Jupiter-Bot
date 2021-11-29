@@ -38,7 +38,7 @@ namespace RenX
 	struct RENX_API Map
 	{
 		uint64_t guid[2];
-		Jupiter::StringS name;
+		std::string name;
 
 		bool equals(const RenX::Map &map) const;
 

@@ -38,7 +38,7 @@ public: // RenX_ListenPlugin
 
 private:
 	Jupiter::TCPSocket socket;
-	Jupiter::StringS serverSection;
+	std::string serverSection;
 };
 
 #endif // _EXAMPLE_H_HEADER

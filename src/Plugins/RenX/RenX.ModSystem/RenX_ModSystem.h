@@ -39,9 +39,9 @@ public:
 		bool autoAuthSteam;
 		bool autoAuthIP;
 		int access;
-		Jupiter::StringS prefix;
-		Jupiter::StringS gamePrefix;
-		Jupiter::StringS name;
+		std::string prefix;
+		std::string gamePrefix;
+		std::string name;
 	};
 	std::list<ModGroup> groups;
 
@@ -76,11 +76,11 @@ public:
 	void tempAuth(RenX::Server &server, const RenX::PlayerInfo &player, const ModGroup *group, bool notify = true) const;
 
 	bool set(RenX::PlayerInfo &player, ModGroup &group);
-	bool removeModSection(const Jupiter::ReadableString& section);
+	bool removeModSection(std::string_view section);
 
-	int getConfigAccess(const Jupiter::ReadableString &uuid) const;
+	int getConfigAccess(std::string_view uuid) const;
 	size_t getGroupCount() const;
-	ModGroup *getGroupByName(const Jupiter::ReadableString &name, ModGroup *defaultGroup = nullptr) const;
+	ModGroup *getGroupByName(std::string_view name, ModGroup *defaultGroup = nullptr) const;
 	ModGroup *getGroupByAccess(int access, ModGroup *defaultGroup = nullptr) const;
 	ModGroup *getGroupByIndex(size_t index) const;
 	ModGroup *getDefaultGroup() const;
@@ -111,9 +111,9 @@ private:
 	bool m_kickLockMismatch;
 	bool m_autoAuthSteam;
 	bool m_autoAuthIP;
-	Jupiter::StringS m_atmDefault;
-	Jupiter::StringS m_moderatorGroup;
-	Jupiter::StringS m_administratorGroup;
+	std::string m_atmDefault;
+	std::string m_moderatorGroup;
+	std::string m_administratorGroup;
 };
 
 GENERIC_IRC_COMMAND(AuthIRCCommand)

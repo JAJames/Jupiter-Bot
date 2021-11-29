@@ -16,6 +16,7 @@
  * Written by Jessica James <jessica.aj@outlook.com>
  */
 
+#include "jessilib/unicode.hpp"
 #include "RenX_LadderDatabase.h"
 #include "RenX_Server.h"
 #include "RenX_PlayerInfo.h"
@@ -33,7 +34,7 @@ RenX::LadderDatabase::LadderDatabase() {
 	}
 }
 
-RenX::LadderDatabase::LadderDatabase(const Jupiter::ReadableString &in_name) : LadderDatabase() {
+RenX::LadderDatabase::LadderDatabase(std::string_view in_name) : LadderDatabase() {
 	RenX::LadderDatabase::setName(in_name);
 }
 
@@ -208,9 +209,9 @@ std::pair<RenX::LadderDatabase::Entry *, size_t> RenX::LadderDatabase::getPlayer
 	return std::pair<Entry*, size_t>(nullptr, Jupiter::INVALID_INDEX);
 }
 
-RenX::LadderDatabase::Entry *RenX::LadderDatabase::getPlayerEntryByName(const Jupiter::ReadableString &name) const {
+RenX::LadderDatabase::Entry *RenX::LadderDatabase::getPlayerEntryByName(std::string_view name) const {
 	for (Entry *itr = m_head; itr != nullptr; itr = itr->next) {
-		if (itr->most_recent_name.equalsi(name)) {
+		if (jessilib::equalsi(itr->most_recent_name, name)) {
 			return itr;
 		}
 	}
@@ -218,10 +219,10 @@ RenX::LadderDatabase::Entry *RenX::LadderDatabase::getPlayerEntryByName(const Ju
 	return nullptr;
 }
 
-std::pair<RenX::LadderDatabase::Entry *, size_t> RenX::LadderDatabase::getPlayerEntryAndIndexByName(const Jupiter::ReadableString &name) const {
+std::pair<RenX::LadderDatabase::Entry *, size_t> RenX::LadderDatabase::getPlayerEntryAndIndexByName(std::string_view name) const {
 	size_t index = 0;
 	for (Entry *itr = m_head; itr != nullptr; itr = itr->next, ++index) {
-		if (itr->most_recent_name.equalsi(name)) {
+		if (jessilib::equalsi(itr->most_recent_name, name)) {
 			return std::pair<Entry*, size_t>(itr, index);
 		}
 	}
@@ -229,9 +230,9 @@ std::pair<RenX::LadderDatabase::Entry *, size_t> RenX::LadderDatabase::getPlayer
 	return std::pair<Entry*, size_t>(nullptr, Jupiter::INVALID_INDEX);
 }
 
-RenX::LadderDatabase::Entry *RenX::LadderDatabase::getPlayerEntryByPartName(const Jupiter::ReadableString &name) const {
+RenX::LadderDatabase::Entry *RenX::LadderDatabase::getPlayerEntryByPartName(std::string_view name) const {
 	for (Entry *itr = m_head; itr != nullptr; itr = itr->next) {
-		if (itr->most_recent_name.findi(name) != Jupiter::INVALID_INDEX) {
+		if (jessilib::findi(itr->most_recent_name, name) != std::string::npos) {
 			return itr;
 		}
 	}
@@ -239,10 +240,10 @@ RenX::LadderDatabase::Entry *RenX::LadderDatabase::getPlayerEntryByPartName(cons
 	return nullptr;
 }
 
-std::pair<RenX::LadderDatabase::Entry *, size_t> RenX::LadderDatabase::getPlayerEntryAndIndexByPartName(const Jupiter::ReadableString &name) const {
+std::pair<RenX::LadderDatabase::Entry *, size_t> RenX::LadderDatabase::getPlayerEntryAndIndexByPartName(std::string_view name) const {
 	size_t index = 0;
 	for (Entry *itr = m_head; itr != nullptr; itr = itr->next, ++index) {
-		if (itr->most_recent_name.findi(name) != Jupiter::INVALID_INDEX) {
+		if (jessilib::findi(itr->most_recent_name, name) != std::string::npos) {
 			return std::pair<RenX::LadderDatabase::Entry*, size_t>(itr, index);
 		}
 	}
@@ -250,18 +251,18 @@ std::pair<RenX::LadderDatabase::Entry *, size_t> RenX::LadderDatabase::getPlayer
 	return std::pair<Entry *, size_t>(nullptr, Jupiter::INVALID_INDEX);
 }
 
-std::forward_list<RenX::LadderDatabase::Entry> RenX::LadderDatabase::getPlayerEntriesByPartName(const Jupiter::ReadableString &name, size_t max) const {
+std::forward_list<RenX::LadderDatabase::Entry> RenX::LadderDatabase::getPlayerEntriesByPartName(std::string_view name, size_t max) const {
 	std::forward_list<Entry> list;
 	if (max == 0) {
 		for (Entry *itr = m_head; itr != nullptr; itr = itr->next) {
-			if (itr->most_recent_name.findi(name) != Jupiter::INVALID_INDEX) {
+			if (jessilib::findi(itr->most_recent_name, name) != std::string::npos) {
 				list.emplace_front(*itr);
 			}
 		}
 	}
 	else {
 		for (Entry* itr = m_head; itr != nullptr; itr = itr->next) {
-			if (itr->most_recent_name.findi(name) != Jupiter::INVALID_INDEX) {
+			if (jessilib::findi(itr->most_recent_name, name) != std::string::npos) {
 				list.emplace_front(*itr);
 				if (--max == 0) {
 					return list;
@@ -272,20 +273,20 @@ std::forward_list<RenX::LadderDatabase::Entry> RenX::LadderDatabase::getPlayerEn
 	return list;
 }
 
-std::forward_list<std::pair<RenX::LadderDatabase::Entry, size_t>> RenX::LadderDatabase::getPlayerEntriesAndIndexByPartName(const Jupiter::ReadableString &name, size_t max) const {
+std::forward_list<std::pair<RenX::LadderDatabase::Entry, size_t>> RenX::LadderDatabase::getPlayerEntriesAndIndexByPartName(std::string_view name, size_t max) const {
 	std::forward_list<std::pair<Entry, size_t>> list;
 	size_t index = 0;
 	if (max == 0)
 	{
 		for (Entry *itr = m_head; itr != nullptr; itr = itr->next, ++index) {
-			if (itr->most_recent_name.findi(name) != Jupiter::INVALID_INDEX) {
+			if (jessilib::findi(itr->most_recent_name, name) != std::string::npos) {
 				list.emplace_front(*itr, index);
 			}
 		}
 	}
 	else {
 		for (Entry* itr = m_head; itr != nullptr; itr = itr->next, ++index) {
-			if (itr->most_recent_name.findi(name) != Jupiter::INVALID_INDEX) {
+			if (jessilib::findi(itr->most_recent_name, name) != std::string::npos) {
 				list.emplace_front(*itr, index);
 				if (--max) {
 					return list;
@@ -616,11 +617,11 @@ void RenX::LadderDatabase::erase() {
 	}
 }
 
-const Jupiter::ReadableString &RenX::LadderDatabase::getName() const {
+std::string_view RenX::LadderDatabase::getName() const {
 	return m_name;
 }
 
-void RenX::LadderDatabase::setName(const Jupiter::ReadableString &in_name) {
+void RenX::LadderDatabase::setName(std::string_view in_name) {
 	m_name = in_name;
 }
 

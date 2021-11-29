@@ -240,7 +240,7 @@ namespace RenX
 		* @param message Message to send in-game.
 		* @return The number of bytes sent on success, less than or equal to zero otherwise.
 		*/
-		int sendMessage(const Jupiter::ReadableString &message);
+		int sendMessage(std::string_view message);
 
 		/**
 		* @brief Sends an in-game message to a player in the server.
@@ -249,7 +249,7 @@ namespace RenX
 		* @param message Message to send in-game.
 		* @return The number of bytes sent on success, less than or equal to zero otherwise.
 		*/
-		int sendMessage(const RenX::PlayerInfo &player, const Jupiter::ReadableString &message);
+		int sendMessage(const RenX::PlayerInfo &player, std::string_view message);
 
 		/**
 		* @brief Sends an in-game admin message to the server.
@@ -291,7 +291,7 @@ namespace RenX
 		* @param name Name of the player.
 		* @return A player's data on success, nullptr otherwise.
 		*/
-		RenX::BuildingInfo *getBuildingByName(const Jupiter::ReadableString &name) const;
+		RenX::BuildingInfo *getBuildingByName(std::string_view name) const;
 
 		/**
 		* @brief Checks if a map name is in the rotation.
@@ -299,15 +299,15 @@ namespace RenX
 		* @param name Name of map to search for
 		* @return True if the map exists, false otherwise.
 		*/
-		bool hasMapInRotation(const Jupiter::ReadableString &name) const;
+		bool hasMapInRotation(std::string_view name) const;
 
 		/**
 		* @brief Searches for a map based on a part of its name.
 		*
 		* @param name Part of the map's name to search for
-		* @return A map's full name if it exists, nullptr otherwise.
+		* @return A map's full name if it exists, an empty view otherwise.
 		*/
-		const Jupiter::ReadableString *getMapName(const Jupiter::ReadableString &name) const;
+		std::string_view getMapName(std::string_view name) const;
 
 		/**
 		* @brief Fetches the RCON command currently being processed.
@@ -386,7 +386,7 @@ namespace RenX
 		* @param name Name of the player.
 		* @return A player's data on success, nullptr otherwise.
 		*/
-		RenX::PlayerInfo *getPlayerByPartNameFast(const Jupiter::ReadableString &partName) const;
+		RenX::PlayerInfo *getPlayerByPartNameFast(std::string_view partName) const;
 
 		/**
 		* @brief Formats a player's Steam ID into a readable string.
@@ -450,7 +450,7 @@ namespace RenX
 		*
 		* @param id Player ID of the player to ban.
 		*/
-		void banPlayer(int id, const Jupiter::ReadableString &banner, const Jupiter::ReadableString &reason);
+		void banPlayer(int id, std::string_view banner, std::string_view reason);
 
 		/**
 		* @brief Bans a player from the server.
@@ -458,7 +458,7 @@ namespace RenX
 		* @param player Data of the player to ban.
 		* @param length Duration of the ban (0 for permanent).
 		*/
-		void banPlayer(const RenX::PlayerInfo &player, const Jupiter::ReadableString &banner, const Jupiter::ReadableString &reason, std::chrono::seconds length = std::chrono::seconds::zero());
+		void banPlayer(const RenX::PlayerInfo &player, std::string_view banner, std::string_view reason, std::chrono::seconds length = std::chrono::seconds::zero());
 
 		/**
 		* @brief Removes a player's data based on their ID number.
@@ -530,7 +530,7 @@ namespace RenX
 		*
 		* @return True on success, false otherwise.
 		*/
-		bool setMap(const Jupiter::ReadableString &map);
+		bool setMap(std::string_view map);
 
 		/**
 		* @brief Forces the current game to end.
@@ -725,21 +725,21 @@ namespace RenX
 		*
 		* @param prefix Prefix to use.
 		*/
-		void setPrefix(const Jupiter::ReadableString &prefix);
+		void setPrefix(std::string_view prefix);
 
 		/**
 		* @brief Fetches a server's game command prefix.
 		*
 		* @return The server's game command prefix.
 		*/
-		const Jupiter::ReadableString &getCommandPrefix() const;
+		std::string_view getCommandPrefix() const;
 
 		/**
 		* @brief Sets a server's game command prefix.
 		*
 		* @param prefix Prefix to use.
 		*/
-		void setCommandPrefix(const Jupiter::ReadableString &prefix);
+		void setCommandPrefix(std::string_view prefix);
 
 		void setRanked(bool in_value);
 
@@ -864,7 +864,7 @@ namespace RenX
 		* @param trigger Trigger of the command to get
 		* @return Command with the specified trigger.
 		*/
-		GameCommand *getCommand(const Jupiter::ReadableString &trigger) const;
+		GameCommand *getCommand(std::string_view trigger) const;
 
 		/**
 		* @brief Returns the number of commands in the command list.
@@ -903,7 +903,7 @@ namespace RenX
 		* @param trigger Trigger of the command to remove.
 		* @return True if a command was removed, false otherwise.
 		*/
-		bool removeCommand(const Jupiter::ReadableString &trigger);
+		bool removeCommand(std::string_view trigger);
 
 		/**
 		* @brief Prototype of UUID calculation function.
@@ -1031,7 +1031,7 @@ namespace RenX
 		*
 		* @return String containing the Game version
 		*/
-		const Jupiter::ReadableString &getGameVersion() const;
+		std::string_view getGameVersion() const;
 
 		/**
 		* @brief Fetches the RCON user name.
@@ -1046,14 +1046,14 @@ namespace RenX
 		* @param socket Initialized Socket to use for the connection
 		* @param configurationSection Configuration section to load from.
 		*/
-		Server(Jupiter::Socket &&socket, const Jupiter::ReadableString &configurationSection);
+		Server(Jupiter::Socket &&socket, std::string_view configurationSection);
 
 		/**
 		* @brief Creates the Server object, and loads settings from the specified configuration section.
 		*
 		* @param configurationSection Configuration section to load from.
 		*/
-		Server(const Jupiter::ReadableString &configurationSection);
+		Server(std::string_view configurationSection);
 
 		/**
 		* @brief Destructor for Server class.
@@ -1144,11 +1144,11 @@ namespace RenX
 		std::string m_clientHostname;
 		std::string m_hostname;
 		Jupiter::StringS m_pass;
-		Jupiter::StringS m_configSection;
+		std::string m_configSection;
 		Jupiter::StringS m_rules;
 		Jupiter::StringS m_ban_from_str;
-		Jupiter::StringS m_IRCPrefix;
-		Jupiter::StringS m_CommandPrefix;
+		std::string m_IRCPrefix;
+		std::string m_CommandPrefix;
 		Jupiter::Config* m_commandAccessLevels;
 		Jupiter::Config* m_commandAliases;
 	};

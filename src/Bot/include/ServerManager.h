@@ -109,7 +109,7 @@ public:
 	*
 	* @return True if a socket connection was successfully established, false otherwise.
 	*/
-	bool addServer(const Jupiter::ReadableString &serverConfig);
+	bool addServer(std::string_view serverConfig);
 
 	/**
 	* @brief Removes a server from the manager, based on its index.

@@ -17,6 +17,7 @@
  */
 
 #include <ctime>
+#include "jessilib/word_split.hpp"
 #include "Jupiter/Functions.h"
 #include "IRC_Bot.h"
 #include "RenX_Core.h"
@@ -44,14 +45,12 @@ bool RenX::Core::initialize() {
 	RenX::tags->initialize();
 	RenX::initTranslations(this->config);
 
-	const Jupiter::ReadableString &serverList = this->config.get("Servers"_jrs);
+	std::string_view serverList = this->config.get("Servers"_jrs);
 	m_commandsFile.read(this->config.get("CommandsFile"_jrs, "RenXGameCommands.ini"_jrs));
 
-	unsigned int wc = serverList.wordCount(WHITESPACE);
-
-	std::unique_ptr<RenX::Server> server;
-	for (unsigned int i = 0; i != wc; i++) {
-		server = std::make_unique<RenX::Server>(Jupiter::ReferenceString::getWord(serverList, i, WHITESPACE));
+	auto server_entries = jessilib::word_split_view(serverList, WHITESPACE_SV);
+	for (const auto& entry : server_entries) {
+		auto server = std::make_unique<RenX::Server>(entry);
 
 		if (server->connect() == false) {
 			fprintf(stderr, "[RenX] ERROR: Failed to connect to %s on port %u. Error code: %d" ENDL, server->getHostname().c_str(), server->getPort(), Jupiter::Socket::getLastError());

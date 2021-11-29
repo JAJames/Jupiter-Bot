@@ -24,6 +24,7 @@
 #include "RenX_BanDatabase.h"
 
 using namespace Jupiter::literals;
+using namespace std::literals;
 
 bool RenX_LadderPlugin::initialize() {
 	RenX_LadderPlugin::only_pure = this->config.get<bool>("OnlyPure"_jrs, false);
@@ -55,16 +56,16 @@ void RenX_LadderPlugin::RenX_OnServerFullyConnected(RenX::Server &server) {
 void RenX_LadderPlugin::RenX_OnGameOver(RenX::Server &server, RenX::WinType winType, const RenX::TeamType &team, int gScore, int nScore) {
 	if (server.isRanked() && server.isReliable() && server.players.size() != server.getBotCount()) {
 		char chr = static_cast<char>(team);
-		server.varData[this->name].set("t"_jrs, Jupiter::ReferenceString(&chr, 1));
-		server.varData[this->name].set("w"_jrs, "1"_jrs);
+		server.varData[this->name].set("t"sv, std::string(&chr, 1));
+		server.varData[this->name].set("w"sv, "1"s);
 		server.updateClientList();
 	}
 }
 
 void RenX_LadderPlugin::RenX_OnCommand(RenX::Server &server, const Jupiter::ReadableString &) {
 	if (server.getCurrentRCONCommand().equalsi("clientvarlist"_jrs)) {
-		if (server.varData[this->name].get("w"_jrs, "0"_jrs).equals("1")) {
-			server.varData[this->name].set("w"_jrs, "0"_jrs);
+		if (server.varData[this->name].get("w"_jrs, "0"_jrs) == "1"sv) {
+			server.varData[this->name].set("w"sv, "0"s);
 			RenX::TeamType team = static_cast<RenX::TeamType>(server.varData[this->name].get("t"_jrs, "\0"_jrs).get(0));
 			for (const auto& database : RenX::ladder_databases) {
 				database->updateLadder(server, team);
@@ -83,7 +84,10 @@ RenX_LadderPlugin pluginInstance;
 /** Ladder Commands */
 
 Jupiter::StringS FormatLadderResponse(RenX::LadderDatabase::Entry *entry, size_t rank) {
-	return Jupiter::StringS::Format("#%" PRIuPTR ": \"%.*s\" - Score: %" PRIu64 " - Kills: %" PRIu32 " - Deaths: %" PRIu32 " - KDR: %.2f - SPM: %.2f", rank, entry->most_recent_name.size(), entry->most_recent_name.ptr(), entry->total_score, entry->total_kills, entry->total_deaths, static_cast<double>(entry->total_kills) / (entry->total_deaths == 0 ? 1 : static_cast<double>(entry->total_deaths)), static_cast<double>(entry->total_score) / (entry->total_game_time == 0 ? 1.0 : static_cast<double>(entry->total_game_time)) * 60.0);
+	return Jupiter::StringS::Format("#%" PRIuPTR ": \"%.*s\" - Score: %" PRIu64 " - Kills: %" PRIu32 " - Deaths: %" PRIu32 " - KDR: %.2f - SPM: %.2f",
+		rank, entry->most_recent_name.size(), entry->most_recent_name.data(), entry->total_score, entry->total_kills, entry->total_deaths,
+		static_cast<double>(entry->total_kills) / (entry->total_deaths == 0 ? 1 : static_cast<double>(entry->total_deaths)),
+		static_cast<double>(entry->total_score) / (entry->total_game_time == 0 ? 1.0 : static_cast<double>(entry->total_game_time)) * 60.0);
 }
 
 // Ladder Command

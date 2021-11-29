@@ -49,7 +49,7 @@ namespace RenX
 		std::chrono::steady_clock::time_point joinTime = std::chrono::steady_clock::now();
 
 		// TODO: Add backpack
-		Jupiter::StringS name;
+		std::string name;
 		Jupiter::StringS ip;
 		Jupiter::StringS adminType;
 		Jupiter::StringS uuid;
@@ -96,7 +96,7 @@ namespace RenX
 		mutable Jupiter::Config varData;
 	};
 
-	static Jupiter::ReferenceString rdns_pending = STRING_LITERAL_AS_REFERENCE("RDNS_PENDING");
+	static std::string_view rdns_pending{ "RDNS_PENDING" };
 }
 
 /** Re-enable warnings */

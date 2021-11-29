@@ -156,7 +156,7 @@ RenX_Ladder_WebPlugin pluginInstance;
 
 /** Search bar */
 Jupiter::String generate_search(RenX::LadderDatabase *db) {
-	Jupiter::String result(256);
+	std::string result;
 	result = R"database-search(<form action="search" method="get" class="leaderboard-search"><input type="text" class="leaderboard-search-input" name="name" size="30" placeholder="Player name" value=""/>)database-search"_jrs;
 
 	if (db != nullptr && db != RenX::default_ladder_database) {
@@ -170,7 +170,7 @@ Jupiter::String generate_search(RenX::LadderDatabase *db) {
 
 /** Database selector */
 Jupiter::String generate_database_selector(RenX::LadderDatabase *db, const Jupiter::HTTP::HTMLFormResponse& query_params) {
-	Jupiter::String result(256);
+	std::string result;
 
 	result = R"database-select(<form method="get" class="database-select-form"><select name="database" class="database-select">)database-select"_jrs;
 	if (db != nullptr) {
@@ -206,7 +206,7 @@ Jupiter::String generate_database_selector(RenX::LadderDatabase *db, const Jupit
 
 /** Page buttons */
 Jupiter::String generate_page_buttons(RenX::LadderDatabase *db) {
-	Jupiter::String result(256);
+	std::string result;
 	size_t entry_count = db->getEntries();
 	size_t entries_per_page = pluginInstance.getEntriesPerPage();
 
@@ -337,7 +337,7 @@ Jupiter::String *RenX_Ladder_WebPlugin::generate_search_page(RenX::LadderDatabas
 	Jupiter::String row(256);
 	RenX::LadderDatabase::Entry *node = db->getHead();
 	while (node != nullptr) {
-		if (node->most_recent_name.findi(Jupiter::ReferenceString{name}) != Jupiter::INVALID_INDEX) { // match found
+		if (jessilib::findi(node->most_recent_name, name) != std::string::npos) { // match found
 			row = RenX_Ladder_WebPlugin::entry_table_row;
 			row.replace(RenX::tags->INTERNAL_OBJECT_TAG, db->getName());
 			RenX::processTags(row, *node);

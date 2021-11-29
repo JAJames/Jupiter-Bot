@@ -157,7 +157,7 @@ void RenX::BanDatabase::write(Entry* entry, FILE *file) {
 	fgetpos(file, std::addressof(m_eof));
 }
 
-void RenX::BanDatabase::add(RenX::Server *server, const RenX::PlayerInfo &player, const Jupiter::ReadableString &banner, const Jupiter::ReadableString &reason, std::chrono::seconds length, uint16_t flags) {
+void RenX::BanDatabase::add(RenX::Server *server, const RenX::PlayerInfo &player, std::string_view banner, std::string_view reason, std::chrono::seconds length, uint16_t flags) {
 	std::unique_ptr<Entry> entry = std::make_unique<Entry>();
 	if (flags != 0) {
 		entry->set_active();
@@ -190,7 +190,7 @@ void RenX::BanDatabase::add(RenX::Server *server, const RenX::PlayerInfo &player
 	write(m_entries.back().get());
 }
 
-void RenX::BanDatabase::add(const Jupiter::ReadableString &name, uint32_t ip, uint8_t prefix_length, uint64_t steamid, const Jupiter::ReadableString &hwid, const Jupiter::ReadableString &rdns, const Jupiter::ReadableString &banner, Jupiter::ReadableString &reason, std::chrono::seconds length, uint16_t flags) {
+void RenX::BanDatabase::add(const Jupiter::ReadableString &name, uint32_t ip, uint8_t prefix_length, uint64_t steamid, const Jupiter::ReadableString &hwid, const Jupiter::ReadableString &rdns, std::string_view banner, std::string_view reason, std::chrono::seconds length, uint16_t flags) {
 	std::unique_ptr<Entry> entry = std::make_unique<Entry>();
 	entry->set_active();
 	entry->flags |= flags;

@@ -16,6 +16,7 @@
  * Written by Jessica James <jessica.aj@outlook.com>
  */
 
+#include "jessilib/unicode.hpp"
 #include "Jupiter/IRC_Client.h"
 #include "IRC_Bot.h"
 #include "RenX_ModSystem.h"
@@ -25,6 +26,10 @@
 #include "RenX_Functions.h"
 
 using namespace Jupiter::literals;
+using namespace std::literals;
+
+constexpr std::string_view game_administrator_name = "administrator"sv;
+constexpr std::string_view game_moderator_name = "moderator"sv;
 
 bool RenX_ModSystemPlugin::initialize() {
 	m_lockSteam = this->config.get<bool>("LockSteam"_jrs, true);
@@ -49,9 +54,9 @@ bool RenX_ModSystemPlugin::initialize() {
 	Jupiter::ReferenceString dotPrefix = ".Prefix";
 	Jupiter::ReferenceString dotGamePrefix = ".GamePrefix";
 
-	Jupiter::String groupName = this->config.get("Default"_jrs);
+	std::string groupName = this->config.get("Default"_jrs, ""s);
 
-	while (groupName.isNotEmpty())
+	while (!groupName.empty())
 	{
 		// Add group
 		groups.emplace_back();
@@ -60,39 +65,39 @@ bool RenX_ModSystemPlugin::initialize() {
 
 		groupName += dotLockSteam;
 		group->lockSteam = this->config.get<bool>(groupName, m_lockSteam);
-		groupName.truncate(dotLockSteam.size());
+		groupName.erase(dotLockSteam.size());
 
 		groupName += dotLockIP;
 		group->lockIP = this->config.get<bool>(groupName, m_lockIP);
-		groupName.truncate(dotLockIP.size());
+		groupName.erase(dotLockIP.size());
 
 		groupName += dotLockName;
 		group->lockName = this->config.get<bool>(groupName, m_lockName);
-		groupName.truncate(dotLockName.size());
+		groupName.erase(dotLockName.size());
 
 		groupName += dotKickLockMismatch;
 		group->kickLockMismatch = this->config.get<bool>(groupName, m_kickLockMismatch);
-		groupName.truncate(dotKickLockMismatch.size());
+		groupName.erase(dotKickLockMismatch.size());
 
 		groupName += dotAutoAuthSteam;
 		group->autoAuthSteam = this->config.get<bool>(groupName, m_autoAuthSteam);
-		groupName.truncate(dotAutoAuthSteam.size());
+		groupName.erase(dotAutoAuthSteam.size());
 
 		groupName += dotAutoAuthIP;
 		group->autoAuthIP = this->config.get<bool>(groupName, m_autoAuthIP);
-		groupName.truncate(dotAutoAuthIP.size());
+		groupName.erase(dotAutoAuthIP.size());
 
 		groupName += dotAccess;
 		group->access = this->config.get<int>(groupName);
-		groupName.truncate(dotAccess.size());
+		groupName.erase(dotAccess.size());
 		
 		groupName += dotPrefix;
 		group->prefix = this->config.get(groupName);
-		groupName.truncate(dotPrefix.size());
+		groupName.erase(dotPrefix.size());
 
 		groupName += dotGamePrefix;
 		group->gamePrefix = this->config.get(groupName);
-		groupName.truncate(dotGamePrefix.size());
+		groupName.erase(dotGamePrefix.size());
 
 		// Next
 		groupName += dotNext;
@@ -128,7 +133,7 @@ unsigned int RenX_ModSystemPlugin::logoutAllMods(RenX::Server &server) {
 
 bool RenX_ModSystemPlugin::resetAccess(RenX::PlayerInfo &player) {
 	int oAccess = player.access;
-	if (player.adminType.equals("administrator"))
+	if (player.adminType == game_administrator_name)
 	{
 		ModGroup *group = getGroupByName(m_administratorGroup);
 		if (group == nullptr)
@@ -136,7 +141,7 @@ bool RenX_ModSystemPlugin::resetAccess(RenX::PlayerInfo &player) {
 		else
 			player.access = group->access;
 	}
-	else if (player.adminType.equals("moderator"))
+	else if (player.adminType == game_moderator_name)
 	{
 		ModGroup *group = getGroupByName(m_moderatorGroup);
 		if (group == nullptr)
@@ -162,9 +167,9 @@ int RenX_ModSystemPlugin::auth(RenX::Server &server, const RenX::PlayerInfo &pla
 		Jupiter::Config *section = this->config.getSection(player.uuid);
 		if (section != nullptr)
 		{
-			const Jupiter::ReadableString &groupName = section->get("Group"_jrs);
+			std::string_view groupName = section->get("Group"_jrs);
 
-			if (groupName.isEmpty())
+			if (groupName.empty())
 				group = &RenX_ModSystemPlugin::groups.front();
 			else
 			{
@@ -181,7 +186,7 @@ int RenX_ModSystemPlugin::auth(RenX::Server &server, const RenX::PlayerInfo &pla
 				player.access = section->get<int>("Access"_jrs, group->access);
 				if (player.access != 0)
 				{
-					server.sendMessage(player, Jupiter::StringS::Format("You are now authenticated with access level %d; group: %.*s.", player.access, group->name.size(), group->name.ptr()));
+					server.sendMessage(player, Jupiter::StringS::Format("You are now authenticated with access level %d; group: %.*s.", player.access, group->name.size(), group->name.data()));
 					if (server.isDevBot() && player.access > 1)
 					{
 						if (server.getVersion() >= 4)
@@ -191,7 +196,7 @@ int RenX_ModSystemPlugin::auth(RenX::Server &server, const RenX::PlayerInfo &pla
 					}
 				}
 				Jupiter::String playerName = RenX::getFormattedPlayerName(player);
-				server.sendLogChan(IRCCOLOR "03[Authentication] " IRCBOLD "%.*s" IRCBOLD IRCCOLOR " is now authenticated with access level %d; group: %.*s.", playerName.size(), playerName.ptr(), player.access, group->name.size(), group->name.ptr());
+				server.sendLogChan(IRCCOLOR "03[Authentication] " IRCBOLD "%.*s" IRCBOLD IRCCOLOR " is now authenticated with access level %d; group: %.*s.", playerName.size(), playerName.ptr(), player.access, group->name.size(), group->name.data());
 				return player.access;
 			};
 
@@ -205,13 +210,13 @@ int RenX_ModSystemPlugin::auth(RenX::Server &server, const RenX::PlayerInfo &pla
 			bool autoAuthSteam_l = section->get<bool>("AutoAuthSteam"_jrs, group->autoAuthSteam);
 			bool autoAuthIP_l = section->get<bool>("AutoAuthIP"_jrs, group->autoAuthIP);
 
-			uint64_t steamid = section->get("SteamID"_jrs).asUnsignedLongLong();
-			const Jupiter::ReadableString &ip = section->get("LastIP"_jrs);
-			const Jupiter::ReadableString &name = section->get("Name"_jrs);
+			uint64_t steamid = Jupiter::ReferenceString{section->get("SteamID"_jrs)}.asUnsignedLongLong();
+			std::string_view ip = section->get("LastIP"_jrs);
+			std::string_view name = section->get("Name"_jrs);
 
-			if ((lockSteam_l == false || player.steamid == steamid) && (lockIP_l == false || player.ip.equalsi(ip)) && (lockName_l == false || player.name.equalsi(name)))
+			if ((lockSteam_l == false || player.steamid == steamid) && (lockIP_l == false || player.ip == ip) && (lockName_l == false || jessilib::equalsi(player.name, name)))
 			{
-				if (checkAuto == false || (autoAuthSteam_l && player.steamid == steamid) || (autoAuthIP_l && player.ip.equalsi(ip)))
+				if (checkAuto == false || (autoAuthSteam_l && player.steamid == steamid) || (autoAuthIP_l && player.ip == ip))
 					return sectionAuth();
 			}
 			else if (kickLockMismatch_l)
@@ -239,28 +244,29 @@ void RenX_ModSystemPlugin::tempAuth(RenX::Server &server, const RenX::PlayerInfo
 	player.access = group->access;
 
 	if (notify)
-		server.sendMessage(player, Jupiter::StringS::Format("You have been authorized into group \"%.*s\", with access level %u.", group->name.size(), group->name.ptr(), player.access));
+		server.sendMessage(player, Jupiter::StringS::Format("You have been authorized into group \"%.*s\", with access level %u.", group->name.size(), group->name.data(), player.access));
 }
 
 bool RenX_ModSystemPlugin::set(RenX::PlayerInfo &player, ModGroup &group) {
 	bool r = this->config[player.uuid].set("Group"_jrs, group.name);
-	this->config[player.uuid].set("SteamID"_jrs, Jupiter::StringS::Format("%llu", player.steamid));
-	this->config[player.uuid].set("LastIP"_jrs, player.ip);
+	this->config[player.uuid].set("SteamID"_jrs, static_cast<std::string>(Jupiter::StringS::Format("%llu", player.steamid)));
+	this->config[player.uuid].set("LastIP"_jrs, static_cast<std::string>(player.ip));
 	this->config[player.uuid].set("Name"_jrs, player.name);
 	this->config.write();
 
 	return r;
 }
 
-bool RenX_ModSystemPlugin::removeModSection(const Jupiter::ReadableString& section) {
+bool RenX_ModSystemPlugin::removeModSection(std::string_view section) {
 	return config.removeSection(section) && config.write();
 }
 
-RenX_ModSystemPlugin::ModGroup *RenX_ModSystemPlugin::getGroupByName(const Jupiter::ReadableString &name, ModGroup *defaultGroup) const {
-	if (RenX_ModSystemPlugin::groups.size() != 0)
-		for (auto node = this->groups.begin(); node != this->groups.end(); ++node)
-			if (node->name.equalsi(name))
-				return const_cast<ModGroup *>(&*node);
+RenX_ModSystemPlugin::ModGroup *RenX_ModSystemPlugin::getGroupByName(std::string_view name, ModGroup *defaultGroup) const {
+	for (const auto& group : groups) {
+		if (jessilib::equalsi(group.name, name)) {
+			return const_cast<ModGroup*>(&group);
+		}
+	}
 
 	return defaultGroup;
 }
@@ -283,12 +289,13 @@ RenX_ModSystemPlugin::ModGroup *RenX_ModSystemPlugin::getGroupByIndex(size_t ind
 	return nullptr;
 }
 
-int RenX_ModSystemPlugin::getConfigAccess(const Jupiter::ReadableString &uuid) const {
+int RenX_ModSystemPlugin::getConfigAccess(std::string_view uuid) const {
 	Jupiter::Config *section = this->config.getSection(uuid);
 
-	if (section == nullptr)
+	if (section == nullptr) {
 		return RenX_ModSystemPlugin::groups.front().access;
-	//for (auto node = this->groups.begin(); node != this->groups.end(); ++node)
+	}
+
 	return section->get<int>("Access"_jrs, getGroupByName(section->get("Group"_jrs),const_cast<ModGroup *>(&groups.front()))->access);
 }
 
@@ -324,9 +331,9 @@ RenX_ModSystemPlugin::~RenX_ModSystemPlugin() {
 					node->varData[RenX_ModSystemPlugin::name].remove("Group"_jrs);
 					node->gamePrefix.truncate(node->gamePrefix.size());
 					node->formatNamePrefix.truncate(node->formatNamePrefix.size());
-					if (node->adminType.equals("administrator"))
+					if (node->adminType == game_administrator_name)
 						node->access = 2;
-					else if (node->adminType.equals("moderator"))
+					else if (node->adminType == game_moderator_name)
 						node->access = 1;
 					else
 						node->access = 0;
@@ -347,8 +354,8 @@ void RenX_ModSystemPlugin::RenX_OnPlayerDelete(RenX::Server &server, const RenX:
 	if (RenX_ModSystemPlugin::groups.size() != 0 && player.isBot == false && player.uuid.isNotEmpty()) {
 		Jupiter::Config *section = this->config.getSection(player.uuid);
 		if (section != nullptr) {
-			section->set("SteamID"_jrs, Jupiter::StringS::Format("%llu", player.steamid));
-			section->set("LastIP"_jrs, player.ip);
+			section->set("SteamID"_jrs, static_cast<std::string>(Jupiter::StringS::Format("%llu", player.steamid)));
+			section->set("LastIP"_jrs, static_cast<std::string>(player.ip));
 			section->set("Name"_jrs, player.name);
 		}
 	}
@@ -362,9 +369,9 @@ void RenX_ModSystemPlugin::RenX_OnIDChange(RenX::Server &server, const RenX::Pla
 
 void RenX_ModSystemPlugin::RenX_OnAdminLogin(RenX::Server &server, const RenX::PlayerInfo &player) {
 	ModGroup *group = nullptr;
-	if (player.adminType.equals("administrator"))
+	if (player.adminType == game_administrator_name)
 		group = getGroupByName(m_administratorGroup);
-	else if (player.adminType.equals("moderator"))
+	else if (player.adminType == game_moderator_name)
 		group = getGroupByName(m_moderatorGroup);
 
 	if (group != nullptr && player.access < group->access)
@@ -378,12 +385,12 @@ void RenX_ModSystemPlugin::RenX_OnAdminGrant(RenX::Server &server, const RenX::P
 void RenX_ModSystemPlugin::RenX_OnAdminLogout(RenX::Server &server, const RenX::PlayerInfo &player) {
 	ModGroup *group = nullptr;
 	int access = RenX_ModSystemPlugin::groups.size() == 0 ? 0 : RenX_ModSystemPlugin::groups.front().access;
-	if (player.adminType.equals("administrator"))
+	if (player.adminType == game_administrator_name)
 	{
 		access = 2;
 		group = getGroupByName(m_administratorGroup);
 	}
-	else if (player.adminType.equals("moderator"))
+	else if (player.adminType == game_moderator_name)
 	{
 		access = 1;
 		group = getGroupByName(m_moderatorGroup);
@@ -455,7 +462,7 @@ void AuthIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &cha
 							RenX_ModSystemPlugin::ModGroup *defaultGroup = pluginInstance.getDefaultGroup();
 							if (pluginInstance.auth(*server, *player) == -1)
 								source->sendNotice(nick, "Error: Player failed to pass strict lock checks. Player kicked."_jrs);
-							else if (defaultGroup->name.equals(player->varData[pluginInstance.getName()].get("Group"_jrs)))
+							else if (defaultGroup->name == player->varData[pluginInstance.getName()].get("Group"_jrs))
 								source->sendNotice(nick, "Error: Failed to authenticate player."_jrs);
 							else
 								source->sendNotice(nick, "Player authenticated successfully."_jrs);
@@ -681,9 +688,9 @@ void AddIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &chan
 						{
 							pluginInstance.resetAccess(*player);
 							if (pluginInstance.set(*player, *group))
-								source->sendNotice(nick, Jupiter::StringS::Format("%.*s has been added to group \"%.*s\"", player->name.size(), player->name.ptr(), group->name.size(), group->name.ptr()));
+								source->sendNotice(nick, Jupiter::StringS::Format("%.*s has been added to group \"%.*s\"", player->name.size(), player->name.data(), group->name.size(), group->name.data()));
 							else
-								source->sendNotice(nick, Jupiter::StringS::Format("%.*s has been moved to group \"%.*s\"", player->name.size(), player->name.ptr(), group->name.size(), group->name.ptr()));
+								source->sendNotice(nick, Jupiter::StringS::Format("%.*s has been moved to group \"%.*s\"", player->name.size(), player->name.data(), group->name.size(), group->name.data()));
 							pluginInstance.auth(*server, *player, false, true);
 						}
 					}
@@ -716,6 +723,7 @@ void DelIRCCommand::create()
 
 void DelIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &channel, const Jupiter::ReadableString &nick, const Jupiter::ReadableString &parameters)
 {
+	std::string_view parameters_view = parameters;
 	if (parameters.isEmpty())
 		source->sendNotice(nick, "Error: Too few parameters. Syntax: del <player>"_jrs);
 	else
@@ -742,7 +750,7 @@ void DelIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &chan
 						{
 							for (auto& section : pluginInstance.getConfig().getSections())
 							{
-								if (section.second.get("Name"_jrs).equalsi(parameters)) {
+								if (jessilib::equalsi(section.second.get("Name"_jrs), parameters_view)) {
 									if (pluginInstance.removeModSection(section.first))
 										source->sendNotice(nick, "Player has been removed from the moderator list."_jrs);
 									else
@@ -822,7 +830,7 @@ void ForceAuthIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString
 						{
 							RenX_ModSystemPlugin::ModGroup *defaultGroup = pluginInstance.getDefaultGroup();
 							pluginInstance.auth(*server, *player, false, true);
-							if (defaultGroup->name.equals(player->varData[pluginInstance.getName()].get("Group"_jrs)))
+							if (defaultGroup->name == player->varData[pluginInstance.getName()].get("Group"_jrs))
 								source->sendNotice(nick, "Error: Failed to authenticate player."_jrs);
 							else
 								source->sendNotice(nick, "Player authenticated successfully."_jrs);
@@ -867,8 +875,7 @@ void ModListIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &
 		msgBaseSize = msg.size();
 
 		for (auto& section : pluginInstance.getConfig().getSections()) {
-			if (section.second.get("Group"_jrs).equalsi(node->name))
-			{
+			if (jessilib::equalsi(section.second.get("Group"_jrs), node->name)) {
 				msg += section.second.get("Name"_jrs, section.second.getName());
 				msg += ", "_jrs;
 			}
@@ -926,7 +933,7 @@ void AuthGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *player, co
 				RenX_ModSystemPlugin::ModGroup *defaultGroup = pluginInstance.getDefaultGroup();
 				if (pluginInstance.auth(*source, *player) == -1)
 					source->sendMessage(*player, "Error: Player failed to pass strict lock checks. Player kicked."_jrs);
-				else if (defaultGroup->name.equals(player->varData[pluginInstance.getName()].get("Group"_jrs)))
+				else if (defaultGroup->name == player->varData[pluginInstance.getName()].get("Group"_jrs))
 					source->sendMessage(*player, "Error: Failed to authenticate player."_jrs);
 				else
 					source->sendMessage(*player, "Player authenticated successfully."_jrs);
@@ -1041,7 +1048,7 @@ void ForceAuthGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *playe
 			{
 				RenX_ModSystemPlugin::ModGroup *defaultGroup = pluginInstance.getDefaultGroup();
 				pluginInstance.auth(*source, *player, false, true);
-				if (defaultGroup->name.equals(player->varData[pluginInstance.getName()].get("Group"_jrs)))
+				if (defaultGroup->name == player->varData[pluginInstance.getName()].get("Group"_jrs))
 					source->sendMessage(*player, "Error: Failed to authenticate player."_jrs);
 				else
 					source->sendMessage(*player, "Player authenticated successfully."_jrs);
