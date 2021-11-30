@@ -55,9 +55,7 @@ namespace RenX
 		std::string uuid;
 		Jupiter::StringS character;
 		Jupiter::StringS vehicle;
-		std::string rdns;
 		std::string hwid;
-		std::mutex rdns_mutex;
 		uint64_t steamid = 0;
 		uint32_t ip32 = 0;
 		uint16_t ban_flags = 0;
@@ -66,7 +64,6 @@ namespace RenX
 		int id = 0;
 		bool isBot = false;
 		bool is_dev = false;
-		bool rdns_resolved = false;
 		unsigned short ping = 0;
 		double score = 0.0f;
 		double credits = 0.0f;
@@ -88,12 +85,31 @@ namespace RenX
 		unsigned int captures = 0;
 		unsigned int steals = 0;
 		unsigned int stolen = 0;
+
+		// Lock-free getter -- never access m_rdns until it's been set by RDNS thread
+		std::string_view get_rdns() const {
+			if (m_rdns_ptr.use_count() != 1
+				|| m_rdns_ptr == nullptr) {
+				return {};
+			}
+
+			// In theory if get_rdns() were ever called at the same time as start_resolve_rdns(), on separate threads,
+			// then there would be a race condition here causing undefined behavior. However, we only interact with
+			// players on a single thread, and even beyond that, we only call start_resolve_rdns() immediately after
+			// constructing PlayerInfo. Therefore, this is safe
+			return *m_rdns_ptr;
+		}
+		static void resolve_rdns(std::string in_ip, std::shared_ptr<std::string> out_rdns);
+		void start_resolve_rdns();
+		bool rdns_pending = false;
 		
 		mutable Jupiter::StringS gamePrefix;
 		mutable Jupiter::StringS formatNamePrefix;
-		mutable std::thread rdns_thread;
 		mutable int access = 0;
-		mutable Jupiter::Config varData;
+		mutable Jupiter::Config varData; // TODO: use jessilib::object instead
+
+	private:
+		std::shared_ptr<std::string> m_rdns_ptr; // Needs synchronization across threads
 	};
 
 	static std::string_view rdns_pending{ "RDNS_PENDING" };

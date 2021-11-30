@@ -477,13 +477,11 @@ void TagsImp::processTags(std::string& msg, const RenX::Server *server, const Re
 		PROCESS_TAG(this->INTERNAL_RAW_NAME_TAG, player->name);
 		PROCESS_TAG(this->INTERNAL_IP_TAG, player->ip);
 		PROCESS_TAG(this->INTERNAL_HWID_TAG, player->hwid);
-		if (player->rdns_thread.joinable())
-		{
+		if (player->rdns_pending) {
 			PROCESS_TAG(this->INTERNAL_RDNS_TAG, RenX::rdns_pending);
 		}
-		else
-		{
-			PROCESS_TAG(this->INTERNAL_RDNS_TAG, player->rdns);
+		else {
+			PROCESS_TAG(this->INTERNAL_RDNS_TAG, player->get_rdns());
 		}
 		PROCESS_TAG(this->INTERNAL_UUID_TAG, player->uuid);
 		PROCESS_TAG(this->INTERNAL_ID_TAG, Jupiter::StringS::Format("%d", player->id));
@@ -523,13 +521,11 @@ void TagsImp::processTags(std::string& msg, const RenX::Server *server, const Re
 		PROCESS_TAG(this->INTERNAL_VICTIM_RAW_NAME_TAG, victim->name);
 		PROCESS_TAG(this->INTERNAL_VICTIM_IP_TAG, victim->ip);
 		PROCESS_TAG(this->INTERNAL_VICTIM_HWID_TAG, victim->hwid);
-		if (victim->rdns_thread.joinable())
-		{
+		if (victim->rdns_pending) {
 			PROCESS_TAG(this->INTERNAL_VICTIM_RDNS_TAG, RenX::rdns_pending);
 		}
-		else
-		{
-			PROCESS_TAG(this->INTERNAL_VICTIM_RDNS_TAG, victim->rdns);
+		else {
+			PROCESS_TAG(this->INTERNAL_VICTIM_RDNS_TAG, victim->get_rdns());
 		}
 		PROCESS_TAG(this->INTERNAL_VICTIM_UUID_TAG, victim->uuid);
 		PROCESS_TAG(this->INTERNAL_VICTIM_ID_TAG, Jupiter::StringS::Format("%d", victim->id));

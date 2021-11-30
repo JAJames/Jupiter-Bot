@@ -24,6 +24,7 @@
 #include <thread>
 #include <mutex>
 #include "jessilib/unicode.hpp"
+#include "jessilib/app_parameters.hpp"
 #include "Jupiter/Functions.h"
 #include "Jupiter/INIConfig.h"
 #include "Jupiter/Socket.h"
@@ -39,6 +40,7 @@
 #endif // _WIN32
 
 using namespace Jupiter::literals;
+using namespace std::literals;
 
 Jupiter::INIConfig o_config;
 Jupiter::Config *Jupiter::g_config = &o_config;
@@ -163,11 +165,10 @@ void reinitialize_plugins() {
 	}
 }
 
-int main(int argc, const char **args) {
+int main(int argc, char* argv[]) {
 	atexit(onExit);
 	std::set_terminate(onTerminate);
 	std::thread inputThread(inputLoop);
-	Jupiter::ReferenceString plugins_directory, configs_directory;
 
 #if defined SIGPIPE
 	std::signal(SIGPIPE, SIG_IGN);
@@ -180,33 +181,24 @@ int main(int argc, const char **args) {
 #endif // _WIN32
 
 	srand(static_cast<unsigned int>(std::chrono::system_clock::now().time_since_epoch().count()));
-	puts(Jupiter::copyright);
-	const char *configFileName = "Config.ini";
+	std::cout << Jupiter::copyright << std::endl;
 
-	for (int i = 1; i < argc; i++) {
-		std::string_view arg_view = args[i];
-		if (jessilib::equalsi("-help"_jrs, arg_view)) {
-			puts("Help coming soon, to a theatre near you!");
-			return 0;
-		}
-		else if (jessilib::equalsi("-config"_jrs, arg_view) && ++i < argc)
-			configFileName = args[i];
-		else if (jessilib::equalsi("-pluginsdir"_jrs, arg_view) && ++i < argc)
-			plugins_directory = arg_view;
-		else if (jessilib::equalsi("-configsdir"_jrs, arg_view) && ++i < argc)
-			configs_directory = arg_view;
-		else if (jessilib::equalsi("-configFormat"_jrs, arg_view) && ++i < argc)
-			puts("Feature not yet supported!");
-		else
-			printf("Warning: Unknown command line argument \"%s\" specified. Ignoring...", args[i]);
+	jessilib::app_parameters parameters{ argc, argv };
+	if (parameters.has_switch("help"sv)) {
+		std::cout << "Help coming soon, to a theatre near you!" << std::endl;
+		return 0;
 	}
+
+	std::string_view configFileName = parameters.get_value("config", "Config.ini"sv);
+	std::string_view plugins_directory = parameters.get_value("pluginsdir"sv);
+	std::string_view configs_directory = parameters.get_value("configsdir"sv);
 
 	std::chrono::steady_clock::time_point load_start = std::chrono::steady_clock::now();
 
-	puts("Loading config file...");
+	std::cout << "Loading config file..." << std::endl;
 	if (!o_config.read(configFileName)) {
-		puts("Unable to read config file. Closing...");
-		exit(0);
+		std::cout << "Unable to read config file. Closing..." << std::endl;
+		return 1;
 	}
 
 	double time_taken = static_cast<double>(std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::steady_clock::now() - load_start).count()) / 1000.0;

@@ -171,9 +171,7 @@ void RenX::BanDatabase::add(RenX::Server *server, const RenX::PlayerInfo &player
 	if (player.hwid.find_first_not_of('0') != std::string::npos) {
 		entry->hwid = player.hwid;
 	}
-	if (player.rdns_thread.joinable())
-		player.rdns_thread.join();
-	entry->rdns = player.rdns;
+	entry->rdns = player.get_rdns();
 	entry->name = player.name;
 	entry->banner = banner;
 	entry->reason = reason;

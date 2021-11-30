@@ -65,24 +65,23 @@ int RenX::Server::think() {
 	else {
 		auto cycle_player_rdns = [this]() { // Cycles through any pending RDNS resolutions, and fires events as necessary.
 			if (m_player_rdns_resolutions_pending != 0) {
-				for (auto node = this->players.begin(); node != this->players.end(); ++node) {
-					if (node->rdns_thread.joinable() && node->rdns_mutex.try_lock()) { // RDNS event hasn't fired AND RDNS value has been resolved
-						node->rdns_mutex.unlock();
-						node->rdns_thread.join();
+				for (auto& player : players) {
+					if (player.rdns_pending && !player.get_rdns().empty()) { // RDNS event hasn't fired AND RDNS value has been resolved
+						player.rdns_pending = false;
 						--m_player_rdns_resolutions_pending;
 
 						// Check for bans
-						banCheck(*node);
+						banCheck(player);
 
 						// Fire RDNS resolved event
 						for (const auto& plugin : RenX::getCore()->getPlugins()) {
-							plugin->RenX_OnPlayerRDNS(*this, *node);
+							plugin->RenX_OnPlayerRDNS(*this, player);
 						}
 
 						// Fire player indentified event if ready
-						if (!node->hwid.empty()) {
+						if (!player.hwid.empty()) {
 							for (auto plugin : RenX::getCore()->getPlugins()) {
-								plugin->RenX_OnPlayerIdentify(*this, *node);
+								plugin->RenX_OnPlayerIdentify(*this, player);
 							}
 						}
 
@@ -555,7 +554,7 @@ void RenX::Server::banCheck(RenX::PlayerInfo &player) {
 				if ((m_localSteamBan && entry->steamid != 0 && entry->steamid == player.steamid)
 					|| (m_localIPBan && entry->ip != 0 && (entry->ip & netmask) == (player.ip32 & netmask))
 					|| (m_localHWIDBan && !entry->hwid.empty() && entry->hwid == player.hwid)
-					|| (m_localRDNSBan && !entry->rdns.empty() && entry->is_rdns_ban() && !player.rdns_thread.joinable() && player.rdns.find(entry->rdns) != std::string::npos)
+					|| (m_localRDNSBan && !entry->rdns.empty() && entry->is_rdns_ban() && player.get_rdns().find(entry->rdns) != std::string::npos)
 					|| (m_localNameBan && !entry->name.empty() && jessilib::equalsi(entry->name, player.name))) {
 					player.ban_flags |= entry->flags;
 					if (entry->is_type_game())
@@ -735,9 +734,8 @@ bool RenX::Server::removePlayer(int id) {
 				--m_bot_count;
 			}
 
-			if (node->rdns_thread.joinable()) { // Close the RDNS thread, if one exists
+			if (node->rdns_pending) {
 				--m_player_rdns_resolutions_pending;
-				node->rdns_thread.join();
 			}
 
 			this->players.erase(node);
@@ -1302,14 +1300,17 @@ void RenX::Server::sendLogChan(std::string_view msg) const {
 	}
 }
 
-void resolve_rdns(RenX::PlayerInfo *player) {
-	player->rdns_mutex.lock();
+void RenX::PlayerInfo::resolve_rdns(std::string in_ip, std::shared_ptr<std::string> out_rdns) {
+	*out_rdns = Jupiter::Socket::resolveHostname(in_ip.c_str(), 0);
+}
 
-	// TODO: don't do this
-	char *resolved = Jupiter::Socket::resolveHostname_alloc(static_cast<std::string>(player->ip).c_str(), 0);
-	player->rdns = resolved;
-	delete[] resolved;
-	player->rdns_mutex.unlock();
+void RenX::PlayerInfo::start_resolve_rdns() {
+	rdns_pending = true;
+
+	std::string player_ip = ip;
+	auto rdns_string = std::make_shared<std::string>();
+	m_rdns_ptr = rdns_string;
+	std::thread(resolve_rdns, ip, std::move(rdns_string)).detach();
 }
 
 struct parsed_player_token {
@@ -1519,7 +1520,7 @@ void RenX::Server::processLine(std::string_view line) {
 			// RDNS
 			if (resolvesRDNS() && player->ip32 != 0)
 			{
-				player->rdns_thread = std::thread(resolve_rdns, player);
+				player->start_resolve_rdns();
 				++m_player_rdns_resolutions_pending;
 			}
 
@@ -1555,7 +1556,7 @@ void RenX::Server::processLine(std::string_view line) {
 				player->ip32 = Jupiter::Socket::pton4(static_cast<std::string>(player->ip).c_str());
 				if (resolvesRDNS())
 				{
-					player->rdns_thread = std::thread(resolve_rdns, player);
+					player->start_resolve_rdns();
 					++m_player_rdns_resolutions_pending;
 				}
 				recalcUUID = true;
@@ -2847,8 +2848,7 @@ void RenX::Server::processLine(std::string_view line) {
 								}
 						}
 					}
-					else if (subHeader == "HWID;"sv)
-					{
+					else if (subHeader == "HWID;"sv) {
 						// ["player" |] Player | "hwid" | HWID
 						size_t offset = 0;
 						if (getToken(2) == "player"sv)
@@ -2865,7 +2865,7 @@ void RenX::Server::processLine(std::string_view line) {
 							plugin->RenX_OnHWID(*this, *player);
 						}
 
-						if (!player->rdns.empty()) {
+						if (!player->rdns_pending) {
 							for (const auto& plugin : xPlugins) {
 								plugin->RenX_OnPlayerIdentify(*this, *player);
 							}
@@ -3654,14 +3654,10 @@ void RenX::Server::wipePlayers() {
 		for (const auto& plugin : RenX::getCore()->getPlugins()) {
 			plugin->RenX_OnPlayerDelete(*this, this->players.front());
 		}
-
-		if (this->players.front().rdns_thread.joinable()) { // Close the RDNS thread, if one exists
-			--m_player_rdns_resolutions_pending;
-			this->players.front().rdns_thread.join();
-		}
-
 		this->players.pop_front();
 	}
+
+	m_player_rdns_resolutions_pending = 0;
 }
 
 void RenX::Server::startPing() {

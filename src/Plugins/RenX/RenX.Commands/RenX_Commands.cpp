@@ -79,9 +79,8 @@ bool RenX_CommandsPlugin::initialize() {
 	auto max_tban_time = this->config.get("MaxTBanTime"_jrs, "1w"_jrs);
 	m_defaultTempBanTime = jessilib::duration_from_string(default_tban_time.data(), default_tban_time.data() + default_tban_time.size()).duration;
 	m_maxTempBanTime = std::max(jessilib::duration_from_string(max_tban_time.data(), max_tban_time.data() + max_tban_time.size()).duration, m_defaultTempBanTime);
-	m_playerInfoFormat = this->config.get("PlayerInfoFormat"_jrs, IRCCOLOR "03[Player Info]" IRCCOLOR "{TCOLOR} Name: " IRCBOLD "{RNAME}" IRCBOLD " - ID: {ID} - Team: " IRCBOLD "{TEAML}" IRCBOLD " - Vehicle Kills: {VEHICLEKILLS} - Building Kills {BUILDINGKILLS} - Kills {KILLS} - Deaths: {DEATHS} - KDR: {KDR} - Access: {ACCESS}"_jrs);
-	m_adminPlayerInfoFormat = this->config.get("AdminPlayerInfoFormat"_jrs, Jupiter::StringS::Format("%.*s - IP: " IRCBOLD "{IP}" IRCBOLD " - HWID: " IRCBOLD "{HWID}" IRCBOLD " - RDNS: " IRCBOLD "{RDNS}" IRCBOLD " - Steam ID: " IRCBOLD "{STEAM}", m_playerInfoFormat.size(),
-		m_playerInfoFormat.data()));
+	m_playerInfoFormat = this->config.get("PlayerInfoFormat"_jrs, IRCCOLOR "03[Player Info]" IRCCOLOR "{TCOLOR} " IRCBOLD "{RNAME}" IRCBOLD " - ID: {ID} - Team: " IRCBOLD "{TEAML}" IRCBOLD " - Vehicle Kills: {VEHICLEKILLS} - Building Kills {BUILDINGKILLS} - Kills {KILLS} - Deaths: {DEATHS} - KDR: {KDR} - Access: {ACCESS}"_jrs);
+	m_adminPlayerInfoFormat = this->config.get("AdminPlayerInfoFormat"_jrs, m_playerInfoFormat + " - IP: " IRCBOLD "{IP}" IRCBOLD " - HWID: " IRCBOLD "{HWID}" IRCBOLD " - RDNS: " IRCBOLD "{RDNS}" IRCBOLD " - Steam ID: " IRCBOLD "{STEAM}");
 	m_buildingInfoFormat = this->config.get("BuildingInfoFormat"_jrs, ""s IRCCOLOR + RenX::tags->buildingTeamColorTag + RenX::tags->buildingNameTag + IRCCOLOR " - " IRCCOLOR "07"_jrs + RenX::tags->buildingHealthPercentageTag + "%"_jrs);
 	m_staffTitle = this->config.get("StaffTitle"_jrs, "Moderator"_jrs);
 
