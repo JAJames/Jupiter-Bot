@@ -19,10 +19,10 @@
 #include "HTTPServer.h"
 
 using namespace Jupiter::literals;
+using namespace std::literals;
 
-bool HTTPServerPlugin::initialize()
-{
-	return HTTPServerPlugin::server.bind(this->config.get("BindAddress"_jrs, "0.0.0.0"_jrs), this->config.get<uint16_t>("BindPort"_jrs, 80));
+bool HTTPServerPlugin::initialize() {
+	return HTTPServerPlugin::server.bind(this->config.get("BindAddress"_jrs, "0.0.0.0"sv), this->config.get<uint16_t>("BindPort"_jrs, 80));
 }
 
 int HTTPServerPlugin::think()

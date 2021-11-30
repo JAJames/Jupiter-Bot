@@ -37,7 +37,7 @@ bool IRCCorePlugin::initialize() {
 	if (!serverList.empty()) {
 		serverManager->setConfig(this->config);
 
-		auto server_entries = jessilib::word_split(serverList, WHITESPACE_SV);
+		auto server_entries = jessilib::word_split_view(serverList, WHITESPACE_SV);
 		for (const auto& entry : server_entries) {
 			serverManager->addServer(entry);
 		}

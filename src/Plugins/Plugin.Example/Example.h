@@ -15,7 +15,7 @@
 class ExamplePlugin : public Jupiter::Plugin
 {
 public:
-	void OnConnect(Jupiter::IRC::Client *server);
+	void OnConnect(Jupiter::IRC::Client *server) override;
 };
 
 // Example IRC Command Declaration

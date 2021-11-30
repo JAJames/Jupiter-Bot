@@ -41,7 +41,7 @@ bool RenX_IRCJoinPlugin::initialize()
 	return true;
 }
 
-void RenX_IRCJoinPlugin::OnJoin(Jupiter::IRC::Client *source, const Jupiter::ReadableString &channel, const Jupiter::ReadableString &nick)
+void RenX_IRCJoinPlugin::OnJoin(Jupiter::IRC::Client *source, std::string_view channel, std::string_view nick)
 {
 	if (RenX_IRCJoinPlugin::joinFmt.isNotEmpty())
 	{
@@ -67,7 +67,7 @@ void RenX_IRCJoinPlugin::OnJoin(Jupiter::IRC::Client *source, const Jupiter::Rea
 	}
 }
 
-void RenX_IRCJoinPlugin::OnPart(Jupiter::IRC::Client *source, const Jupiter::ReadableString &channel, const Jupiter::ReadableString &nick, const Jupiter::ReadableString &reason)
+void RenX_IRCJoinPlugin::OnPart(Jupiter::IRC::Client *source, std::string_view channel, std::string_view nick, std::string_view reason)
 {
 	if (RenX_IRCJoinPlugin::partFmt.isNotEmpty())
 	{
@@ -79,7 +79,7 @@ void RenX_IRCJoinPlugin::OnPart(Jupiter::IRC::Client *source, const Jupiter::Rea
 			int type = source->getChannel(channel)->getType();
 
 			Jupiter::String msg;
-			if (reason.isEmpty())
+			if (reason.empty())
 				msg = RenX_IRCJoinPlugin::partFmtNoReason;
 			else
 				msg = RenX_IRCJoinPlugin::partFmt;

@@ -27,7 +27,7 @@ class SetJoinPlugin : public Jupiter::Plugin
 public:
 	Jupiter::Config &setjoin_file = Jupiter::Plugin::config;
 
-	void OnJoin(Jupiter::IRC::Client *server, const Jupiter::ReadableString &chan, const Jupiter::ReadableString &nick) override;
+	void OnJoin(Jupiter::IRC::Client *server, std::string_view chan, std::string_view nick) override;
 };
 
 GENERIC_IRC_COMMAND(SetJoinIRCCommand)

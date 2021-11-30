@@ -17,6 +17,8 @@
  */
 
 #include <ctime>
+#include "jessilib/word_split.hpp"
+#include "jessilib/unicode.hpp"
 #include "Jupiter/Timer.h"
 #include "Jupiter/IRC_Client.h"
 #include "RenX_Medals.h"
@@ -45,15 +47,11 @@ RenX_MedalsPlugin::~RenX_MedalsPlugin()
 	size_t sCount = core->getServerCount();
 	RenX::Server *server;
 
-	for (size_t i = 0; i < sCount; i++)
-	{
+	for (size_t i = 0; i < sCount; i++) {
 		server = core->getServer(i);
-		if (server->players.size() != 0)
-		{
-			for (auto node = server->players.begin(); node != server->players.end(); ++node)
-			{
-				if (node->uuid.isNotEmpty() && node->isBot == false)
-				{
+		if (server->players.size() != 0) {
+			for (auto node = server->players.begin(); node != server->players.end(); ++node) {
+				if (!node->uuid.empty() && !node->isBot) {
 					RenX_MedalsPlugin::medalsFile[node->uuid].set("Recs"_jrs, node->varData[this->getName()].get("Recs"sv, ""s));
 					RenX_MedalsPlugin::medalsFile[node->uuid].set("Noobs"_jrs, node->varData[this->getName()].get("Noobs"sv, ""s));
 				}
@@ -98,64 +96,52 @@ void congratPlayer(unsigned int, void *params)
 	delete congratPlayerData;
 }
 
-void RenX_MedalsPlugin::RenX_SanitizeTags(Jupiter::StringType &fmt)
-{
+void RenX_MedalsPlugin::RenX_SanitizeTags(Jupiter::StringType &fmt) {
 	fmt.replace(RenX_MedalsPlugin::recsTag, this->INTERNAL_RECS_TAG);
 	fmt.replace(RenX_MedalsPlugin::noobTag, this->INTERNAL_NOOB_TAG);
 	fmt.replace(RenX_MedalsPlugin::worthTag, this->INTERNAL_WORTH_TAG);
 }
 
-void RenX_MedalsPlugin::RenX_ProcessTags(Jupiter::StringType &msg, const RenX::Server *server, const RenX::PlayerInfo *player, const RenX::PlayerInfo *, const RenX::BuildingInfo *)
-{
-	if (player != nullptr)
-	{
+void RenX_MedalsPlugin::RenX_ProcessTags(Jupiter::StringType &msg, const RenX::Server *server, const RenX::PlayerInfo *player, const RenX::PlayerInfo *, const RenX::BuildingInfo *) {
+	if (player != nullptr) {
 		const Jupiter::ReadableString &recs = RenX_MedalsPlugin::medalsFile.get(player->uuid, "Recs"_jrs);
 		const Jupiter::ReadableString &noobs = RenX_MedalsPlugin::medalsFile.get(player->uuid, "Noobs"_jrs);
 
 		msg.replace(this->INTERNAL_RECS_TAG, recs);
 		msg.replace(this->INTERNAL_NOOB_TAG, noobs);
-		msg.replace(this->INTERNAL_WORTH_TAG, Jupiter::StringS::Format("%d", recs.asInt() - noobs.asInt()));
+		msg.replace(this->INTERNAL_WORTH_TAG, Jupiter::StringS::Format("%d", Jupiter::from_string<int>(recs) - Jupiter::from_string<int>(noobs)));
 	}
 }
 
-void RenX_MedalsPlugin::RenX_OnPlayerCreate(RenX::Server &, const RenX::PlayerInfo &player)
-{
-	if (player.uuid.isNotEmpty() && player.isBot == false)
-	{
+void RenX_MedalsPlugin::RenX_OnPlayerCreate(RenX::Server &, const RenX::PlayerInfo &player) {
+	if (!player.uuid.empty() && player.isBot == false) {
 		player.varData[this->getName()].set("Recs"sv, RenX_MedalsPlugin::medalsFile.get(player.uuid, "Recs"s));
 		player.varData[this->getName()].set("Noobs"sv, RenX_MedalsPlugin::medalsFile.get(player.uuid, "Noobs"s));
 	}
 }
 
-void RenX_MedalsPlugin::RenX_OnPlayerDelete(RenX::Server &, const RenX::PlayerInfo &player)
-{
-	if (player.uuid.isNotEmpty() && player.isBot == false)
-	{
+void RenX_MedalsPlugin::RenX_OnPlayerDelete(RenX::Server &, const RenX::PlayerInfo &player) {
+	if (!player.uuid.empty() && player.isBot == false) {
 		RenX_MedalsPlugin::medalsFile[player.uuid].set("Recs"_jrs, player.varData[this->getName()].get("Recs"sv, ""s));
 		RenX_MedalsPlugin::medalsFile[player.uuid].set("Noobs"_jrs, player.varData[this->getName()].get("Noobs"sv, ""s));
 	}
 }
 
-void RenX_MedalsPlugin::RenX_OnJoin(RenX::Server &server, const RenX::PlayerInfo &player)
-{
-	if (player.uuid.isNotEmpty() && player.isBot == false && server.isMatchInProgress())
-	{
+void RenX_MedalsPlugin::RenX_OnJoin(RenX::Server &server, const RenX::PlayerInfo &player) {
+	if (!player.uuid.empty() && player.isBot == false && server.isMatchInProgress()) {
 		int worth = getWorth(player);
 		Jupiter::Config *section = RenX_MedalsPlugin::config.getSection(RenX_MedalsPlugin::firstSection);
-		if (section != nullptr)
-		{
+		if (section != nullptr) {
 			while (section->get<int>("MaxRecs"_jrs, INT_MAX) < worth)
 				if ((section = RenX_MedalsPlugin::config.getSection(section->get("NextSection"_jrs))) == nullptr)
 					return; // No matching section found.
 
 			size_t table_size = section->getTable().size();
 
-			if (table_size != 0)
-			{
+			if (table_size != 0) {
 				std::string_view msg = section->get(Jupiter::StringS::Format("%u", (rand() % table_size) + 1));
 
-				if (!msg.empty())
-				{
+				if (!msg.empty()) {
 					Jupiter::StringS tagged_msg = static_cast<Jupiter::ReferenceString>(msg);
 					RenX::sanitizeTags(tagged_msg);
 					RenX::processTags(tagged_msg, &server, &player);
@@ -193,7 +179,7 @@ void RenX_MedalsPlugin::RenX_OnGameOver(RenX::Server &server, RenX::WinType winT
 		CongratPlayerData *congratPlayerData;
 
 		/** +1 for best score */
-		if (bestScore->uuid.isNotEmpty() && bestScore->isBot == false && bestScore->score > 0)
+		if (!bestScore->uuid.empty() && bestScore->isBot == false && bestScore->score > 0)
 		{
 			addRec(*bestScore);
 
@@ -205,7 +191,7 @@ void RenX_MedalsPlugin::RenX_OnGameOver(RenX::Server &server, RenX::WinType winT
 		}
 
 		/** +1 for most kills */
-		if (mostKills->uuid.isNotEmpty() && mostKills->isBot == false && mostKills->kills > 0)
+		if (!mostKills->uuid.empty() && mostKills->isBot == false && mostKills->kills > 0)
 		{
 			addRec(*mostKills);
 
@@ -217,7 +203,7 @@ void RenX_MedalsPlugin::RenX_OnGameOver(RenX::Server &server, RenX::WinType winT
 		}
 
 		/** +1 for most Vehicle kills */
-		if (mostVehicleKills->uuid.isNotEmpty() && mostVehicleKills->isBot == false && mostVehicleKills->vehicleKills > 0)
+		if (!mostVehicleKills->uuid.empty() && mostVehicleKills->isBot == false && mostVehicleKills->vehicleKills > 0)
 		{
 			addRec(*mostVehicleKills);
 
@@ -229,7 +215,7 @@ void RenX_MedalsPlugin::RenX_OnGameOver(RenX::Server &server, RenX::WinType winT
 		}
 
 		/** +1 for best K/D ratio */
-		if (bestKD->uuid.isNotEmpty() && bestKD->isBot == false && RenX::getKillDeathRatio(*bestKD) > 1.0)
+		if (!bestKD->uuid.empty() && bestKD->isBot == false && RenX::getKillDeathRatio(*bestKD) > 1.0)
 		{
 			addRec(*bestKD);
 
@@ -324,16 +310,16 @@ void RecsGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *player, co
 				source->sendMessage(*player, Jupiter::StringS::Format("[Archive] %.*s has %u and %u n00bs. Their worth: %d", section->getName().size(), section->getName().c_str(), recs, noobs, recs - noobs));
 			}
 		}
-		else if (target->uuid.isEmpty())
+		else if (target->uuid.empty())
 			source->sendMessage(*player, "Error: Player is not using steam."_jrs);
 		else if (target->isBot)
 			source->sendMessage(*player, "Error: Bots do not have any recommendations."_jrs);
 		else if (target == player)
-			RecsGameCommand::trigger(source, player, Jupiter::ReferenceString::empty);
+			RecsGameCommand::trigger(source, player, ""_jrs);
 		else
 			source->sendMessage(*player, Jupiter::StringS::Format("%.*s has %lu and %lu n00bs. Their worth: %d", target->name.size(), target->name.data(), getRecs(*target), getNoobs(*target), getWorth(*target)));
 	}
-	else if (player->uuid.isEmpty())
+	else if (player->uuid.empty())
 		source->sendMessage(*player, "Error: You are not using steam."_jrs);
 	else
 		source->sendMessage(*player, Jupiter::StringS::Format("%.*s, you have %lu recs and %lu n00bs. Your worth: %d", player->name.size(), player->name.data(), getRecs(*player), getNoobs(*player), getWorth(*player)));
@@ -355,28 +341,30 @@ void RecGameCommand::create()
 	this->addTrigger("recommend"_jrs);
 }
 
-void RecGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *player, const Jupiter::ReadableString &parameters)
-{
-	if (parameters.isNotEmpty())
-	{
+void RecGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *player, const Jupiter::ReadableString &parameters) {
+	auto parameters_split = jessilib::word_split_once_view(std::string_view{parameters}, WHITESPACE_SV);
+	if (!parameters_split.first.empty()) {
 		RenX::PlayerInfo *target = source->getPlayerByPartName(parameters);
-		if (target == nullptr)
-			target = source->getPlayerByPartName(Jupiter::ReferenceString::getWord(parameters, 0, WHITESPACE));
-		if (target == nullptr)
+		if (target == nullptr) {
+			target = source->getPlayerByPartName(parameters_split.first);
+		}
+		if (target == nullptr) {
 			source->sendMessage(*player, "Error: Player not found! Syntax: rec <player>"_jrs);
-		else if (target->uuid.isEmpty())
+		}
+		else if (target->uuid.empty()) {
 			source->sendMessage(*player, "Error: Player is not using steam."_jrs);
-		else if (target->isBot)
+		}
+		else if (target->isBot) {
 			source->sendMessage(*player, "Error: Bots can not receive recommendations."_jrs);
-		else if (target == player)
-		{
+		}
+		else if (target == player) {
 			addNoob(*player);
 			source->sendMessage(*player, "You can't recommend yourself, you noob! (+1 noob)"_jrs);
 		}
-		else if (player->varData["RenX.Medals"_jrs].get("gr"_jrs) != nullptr && player->adminType.isEmpty())
+		else if (!player->varData["RenX.Medals"_jrs].get("gr"_jrs).empty() && player->adminType.empty()) {
 			source->sendMessage(*player, "You can only give one recommendation per game."_jrs);
-		else
-		{
+		}
+		else {
 			addRec(*target);
 			source->sendMessage(Jupiter::StringS::Format("%.*s has recommended %.*s!", player->name.size(), player->name.data(), target->name.size(), target->name.data()));
 			player->varData["RenX.Medals"_jrs].set("gr"_jrs, "1"s);
@@ -387,7 +375,7 @@ void RecGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *player, con
 
 const Jupiter::ReadableString &RecGameCommand::getHelp(const Jupiter::ReadableString &)
 {
-	static STRING_LITERAL_AS_NAMED_REFERENCE(defaultHelp, "Recommends a player for their gameplay. Syntax: rec [player]");
+	static STRING_LITERAL_AS_NAMED_REFERENCE(defaultHelp, "Recommends a player for their gameplay. Syntax: rec <player> [reason]");
 	return defaultHelp;
 }
 
@@ -401,23 +389,26 @@ void NoobGameCommand::create()
 	this->addTrigger("n00b"_jrs);
 }
 
-void NoobGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *player, const Jupiter::ReadableString &parameters)
-{
-	if (parameters.isNotEmpty())
-	{
+void NoobGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *player, const Jupiter::ReadableString &parameters) {
+	auto parameters_split = jessilib::word_split_once_view(std::string_view{parameters}, WHITESPACE_SV);
+	if (!parameters_split.first.empty()) {
 		RenX::PlayerInfo *target = source->getPlayerByPartName(parameters);
-		if (target == nullptr)
-			target = source->getPlayerByPartName(Jupiter::ReferenceString::getWord(parameters, 0, WHITESPACE));
-		if (target == nullptr)
+		if (target == nullptr) {
+			target = source->getPlayerByPartName(parameters_split.first);
+		}
+		if (target == nullptr) {
 			source->sendMessage(*player, "Error: Player not found! Syntax: noob [player]"_jrs);
-		else if (target->uuid.isEmpty())
+		}
+		else if (target->uuid.empty()) {
 			source->sendMessage(*player, "Error: Player is not using steam."_jrs);
-		else if (target->isBot)
+		}
+		else if (target->isBot) {
 			source->sendMessage(*player, "Error: Bots can not receive n00bs."_jrs);
-		else if (player->varData["RenX.Medals"_jrs].get("gn"_jrs) != nullptr && player->adminType.isEmpty())
+		}
+		else if (player->varData["RenX.Medals"_jrs].get("gn"_jrs) != nullptr && player->adminType.empty()) {
 			source->sendMessage(*player, "You can only give one noob per game."_jrs);
-		else
-		{
+		}
+		else {
 			addNoob(*target);
 			source->sendMessage(Jupiter::StringS::Format("%.*s has noob'd %.*s!", player->name.size(), player->name.data(), target->name.size(), target->name.data()));
 			player->varData["RenX.Medals"_jrs].set("gn"_jrs, "1"s);
@@ -434,16 +425,16 @@ const Jupiter::ReadableString &NoobGameCommand::getHelp(const Jupiter::ReadableS
 
 GAME_COMMAND_INIT(NoobGameCommand)
 
-void addRec(const RenX::PlayerInfo &player, int amount)
-{
-	if (player.uuid.matchi("Player*") == false && player.isBot == false)
+void addRec(const RenX::PlayerInfo &player, int amount) {
+	if (!jessilib::starts_withi(player.uuid, "Player"sv) && !player.isBot) {
 		player.varData[pluginInstance.getName()].set("Recs"_jrs, static_cast<std::string>(Jupiter::StringS::Format("%u", getRecs(player) + amount)));
+	}
 }
 
-void addNoob(const RenX::PlayerInfo &player, int amount)
-{
-	if (player.uuid.matchi("Player*") == false && player.isBot == false)
-		player.varData[pluginInstance.getName()].set("Noobs"_jrs, static_cast<std::string>(Jupiter::StringS::Format("%u", getNoobs(player) + amount)));
+void addNoob(const RenX::PlayerInfo &player, int amount) {
+	if (!jessilib::starts_withi(player.uuid, "Player"sv) && !player.isBot) {
+		player.varData[pluginInstance.getName()].set("Noobs"_jrs,static_cast<std::string>(Jupiter::StringS::Format("%u", getNoobs(player) + amount)));
+	}
 }
 
 unsigned long getRecs(const RenX::PlayerInfo &player)

@@ -17,6 +17,7 @@
  */
 
 #include <cinttypes>
+#include "jessilib/unicode.hpp"
 #include "Console_Command.h"
 #include "RenX_Ladder.h"
 #include "RenX_Server.h"
@@ -63,10 +64,10 @@ void RenX_LadderPlugin::RenX_OnGameOver(RenX::Server &server, RenX::WinType winT
 }
 
 void RenX_LadderPlugin::RenX_OnCommand(RenX::Server &server, const Jupiter::ReadableString &) {
-	if (server.getCurrentRCONCommand().equalsi("clientvarlist"_jrs)) {
+	if (jessilib::equalsi(server.getCurrentRCONCommand(), "clientvarlist"sv)) {
 		if (server.varData[this->name].get("w"_jrs, "0"_jrs) == "1"sv) {
 			server.varData[this->name].set("w"sv, "0"s);
-			RenX::TeamType team = static_cast<RenX::TeamType>(server.varData[this->name].get("t"_jrs, "\0"_jrs).get(0));
+			RenX::TeamType team = static_cast<RenX::TeamType>(server.varData[this->name].get("t"_jrs, "\0"_jrs)[0]);
 			for (const auto& database : RenX::ladder_databases) {
 				database->updateLadder(server, team);
 			}
@@ -98,7 +99,7 @@ LadderGenericCommand::LadderGenericCommand() {
 }
 
 Jupiter::GenericCommand::ResponseLine *LadderGenericCommand::trigger(const Jupiter::ReadableString &parameters) {
-	if (parameters.isEmpty()) {
+	if (parameters.empty()) {
 		return new Jupiter::GenericCommand::ResponseLine("Error: Too few parameters. Syntax: ladder <name | rank>"_jrs, GenericCommand::DisplayType::PrivateError);
 	}
 
@@ -108,8 +109,9 @@ Jupiter::GenericCommand::ResponseLine *LadderGenericCommand::trigger(const Jupit
 
 	RenX::LadderDatabase::Entry *entry;
 	size_t rank;
-	if (parameters.span("0123456789"_jrs) == parameters.size()) {
-		rank = parameters.asUnsignedInt(10);
+	std::string_view parameters_view = parameters;
+	if (parameters_view.find_first_not_of("0123456789"sv) == std::string_view::npos) {
+		rank = Jupiter::asUnsignedInt(parameters_view, 10);
 		if (rank == 0)
 			return new Jupiter::GenericCommand::ResponseLine("Error: Invalid parameters"_jrs, GenericCommand::DisplayType::PrivateError);
 
@@ -154,7 +156,7 @@ void LadderGameCommand::create() {
 }
 
 void LadderGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *player, const Jupiter::ReadableString &parameters) {
-	if (parameters.isEmpty()) {
+	if (parameters.empty()) {
 		if (player->steamid != 0) {
 			if (RenX::default_ladder_database != nullptr) {
 				std::pair<RenX::LadderDatabase::Entry *, size_t> pair = RenX::default_ladder_database->getPlayerEntryAndIndex(player->steamid);

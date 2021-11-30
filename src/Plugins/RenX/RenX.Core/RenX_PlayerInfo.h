@@ -50,13 +50,13 @@ namespace RenX
 
 		// TODO: Add backpack
 		std::string name;
-		Jupiter::StringS ip;
+		std::string ip;
 		Jupiter::StringS adminType;
-		Jupiter::StringS uuid;
+		std::string uuid;
 		Jupiter::StringS character;
 		Jupiter::StringS vehicle;
-		Jupiter::StringS rdns;
-		Jupiter::StringS hwid;
+		std::string rdns;
+		std::string hwid;
 		std::mutex rdns_mutex;
 		uint64_t steamid = 0;
 		uint32_t ip32 = 0;

@@ -34,7 +34,7 @@ ConsoleCommand::~ConsoleCommand() {
 	}
 }
 
-ConsoleCommand* getConsoleCommand(const Jupiter::ReadableString &trigger) {
+ConsoleCommand* getConsoleCommand(std::string_view trigger) {
 	for (const auto& command : consoleCommands) {
 		if (command->matches(trigger)) {
 			return command;

@@ -28,29 +28,29 @@ public:
 	/**
 	* @brief Initializes the plugin
 	*/
-	virtual bool initialize() override;
+	bool initialize() override;
 
 	/**
 	* @brief Called when there is a rehash
 	*
 	* @return 0 always.
 	*/
-	virtual int OnRehash() override;
+	int OnRehash() override;
 
 	/**
 	* @brief Cycles through IRC servers for new data
 	*/
-	virtual int think() override;
+	int think() override;
 
 	/**
 	* @brief This is called when a GenericCommand is instantiated.
 	*/
-	virtual void OnGenericCommandAdd(Jupiter::GenericCommand &command);
+	void OnGenericCommandAdd(Jupiter::GenericCommand &command) override;
 
 	/**
 	* @brief This is called when a GenericCommand is deleted.
 	*/
-	virtual void OnGenericCommandRemove(Jupiter::GenericCommand &command);
+	void OnGenericCommandRemove(Jupiter::GenericCommand &command) override;
 
 	/**
 	* @brief Destructor for the IRCCorPlugin class

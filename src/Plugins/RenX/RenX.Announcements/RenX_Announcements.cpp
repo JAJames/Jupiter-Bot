@@ -23,6 +23,7 @@
 #include "RenX_Tags.h"
 
 using namespace Jupiter::literals;
+using namespace std::literals;
 
 RenX_AnnouncementsPlugin pluginInstance;
 
@@ -74,9 +75,9 @@ int RenX_AnnouncementsPlugin::OnRehash()
 
 bool RenX_AnnouncementsPlugin::initialize()
 {
-	RenX_AnnouncementsPlugin::random = this->config.get<bool>("Random"_jrs);
+	RenX_AnnouncementsPlugin::random = this->config.get<bool>("Random"sv);
 
-	RenX_AnnouncementsPlugin::announcementsFile.load(this->config.get("File"_jrs, "Announcements.txt"_jrs));
+	RenX_AnnouncementsPlugin::announcementsFile.load(this->config.get("File"sv, "Announcements.txt"s));
 	if (RenX_AnnouncementsPlugin::announcementsFile.getLineCount() == 0)
 	{
 		fputs("[RenX.Announcements] ERROR: No announcements loaded." ENDL, stderr);

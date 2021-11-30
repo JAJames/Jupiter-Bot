@@ -17,6 +17,7 @@
  */
 
 #include <cstring>
+#include "jessilib/word_split.hpp"
 #include "Jupiter/Functions.h"
 #include "CoreCommands.h"
 #include "IRC_Bot.h"
@@ -30,7 +31,7 @@ HelpConsoleCommand::HelpConsoleCommand() {
 }
 
 void HelpConsoleCommand::trigger(const Jupiter::ReadableString &parameters) {
-	if (parameters.isEmpty()) {
+	if (parameters.empty()) {
 		std::cout << "Supported commands:";
 		for (const auto& command : consoleCommands) {
 			std::cout << ' ' << command->getTrigger();
@@ -41,14 +42,14 @@ void HelpConsoleCommand::trigger(const Jupiter::ReadableString &parameters) {
 		return;
 	}
 
-	Jupiter::ReferenceString command = Jupiter::ReferenceString::getWord(parameters, 0, WHITESPACE);
-	ConsoleCommand *cmd = getConsoleCommand(command);
+	auto command_split = jessilib::word_split_once_view(std::string_view{parameters}, WHITESPACE_SV);
+	ConsoleCommand *cmd = getConsoleCommand(command_split.first);
 	if (cmd == nullptr) {
-		printf("Error: Command \"%.*s\" not found." ENDL, static_cast<int>(command.size()), command.ptr());
+		std::cout << "Error: Command \"" << command_split.first << "\" not found." << std::endl;
 		return;
 	}
 
-	cmd->getHelp(Jupiter::ReferenceString::gotoWord(parameters, 1, WHITESPACE)).println(stdout);
+	std::cout << std::string_view{cmd->getHelp(Jupiter::ReferenceString{command_split.second})} << std::endl;
 }
 
 const Jupiter::ReadableString &HelpConsoleCommand::getHelp(const Jupiter::ReadableString &) {
@@ -69,25 +70,22 @@ void HelpIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &in_
 	if (channel != nullptr)
 	{
 		int access = source->getAccessLevel(*channel, nick);
-		if (parameters.isEmpty())
-		{
-			for (int i = 0; i <= access; i++)
-			{
+		if (parameters.empty()) {
+			for (int i = 0; i <= access; i++) {
 				auto cmds = source->getAccessCommands(channel, i);
-				if (cmds.size() != 0)
-				{
+				if (cmds.size() != 0) {
 					Jupiter::StringL triggers = source->getTriggers(cmds);
-					if (triggers.size() >= 0)
+					if (triggers.size() >= 0) {
 						source->sendNotice(nick, Jupiter::StringS::Format("Access level %d commands: %.*s", i, triggers.size(), triggers.ptr()));
+					}
 				}
 			}
 			source->sendNotice(nick, "For command-specific help, use: help <command>"_jrs);
 		}
-		else
-		{
-			IRCCommand *cmd = source->getCommand(Jupiter::ReferenceString::getWord(parameters, 0, WHITESPACE));
-			if (cmd)
-			{
+		else {
+			auto command_split = jessilib::word_split_once_view(std::string_view{parameters}, WHITESPACE_SV);
+			IRCCommand *cmd = source->getCommand(command_split.first);
+			if (cmd) {
 				int command_access = cmd->getAccessLevel(channel);
 
 				if (command_access < 0)
@@ -95,7 +93,7 @@ void HelpIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &in_
 				else if (access < command_access)
 					source->sendNotice(nick, "Access Denied."_jrs);
 				else
-					source->sendNotice(nick, cmd->getHelp(Jupiter::ReferenceString::gotoWord(parameters, 1, WHITESPACE)));
+					source->sendNotice(nick, cmd->getHelp(Jupiter::ReferenceString{command_split.second}));
 			}
 			else source->sendNotice(nick, "Error: Command not found."_jrs);
 		}

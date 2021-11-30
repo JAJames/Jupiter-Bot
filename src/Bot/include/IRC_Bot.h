@@ -112,7 +112,7 @@ public:
 	/** Overloaded events from Jupiter::IRC::Client */
 protected:
 
-	void OnChat(const Jupiter::ReadableString &channel, const Jupiter::ReadableString &nick, const Jupiter::ReadableString &message);
+	void OnChat(std::string_view channel, std::string_view nick, std::string_view message) override;
 
 	/** Private members for internal usage */
 private:

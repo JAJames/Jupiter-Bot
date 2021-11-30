@@ -597,7 +597,7 @@ void RenX::LadderDatabase::updateLadder(RenX::Server &server, const RenX::TeamTy
 				getEntries(),
 				static_cast<double>(sort_duration.count()) * (static_cast<double>(std::chrono::steady_clock::duration::period::num) / static_cast<double>(std::chrono::steady_clock::duration::period::den) * static_cast<double>(std::chrono::seconds::duration::period::den / std::chrono::seconds::duration::period::num)),
 				static_cast<double>(write_duration.count()) * (static_cast<double>(std::chrono::steady_clock::duration::period::num) / static_cast<double>(std::chrono::steady_clock::duration::period::den) * static_cast<double>(std::chrono::seconds::duration::period::den / std::chrono::seconds::duration::period::num)));
-			str.println(stdout);
+			std::cout << std::string_view{str} << std::endl;
 			server.sendLogChan(str);
 		}
 	}

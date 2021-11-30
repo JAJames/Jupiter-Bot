@@ -43,14 +43,16 @@ Jupiter::INIConfig o_config;
 Jupiter::Config *Jupiter::g_config = &o_config;
 std::chrono::steady_clock::time_point Jupiter::g_start_time = std::chrono::steady_clock::now();
 
-#define INPUT_BUFFER_SIZE 2048
+constexpr size_t INPUT_BUFFER_SIZE = 2048;
 
 struct ConsoleInput {
-	Jupiter::String input;
+	std::string input;
 	std::mutex input_mutex;
 	bool awaiting_processing = false;
 
-	ConsoleInput() : input(INPUT_BUFFER_SIZE) {}
+	ConsoleInput() {
+		input.reserve(INPUT_BUFFER_SIZE);
+	}
 } console_input;
 
 void onTerminate() {
@@ -127,7 +129,6 @@ void reinitialize_plugins() {
 } // namespace Jupiter
 
 [[noreturn]] void main_loop() {
-	Jupiter::ReferenceString command;
 	size_t index;
 	while (1) {
 		index = 0;
@@ -144,14 +145,15 @@ void reinitialize_plugins() {
 		if (console_input.input_mutex.try_lock()) {
 			if (console_input.awaiting_processing) {
 				console_input.awaiting_processing = false;
-				command = Jupiter::ReferenceString::getWord(console_input.input, 0, WHITESPACE);
+				auto input_split = jessilib::word_split_once_view(console_input.input, WHITESPACE_SV);
+				std::string_view command_name = input_split.first;
 
-				ConsoleCommand *cmd = getConsoleCommand(command);
-				if (cmd != nullptr) {
-					cmd->trigger(Jupiter::ReferenceString::gotoWord(console_input.input, 1, WHITESPACE));
+				ConsoleCommand* command = getConsoleCommand(command_name);
+				if (command != nullptr) {
+					command->trigger(Jupiter::ReferenceString{input_split.second});
 				}
 				else {
-					printf("Error: Command \"%.*s\" not found." ENDL, static_cast<int>(command.size()), command.ptr());
+					printf("Error: Command \"%.*s\" not found." ENDL, static_cast<int>(command_name.size()), command_name.data());
 				}
 			}
 			console_input.input_mutex.unlock();
@@ -209,10 +211,10 @@ int main(int argc, const char **args) {
 
 	printf("Config loaded (%fms)." ENDL, time_taken);
 
-	if (plugins_directory.isEmpty())
+	if (plugins_directory.empty())
 		plugins_directory = o_config.get("PluginsDirectory"_jrs);
 
-	if (configs_directory.isEmpty())
+	if (configs_directory.empty())
 		configs_directory = o_config.get("ConfigsDirectory"_jrs);
 
 	if (plugins_directory.isNotEmpty()) {

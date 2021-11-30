@@ -495,7 +495,7 @@ const Jupiter::ReferenceString &translateCharacter(Jupiter::ReferenceString &obj
 std::string_view RenX::translateName(std::string_view obj)
 {
 	if (obj.empty())
-		return Jupiter::ReferenceString::empty;
+		return ""_jrs;
 
 	Jupiter::ReferenceString iniTranslation = RenX::getCore()->getConfig()["Name"_jrs].get(Jupiter::ReferenceString{obj});
 	if (iniTranslation.isNotEmpty())
@@ -912,11 +912,11 @@ double RenX::getHeadshotKillRatio(const RenX::PlayerInfo &player)
 	return static_cast<double>(player.headshots) / static_cast<double>(player.kills);
 }
 
-Jupiter::String RenX::escapifyRCON(std::string_view str)
-{
+std::string RenX::escapifyRCON(std::string_view str) {
 	const char *ptr = str.data();
 	size_t length = str.size();
-	Jupiter::String result(str.size() + 32);
+	std::string result;
+	result.reserve(str.size() + 32);
 	uint16_t value;
 
 	while (length != 0)

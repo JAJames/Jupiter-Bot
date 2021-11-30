@@ -17,6 +17,8 @@
  */
 
 #include <cstring>
+#include "jessilib/word_split.hpp"
+#include "jessilib/unicode.hpp"
 #include "Jupiter/Functions.h"
 #include "Jupiter/Socket.h"
 #include "FunCommands.h"
@@ -157,25 +159,25 @@ ResolveGenericCommand::ResolveGenericCommand()
 	this->addTrigger("resolve"_jrs);
 }
 
-Jupiter::GenericCommand::ResponseLine *ResolveGenericCommand::trigger(const Jupiter::ReadableString &parameters)
-{
-	unsigned int count = parameters.wordCount(WHITESPACE);
-
-	if (count <= 1)
+Jupiter::GenericCommand::ResponseLine *ResolveGenericCommand::trigger(const Jupiter::ReadableString &parameters) {
+	auto command_split = jessilib::word_split_once_view(std::string_view{parameters}, WHITESPACE_SV);
+	if (command_split.second.empty()) {
 		return new Jupiter::GenericCommand::ResponseLine("Error: Too few parameters. Syntax: resolve <hostname|ip> <address>"_jrs, GenericCommand::DisplayType::PrivateError);
+	}
 
-	Jupiter::ReferenceString command = Jupiter::ReferenceString::getWord(parameters, 0, WHITESPACE);
-	if (command.equalsi("hostname"_jrs) || command.equalsi("host"_jrs))
+	std::string_view subcommand = command_split.first;
+	if (jessilib::equalsi(subcommand, "hostname"sv)
+		|| jessilib::equalsi(subcommand, "host"sv))
 	{
-		Jupiter::ReferenceString resolved = Jupiter::Socket::resolveHostname(static_cast<std::string>(Jupiter::ReferenceString::gotoWord(parameters, 1, WHITESPACE)).c_str(), 0);
-		if (resolved.isEmpty())
+		Jupiter::ReferenceString resolved = Jupiter::Socket::resolveHostname(static_cast<std::string>(command_split.second).c_str(), 0);
+		if (resolved.empty())
 			return new Jupiter::GenericCommand::ResponseLine("Error: Unable to resolve."_jrs, GenericCommand::DisplayType::PublicError);
 		return new Jupiter::GenericCommand::ResponseLine(resolved, GenericCommand::DisplayType::PublicSuccess);
 	}
-	else if (command.equalsi("ip"_jrs))
+	else if (jessilib::equalsi(subcommand, "ip"sv))
 	{
-		Jupiter::ReferenceString resolved = Jupiter::Socket::resolveAddress(static_cast<std::string>(Jupiter::ReferenceString::gotoWord(parameters, 1, WHITESPACE)).c_str(), 0);
-		if (resolved.isEmpty())
+		Jupiter::ReferenceString resolved = Jupiter::Socket::resolveAddress(static_cast<std::string>(command_split.second).c_str(), 0);
+		if (resolved.empty())
 			return new Jupiter::GenericCommand::ResponseLine("Error: Unable to resolve."_jrs, GenericCommand::DisplayType::PublicError);
 		return new Jupiter::GenericCommand::ResponseLine(resolved, GenericCommand::DisplayType::PublicSuccess);
 	}

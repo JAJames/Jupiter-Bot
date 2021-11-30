@@ -26,8 +26,8 @@
 class RenX_IRCJoinPlugin : public RenX::Plugin
 {
 public: // Jupiter::Plugin
-	void OnJoin(Jupiter::IRC::Client *source, const Jupiter::ReadableString &chan, const Jupiter::ReadableString &nick) override;
-	void OnPart(Jupiter::IRC::Client *source, const Jupiter::ReadableString &chan, const Jupiter::ReadableString &nick, const Jupiter::ReadableString &reason) override;
+	void OnJoin(Jupiter::IRC::Client *source, std::string_view chan, std::string_view nick) override;
+	void OnPart(Jupiter::IRC::Client *source, std::string_view chan, std::string_view nick, std::string_view reason) override;
 	virtual bool initialize() override;
 	int OnRehash() override;
 

@@ -14,6 +14,7 @@
 #include "fmt/format.h" // TODO: replace with <format> later
 #include <charconv>
 #include "jessilib/split.hpp"
+#include "jessilib/word_split.hpp"
 #include "Jupiter/IRC.h"
 #include "RenX_Functions.h"
 #include "RenX_Server.h"
@@ -177,10 +178,9 @@ bool RenX_RelayPlugin::initialize() {
 
 	m_default_settings = get_settings(config);
 
-	Jupiter::ReferenceString upstreams_list = config.get("Upstreams"_jrs, ""_jrs);
-	unsigned int upstream_count = upstreams_list.wordCount(WHITESPACE);
-	for (unsigned int word_index = 0; word_index != upstream_count; ++word_index) {
-		auto upstream_name = Jupiter::ReferenceString::getWord(upstreams_list, word_index, WHITESPACE);
+	std::string_view upstreams_list = config.get("Upstreams"_jrs, ""sv);
+	std::vector<std::string_view> upstream_names = jessilib::word_split_view(upstreams_list, WHITESPACE_SV);
+	for (auto upstream_name : upstream_names) {
 		auto upstream_config = config.getSection(upstream_name);
 		if (upstream_config == nullptr) {
 			upstream_config = &config;

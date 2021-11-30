@@ -58,14 +58,14 @@ namespace RenX
 		*
 		* @return Result of Jupiter::Plugin::Think().
 		*/
-		virtual int think();
+		int think() override;
 
 		/**
 		* @brief Initializes RenX.Core
 		*
 		* @return True.
 		*/
-		virtual bool initialize() override;
+		bool initialize() override;
 
 		/**
 		* @brief Sends a command to all servers of a specific type.

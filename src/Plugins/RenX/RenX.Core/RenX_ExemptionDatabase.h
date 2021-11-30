@@ -81,7 +81,7 @@ namespace RenX
 			uint64_t steamid /** SteamID of the exempted player */;
 			uint32_t ip /** IPv4 address of the exempted player */;
 			uint8_t prefix_length /** Prefix length for the IPv4 address block */;
-			Jupiter::StringS setter /** Name of the user who added the exemption */;
+			std::string setter /** Name of the user who added the exemption */;
 
 			static const uint8_t FLAG_ACTIVE = 0x80;
 			static const uint8_t FLAG_USE_IP = 0x40;

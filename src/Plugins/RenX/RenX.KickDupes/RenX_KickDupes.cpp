@@ -32,7 +32,7 @@ bool RenX_KickDupesPlugin::initialize() {
 
 void RenX_KickDupesPlugin::RenX_OnPlayerIdentify(RenX::Server &in_server, const RenX::PlayerInfo &in_player) {
 	// Safety checks
-	if (in_player.hwid.isEmpty()) {
+	if (in_player.hwid.empty()) {
 		// Somehow, the player's identified without any HWID. TODO: log this
 		return;
 	}

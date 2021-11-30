@@ -72,7 +72,7 @@ public:
 * @param trigger Trigger of the command to fetch.
 * @return A console command if it exists, nullptr otherwise.
 */
-JUPITER_BOT_API extern ConsoleCommand *getConsoleCommand(const Jupiter::ReadableString &trigger);
+JUPITER_BOT_API extern ConsoleCommand *getConsoleCommand(std::string_view trigger);
 
 /** Console Command Macros */
 
@@ -103,23 +103,21 @@ public:
 	Generic_Command_As_Console_Command();
 };
 
-template <typename T> Generic_Command_As_Console_Command<T>::Generic_Command_As_Console_Command() : ConsoleCommand()
-{
+template <typename T> Generic_Command_As_Console_Command<T>::Generic_Command_As_Console_Command() : ConsoleCommand() {
 	size_t index = 0;
-	while (index != T::instance.getTriggerCount())
+	while (index != T::instance.getTriggerCount()) {
 		this->addTrigger(T::instance.getTrigger(index++));
+	}
 }
 
-template<typename T> void Generic_Command_As_Console_Command<T>::trigger(const Jupiter::ReadableString &parameters)
-{
-	Jupiter::GenericCommand::ResponseLine *del;
-	Jupiter::GenericCommand::ResponseLine *ret = T::instance.trigger(parameters);
-	while (ret != nullptr)
-	{
-		ret->response.println(ret->type == Jupiter::GenericCommand::DisplayType::PublicError || ret->type == Jupiter::GenericCommand::DisplayType::PrivateError ? stderr : stdout);
-		del = ret;
-		ret = ret->next;
-		delete del;
+template<typename T> void Generic_Command_As_Console_Command<T>::trigger(const Jupiter::ReadableString &parameters) {
+	std::unique_ptr<Jupiter::GenericCommand::ResponseLine> response_line{ T::instance.trigger(parameters) };
+	while (response_line != nullptr) {
+		auto& out_stream = response_line->type == Jupiter::GenericCommand::DisplayType::PublicError
+			|| response_line->type == Jupiter::GenericCommand::DisplayType::PrivateError ? std::cerr : std::cout;
+
+		out_stream << response_line->response << std::endl;
+		response_line.reset(response_line->next);
 	}
 }
 

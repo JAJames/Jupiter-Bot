@@ -35,8 +35,9 @@ PluginGenericCommand::PluginGenericCommand() {
 }
 
 Jupiter::GenericCommand::ResponseLine *PluginGenericCommand::trigger(const Jupiter::ReadableString &parameters) {
+	auto parameters_view = static_cast<std::string_view>(parameters);
 	Jupiter::GenericCommand::ResponseLine *result = new Jupiter::GenericCommand::ResponseLine();
-	if (parameters.isEmpty() || parameters.matchi("list*")) {
+	if (parameters_view.empty() || jessilib::starts_withi(parameters_view, "list"sv)) {
 		Jupiter::GenericCommand::ResponseLine *line = result->set(Jupiter::String::Format("There are %u plugins loaded:", Jupiter::plugins.size()), GenericCommand::DisplayType::PublicSuccess);
 		for (auto& plugin : Jupiter::plugins) {
 			line->next = new Jupiter::GenericCommand::ResponseLine(plugin->getName(), GenericCommand::DisplayType::PublicSuccess);
@@ -57,9 +58,8 @@ Jupiter::GenericCommand::ResponseLine *PluginGenericCommand::trigger(const Jupit
 		return static_cast<Jupiter::Plugin*>(nullptr);
 	};
 
-	auto parameters_view = static_cast<std::string_view>(parameters);
 	auto split_params = jessilib::word_split_once_view(parameters_view, WHITESPACE_SV);
-	if (jessilib::starts_withi(parameters_view, "load  "sv)) {
+	if (jessilib::starts_withi(parameters_view, "load "sv)) {
 		if (Jupiter::Plugin::load(split_params.second) == nullptr) {
 			return result->set("Error: Failed to load plugin."_jrs, GenericCommand::DisplayType::PublicError);
 		}

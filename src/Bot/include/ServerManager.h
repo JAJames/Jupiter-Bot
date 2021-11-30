@@ -94,7 +94,7 @@ public:
 	* @param serverConfig Configuration section to match against.
 	* @return Pointer to a matching server instance on success, nullptr otherwise.
 	*/
-	IRC_Bot *getServer(const Jupiter::ReadableString &serverConfig);
+	IRC_Bot *getServer(std::string_view serverConfig);
 
 	/**
 	* @brief Fetches a server based on its index.
@@ -133,7 +133,7 @@ public:
 	* @param serverConfig Configuration section of the server to remove.
 	* @return True if a server was removed, false otherwise.
 	*/
-	bool freeServer(const Jupiter::ReadableString &serverConfig);
+	bool freeServer(std::string_view serverConfig);
 
 	/**
 	* @brief Returns the number of servers in the list.

@@ -17,6 +17,7 @@
  */
 
 #include "jessilib/unicode.hpp"
+#include "jessilib/word_split.hpp"
 #include "Jupiter/IRC_Client.h"
 #include "IRC_Bot.h"
 #include "RenX_ModSystem.h"
@@ -56,8 +57,7 @@ bool RenX_ModSystemPlugin::initialize() {
 
 	std::string groupName = this->config.get("Default"_jrs, ""s);
 
-	while (!groupName.empty())
-	{
+	while (!groupName.empty()) {
 		// Add group
 		groups.emplace_back();
 		group = &groups.back();
@@ -102,6 +102,11 @@ bool RenX_ModSystemPlugin::initialize() {
 		// Next
 		groupName += dotNext;
 		groupName = this->config.get(groupName);
+	}
+
+	if (groups.empty()) {
+		// No groups configured; don't load further
+		return false;
 	}
 
 	RenX::Core *core = RenX::getCore();
@@ -162,24 +167,21 @@ int RenX_ModSystemPlugin::auth(RenX::Server &server, const RenX::PlayerInfo &pla
 		return 0;
 
 	const ModGroup *group;
-	if (player.uuid.isNotEmpty())
-	{
+	if (!player.uuid.empty()) {
 		Jupiter::Config *section = this->config.getSection(player.uuid);
-		if (section != nullptr)
-		{
+		if (section != nullptr) {
 			std::string_view groupName = section->get("Group"_jrs);
 
-			if (groupName.empty())
+			if (groupName.empty()) {
 				group = &RenX_ModSystemPlugin::groups.front();
-			else
-			{
+			}
+			else {
 				group = getGroupByName(groupName);
 				if (group == nullptr)
 					group = &RenX_ModSystemPlugin::groups.front();
 			}
 
-			auto sectionAuth = [&]
-			{
+			auto sectionAuth = [&] {
 				player.varData[this->name].set("Group"_jrs, group->name);
 				player.formatNamePrefix = section->get("Prefix"_jrs, group->prefix);
 				player.gamePrefix = section->get("GamePrefix"_jrs, group->gamePrefix);
@@ -210,7 +212,7 @@ int RenX_ModSystemPlugin::auth(RenX::Server &server, const RenX::PlayerInfo &pla
 			bool autoAuthSteam_l = section->get<bool>("AutoAuthSteam"_jrs, group->autoAuthSteam);
 			bool autoAuthIP_l = section->get<bool>("AutoAuthIP"_jrs, group->autoAuthIP);
 
-			uint64_t steamid = Jupiter::ReferenceString{section->get("SteamID"_jrs)}.asUnsignedLongLong();
+			uint64_t steamid = Jupiter::from_string<uint64_t>(section->get("SteamID"sv));
 			std::string_view ip = section->get("LastIP"_jrs);
 			std::string_view name = section->get("Name"_jrs);
 
@@ -346,12 +348,13 @@ RenX_ModSystemPlugin::~RenX_ModSystemPlugin() {
 }
 
 void RenX_ModSystemPlugin::RenX_OnPlayerCreate(RenX::Server &server, const RenX::PlayerInfo &player) {
-	if (player.isBot == false)
+	if (!player.isBot) {
 		auth(server, player, true);
+	}
 }
 
 void RenX_ModSystemPlugin::RenX_OnPlayerDelete(RenX::Server &server, const RenX::PlayerInfo &player) {
-	if (RenX_ModSystemPlugin::groups.size() != 0 && player.isBot == false && player.uuid.isNotEmpty()) {
+	if (RenX_ModSystemPlugin::groups.size() != 0 && !player.isBot && !player.uuid.empty()) {
 		Jupiter::Config *section = this->config.getSection(player.uuid);
 		if (section != nullptr) {
 			section->set("SteamID"_jrs, static_cast<std::string>(Jupiter::StringS::Format("%llu", player.steamid)));
@@ -556,41 +559,39 @@ void ATMIRCCommand::create()
 
 void ATMIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &channel, const Jupiter::ReadableString &nick, const Jupiter::ReadableString &parameters)
 {
-	if (parameters.isEmpty())
+	if (parameters.empty()) {
 		this->trigger(source, channel, nick, nick);
-	else
-	{
+	}
+	else {
 		Jupiter::IRC::Client::Channel *chan = source->getChannel(channel);
-		if (chan != nullptr)
-		{
+		if (chan != nullptr) {
 			RenX::Server *server;
 			RenX::PlayerInfo *player;
 			RenX_ModSystemPlugin::ModGroup *group = pluginInstance.getDefaultATMGroup();
 			int type = chan->getType();
 			bool serverMatch = false;
-			Jupiter::ReferenceString playerName = parameters;
-			if (isdigit(parameters.get(0)))
-			{
-				int index = parameters.asInt();
+			std::string_view playerName = parameters;
+			if (isdigit(parameters[0])) {
+				auto parameters_split = jessilib::word_split_once_view(std::string_view{parameters}, WHITESPACE_SV);
+				int index = Jupiter::asInt(parameters_split.first);
 
-				if (index < 0 || index >= static_cast<int>(pluginInstance.groups.size()))
+				if (index < 0 || index >= static_cast<int>(pluginInstance.groups.size())) {
 					source->sendNotice(nick, "Warning: Invalid group index. Ingoring parameter..."_jrs);
-				else if (index == 0)
-				{
-					source->sendNotice(nick, "Error: Default group is not valid for this command. Use \"deauth\" to deauthorize a player."_jrs);
+				}
+				else if (index == 0) {
+					source->sendNotice(nick, "Error: Default group is not valid for this command. Use \"deauth\" to deauthorize a player."sv);
 					return;
 				}
-				else
-				{
+				else {
 					group = pluginInstance.getGroupByIndex(index);
-					if (group->access > source->getAccessLevel(channel, nick))
-					{
+					if (group->access > source->getAccessLevel(channel, nick)) {
 						group = pluginInstance.getDefaultATMGroup();
-						source->sendNotice(nick, "Warning: You can not authorize an access level higher than yourself. Ignoring parameter..."_jrs);
+						source->sendNotice(nick, "Warning: You can not authorize an access level higher than yourself. Ignoring parameter..."sv);
 					}
-					playerName = playerName.gotoWord(1, WHITESPACE);
-					if (playerName.isEmpty())
+					playerName = parameters_split.second;
+					if (playerName.empty()) {
 						playerName = nick;
+					}
 				}
 			}
 			if (group == nullptr)
@@ -640,64 +641,59 @@ void AddIRCCommand::create()
 	this->setAccessLevel(5);
 }
 
-void AddIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &channel, const Jupiter::ReadableString &nick, const Jupiter::ReadableString &parameters)
-{
-	if (parameters.wordCount(WHITESPACE) < 2)
+void AddIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &channel, const Jupiter::ReadableString &nick, const Jupiter::ReadableString &parameters) {
+	auto parameters_split = jessilib::word_split_once_view(std::string_view{parameters}, WHITESPACE_SV);
+	if (parameters_split.second.empty()) {
 		source->sendNotice(nick, "Error: Too few parameters. Syntax: add <level> <player>"_jrs);
-	else
-	{
-		Jupiter::IRC::Client::Channel *chan = source->getChannel(channel);
-		if (chan != nullptr)
-		{
-			RenX::Server *server;
-			RenX::PlayerInfo *player;
-			RenX_ModSystemPlugin::ModGroup *group = nullptr;
-			int type = chan->getType();
-			bool serverMatch = false;
-			Jupiter::ReferenceString playerName = parameters;
-			if (isdigit(parameters.get(0)))
-			{
-				int index = parameters.asInt();
+		return;
+	}
 
-				if (index < 0 || index >= static_cast<int>(pluginInstance.groups.size()))
-					source->sendNotice(nick, "Error: Invalid group index."_jrs);
-				else
-				{
-					group = pluginInstance.getGroupByIndex(index);
-					playerName = playerName.gotoWord(1, WHITESPACE);
-				}
+	Jupiter::IRC::Client::Channel *chan = source->getChannel(channel);
+	if (chan != nullptr) {
+		RenX::Server *server;
+		RenX::PlayerInfo *player;
+		RenX_ModSystemPlugin::ModGroup *group = nullptr;
+		int type = chan->getType();
+		bool serverMatch = false;
+		std::string_view playerName = parameters;
+		if (isdigit(parameters[0])) {
+			auto parameters_split = jessilib::word_split_once_view(std::string_view{parameters}, WHITESPACE_SV);
+			int index = Jupiter::asInt(parameters_split.first);
+
+			if (index < 0 || index >= static_cast<int>(pluginInstance.groups.size())) {
+				source->sendNotice(nick, "Error: Invalid group index."_jrs);
 			}
-			if (group == nullptr)
-				source->sendNotice(nick, "Error: Invalid group."_jrs);
-			else
-			{
-				for (unsigned int i = 0; i != RenX::getCore()->getServerCount(); i++)
-				{
-					server = RenX::getCore()->getServer(i);
-					if (server->isLogChanType(type))
-					{
-						serverMatch = true;
-						player = server->getPlayerByPartName(playerName);
-						if (player == nullptr)
-							source->sendNotice(nick, "Error: Player not found."_jrs);
-						else if (player->isBot)
-							source->sendNotice(nick, "Error: A bot can not be a moderator."_jrs);
-						else if (player->uuid.isEmpty())
-							source->sendNotice(nick, "Error: Player has no UUID."_jrs);
+			else {
+				group = pluginInstance.getGroupByIndex(index);
+				playerName = parameters_split.second;
+			}
+		}
+		if (group == nullptr)
+			source->sendNotice(nick, "Error: Invalid group."_jrs);
+		else {
+			for (unsigned int i = 0; i != RenX::getCore()->getServerCount(); i++) {
+				server = RenX::getCore()->getServer(i);
+				if (server->isLogChanType(type)) {
+					serverMatch = true;
+					player = server->getPlayerByPartName(playerName);
+					if (player == nullptr)
+						source->sendNotice(nick, "Error: Player not found."_jrs);
+					else if (player->isBot)
+						source->sendNotice(nick, "Error: A bot can not be a moderator."_jrs);
+					else if (player->uuid.empty())
+						source->sendNotice(nick, "Error: Player has no UUID."_jrs);
+					else {
+						pluginInstance.resetAccess(*player);
+						if (pluginInstance.set(*player, *group))
+							source->sendNotice(nick, Jupiter::StringS::Format("%.*s has been added to group \"%.*s\"", player->name.size(), player->name.data(), group->name.size(), group->name.data()));
 						else
-						{
-							pluginInstance.resetAccess(*player);
-							if (pluginInstance.set(*player, *group))
-								source->sendNotice(nick, Jupiter::StringS::Format("%.*s has been added to group \"%.*s\"", player->name.size(), player->name.data(), group->name.size(), group->name.data()));
-							else
-								source->sendNotice(nick, Jupiter::StringS::Format("%.*s has been moved to group \"%.*s\"", player->name.size(), player->name.data(), group->name.size(), group->name.data()));
-							pluginInstance.auth(*server, *player, false, true);
-						}
+							source->sendNotice(nick, Jupiter::StringS::Format("%.*s has been moved to group \"%.*s\"", player->name.size(), player->name.data(), group->name.size(), group->name.data()));
+						pluginInstance.auth(*server, *player, false, true);
 					}
 				}
-				if (serverMatch == false)
-					source->sendMessage(channel, "Error: Channel not attached to any connected Renegade X servers."_jrs);
 			}
+			if (serverMatch == false)
+				source->sendMessage(channel, "Error: Channel not attached to any connected Renegade X servers."_jrs);
 		}
 	}
 }
@@ -724,7 +720,7 @@ void DelIRCCommand::create()
 void DelIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &channel, const Jupiter::ReadableString &nick, const Jupiter::ReadableString &parameters)
 {
 	std::string_view parameters_view = parameters;
-	if (parameters.isEmpty())
+	if (parameters.empty())
 		source->sendNotice(nick, "Error: Too few parameters. Syntax: del <player>"_jrs);
 	else
 	{
@@ -960,37 +956,33 @@ void ATMGameCommand::create()
 	this->setAccessLevel(3);
 }
 
-void ATMGameCommand::trigger(RenX::Server *server, RenX::PlayerInfo *player, const Jupiter::ReadableString &parameters)
-{
-	if (parameters.isNotEmpty())
-	{
+void ATMGameCommand::trigger(RenX::Server *server, RenX::PlayerInfo *player, const Jupiter::ReadableString &parameters) {
+	auto parameters_split = jessilib::word_split_once_view(std::string_view{parameters}, WHITESPACE_SV);
+	if (!parameters_split.first.empty()) {
 		RenX::PlayerInfo *target;
 		RenX_ModSystemPlugin::ModGroup *group = pluginInstance.getDefaultATMGroup();
-		Jupiter::ReferenceString playerName = parameters;
-		if (isdigit(parameters.get(0)) && parameters.wordCount(WHITESPACE) > 1)
-		{
-			int index = parameters.asInt();
+		std::string_view playerName = parameters;
+		if (isdigit(parameters[0]) && !parameters_split.second.empty()) {
+			auto parameters_split = jessilib::word_split_once_view(std::string_view{parameters}, WHITESPACE_SV);
+			int index = Jupiter::asInt(parameters_split.first);
 
-			if (index < 0 || index >= static_cast<int>(pluginInstance.groups.size()))
+			if (index < 0 || index >= static_cast<int>(pluginInstance.groups.size())) {
 				server->sendMessage(*player, "Warning: Invalid group index. Ingoring parameter..."_jrs);
-			else if (index == 0)
-			{
+			}
+			else if (index == 0) {
 				server->sendMessage(*player, "Error: Default group is not valid for this command. Use \"deauth\" to deauthorize a player."_jrs);
 				return;
 			}
-			else
-			{
+			else {
 				group = pluginInstance.getGroupByIndex(index);
-				if (group->access > player->access)
-				{
+				if (group->access > player->access) {
 					group = pluginInstance.getDefaultATMGroup();
 					server->sendMessage(*player, "Warning: You can not authorize an access level higher than yourself. Ignoring parameter..."_jrs);
 				}
-				playerName = playerName.gotoWord(1, WHITESPACE);
+				playerName = parameters_split.second;
 			}
 		}
-		if (group != nullptr)
-		{
+		if (group != nullptr) {
 			target = server->getPlayerByPartName(playerName);
 			if (target == nullptr)
 				server->sendMessage(*player, "Error: Player not found."_jrs);

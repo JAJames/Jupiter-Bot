@@ -16,6 +16,7 @@
  * Written by Jessica James <jessica.aj@outlook.com>
  */
 
+#include "jessilib/unicode.hpp"
 #include "Jupiter/Functions.h"
 #include "ServerManager.h"
 #include "IRC_Bot.h"
@@ -84,9 +85,9 @@ size_t ServerManager::syncCommands() {
 	return m_servers.size();
 }
 
-IRC_Bot *ServerManager::getServer(const Jupiter::ReadableString &serverConfig) {
+IRC_Bot *ServerManager::getServer(std::string_view serverConfig) {
 	for (const auto& server : m_servers) {
-		if (server->getConfigSection().equalsi(serverConfig)) {
+		if (jessilib::equalsi(server->getConfigSection(), serverConfig)) {
 			return server.get();
 		}
 	}
@@ -132,9 +133,9 @@ bool ServerManager::freeServer(IRC_Bot *server) {
 	return false;
 }
 
-bool ServerManager::freeServer(const Jupiter::ReadableString &serverConfig) {
+bool ServerManager::freeServer(std::string_view serverConfig) {
 	for (auto itr = m_servers.begin(); itr != m_servers.end(); ++itr) {
-		if ((*itr)->getConfigSection().equalsi(serverConfig)) {
+		if (jessilib::equalsi((*itr)->getConfigSection(), serverConfig)) {
 			m_servers.erase(itr);
 			return true;
 		}

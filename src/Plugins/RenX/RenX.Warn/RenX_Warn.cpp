@@ -16,6 +16,7 @@
  * Written by Jessica James <jessica.aj@outlook.com>
  */
 
+#include "jessilib/word_split.hpp"
 #include "IRC_Bot.h"
 #include "RenX_Server.h"
 #include "RenX_PlayerInfo.h"
@@ -48,7 +49,8 @@ void WarnIRCCommand::create() {
 }
 
 void WarnIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &channel, const Jupiter::ReadableString &nick, const Jupiter::ReadableString &parameters) {
-	if (parameters.wordCount(WHITESPACE) < 2) {
+	auto parameters_split = jessilib::word_split_once_view(std::string_view{parameters}, WHITESPACE_SV);
+	if (parameters_split.second.empty()) {
 		source->sendNotice(nick, "Error: Too Few Parameters. Syntax: Warn <Player> <Reason>"_jrs);
 		return;
 	}
@@ -64,8 +66,8 @@ void WarnIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &cha
 		return;
 	}
 
-	Jupiter::ReferenceString name = Jupiter::ReferenceString::getWord(parameters, 0, WHITESPACE);
-	Jupiter::ReferenceString reason = Jupiter::ReferenceString::gotoWord(parameters, 1, WHITESPACE);
+	std::string_view name = parameters_split.first;
+	std::string_view reason = parameters_split.second;
 
 	RenX::PlayerInfo *player;
 	for (const auto& server : servers) {
@@ -81,13 +83,13 @@ void WarnIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &cha
 						break;
 					default:
 						server->banPlayer(*player, "Jupiter Bot/RenX.Warn"_jrs, Jupiter::StringS::Format("Warning limit reached (%d warnings)", warns), std::chrono::seconds(pluginInstance.m_warnAction));
-						source->sendNotice(nick, Jupiter::StringS::Format("%.*s has been banned from the server for exceeding the warning limit (%d warnings).", player->name.size(), player->name.data(), reason.size(), reason.ptr(), warns));
+						source->sendNotice(nick, Jupiter::StringS::Format("%.*s has been banned from the server for exceeding the warning limit (%d warnings).", player->name.size(), player->name.data(), reason.size(), reason.data(), warns));
 						break;
 					}
 				}
 				else {
 					player->varData[pluginInstance.getName()].set(WARNS_KEY, std::to_string(warns));
-					server->sendWarnMessage(*player, Jupiter::StringS::Format("You have been warned by %.*s@IRC for: %.*s. You have %d warnings.", nick.size(), nick.ptr(), reason.size(), reason.ptr(), warns));
+					server->sendWarnMessage(*player, Jupiter::StringS::Format("You have been warned by %.*s@IRC for: %.*s. You have %d warnings.", nick.size(), nick.ptr(), reason.size(), reason.data(), warns));
 					source->sendNotice(nick, Jupiter::StringS::Format("%.*s has been warned; they now have %d warnings.", player->name.size(), player->name.data(), warns));
 				}
 			}
@@ -112,7 +114,7 @@ void PardonIRCCommand::create() {
 }
 
 void PardonIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &channel, const Jupiter::ReadableString &nick, const Jupiter::ReadableString &parameters) {
-	if (parameters.isEmpty()) {
+	if (parameters.empty()) {
 		// TODO: this doesn't make sense
 		this->trigger(source, channel, nick, nick);
 		return;
@@ -158,11 +160,13 @@ void WarnGameCommand::create() {
 }
 
 void WarnGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *player, const Jupiter::ReadableString &parameters) {
-	if (parameters.wordCount(WHITESPACE) >= 2) {
-		Jupiter::ReferenceString name = Jupiter::ReferenceString::getWord(parameters, 0, WHITESPACE);
+	auto parameters_split = jessilib::word_split_once_view(std::string_view{parameters}, WHITESPACE_SV);
+	if (!parameters_split.second.empty()) {
+		std::string_view name = parameters_split.first;
+		std::string_view reason = parameters_split.second;
+
 		RenX::PlayerInfo *target = source->getPlayerByPartName(name);
 		if (target != nullptr) {
-			Jupiter::ReferenceString reason = Jupiter::ReferenceString::gotoWord(parameters, 1, WHITESPACE);
 			int warns = target->varData[pluginInstance.getName()].get<int>(WARNS_KEY) + 1;
 			if (warns > pluginInstance.m_maxWarns) {
 				switch (pluginInstance.m_warnAction)
@@ -179,7 +183,7 @@ void WarnGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *player, co
 			}
 			else {
 				target->varData[pluginInstance.getName()].set(WARNS_KEY, std::to_string(warns));
-				source->sendWarnMessage(*target, Jupiter::StringS::Format("You have been warned by %.*s for: %.*s. You have %d warnings.", player->name.size(), player->name.data(), reason.size(), reason.ptr(), warns));
+				source->sendWarnMessage(*target, Jupiter::StringS::Format("You have been warned by %.*s for: %.*s. You have %d warnings.", player->name.size(), player->name.data(), reason.size(), reason.data(), warns));
 				source->sendMessage(*player, Jupiter::StringS::Format("%.*s has been warned; they now have %d warnings.", target->name.size(), target->name.data(), warns));
 			}
 		}

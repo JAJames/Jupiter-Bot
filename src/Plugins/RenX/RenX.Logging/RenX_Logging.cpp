@@ -112,7 +112,7 @@ bool RenX_LoggingPlugin::initialize()
 
 	/** Event formats */
 	RenX_LoggingPlugin::playerRDNSFmt = this->config.get("PlayerRDNSFormat"_jrs,
-		Jupiter::ReferenceString::empty);
+		""_jrs);
 
 	RenX_LoggingPlugin::playerIdentifyFmt = this->config.get("PlayerIdentifyFormat"_jrs,
 		Jupiter::StringS::Format(IRCCOLOR "12[Join] " IRCBOLD "%.*s" IRCBOLD " (" IRCBOLD "%.*s" IRCBOLD ") joined the game fighting for the %.*s from " IRCBOLD "%.*s" IRCBOLD " (" IRCBOLD "%.*s" IRCBOLD ") with HWID " IRCBOLD "%.*s" IRCBOLD ".", RenX::tags->nameTag.size(), RenX::tags->nameTag.ptr(), RenX::tags->steamTag.size(), RenX::tags->steamTag.ptr(), RenX::tags->teamLongTag.size(), RenX::tags->teamLongTag.ptr(), RenX::tags->ipTag.size(), RenX::tags->ipTag.ptr(), RenX::tags->rdnsTag.size(), RenX::tags->rdnsTag.ptr(), RenX::tags->hwidTag.size(), RenX::tags->hwidTag.ptr()));
@@ -121,10 +121,10 @@ bool RenX_LoggingPlugin::initialize()
 		Jupiter::StringS::Format(IRCCOLOR "12[Join] " IRCBOLD "%.*s" IRCBOLD " joined the game fighting for the %.*s!", RenX::tags->nameTag.size(), RenX::tags->nameTag.ptr(), RenX::tags->teamLongTag.size(), RenX::tags->teamLongTag.ptr()));
 
 	RenX_LoggingPlugin::joinAdminFmt = this->config.get("JoinAdminFormat"_jrs,
-		Jupiter::ReferenceString::empty);
+		""_jrs);
 
 	RenX_LoggingPlugin::joinNoSteamAdminFmt = this->config.get("JoinNoSteamAdminFormat"_jrs,
-		Jupiter::ReferenceString::empty);
+		""_jrs);
 
 	RenX_LoggingPlugin::partFmt = this->config.get("PartFormat"_jrs,
 		Jupiter::StringS::Format(IRCCOLOR "12[Part] " IRCBOLD "%.*s" IRCBOLD " left the %.*s.", RenX::tags->nameTag.size(), RenX::tags->nameTag.ptr(), RenX::tags->teamLongTag.size(), RenX::tags->teamLongTag.ptr()));
@@ -998,12 +998,10 @@ void RenX_LoggingPlugin::RenX_OnOtherChat(RenX::Server &server, const Jupiter::R
 	}
 }
 
-void RenX_LoggingPlugin::RenX_OnDeploy(RenX::Server &server, const RenX::PlayerInfo &player, const Jupiter::ReadableString &object)
-{
+void RenX_LoggingPlugin::RenX_OnDeploy(RenX::Server &server, const RenX::PlayerInfo &player, const Jupiter::ReadableString &object) {
 	logFuncType func;
 	Jupiter::String msg;
-	if (object.match("*Beacon"))
-	{
+	if (std::string_view{object}.ends_with("Beacon")) {
 		if (RenX_LoggingPlugin::deployPublic)
 			func = &RenX::Server::sendLogChan;
 		else
@@ -1011,8 +1009,7 @@ void RenX_LoggingPlugin::RenX_OnDeploy(RenX::Server &server, const RenX::PlayerI
 
 		msg = this->deployFmt;
 	}
-	else
-	{
+	else {
 		if (RenX_LoggingPlugin::mineDeployPublic)
 			func = &RenX::Server::sendLogChan;
 		else
@@ -1020,8 +1017,7 @@ void RenX_LoggingPlugin::RenX_OnDeploy(RenX::Server &server, const RenX::PlayerI
 
 		msg = this->mineDeployFmt;
 	}
-	if (msg.isNotEmpty())
-	{
+	if (msg.isNotEmpty()) {
 		RenX::processTags(msg, &server, &player);
 		msg.replace(RenX::tags->INTERNAL_OBJECT_TAG, RenX::translateName(object));
 		(server.*func)(msg);
@@ -1045,13 +1041,11 @@ void RenX_LoggingPlugin::RenX_OnOverMine(RenX::Server &server, const RenX::Playe
 	}
 }
 
-void RenX_LoggingPlugin::RenX_OnDisarm(RenX::Server &server, const RenX::PlayerInfo &player, const Jupiter::ReadableString &object, const RenX::PlayerInfo &victim)
-{
+void RenX_LoggingPlugin::RenX_OnDisarm(RenX::Server &server, const RenX::PlayerInfo &player, const Jupiter::ReadableString &object, const RenX::PlayerInfo &victim) {
 	logFuncType func;
 	Jupiter::String msg;
 
-	if (object.match("*Beacon"))
-	{
+	if (std::string_view{object}.ends_with("Beacon")) {
 		if (RenX_LoggingPlugin::disarmPublic)
 			func = &RenX::Server::sendLogChan;
 		else
@@ -1059,8 +1053,7 @@ void RenX_LoggingPlugin::RenX_OnDisarm(RenX::Server &server, const RenX::PlayerI
 
 		msg = this->disarmFmt;
 	}
-	else
-	{
+	else {
 		if (RenX_LoggingPlugin::mineDisarmPublic)
 			func = &RenX::Server::sendLogChan;
 		else
@@ -1068,21 +1061,18 @@ void RenX_LoggingPlugin::RenX_OnDisarm(RenX::Server &server, const RenX::PlayerI
 
 		msg = this->mineDisarmFmt;
 	}
-	if (msg.isNotEmpty())
-	{
+	if (msg.isNotEmpty()) {
 		RenX::processTags(msg, &server, &player, &victim);
 		msg.replace(RenX::tags->INTERNAL_OBJECT_TAG, RenX::translateName(object));
 		(server.*func)(msg);
 	}
 }
 
-void RenX_LoggingPlugin::RenX_OnDisarm(RenX::Server &server, const RenX::PlayerInfo &player, const Jupiter::ReadableString &object)
-{
+void RenX_LoggingPlugin::RenX_OnDisarm(RenX::Server &server, const RenX::PlayerInfo &player, const Jupiter::ReadableString &object) {
 	logFuncType func;
 	Jupiter::String msg;
 
-	if (object.match("*Beacon"))
-	{
+	if (std::string_view{object}.ends_with("Beacon")) {
 		if (RenX_LoggingPlugin::disarmPublic)
 			func = &RenX::Server::sendLogChan;
 		else
@@ -1090,8 +1080,7 @@ void RenX_LoggingPlugin::RenX_OnDisarm(RenX::Server &server, const RenX::PlayerI
 
 		msg = this->disarmNoOwnerFmt;
 	}
-	else
-	{
+	else {
 		if (RenX_LoggingPlugin::mineDisarmPublic)
 			func = &RenX::Server::sendLogChan;
 		else
@@ -1099,8 +1088,7 @@ void RenX_LoggingPlugin::RenX_OnDisarm(RenX::Server &server, const RenX::PlayerI
 
 		msg = this->mineDisarmNoOwnerFmt;
 	}
-	if (msg.isNotEmpty())
-	{
+	if (msg.isNotEmpty()) {
 		RenX::processTags(msg, &server, &player);
 		msg.replace(RenX::tags->INTERNAL_OBJECT_TAG, RenX::translateName(object));
 		(server.*func)(msg);

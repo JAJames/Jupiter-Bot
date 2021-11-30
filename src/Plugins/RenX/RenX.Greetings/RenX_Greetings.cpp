@@ -23,10 +23,11 @@
 #include "RenX_Tags.h"
 
 using namespace Jupiter::literals;
+using namespace std::literals;
 
 void RenX_GreetingsPlugin::RenX_OnJoin(RenX::Server &server, const RenX::PlayerInfo &player) {
-	auto sendMessage = [&](const Jupiter::ReadableString &m) {
-		Jupiter::String msg = m;
+	auto sendMessage = [&](const std::string& raw_message) {
+		Jupiter::String msg = raw_message;
 
 		RenX::sanitizeTags(msg);
 		RenX::processTags(msg, &server, &player);
@@ -66,11 +67,12 @@ int RenX_GreetingsPlugin::OnRehash() {
 }
 
 bool RenX_GreetingsPlugin::initialize() {
-	m_sendPrivate = this->config.get<bool>("SendPrivate"_jrs, true);
-	m_sendMode = this->config.get<unsigned int>("SendMode"_jrs, 0);
-	m_greetingsFile.load(this->config.get("GreetingsFile"_jrs, "RenX.Greetings.txt"_jrs));
-	if (m_greetingsFile.getLineCount() == 0)
-		m_greetingsFile.addData("Please notify the server administrator to properly configure or disable server greetings.\r\n"_jrs);
+	m_sendPrivate = this->config.get<bool>("SendPrivate"sv, true);
+	m_sendMode = this->config.get<unsigned int>("SendMode"sv, 0);
+	m_greetingsFile.load(this->config.get("GreetingsFile"sv, "RenX.Greetings.txt"s));
+	if (m_greetingsFile.getLineCount() == 0) {
+		m_greetingsFile.addData("Please notify the server administrator to properly configure or disable server greetings.\r\n"sv);
+	}
 	m_lastLine = m_greetingsFile.getLineCount() - 1;
 
 	return true;

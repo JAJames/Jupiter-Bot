@@ -87,9 +87,9 @@ namespace RenX
 			uint64_t steamid /** SteamID of the banned player */;
 			uint32_t ip /** IPv4 address of the banned player */;
 			uint8_t prefix_length /** Prefix length for the IPv4 address block */;
-			Jupiter::StringS hwid; /** Hardware ID of the banned player */
-			Jupiter::StringS rdns /** RDNS of the banned player */;
-			Jupiter::StringS name /** Name of the banned player */;
+			std::string hwid; /** Hardware ID of the banned player */
+			std::string rdns /** RDNS of the banned player */;
+			std::string name /** Name of the banned player */;
 			std::string banner /** Name of the user who initiated the ban */;
 			std::string reason /** Reason the player was banned */;
 			VarDataTableType varData; /** Variable entry data */
@@ -158,7 +158,7 @@ namespace RenX
 		* @param reason Reason the player is getting banned
 		* @param length Duration of the ban
 		*/
-		void add(const Jupiter::ReadableString &name, uint32_t ip, uint8_t prefix_length, uint64_t steamid, const Jupiter::ReadableString &hwid, const Jupiter::ReadableString &rdns, std::string_view banner, std::string_view reason, std::chrono::seconds length, uint16_t flags = RenX::BanDatabase::Entry::FLAG_TYPE_GAME);
+		void add(std::string name, uint32_t ip, uint8_t prefix_length, uint64_t steamid, std::string hwid, std::string rdns, std::string banner, std::string reason, std::chrono::seconds length, uint16_t flags = RenX::BanDatabase::Entry::FLAG_TYPE_GAME);
 
 		/**
 		* @brief Upgrades the ban database to the current write_version.

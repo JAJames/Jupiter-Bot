@@ -20,6 +20,7 @@
 #include <cstring>
 #include <cctype>
 #include "jessilib/unicode.hpp"
+#include "jessilib/word_split.hpp"
 #include "Jupiter/Config.h"
 #include "Jupiter/Plugin.h"
 #include "Jupiter/Functions.h"
@@ -128,7 +129,7 @@ void IRC_Bot::setCommandAccessLevels(IRCCommand *in_command) {
 
 					command = this->getCommand(tmp_key);
 					if (command != nullptr && (in_command == nullptr || in_command == command)) {
-						command->setAccessLevel(tmp_sub_key.asInt(), Jupiter::ReferenceString{entry.second}.asInt());
+						command->setAccessLevel(Jupiter::from_string<int>(tmp_sub_key), Jupiter::from_string<int>(entry.second));
 					}
 				}
 				else if (jessilib::starts_withi(tmp_sub_key, "Channel."sv)) {
@@ -137,14 +138,14 @@ void IRC_Bot::setCommandAccessLevels(IRCCommand *in_command) {
 					// Assign access level to command (if command exists)
 					command = this->getCommand(tmp_key);
 					if (command != nullptr && (in_command == nullptr || in_command == command))
-						command->setAccessLevel(tmp_sub_key, Jupiter::ReferenceString{entry.second}.asInt());
+						command->setAccessLevel(tmp_sub_key, Jupiter::from_string<int>(entry.second));
 				}
 			}
 			else {
 				// Assign access level to command (if command exists)
 				command = this->getCommand(entry.first);
 				if (command != nullptr && (in_command == nullptr || in_command == command))
-					command->setAccessLevel(Jupiter::ReferenceString{entry.second}.asInt());
+					command->setAccessLevel(Jupiter::from_string<int>(entry.second));
 			}
 		};
 	};
@@ -153,29 +154,22 @@ void IRC_Bot::setCommandAccessLevels(IRCCommand *in_command) {
 	set_command_access_levels(getPrimaryConfigSection());
 }
 
-void IRC_Bot::OnChat(const Jupiter::ReadableString &in_channel, const Jupiter::ReadableString &nick, const Jupiter::ReadableString &message) {
+void IRC_Bot::OnChat(std::string_view in_channel, std::string_view nick, std::string_view message) {
 	Channel *channel = this->getChannel(in_channel);
 	if (channel != nullptr && channel->getType() >= 0) {
-		Jupiter::ReferenceString msg = message;
-		while (msg.isNotEmpty() && isspace(msg[0])) {
-			msg.shiftRight(1);
+		std::string_view msg = message;
+		while (!msg.empty() && isspace(msg[0])) {
+			msg.remove_prefix(1);
 		}
 
 		if (m_commandPrefix.size() <= msg.size()) {
-			bool matchesPrefix = true;
-			size_t i;
-			for (i = 0; i != m_commandPrefix.size(); i++) {
-				if (toupper(msg.get(0)) != toupper(m_commandPrefix[i])) {
-					matchesPrefix = false;
-					break;
-				}
-				msg.shiftRight(1);
-			}
-
+			bool matchesPrefix = jessilib::starts_withi(msg, m_commandPrefix);
 			if (matchesPrefix) {
-				Jupiter::ReferenceString command = Jupiter::ReferenceString::getWord(msg, 0, WHITESPACE);;
-				Jupiter::ReferenceString parameters = Jupiter::ReferenceString::gotoWord(msg, 1, WHITESPACE);
-				IRCCommand *cmd = getCommand(command);
+				// Strip off the prefix
+				msg.remove_prefix(m_commandPrefix.size());
+
+				auto message_split = jessilib::word_split_once_view(msg, WHITESPACE_SV);
+				IRCCommand *cmd = getCommand(message_split.first);
 				if (cmd != nullptr) {
 					IRCCommand::active_server = this;
 					int command_access = cmd->getAccessLevel(channel);
@@ -186,7 +180,7 @@ void IRC_Bot::OnChat(const Jupiter::ReadableString &in_channel, const Jupiter::R
 						this->sendNotice(nick, "Access Denied."_jrs);
 					}
 					else {
-						cmd->trigger(this, in_channel, nick, parameters);
+						cmd->trigger(this, Jupiter::ReferenceString{in_channel}, Jupiter::ReferenceString{nick}, Jupiter::ReferenceString{message_split.second});
 					}
 
 					IRCCommand::active_server = IRCCommand::selected_server;

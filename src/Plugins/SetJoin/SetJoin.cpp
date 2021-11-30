@@ -23,13 +23,13 @@
 
 using namespace Jupiter::literals;
 
-void SetJoinPlugin::OnJoin(Jupiter::IRC::Client *server, const Jupiter::ReadableString &chan, const Jupiter::ReadableString &nick)
+void SetJoinPlugin::OnJoin(Jupiter::IRC::Client *server, std::string_view chan, std::string_view nick)
 {
 	std::string_view setjoin = this->config[server->getConfigSection()].get(nick);
 	if (setjoin.empty())
 		server->sendNotice(nick, "No setjoin has been set for you. To set one, use the !setjoin command"_jrs);
 	else
-		server->sendMessage(chan, Jupiter::StringS::Format(IRCBOLD IRCCOLOR "07[%.*s]" IRCCOLOR IRCBOLD ": %.*s", nick.size(), nick.ptr(), setjoin.size(), setjoin.data()));
+		server->sendMessage(chan, Jupiter::StringS::Format(IRCBOLD IRCCOLOR "07[%.*s]" IRCCOLOR IRCBOLD ": %.*s", nick.size(), nick.data(), setjoin.size(), setjoin.data()));
 }
 
 SetJoinPlugin pluginInstance;
@@ -70,7 +70,7 @@ void ViewJoinIRCCommand::create()
 
 void ViewJoinIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &channel, const Jupiter::ReadableString &nick, const Jupiter::ReadableString &parameters)
 {
-	const Jupiter::ReadableString &target = parameters.isEmpty() ? nick : parameters;
+	const Jupiter::ReadableString &target = parameters.empty() ? nick : parameters;
 	std::string_view setjoin = pluginInstance.setjoin_file[source->getConfigSection()].get(target);
 
 	if (setjoin.empty())

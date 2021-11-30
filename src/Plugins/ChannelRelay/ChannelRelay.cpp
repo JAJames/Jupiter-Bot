@@ -16,6 +16,7 @@
  * Written by Jessica James <jessica.aj@outlook.com>
  */
 
+#include "jessilib/word_split.hpp"
 #include "Jupiter/IRC_Client.h"
 #include "Jupiter/String.hpp"
 #include "ServerManager.h"
@@ -23,51 +24,51 @@
 #include "ChannelRelay.h"
 
 using namespace Jupiter::literals;
+using namespace std::literals;
 
-bool ChannelRelayPlugin::initialize()
-{
-	Jupiter::ReferenceString str = this->config.get("Types"_jrs);
-	unsigned int words = str.wordCount(WHITESPACE);
-	if (words == 0)
+bool ChannelRelayPlugin::initialize() {
+	std::string_view types_string = this->config.get("Types"_jrs);
+	std::vector<std::string_view> split_types = jessilib::word_split_view(types_string, WHITESPACE_SV);
+
+	if (split_types.empty()) {
 		return false;
+	}
 
-	while (words != 0)
-		ChannelRelayPlugin::types.concat(str.getWord(--words, WHITESPACE).asInt());
+	for (const auto& type : split_types) {
+		ChannelRelayPlugin::types.concat(Jupiter::asInt(type));
+	}
 
 	return true;
 }
 
-int ChannelRelayPlugin::OnRehash()
-{
+int ChannelRelayPlugin::OnRehash() {
 	Jupiter::Plugin::OnRehash();
 
 	ChannelRelayPlugin::types.erase();
 	return this->initialize() ? 0 : -1;
 }
 
-void ChannelRelayPlugin::OnChat(Jupiter::IRC::Client *server, const Jupiter::ReadableString &channel, const Jupiter::ReadableString &nick, const Jupiter::ReadableString &message)
-{
+void ChannelRelayPlugin::OnChat(Jupiter::IRC::Client *server, std::string_view channel, std::string_view nick, std::string_view message) {
 	Jupiter::IRC::Client::Channel *chan = server->getChannel(channel);
-	if (chan != nullptr)
-	{
+	if (chan != nullptr) {
 		int type = chan->getType();
-		if (ChannelRelayPlugin::types.contains(type))
-		{
+		if (ChannelRelayPlugin::types.find(type) != std::string_view::npos) {
 			size_t serverCount = serverManager->size();
 			char prefix = chan->getUserPrefix(nick);
-			Jupiter::String str;
-			if (prefix == 0) {
-				str = "<"_jrs + nick + "> "_jrs + message;
+			std::string user_string;
+			user_string = "<"sv;
+			if (prefix != 0) {
+				user_string += prefix;
 			}
-			else {
-				str = "<"_jrs + prefix + nick + "> "_jrs + message;
-			}
+			user_string += nick;
+			user_string += "> "sv;
+			user_string += message;
 
 			while (serverCount != 0) {
 				auto server = serverManager->getServer(--serverCount);
 				for (auto& channel : server->getChannels()) {
 					if (channel.second.getType() == type && &channel.second != chan) {
-						server->sendMessage(channel.second.getName(), str);
+						server->sendMessage(channel.second.getName(), user_string);
 					}
 				}
 			}

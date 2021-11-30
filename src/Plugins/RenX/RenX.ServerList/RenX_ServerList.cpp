@@ -170,7 +170,7 @@ Jupiter::StringS RenX_ServerListPlugin::server_as_json(const RenX::Server &serve
 	Jupiter::String server_json_block(128);
 	ListServerInfo serverInfo = getListServerInfo(server);
 
-	if (serverInfo.hostname.isEmpty()) {
+	if (serverInfo.hostname.empty()) {
 		server_json_block = "null";
 		return server_json_block;
 	}
@@ -183,7 +183,7 @@ Jupiter::StringS RenX_ServerListPlugin::server_as_json(const RenX::Server &serve
 	Jupiter::String server_prefix = jsonify(serverInfo.namePrefix);
 
 	// Some members we only include if they're populated
-	if (!server_prefix.isEmpty()) {
+	if (!server_prefix.empty()) {
 		server_prefix = R"json("NamePrefix":")json"_jrs + server_prefix + "\","_jrs;
 	}
 

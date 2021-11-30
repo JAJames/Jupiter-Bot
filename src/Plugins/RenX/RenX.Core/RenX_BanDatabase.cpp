@@ -168,7 +168,7 @@ void RenX::BanDatabase::add(RenX::Server *server, const RenX::PlayerInfo &player
 	entry->steamid = player.steamid;
 	entry->ip = player.ip32;
 	entry->prefix_length = 32U;
-	if (player.hwid.span('0') != player.hwid.size()) {
+	if (player.hwid.find_first_not_of('0') != std::string::npos) {
 		entry->hwid = player.hwid;
 	}
 	if (player.rdns_thread.joinable())
@@ -190,7 +190,7 @@ void RenX::BanDatabase::add(RenX::Server *server, const RenX::PlayerInfo &player
 	write(m_entries.back().get());
 }
 
-void RenX::BanDatabase::add(const Jupiter::ReadableString &name, uint32_t ip, uint8_t prefix_length, uint64_t steamid, const Jupiter::ReadableString &hwid, const Jupiter::ReadableString &rdns, std::string_view banner, std::string_view reason, std::chrono::seconds length, uint16_t flags) {
+void RenX::BanDatabase::add(std::string name, uint32_t ip, uint8_t prefix_length, uint64_t steamid, std::string hwid, std::string rdns, std::string banner, std::string reason, std::chrono::seconds length, uint16_t flags) {
 	std::unique_ptr<Entry> entry = std::make_unique<Entry>();
 	entry->set_active();
 	entry->flags |= flags;
@@ -199,11 +199,11 @@ void RenX::BanDatabase::add(const Jupiter::ReadableString &name, uint32_t ip, ui
 	entry->steamid = steamid;
 	entry->ip = ip;
 	entry->prefix_length = prefix_length;
-	entry->hwid = hwid;
-	entry->rdns = rdns;
-	entry->name = name;
-	entry->banner = banner;
-	entry->reason = reason;
+	entry->hwid = std::move(hwid);
+	entry->rdns = std::move(rdns);
+	entry->name = std::move(name);
+	entry->banner = std::move(banner);
+	entry->reason = std::move(reason);
 
 	m_entries.push_back(std::move(entry));
 	write(m_entries.back().get());

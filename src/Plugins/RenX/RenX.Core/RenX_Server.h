@@ -266,7 +266,7 @@ namespace RenX
 		* @param message Message to send in-game.
 		* @return The number of bytes sent on success, less than or equal to zero otherwise.
 		*/
-		int sendAdminMessage(const RenX::PlayerInfo &player, const Jupiter::ReadableString &message);
+		int sendAdminMessage(const RenX::PlayerInfo &player, std::string_view message);
 
 		/**
 		* @brief Sends an in-game warning message to a player in the server.
@@ -275,7 +275,7 @@ namespace RenX
 		* @param message Message to send in-game.
 		* @return The number of bytes sent on success, less than or equal to zero otherwise.
 		*/
-		int sendWarnMessage(const RenX::PlayerInfo &player, const Jupiter::ReadableString &message);
+		int sendWarnMessage(const RenX::PlayerInfo &player, std::string_view message);
 
 		/**
 		* @brief Sends data to the server.
@@ -314,14 +314,14 @@ namespace RenX
 		*
 		* @return RCON command last executed.
 		*/
-		const Jupiter::ReadableString &getCurrentRCONCommand() const;
+		std::string_view getCurrentRCONCommand() const;
 
 		/**
 		* @brief Fetches the parameters of the RCON command currently being processed.
 		*
 		* @return Parameters of last RCON command last executed.
 		*/
-		const Jupiter::ReadableString &getCurrentRCONCommandParameters() const;
+		std::string_view getCurrentRCONCommandParameters() const;
 
 		/**
 		* @brief Calculates the time since match start.
@@ -369,7 +369,7 @@ namespace RenX
 		* @param name Name of the player.
 		* @return A player's data on success, nullptr otherwise.
 		*/
-		RenX::PlayerInfo *getPlayerByName(const Jupiter::ReadableString &name) const;
+		RenX::PlayerInfo *getPlayerByName(std::string_view name) const;
 
 		/**
 		* @brief Fetches a player's data, based on part of their name.
@@ -377,7 +377,7 @@ namespace RenX
 		* @param name Name of the player.
 		* @return A player's data on success, nullptr otherwise.
 		*/
-		RenX::PlayerInfo *getPlayerByPartName(const Jupiter::ReadableString &partName) const;
+		RenX::PlayerInfo *getPlayerByPartName(std::string_view partName) const;
 
 		/**
 		* @brief Fetches a player's data, based on part of their name.
@@ -409,28 +409,28 @@ namespace RenX
 		*
 		* @param id Player ID of the player to kick.
 		*/
-		void kickPlayer(int id, const Jupiter::ReadableString &reason);
+		void kickPlayer(int id, std::string_view reason);
 
 		/**
 		* @brief Kicks a player from the server.
 		*
 		* @param player Data of the player to kick.
 		*/
-		void kickPlayer(const RenX::PlayerInfo &player, const Jupiter::ReadableString &reason);
+		void kickPlayer(const RenX::PlayerInfo &player, std::string_view reason);
 
 		/**
 		* @brief Kicks a player from the server.
 		*
 		* @param id Player ID of the player to kick.
 		*/
-		void forceKickPlayer(int id, const Jupiter::ReadableString &reason);
+		void forceKickPlayer(int id, std::string_view reason);
 
 		/**
 		* @brief Kicks a player from the server.
 		*
 		* @param player Data of the player to kick.
 		*/
-		void forceKickPlayer(const RenX::PlayerInfo &player, const Jupiter::ReadableString &reason);
+		void forceKickPlayer(const RenX::PlayerInfo &player, std::string_view reason);
 
 		/**
 		* @brief Checks if any players are in the ban list, and kicks any players listed.
@@ -880,7 +880,7 @@ namespace RenX
 		* @param parameters Parameters to pass to the command
 		* @return Command executed if a match is found, nullptr otherwise.
 		*/
-		RenX::GameCommand *triggerCommand(const Jupiter::ReadableString &trigger, RenX::PlayerInfo &player, const Jupiter::ReadableString &parameters);
+		RenX::GameCommand *triggerCommand(std::string_view trigger, RenX::PlayerInfo &player, std::string_view parameters);
 
 		/**
 		* @brief Adds a command to the server's game command list.
@@ -935,7 +935,7 @@ namespace RenX
 		* @param player Player with UUID to change
 		* @param uuid Player's new UUID
 		*/
-		void setUUID(RenX::PlayerInfo &player, const Jupiter::ReadableString &uuid);
+		void setUUID(RenX::PlayerInfo &player, std::string_view uuid);
 
 		/**
 		* @brief Changes a player's UUID only if it is different than their current UUID
@@ -944,7 +944,7 @@ namespace RenX
 		* @param uuid Player's new UUID
 		* @return True if the UUIDs did not match, false otherwise.
 		*/
-		bool setUUIDIfDifferent(RenX::PlayerInfo &player, const Jupiter::ReadableString &uuid);
+		bool setUUIDIfDifferent(RenX::PlayerInfo &player, std::string_view uuid);
 
 		/**
 		* @brief Checks if reverse DNS resolution is occuring for players.
@@ -1112,10 +1112,10 @@ namespace RenX
 		std::chrono::steady_clock::time_point m_gameover_time;
 		std::string m_lastLine;
 		Jupiter::StringS m_rconUser;
-		Jupiter::StringS m_gameVersion;
+		std::string m_gameVersion;
 		Jupiter::StringS m_serverName;
-		Jupiter::StringS m_lastCommand;
-		Jupiter::StringS m_lastCommandParams;
+		std::string m_lastCommand;
+		std::string m_lastCommandParams;
 		RenX::Map m_map;
 		Jupiter::TCPSocket m_sock;
 		std::vector<std::string> m_commandListFormat;

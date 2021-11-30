@@ -18,9 +18,11 @@
 
 #include <forward_list>
 #include <functional>
+#include <sstream>
 #include "Jupiter/Functions.h"
 #include "jessilib/duration.hpp"
 #include "jessilib/unicode.hpp"
+#include "jessilib/word_split.hpp"
 #include "IRC_Bot.h"
 #include "RenX_Commands.h"
 #include "RenX_Core.h"
@@ -49,8 +51,15 @@ bool togglePhasing(RenX::Server *server) {
 
 void onDie(RenX::Server &server, const RenX::PlayerInfo &player) {
 	if (player.isBot && server.varData[RxCommandsSection].get<bool>("phasing"_jrs, false)) {
-		server.kickPlayer(player, Jupiter::StringS::empty);
+		server.kickPlayer(player, ""sv);
 	}
+}
+
+std::string player_not_found_message(std::string_view name) {
+	std::string result = "Error: Player \""s;
+	result += name;
+	result += "\" not found.";
+	return result;
 }
 
 void RenX_CommandsPlugin::RenX_OnSuicide(RenX::Server &server, const RenX::PlayerInfo &player, const Jupiter::ReadableString &) {
@@ -123,7 +132,7 @@ RawRCONConsoleCommand::RawRCONConsoleCommand() {
 }
 
 void RawRCONConsoleCommand::trigger(const Jupiter::ReadableString &parameters) {
-	if (parameters.isEmpty()) {
+	if (parameters.empty()) {
 		puts("Error: Too Few Parameters. Syntax: rrcon <input>");
 		return;
 	}
@@ -156,7 +165,7 @@ RCONConsoleCommand::RCONConsoleCommand() {
 }
 
 void RCONConsoleCommand::trigger(const Jupiter::ReadableString &parameters) {
-	if (parameters.isEmpty()) {
+	if (parameters.empty()) {
 		puts("Error: Too Few Parameters. Syntax: rcon <input>");
 	}
 
@@ -236,20 +245,21 @@ void PMsgIRCCommand::create()
 	this->setAccessLevel(1);
 }
 
-void PMsgIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &channel, const Jupiter::ReadableString &nick, const Jupiter::ReadableString &parameters)
-{
-	if (parameters.wordCount(WHITESPACE) >= 2)
+void PMsgIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &channel, const Jupiter::ReadableString &nick, const Jupiter::ReadableString &parameters) {
+	auto command_split = jessilib::word_split_once_view(std::string_view{parameters}, WHITESPACE_SV);
+	if (!command_split.second.empty())
 	{
 		int type = source->getChannel(channel)->getType();
-		Jupiter::ReferenceString name = Jupiter::ReferenceString::getWord(parameters, 0, WHITESPACE);
+
+		Jupiter::ReferenceString name = command_split.first;
 		RenX::PlayerInfo *player;
-		Jupiter::StringL msg;
+		std::string msg;
 		char prefix = source->getChannel(channel)->getUserPrefix(nick);
 		if (prefix != '\0')
 			msg += prefix;
 		msg += nick;
 		msg += "@IRC: ";
-		msg += Jupiter::ReferenceString::gotoWord(parameters, 1, WHITESPACE);
+		msg += command_split.second;
 		if (parameters.isNotEmpty())
 		{
 			for (unsigned int i = 0; i != RenX::getCore()->getServerCount(); i++)
@@ -258,9 +268,12 @@ void PMsgIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &cha
 				if (server->isLogChanType(type))
 				{
 					player = server->getPlayerByPartName(name);
-					if (player != nullptr)
+					if (player != nullptr) {
 						server->sendMessage(*player, msg);
-					else source->sendNotice(nick, Jupiter::StringS::Format("Error: Player \"%.*s\" not found.", name.size(), name.ptr()));
+					}
+					else {
+						source->sendNotice(nick, player_not_found_message(name));
+					}
 				}
 			}
 		}
@@ -360,20 +373,19 @@ void PAdminMsgIRCCommand::create()
 	this->setAccessLevel(4);
 }
 
-void PAdminMsgIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &channel, const Jupiter::ReadableString &nick, const Jupiter::ReadableString &parameters)
-{
-	if (parameters.wordCount(WHITESPACE) >= 2)
-	{
+void PAdminMsgIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &channel, const Jupiter::ReadableString &nick, const Jupiter::ReadableString &parameters) {
+	auto command_split = jessilib::word_split_once_view(std::string_view{parameters}, WHITESPACE_SV);
+	if (!command_split.second.empty()) {
 		int type = source->getChannel(channel)->getType();
-		Jupiter::ReferenceString name = Jupiter::ReferenceString::getWord(parameters, 0, WHITESPACE);
+		Jupiter::ReferenceString name = command_split.first;
 		RenX::PlayerInfo *player;
-		Jupiter::StringL msg;
+		std::string msg;
 		char prefix = source->getChannel(channel)->getUserPrefix(nick);
 		if (prefix != '\0')
 			msg += prefix;
 		msg += nick;
 		msg += "@IRC: ";
-		msg += Jupiter::ReferenceString::gotoWord(parameters, 1, WHITESPACE);
+		msg += command_split.second;
 		if (parameters.isNotEmpty())
 		{
 			for (unsigned int i = 0; i != RenX::getCore()->getServerCount(); i++)
@@ -384,7 +396,7 @@ void PAdminMsgIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString
 					player = server->getPlayerByPartName(name);
 					if (player != nullptr)
 						server->sendAdminMessage(*player, msg);
-					else source->sendNotice(nick, Jupiter::StringS::Format("Error: Player \"%.*s\" not found.", name.size(), name.ptr()));
+					else source->sendNotice(nick, player_not_found_message(name));
 				}
 			}
 		}
@@ -662,7 +674,7 @@ void PlayerTableIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableStri
 				auto output_player = [server, type, source, &channel, maxNickLen, idColLen, scoreColLen, creditColLen](RenX::PlayerInfo *player, const Jupiter::ReadableString &color)
 				{
 					if (server->isAdminLogChanType(type))
-						source->sendMessage(channel, Jupiter::StringS::Format(IRCCOLOR "%.*s%*.*s" IRCCOLOR " " IRCCOLOR "03|" IRCCOLOR " %*d " IRCCOLOR "03|" IRCCOLOR " %*.0f " IRCCOLOR "03|" IRCCOLOR " %*.0f " IRCCOLOR "03|" IRCNORMAL " %.*s", color.size(), color.ptr(), maxNickLen, player->name.size(), player->name.data(), idColLen, player->id, scoreColLen, player->score, creditColLen, player->credits, player->ip.size(), player->ip.ptr()));
+						source->sendMessage(channel, Jupiter::StringS::Format(IRCCOLOR "%.*s%*.*s" IRCCOLOR " " IRCCOLOR "03|" IRCCOLOR " %*d " IRCCOLOR "03|" IRCCOLOR " %*.0f " IRCCOLOR "03|" IRCCOLOR " %*.0f " IRCCOLOR "03|" IRCNORMAL " %.*s", color.size(), color.ptr(), maxNickLen, player->name.size(), player->name.data(), idColLen, player->id, scoreColLen, player->score, creditColLen, player->credits, player->ip.size(), player->ip.data()));
 					else
 						source->sendMessage(channel, Jupiter::StringS::Format(IRCCOLOR "%.*s%*.*s" IRCCOLOR " " IRCCOLOR "03|" IRCCOLOR " %*d " IRCCOLOR "03|" IRCCOLOR " %*.0f " IRCCOLOR "03|" IRCCOLOR " %*.0f", color.size(), color.ptr(), maxNickLen, player->name.size(), player->name.data(), idColLen, player->id, scoreColLen, player->score, creditColLen, player->credits));
 				};
@@ -708,7 +720,7 @@ void PlayerInfoIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableStrin
 		const Jupiter::ReadableString &player_info_format = source->getAccessLevel(channel, nick) > 1 ? pluginInstance.getAdminPlayerInfoFormat() : pluginInstance.getPlayerInfoFormat();
 		size_t index = 0;
 
-		if (parameters.isEmpty()) { // List all players
+		if (parameters.empty()) { // List all players
 			while (index != RenX::getCore()->getServerCount()) {
 				server = RenX::getCore()->getServer(index++);
 				if (server->isLogChanType(type) && server->players.size() != 0) {
@@ -735,7 +747,7 @@ void PlayerInfoIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableStrin
 			}
 		}
 
-		if (msg.isEmpty()) {
+		if (msg.empty()) {
 			source->sendNotice(nick, STRING_LITERAL_AS_REFERENCE("Error: Player not found."));
 		}
 	}
@@ -864,7 +876,7 @@ void MutatorsIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString 
 				}
 			}
 		}
-		if (list.isEmpty())
+		if (list.empty())
 			source->sendMessage(channel, "Error: Channel not attached to any connected Renegade X servers."_jrs);
 	}
 }
@@ -913,7 +925,7 @@ void RotationIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString 
 				}
 			}
 		}
-		if (list.isEmpty()) {
+		if (list.empty()) {
 			source->sendMessage(channel, "Error: Channel not attached to any connected Renegade X servers."_jrs);
 		}
 	}
@@ -1044,7 +1056,7 @@ void SteamIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &ch
 					}
 				}
 			}
-			if (msg.isEmpty())
+			if (msg.empty())
 				source->sendNotice(nick, STRING_LITERAL_AS_REFERENCE("Error: Player not found."));
 		}
 		else
@@ -1121,7 +1133,7 @@ void KillDeathRatioIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableS
 					}
 				}
 			}
-			if (msg.isEmpty())
+			if (msg.empty())
 				source->sendNotice(nick, STRING_LITERAL_AS_REFERENCE("Error: Player not found."));
 		}
 	}
@@ -1158,7 +1170,7 @@ void ShowModsIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString 
 			RenX::Server *server = RenX::getCore()->getServer(i);
 			if (server->isLogChanType(type))
 			{
-				ModsGameCommand_instance.trigger(server, nullptr, Jupiter::ReferenceString::empty);
+				ModsGameCommand_instance.trigger(server, nullptr, ""_jrs);
 				sent = true;
 			}
 		}
@@ -1214,12 +1226,12 @@ void ModsIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &cha
 							}
 						}
 					}
-					if (msg.isEmpty())
+					if (msg.empty())
 						msg = "No "_jrs + staff_word + "s are in-game."_jrs;
 					source->sendMessage(channel, msg);
 				}
 			}
-			if (msg.isEmpty())
+			if (msg.empty())
 				source->sendMessage(channel, STRING_LITERAL_AS_REFERENCE("Error: Channel not attached to any connected Renegade X servers."));
 		}
 	}
@@ -1257,7 +1269,7 @@ void ShowRulesIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString
 				server->sendMessage(msg);
 			}
 		}
-		if (msg.isEmpty())
+		if (msg.empty())
 			source->sendMessage(channel, STRING_LITERAL_AS_REFERENCE("Error: Channel not attached to any connected Renegade X servers."));
 	}
 }
@@ -1297,7 +1309,7 @@ void RulesIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &ch
 					source->sendMessage(channel, msg);
 				}
 			}
-			if (msg.isEmpty())
+			if (msg.empty())
 				source->sendMessage(channel, STRING_LITERAL_AS_REFERENCE("Error: Channel not attached to any connected Renegade X servers."));
 		}
 	}
@@ -1336,7 +1348,7 @@ void ReconnectIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString
 				source->sendMessage(channel, msg);
 			}
 		}
-		if (msg.isEmpty())
+		if (msg.empty())
 		{
 			// We didn't connect anywhere!!
 			msg.set("ERROR: No servers found to connect to.");
@@ -1395,10 +1407,10 @@ void GameOverIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString 
 				}
 				else
 				{
-					if (parameters.isEmpty())
+					if (parameters.empty())
 						delay = std::chrono::seconds(10);
 					else
-						delay = std::chrono::seconds(parameters.asLongLong());
+						delay = std::chrono::seconds(Jupiter::from_string<long long>(parameters));
 
 					server->sendMessage(Jupiter::StringS::Format("Notice: This server will gameover in %lld seconds.", static_cast<long long>(delay.count())));
 					server->gameover(delay);
@@ -1823,7 +1835,7 @@ void KickIRCCommand::create()
 
 void KickIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &channel, const Jupiter::ReadableString &nick, const Jupiter::ReadableString &parameters)
 {
-	if (parameters.isEmpty()) {
+	if (parameters.empty()) {
 		source->sendNotice(nick, STRING_LITERAL_AS_REFERENCE("Error: Too Few Parameters. Syntax: Kick <Player> [Reason]"));
 		return;
 	}
@@ -1839,15 +1851,13 @@ void KickIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &cha
 		return;
 	}
 
+	auto command_split = jessilib::word_split_once_view(std::string_view{parameters}, WHITESPACE_SV);
 	RenX::PlayerInfo *player;
 	unsigned int kicks = 0;
-	Jupiter::StringS name = Jupiter::StringS::getWord(parameters, 0, WHITESPACE);
-	Jupiter::StringS reason;
-	if (parameters.wordCount(WHITESPACE) > 1) {
-		reason = Jupiter::StringS::gotoWord(parameters, 1, WHITESPACE);
-	}
-	else {
-		reason = STRING_LITERAL_AS_REFERENCE("No reason");
+	std::string_view name = command_split.first;
+	std::string_view reason = command_split.second;
+	if (reason.empty()) {
+		reason = "No reason"sv;
 	}
 
 	for (const auto& server : servers) {
@@ -1885,16 +1895,16 @@ void BanSearchIRCCommand::create() {
 
 void BanSearchIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &channel, const Jupiter::ReadableString &nick, const Jupiter::ReadableString &parameters) {
 	const auto& entries = RenX::banDatabase->getEntries();
-	if (parameters.isNotEmpty())
-	{
-		if (entries.size() == 0)
+	if (!parameters.empty()) {
+		if (entries.size() == 0) {
 			source->sendNotice(nick, STRING_LITERAL_AS_REFERENCE("The ban database is empty!"));
-		else
-		{
+		}
+		else {
+			auto command_split = jessilib::word_split_once_view(std::string_view{parameters}, WHITESPACE_SV);
+
 			RenX::BanDatabase::Entry *entry;
-			Jupiter::ReferenceString params = Jupiter::ReferenceString::gotoWord(parameters, 1, WHITESPACE);
-			std::function<bool(unsigned int)> isMatch = [&](unsigned int type_l) -> bool
-			{
+			std::string_view params = command_split.second;
+			std::function<bool(unsigned int)> isMatch = [&](unsigned int type_l) -> bool {
 				switch (type_l)
 				{
 				default:
@@ -1903,39 +1913,39 @@ void BanSearchIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString
 				case 1: // ALL
 					return true;
 				case 2:	// IP
-					return entry->ip == params.asUnsignedInt();
+					return entry->ip == Jupiter::asUnsignedInt(params); // TODO: Actually parse as an IP address...
 				case 3: // HWID
-					return entry->hwid == std::string_view{params};
+					return entry->hwid == params;
 				case 4: // RDNS
-					return entry->rdns == std::string_view{params};
+					return entry->rdns == params;
 				case 5:	// STEAM
-					return entry->steamid == params.asUnsignedLongLong();
+					return entry->steamid == Jupiter::asUnsignedLongLong(params);
 				case 6:	// NAME
-					return entry->name.equalsi(params);
+					return jessilib::equalsi(entry->name, params);
 				case 7:	// BANNER
 					return jessilib::equalsi(entry->banner, params);
 				case 8:	// ACTIVE
-					return params.asBool() == entry->is_active();
+					return Jupiter::asBool(params) == entry->is_active();
 				}
 			};
 
 			unsigned int type;
-			Jupiter::ReferenceString type_str = Jupiter::ReferenceString::getWord(parameters, 0, WHITESPACE);
-			if (type_str.equalsi(STRING_LITERAL_AS_REFERENCE("all")) || type_str == '*')
+			std::string_view type_str = command_split.first;
+			if (jessilib::equalsi(type_str, "all"sv) || type_str == "*"sv)
 				type = 1;
-			else if (type_str.equalsi(STRING_LITERAL_AS_REFERENCE("ip")))
+			else if (jessilib::equalsi(type_str, "ip"sv))
 				type = 2;
-			else if (type_str.equalsi(STRING_LITERAL_AS_REFERENCE("hwid")))
+			else if (jessilib::equalsi(type_str, "hwid"sv))
 				type = 3;
-			else if (type_str.equalsi(STRING_LITERAL_AS_REFERENCE("rdns")))
+			else if (jessilib::equalsi(type_str, "rdns"sv))
 				type = 4;
-			else if (type_str.equalsi(STRING_LITERAL_AS_REFERENCE("steam")))
+			else if (jessilib::equalsi(type_str, "steam"sv))
 				type = 5;
-			else if (type_str.equalsi(STRING_LITERAL_AS_REFERENCE("name")))
+			else if (jessilib::equalsi(type_str, "name"sv))
 				type = 6;
-			else if (type_str.equalsi(STRING_LITERAL_AS_REFERENCE("banner")))
+			else if (jessilib::equalsi(type_str, "banner"sv))
 				type = 7;
-			else if (type_str.equalsi(STRING_LITERAL_AS_REFERENCE("active")))
+			else if (jessilib::equalsi(type_str, "active"sv))
 				type = 8;
 			else
 			{
@@ -1987,10 +1997,10 @@ void BanSearchIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString
 					}
 
 					out.format("ID: %lu (" IRCCOLOR "%sactive" IRCCOLOR "); Added: %s; Expires: %s; IP: %.*s/%u; HWID: %.*s; Steam: %llu; Types:%.*s Name: %.*s; Banner: %.*s",
-						i, entry->is_active() ? "12" : "04in", dateStr, expireStr, ip_str.size(), ip_str.ptr(), entry->prefix_length, entry->hwid.size(), entry->hwid.ptr(), entry->steamid,
-						types.size(), types.ptr(), entry->name.size(), entry->name.ptr(), entry->banner.size(), entry->banner.data());
+						i, entry->is_active() ? "12" : "04in", dateStr, expireStr, ip_str.size(), ip_str.ptr(), entry->prefix_length, entry->hwid.size(), entry->hwid.data(), entry->steamid,
+						types.size(), types.ptr(), entry->name.size(), entry->name.data(), entry->banner.size(), entry->banner.data());
 
-					if (entry->rdns.isNotEmpty())
+					if (!entry->rdns.empty())
 					{
 						out.concat("; RDNS: "_jrs);
 						out.concat(entry->rdns);
@@ -2003,7 +2013,7 @@ void BanSearchIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString
 					source->sendNotice(nick, out);
 				}
 			}
-			if (out.isEmpty())
+			if (out.empty())
 				source->sendNotice(nick, STRING_LITERAL_AS_REFERENCE("No matches found."));
 		}
 	}
@@ -2026,7 +2036,7 @@ struct player_search_result {
 	RenX::PlayerInfo* player{}; // Set if a player is found
 };
 
-player_search_result findPlayerByPartName(const std::vector<RenX::Server*>& servers, const Jupiter::ReadableString& name) {
+player_search_result findPlayerByPartName(const std::vector<RenX::Server*>& servers, std::string_view name) {
 	if (servers.size() == 0) {
 		return {};
 	}
@@ -2045,7 +2055,7 @@ player_search_result findPlayerByPartName(const std::vector<RenX::Server*>& serv
 	return result;
 }
 
-player_search_result findPlayerByPartName(IRC_Bot* source, const Jupiter::ReadableString& channel, const Jupiter::ReadableString& name) {
+player_search_result findPlayerByPartName(IRC_Bot* source, std::string_view channel, std::string_view name) {
 	Jupiter::IRC::Client::Channel *chan = source->getChannel(channel);
 	if (chan == nullptr) {
 		return {};
@@ -2063,28 +2073,29 @@ void TempBanIRCCommand::create() {
 }
 
 void TempBanIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &channel, const Jupiter::ReadableString &nick, const Jupiter::ReadableString &parameters) {
-	if (parameters.isEmpty()) {
+	if (parameters.empty()) {
 		source->sendNotice(nick, STRING_LITERAL_AS_REFERENCE("Error: Too Few Parameters. Syntax: TempBan [Duration] <Player> [Reason]"));
 		return;
 	}
 
 	std::chrono::seconds duration = pluginInstance.getDefaultTBanTime();
-	Jupiter::ReferenceString name = Jupiter::ReferenceString::getWord(parameters, 0, WHITESPACE);
-	size_t word_count = parameters.wordCount(WHITESPACE);
-	size_t reason_start_word = 1;
+	auto command_split = jessilib::word_split_once_view(std::string_view{parameters}, WHITESPACE_SV);
+	std::string_view name = command_split.first;
+	std::string_view reason = command_split.second;
 
 	// Try searching by name first
 	auto search_result = findPlayerByPartName(source, channel, name);
 	if (search_result.server != nullptr
 		&& search_result.player == nullptr
-		&& word_count > 1) {
+		&& !command_split.second.empty()) {
 		// Try reading token as a duration instead, and search the name token if duration > 0
-		duration = jessilib::duration_from_string(name.ptr(), name.ptr() + name.size()).duration;
+		duration = jessilib::duration_from_string(name.data(), name.data() + name.size()).duration;
 		if (duration.count() > 0) {
 			// It reads as a duration; sanity check & try searching again
+			command_split = jessilib::word_split_once_view(command_split.second, WHITESPACE_SV);
 			duration = std::min(duration, pluginInstance.getMaxTBanTime());
-			name = Jupiter::ReferenceString::getWord(parameters, 1, WHITESPACE);
-			++reason_start_word;
+			name = command_split.first;
+			reason = command_split.second;
 			search_result = findPlayerByPartName(source, channel, name);
 		}
 	}
@@ -2099,7 +2110,10 @@ void TempBanIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &
 		return;
 	}
 
-	Jupiter::ReferenceString reason = word_count > reason_start_word ? Jupiter::ReferenceString::gotoWord(parameters, reason_start_word, WHITESPACE) : "No reason"_jrs;
+	if (reason.empty()) {
+		reason = "No reason"sv;
+	}
+
 	Jupiter::String banner(nick.size() + 4);
 	banner += nick;
 	banner += "@IRC";
@@ -2125,28 +2139,29 @@ void TempChatBanIRCCommand::create() {
 }
 
 void TempChatBanIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &channel, const Jupiter::ReadableString &nick, const Jupiter::ReadableString &parameters) {
-	if (parameters.isEmpty()) {
+	if (parameters.empty()) {
 		source->sendNotice(nick, STRING_LITERAL_AS_REFERENCE("Error: Too Few Parameters. Syntax: TempChatBan [Duration] <Player> [Reason]"));
 		return;
 	}
 
 	std::chrono::seconds duration = pluginInstance.getDefaultTBanTime();
-	Jupiter::ReferenceString name = Jupiter::ReferenceString::getWord(parameters, 0, WHITESPACE);
-	size_t word_count = parameters.wordCount(WHITESPACE);
-	size_t reason_start_word = 1;
+	auto command_split = jessilib::word_split_once_view(std::string_view{parameters}, WHITESPACE_SV);
+	std::string_view name = command_split.first;
+	std::string_view reason = command_split.second;
 
 	// Try searching by name first
 	auto search_result = findPlayerByPartName(source, channel, name);
 	if (search_result.server != nullptr
 		&& search_result.player == nullptr
-		&& word_count > 1) {
+		&& !command_split.second.empty()) {
 		// Try reading token as a duration instead, and search the name token if duration > 0
-		duration = jessilib::duration_from_string(name.ptr(), name.ptr() + name.size()).duration;
+		duration = jessilib::duration_from_string(name.data(), name.data() + name.size()).duration;
 		if (duration.count() > 0) {
 			// It reads as a duration; sanity check & try searching again
 			duration = std::min(duration, pluginInstance.getMaxTBanTime());
-			name = Jupiter::ReferenceString::getWord(parameters, 1, WHITESPACE);
-			++reason_start_word;
+			command_split = jessilib::word_split_once_view(command_split.second, WHITESPACE_SV);
+			name = command_split.first;
+			reason = command_split.second;
 			search_result = findPlayerByPartName(source, channel, name);
 		}
 	}
@@ -2161,7 +2176,10 @@ void TempChatBanIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableStri
 		return;
 	}
 
-	Jupiter::ReferenceString reason = word_count > reason_start_word ? Jupiter::ReferenceString::gotoWord(parameters, reason_start_word, WHITESPACE) : "No reason"_jrs;
+	if (reason.empty()) {
+		reason = "No reaosn"sv;
+	}
+
 	Jupiter::String banner(nick.size() + 4);
 	banner += nick;
 	banner += "@IRC";
@@ -2194,14 +2212,13 @@ void KickBanIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &
 			{
 				RenX::PlayerInfo *player;
 				unsigned int kicks = 0;
-				Jupiter::StringS name = Jupiter::StringS::getWord(parameters, 0, WHITESPACE);
-				Jupiter::StringS reason;
-				if (parameters.wordCount(WHITESPACE) > 1) {
-					reason = Jupiter::StringS::gotoWord(parameters, 1, WHITESPACE);
+				auto command_split = jessilib::word_split_once_view(std::string_view{parameters}, WHITESPACE_SV);
+				std::string_view name = command_split.first;
+				std::string_view reason = command_split.second;
+				if (reason.empty()) {
+					reason = "No reason"sv;
 				}
-				else {
-					reason = STRING_LITERAL_AS_REFERENCE("No reason");
-				}
+
 				Jupiter::String banner(nick.size() + 4);
 				banner += nick;
 				banner += "@IRC";
@@ -2214,10 +2231,10 @@ void KickBanIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &
 						}
 					}
 				}
-				if (kicks == 0)
-					source->sendMessage(channel, "Player \""_jrs + name + "\" not found."_jrs);
-				else
-				{
+				if (kicks == 0) {
+					source->sendMessage(channel, player_not_found_message(name));
+				}
+				else {
 					source->sendMessage(channel, Jupiter::StringS::Format("%u players kicked.", kicks));
 					RenX::getCore()->banCheck();
 				}
@@ -2238,8 +2255,6 @@ IRC_COMMAND_INIT(KickBanIRCCommand)
 
 // AddBan IRC Command
 
-#define ADDBAN_WHITESPACE " \t="
-
 void AddBanIRCCommand::create()
 {
 	this->addTrigger("addban"_jrs);
@@ -2247,127 +2262,135 @@ void AddBanIRCCommand::create()
 	this->setAccessLevel(4);
 }
 
-void AddBanIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &channel, const Jupiter::ReadableString &nick, const Jupiter::ReadableString &parameters)
-{
-	if (parameters.isNotEmpty())
-	{
+void AddBanIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &channel, const Jupiter::ReadableString &nick, const Jupiter::ReadableString &parameters) {
+	if (parameters.isNotEmpty()) {
 		Jupiter::IRC::Client::Channel *chan = source->getChannel(channel);
-		if (chan != nullptr)
-		{
-			size_t words = parameters.wordCount(ADDBAN_WHITESPACE);
-			if (words == 0)
-				source->sendNotice(nick, STRING_LITERAL_AS_REFERENCE("Error: Too Few Parameters. Syntax: KickBan <Player> [Reason]"));
-			else if (words == 1)
+		if (chan != nullptr) {
+			std::vector<std::string_view> split_parameters = jessilib::word_split_view(std::string_view{parameters}, " \t="sv);
+			if (split_parameters.empty()) {
+				source->sendNotice(nick, "Error: Too Few Parameters. Syntax: KickBan <Player> [Reason]"sv);
+			}
+			else if (split_parameters.size() == 1) {
 				KickBanIRCCommand_instance.trigger(source, channel, nick, parameters);
-			else
-			{
-				size_t index = 0;
-				Jupiter::ReferenceString name;
+			}
+			else {
+				std::string name;
 				std::string ip_str;
 				uint32_t ip = 0U;
 				uint8_t prefix_length = 32U;
 				uint64_t steamid = 0U;
-				Jupiter::ReferenceString hwid;
-				Jupiter::StringS rdns;
-				Jupiter::String banner = nick + "@IRC"_jrs;
-				Jupiter::ReferenceString reason = "No reason"_jrs;
+				std::string hwid;
+				std::string rdns;
+				std::string banner = std::string{nick};
+				banner += "@IRC"sv;
+				std::string reason = "No reason"s;
 				std::chrono::seconds duration(0);
 				uint16_t flags = 0;
 
-				Jupiter::ReferenceString word;
-				while (index != words)
-				{
-					word = Jupiter::ReferenceString::getWord(parameters, index++, ADDBAN_WHITESPACE);
+				auto missing_value = [&source, &nick](std::string_view token) {
+					std::string error_message = "ERROR: No value specified for token: "s;
+					error_message += token;
+					source->sendNotice(nick, error_message);
+				};
 
-					if (word.equalsi("Name"_jrs) || word.equalsi("Nick"_jrs) || word.equalsi("Nickname"_jrs) || word.equalsi("Username"_jrs))
-					{
-						if (index == words)
-						{
-							source->sendNotice(nick, "ERROR: No value specified for token: "_jrs + word);
+				for (auto itr = split_parameters.begin(); itr != split_parameters.end();) {
+					std::string_view parameter = *itr;
+					++itr;
+
+					if (jessilib::equalsi(parameter, "Name"sv)
+						|| jessilib::equalsi(parameter, "Nick"sv)
+						|| jessilib::equalsi(parameter, "Nickname"sv)
+						|| jessilib::equalsi(parameter, "Username"sv)) {
+						if (itr == split_parameters.end()) {
+							missing_value(parameter);
 							return;
 						}
 
-						name = Jupiter::ReferenceString::getWord(parameters, index++, ADDBAN_WHITESPACE);
+						name = *itr;
+						++itr;
 					}
-					else if (word.equalsi("IP"_jrs) || word.equalsi("IPAddress"_jrs) || word.equalsi("Address"_jrs))
-					{
-						if (index == words)
-						{
-							source->sendNotice(nick, "ERROR: No value specified for token: "_jrs + word);
+					else if (jessilib::equalsi(parameter, "IP"sv)
+						|| jessilib::equalsi(parameter, "IPAddress"sv)
+						|| jessilib::equalsi(parameter, "Address"sv)) {
+						if (itr == split_parameters.end()) {
+							missing_value(parameter);
 							return;
 						}
 
-						ip_str = static_cast<std::string>(Jupiter::ReferenceString::getWord(parameters, index++, ADDBAN_WHITESPACE));
+						ip_str = *itr;
+						++itr;
 					}
-					else if (word.equalsi("Steam"_jrs) || word.equalsi("SteamID"_jrs))
-					{
-						if (index == words)
-						{
-							source->sendNotice(nick, "ERROR: No value specified for token: "_jrs + word);
+					else if (jessilib::equalsi(parameter, "Steam"sv)
+						|| jessilib::equalsi(parameter, "SteamID"sv)) {
+						if (itr == split_parameters.end()) {
+							missing_value(parameter);
 							return;
 						}
 
-						steamid = Jupiter::ReferenceString::getWord(parameters, index++, ADDBAN_WHITESPACE).asUnsignedLongLong();
+						steamid = Jupiter::asUnsignedLongLong(*itr);
+						++itr;
 					}
-					else if (word.equalsi("HWID"_jrs) || word.equalsi("HardwareID"_jrs))
-					{
-						if (index == words)
-						{
-							source->sendNotice(nick, "ERROR: No value specified for token: "_jrs + word);
+					else if (jessilib::equalsi(parameter, "HWID"sv)
+						|| jessilib::equalsi(parameter, "HardwareID"sv)) {
+						if (itr == split_parameters.end()) {
+							missing_value(parameter);
 							return;
 						}
 
-						hwid = Jupiter::ReferenceString::getWord(parameters, index++, ADDBAN_WHITESPACE);
+						hwid = *itr;
+						++itr;
 					}
-					else if (word.equalsi("RDNS"_jrs) || word.equalsi("DNS"_jrs))
-					{
-						if (index == words)
-						{
-							source->sendNotice(nick, "ERROR: No value specified for token: "_jrs + word);
+					else if (jessilib::equalsi(parameter, "RDNS"sv)
+						|| jessilib::equalsi(parameter, "DNS"sv)) {
+						if (itr == split_parameters.end()) {
+							missing_value(parameter);
 							return;
 						}
 
-						rdns = Jupiter::ReferenceString::getWord(parameters, index++, ADDBAN_WHITESPACE);
+						rdns = *itr;
+						++itr;
 					}
-					else if (word.equalsi("Reason"_jrs))
-					{
-						if (index == words)
-						{
-							source->sendNotice(nick, "ERROR: No value specified for token: "_jrs + word);
+					else if (jessilib::equalsi(parameter, "Reason"sv)) {
+						if (itr == split_parameters.end()) {
+							missing_value(parameter);
 							return;
 						}
 
-						reason = Jupiter::ReferenceString::gotoWord(parameters, index++, ADDBAN_WHITESPACE);
+						// This looks dirtier than it is
+						std::string_view reason_view = parameters;
+						reason_view.remove_prefix(itr->data() - reason_view.data());
+						reason = reason_view;
 						break;
 					}
-					else if (word.equalsi("Duration"_jrs) || word.equalsi("Length"_jrs) || word.equalsi("Time"_jrs))
-					{
-						if (index == words)
-						{
-							source->sendNotice(nick, "ERROR: No value specified for token: "_jrs + word);
+					else if (jessilib::equalsi(parameter, "Duration"sv) || jessilib::equalsi(parameter, "Length"sv) || jessilib::equalsi(parameter, "Time"sv)) {
+						if (itr == split_parameters.end()) {
+							missing_value(parameter);
 							return;
 						}
 
-						const auto& duration_str = Jupiter::ReferenceString::getWord(parameters, index++, ADDBAN_WHITESPACE);
-						duration = jessilib::duration_from_string(duration_str.ptr(), duration_str.ptr() + duration_str.size()).duration;
+						std::string_view duration_str = *itr;
+						++itr;
+						duration = jessilib::duration_from_string(duration_str.data(), duration_str.data() + duration_str.size()).duration;
 					}
-					else if (word.equalsi("Game"_jrs))
+					else if (jessilib::equalsi(parameter, "Game"sv))
 						flags |= RenX::BanDatabase::Entry::FLAG_TYPE_GAME;
-					else if (word.equalsi("Chat"_jrs))
+					else if (jessilib::equalsi(parameter, "Chat"sv))
 						flags |= RenX::BanDatabase::Entry::FLAG_TYPE_CHAT;
-					else if (word.equalsi("Bot"_jrs) || word.equalsi("Command"_jrs))
+					else if (jessilib::equalsi(parameter, "Bot"sv) || jessilib::equalsi(parameter, "Command"sv))
 						flags |= RenX::BanDatabase::Entry::FLAG_TYPE_BOT;
-					else if (word.equalsi("Vote"_jrs) || word.equalsi("Poll"_jrs))
+					else if (jessilib::equalsi(parameter, "Vote"sv) || jessilib::equalsi(parameter, "Poll"sv))
 						flags |= RenX::BanDatabase::Entry::FLAG_TYPE_VOTE;
-					else if (word.equalsi("Mine"_jrs))
+					else if (jessilib::equalsi(parameter, "Mine"sv))
 						flags |= RenX::BanDatabase::Entry::FLAG_TYPE_MINE;
-					else if (word.equalsi("Ladder"_jrs))
+					else if (jessilib::equalsi(parameter, "Ladder"sv))
 						flags |= RenX::BanDatabase::Entry::FLAG_TYPE_LADDER;
-					else if (word.equalsi("Alert"_jrs))
+					else if (jessilib::equalsi(parameter, "Alert"sv))
 						flags |= RenX::BanDatabase::Entry::FLAG_TYPE_ALERT;
 					else
 					{
-						source->sendNotice(nick, "ERROR: Unknown token: "_jrs + word);
+						std::string error_message = "ERROR: Unknown token: "s;
+						error_message += parameter;
+						source->sendNotice(nick, error_message);
 						return;
 					}
 				}
@@ -2376,21 +2399,23 @@ void AddBanIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &c
 				if (flags == 0)
 					flags = RenX::BanDatabase::Entry::FLAG_TYPE_GAME;
 
-				index = ip_str.find('/');
+				size_t index = ip_str.find('/');
 				if (index != std::string::npos)
 				{
 					Jupiter::ReferenceString prefix_length_str(ip_str.c_str() + index + 1);
-					prefix_length = prefix_length_str.asUnsignedInt();
+					prefix_length = Jupiter::from_string<unsigned int>(prefix_length_str);
 					if (prefix_length == 0)
 						prefix_length = 32U;
 					ip_str.erase(index);
 				}
 				ip = Jupiter::Socket::pton4(ip_str.c_str());
 
-				if (rdns.isEmpty())
+				if (rdns.empty()) {
 					Jupiter::Socket::resolveHostname(ip_str.c_str(), 0);
-				else
+				}
+				else {
 					flags |= RenX::BanDatabase::Entry::FLAG_USE_RDNS;
+				}
 
 				RenX::banDatabase->add(name, ip, prefix_length, steamid, hwid, rdns, banner, reason, duration, flags);
 				RenX::getCore()->banCheck();
@@ -2427,7 +2452,7 @@ void UnBanIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &ch
 {
 	if (parameters.isNotEmpty())
 	{
-		size_t index = static_cast<size_t>(parameters.asUnsignedLongLong());
+		size_t index = Jupiter::from_string<size_t>(parameters);
 		if (index < RenX::banDatabase->getEntries().size())
 		{
 			if (RenX::banDatabase->deactivate(index))
@@ -2468,11 +2493,13 @@ void ExemptionSearchIRCCommand::trigger(IRC_Bot *source, const Jupiter::Readable
 	if (parameters.isNotEmpty())
 	{
 		if (entries.size() == 0) {
-			source->sendNotice(nick, STRING_LITERAL_AS_REFERENCE("The exemption database is empty!"));
+			source->sendNotice(nick, "The exemption database is empty!"sv);
 		}
 		else {
+			auto command_split = jessilib::word_split_once_view(std::string_view{parameters}, WHITESPACE_SV);
+
 			RenX::ExemptionDatabase::Entry *entry;
-			Jupiter::ReferenceString params = Jupiter::ReferenceString::gotoWord(parameters, 1, WHITESPACE);
+			std::string_view params = command_split.second;
 			std::function<bool(unsigned int)> isMatch = [&](unsigned int type_l) -> bool {
 				switch (type_l)
 				{
@@ -2482,27 +2509,27 @@ void ExemptionSearchIRCCommand::trigger(IRC_Bot *source, const Jupiter::Readable
 				case 1: // ALL
 					return true;
 				case 2:	// IP
-					return entry->ip == params.asUnsignedInt();
+					return entry->ip == Jupiter::asUnsignedInt(params);
 				case 3:	// STEAM
-					return entry->steamid == params.asUnsignedLongLong();
+					return entry->steamid == Jupiter::asUnsignedLongLong(params);
 				case 4:	// SETTER
-					return entry->setter.equalsi(params);
+					return jessilib::equalsi(entry->setter, params);
 				case 5:	// ACTIVE
-					return params.asBool() == entry->is_active();
+					return entry->is_active() == Jupiter::asBool(params);
 				}
 			};
 
 			unsigned int type;
-			Jupiter::ReferenceString type_str = Jupiter::ReferenceString::getWord(parameters, 0, WHITESPACE);
-			if (type_str.equalsi(STRING_LITERAL_AS_REFERENCE("all")) || type_str == '*')
+			std::string_view type_str = command_split.first;
+			if (jessilib::equalsi(type_str, "all"sv) || type_str == "*"sv)
 				type = 1;
-			else if (type_str.equalsi(STRING_LITERAL_AS_REFERENCE("ip")))
+			else if (jessilib::equalsi(type_str, "ip"sv))
 				type = 2;
-			else if (type_str.equalsi(STRING_LITERAL_AS_REFERENCE("steam")))
+			else if (jessilib::equalsi(type_str, "steam"sv))
 				type = 3;
-			else if (type_str.equalsi(STRING_LITERAL_AS_REFERENCE("setter")))
+			else if (jessilib::equalsi(type_str, "setter"sv))
 				type = 4;
-			else if (type_str.equalsi(STRING_LITERAL_AS_REFERENCE("active")))
+			else if (jessilib::equalsi(type_str, "active"sv))
 				type = 5;
 			else {
 				type = 0;
@@ -2537,12 +2564,12 @@ void ExemptionSearchIRCCommand::trigger(IRC_Bot *source, const Jupiter::Readable
 
 					out.format("ID: %lu (%sactive); Date: %s; IP: %.*s/%u; Steam: %llu; Types:%.*s Setter: %.*s",
 						i, entry->is_active() ? "" : "in", timeStr, ip_str.size(), ip_str.ptr(), entry->prefix_length, entry->steamid,
-						types.size(), types.ptr(), entry->setter.size(), entry->setter.ptr());
+						types.size(), types.ptr(), entry->setter.size(), entry->setter.data());
 
 					source->sendNotice(nick, out);
 				}
 			}
-			if (out.isEmpty())
+			if (out.empty())
 				source->sendNotice(nick, STRING_LITERAL_AS_REFERENCE("No matches found."));
 		}
 	}
@@ -2566,7 +2593,9 @@ void BanExemptIRCCommand::create() {
 }
 
 void BanExemptIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &channel, const Jupiter::ReadableString &nick, const Jupiter::ReadableString &parameters) {
-	if (parameters.isEmpty()) {
+	auto command_split = jessilib::word_split_once_view(std::string_view{parameters}, WHITESPACE_SV);
+	std::string_view target_name = command_split.first;
+	if (target_name.empty()) {
 		source->sendNotice(nick, STRING_LITERAL_AS_REFERENCE("Error: Too Few Parameters. Syntax: BanExempt <Player> [Reason]"));
 		return;
 	}
@@ -2575,6 +2604,7 @@ void BanExemptIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString
 	if (chan == nullptr) {
 		return;
 	}
+
 	const auto& servers = RenX::getCore()->getServers(chan->getType());
 	if (servers.empty()) {
 		source->sendMessage(channel, STRING_LITERAL_AS_REFERENCE("Error: Channel not attached to any connected Renegade X servers."));
@@ -2583,13 +2613,12 @@ void BanExemptIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString
 
 	RenX::PlayerInfo *player;
 	unsigned int exemptions = 0;
-	Jupiter::StringS name = Jupiter::StringS::getWord(parameters, 0, WHITESPACE);
 	Jupiter::String setter(nick.size() + 4);
 	setter += nick;
 	setter += "@IRC";
 	for (const auto& server : servers) {
 		if (server != nullptr) {
-			player = server->getPlayerByPartName(name);
+			player = server->getPlayerByPartName(target_name);
 			if (player != nullptr) {
 				if (player->steamid != 0LL) {
 					RenX::exemptionDatabase->add(*server, *player, setter, std::chrono::seconds::zero(), RenX::ExemptionDatabase::Entry::FLAG_TYPE_BAN);
@@ -2602,8 +2631,9 @@ void BanExemptIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString
 		}
 	}
 
-	if (exemptions == 0)
-		source->sendMessage(channel, "Player \""_jrs + name + "\" not found."_jrs);
+	if (exemptions == 0) {
+		source->sendMessage(channel, player_not_found_message(target_name));
+	}
 	else {
 		source->sendMessage(channel, Jupiter::StringS::Format("%u players added.", exemptions));
 	}
@@ -2626,7 +2656,9 @@ void KickExemptIRCCommand::create() {
 }
 
 void KickExemptIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &channel, const Jupiter::ReadableString &nick, const Jupiter::ReadableString &parameters) {
-	if (parameters.isEmpty()) {
+	auto command_split = jessilib::word_split_once_view(std::string_view{parameters}, WHITESPACE_SV);
+	std::string_view target_name = command_split.first;
+	if (target_name.empty()) {
 		source->sendNotice(nick, STRING_LITERAL_AS_REFERENCE("Error: Too Few Parameters. Syntax: KickExempt <Player> [Reason]"));
 	}
 
@@ -2643,13 +2675,12 @@ void KickExemptIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableStrin
 
 	RenX::PlayerInfo *player;
 	unsigned int exemptions = 0;
-	Jupiter::StringS name = Jupiter::StringS::getWord(parameters, 0, WHITESPACE);
 	Jupiter::String setter(nick.size() + 4);
 	setter += nick;
 	setter += "@IRC";
 	for (const auto& server : servers) {
 		if (server != nullptr) {
-			player = server->getPlayerByPartName(name);
+			player = server->getPlayerByPartName(target_name);
 			if (player != nullptr) {
 				if (player->steamid != 0LL) {
 					RenX::exemptionDatabase->add(*server, *player, setter, std::chrono::seconds::zero(), RenX::ExemptionDatabase::Entry::FLAG_TYPE_BAN | RenX::ExemptionDatabase::Entry::FLAG_TYPE_KICK);
@@ -2662,7 +2693,7 @@ void KickExemptIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableStrin
 		}
 	}
 	if (exemptions == 0) {
-		source->sendMessage(channel, "Player \""_jrs + name + "\" not found."_jrs);
+		source->sendMessage(channel, player_not_found_message(target_name));
 	}
 	else {
 		source->sendMessage(channel, Jupiter::StringS::Format("%u players added.", exemptions));
@@ -2688,21 +2719,18 @@ void AddExemptionIRCCommand::create()
 	this->setAccessLevel(4);
 }
 
-void AddExemptionIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &channel, const Jupiter::ReadableString &nick, const Jupiter::ReadableString &parameters)
-{
-	if (parameters.isNotEmpty())
-	{
+void AddExemptionIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &channel, const Jupiter::ReadableString &nick, const Jupiter::ReadableString &parameters) {
+	if (!parameters.empty()) {
 		Jupiter::IRC::Client::Channel *chan = source->getChannel(channel);
-		if (chan != nullptr)
-		{
-			size_t words = parameters.wordCount(ADDEXEMPTION_WHITESPACE);
-			if (words == 0)
-				source->sendNotice(nick, STRING_LITERAL_AS_REFERENCE("Error: Too Few Parameters. Syntax: BanExempt <Player> [Reason]"));
-			else if (words == 1)
+		if (chan != nullptr) {
+			std::vector<std::string_view> split_parameters = jessilib::word_split_view(std::string_view{parameters}, " \t="sv);
+			if (split_parameters.empty()) {
+				source->sendNotice(nick, "Error: Too Few Parameters. Syntax: BanExempt <Player> [Reason]"sv);
+			}
+			else if (split_parameters.size() == 1) {
 				BanExemptIRCCommand_instance.trigger(source, channel, nick, parameters);
-			else
-			{
-				size_t index = 0;
+			}
+			else {
 				std::string ip_str;
 				uint32_t ip = 0U;
 				uint8_t prefix_length = 32U;
@@ -2711,49 +2739,57 @@ void AddExemptionIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableStr
 				std::chrono::seconds duration = std::chrono::seconds::zero();
 				uint8_t flags = 0;
 
-				Jupiter::ReferenceString word;
-				while (index != words)
-				{
-					word = Jupiter::ReferenceString::getWord(parameters, index++, ADDEXEMPTION_WHITESPACE);
+				auto missing_value = [&source, &nick](std::string_view token) {
+					std::string error_message = "ERROR: No value specified for token: "s;
+					error_message += token;
+					source->sendNotice(nick, error_message);
+				};
 
-					if (word.equalsi("IP"_jrs) || word.equalsi("IPAddress"_jrs) || word.equalsi("Address"_jrs))
+				for (auto itr = split_parameters.begin(); itr != split_parameters.end();) {
+					std::string_view parameter = *itr;
+					++itr;
+
+					if (jessilib::equalsi(parameter, "IP"sv)
+						|| jessilib::equalsi(parameter, "IPAddress"sv)
+						|| jessilib::equalsi(parameter, "Address"sv))
 					{
-						if (index == words)
-						{
-							source->sendNotice(nick, "ERROR: No value specified for token: "_jrs + word);
+						if (itr == split_parameters.end()) {
+							missing_value(parameter);
 							return;
 						}
 
-						ip_str = static_cast<std::string>(Jupiter::ReferenceString::getWord(parameters, index++, ADDEXEMPTION_WHITESPACE));
+						ip_str = *itr;
+						++itr;
 					}
-					else if (word.equalsi("Steam"_jrs) || word.equalsi("SteamID"_jrs))
+					else if (jessilib::equalsi(parameter, "Steam"sv) || jessilib::equalsi(parameter, "SteamID"sv))
 					{
-						if (index == words)
-						{
-							source->sendNotice(nick, "ERROR: No value specified for token: "_jrs + word);
+						if (itr == split_parameters.end()) {
+							missing_value(parameter);
 							return;
 						}
 
-						steamid = Jupiter::ReferenceString::getWord(parameters, index++, ADDEXEMPTION_WHITESPACE).asUnsignedLongLong();
+						steamid = Jupiter::asUnsignedLongLong(*itr);
+						++itr;
 					}
-					else if (word.equalsi("Duration"_jrs) || word.equalsi("Length"_jrs) || word.equalsi("Time"_jrs))
+					else if (jessilib::equalsi(parameter, "Duration"sv) || jessilib::equalsi(parameter, "Length"sv) || jessilib::equalsi(parameter, "Time"sv))
 					{
-						if (index == words)
-						{
-							source->sendNotice(nick, "ERROR: No value specified for token: "_jrs + word);
+						if (itr == split_parameters.end()) {
+							missing_value(parameter);
 							return;
 						}
 
-						const auto& duration_str = Jupiter::ReferenceString::getWord(parameters, index++, ADDEXEMPTION_WHITESPACE);
-						duration = jessilib::duration_from_string(duration_str.ptr(), duration_str.ptr() + duration_str.size()).duration;
+						const auto& duration_str = *itr;
+						duration = jessilib::duration_from_string(duration_str.data(), duration_str.data() + duration_str.size()).duration;
 					}
-					else if (word.equalsi("Ban"_jrs))
+					else if (jessilib::equalsi(parameter, "Ban"sv))
 						flags |= RenX::ExemptionDatabase::Entry::FLAG_TYPE_BAN;
-					else if (word.equalsi("Kick"_jrs))
+					else if (jessilib::equalsi(parameter, "Kick"sv))
 						flags |= RenX::ExemptionDatabase::Entry::FLAG_TYPE_KICK;
 					else
 					{
-						source->sendNotice(nick, "ERROR: Unknown token: "_jrs + word);
+						std::string error_message = "ERROR: Unknown token: "s;
+						error_message += parameter;
+						source->sendNotice(nick, error_message);
 						return;
 					}
 				}
@@ -2764,11 +2800,11 @@ void AddExemptionIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableStr
 
 				if (!ip_str.empty())
 				{
-					index = ip_str.find('/');
+					size_t index = ip_str.find('/');
 					if (index != std::string::npos)
 					{
 						Jupiter::ReferenceString prefix_length_str(ip_str.c_str() + index + 1);
-						prefix_length = prefix_length_str.asUnsignedInt();
+						prefix_length = Jupiter::from_string<unsigned int>(prefix_length_str);
 						if (prefix_length == 0)
 							prefix_length = 32U;
 						ip_str.erase(index);
@@ -2818,7 +2854,7 @@ void UnExemptIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString 
 {
 	if (parameters.isNotEmpty())
 	{
-		size_t index = static_cast<size_t>(parameters.asUnsignedLongLong());
+		size_t index = Jupiter::from_string<size_t>(parameters);
 		if (index < RenX::exemptionDatabase->getEntries().size())
 		{
 			if (RenX::exemptionDatabase->deactivate(index))
@@ -2861,8 +2897,9 @@ void AddBotsIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &
 	}
 
 	int amount = 1;
-	if (parameters.isNotEmpty()) {
-		amount = parameters.asInt();
+	std::vector<std::string_view> split_parameters = jessilib::word_split_view(std::string_view{parameters}, WHITESPACE_SV);
+	if (!split_parameters.empty()) {
+		amount = Jupiter::asInt(split_parameters.front());
 		if (amount == 0) {
 			source->sendMessage(channel, STRING_LITERAL_AS_REFERENCE("Error: Invalid amount entered. Amount must be a positive integer."));
 			return;
@@ -2870,7 +2907,10 @@ void AddBotsIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &
 	}
 
 	Jupiter::StringL cmd;
-	RenX::TeamType team = RenX::getTeam(Jupiter::ReferenceString::getWord(parameters, 1, WHITESPACE));
+	RenX::TeamType team = RenX::TeamType::None;
+	if (split_parameters.size() >= 2) {
+		team = RenX::getTeam(split_parameters[1]);
+	}
 
 	switch (team) {
 	case RenX::TeamType::GDI:
@@ -2956,7 +2996,7 @@ void PhaseBotsIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString
 	}
 
 	for (const auto& server : servers) {
-		if (parameters.isEmpty()) {
+		if (parameters.empty()) {
 			if (togglePhasing(server)) {
 				server->sendMessage(STRING_LITERAL_AS_REFERENCE("Bot phasing has been enabled."));
 			}
@@ -2991,7 +3031,7 @@ void RCONIRCCommand::create() {
 }
 
 void RCONIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &channel, const Jupiter::ReadableString &nick, const Jupiter::ReadableString &parameters) {
-	if (parameters.isEmpty()) {
+	if (parameters.empty()) {
 		source->sendNotice(nick, STRING_LITERAL_AS_REFERENCE("Error: Too Few Parameters. Syntax: rcon <input>"));
 		return;
 	}
@@ -3029,12 +3069,13 @@ void RefundIRCCommand::create() {
 }
 
 void RefundIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &channel, const Jupiter::ReadableString &nick, const Jupiter::ReadableString &parameters) {
-	if (parameters.wordCount(WHITESPACE) >= 2) {
+	std::vector<std::string_view> split_parameters = jessilib::word_split_view(std::string_view{parameters}, WHITESPACE_SV);
+	if (split_parameters.size() >= 2) {
 		Jupiter::IRC::Client::Channel *chan = source->getChannel(channel);
 		if (chan != nullptr) {
 			int type = chan->getType();
-			Jupiter::ReferenceString playerName = Jupiter::ReferenceString::getWord(parameters, 0, WHITESPACE);
-			double credits = Jupiter::ReferenceString::getWord(parameters, 1, WHITESPACE).asDouble();
+			std::string_view playerName = split_parameters[0];
+			double credits = Jupiter::asDouble(split_parameters[1]);
 			RenX::PlayerInfo *player;
 			Jupiter::StringL msg;
 			for (unsigned int i = 0; i != RenX::getCore()->getServerCount(); i++) {
@@ -3054,7 +3095,7 @@ void RefundIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &c
 					}
 				}
 			}
-			if (msg.isEmpty()) {
+			if (msg.empty()) {
 				source->sendNotice(nick, STRING_LITERAL_AS_REFERENCE("Error: Player not found."));
 			}
 		}
@@ -3082,28 +3123,22 @@ void TeamChangeIRCCommand::create() {
 	this->setAccessLevel(3);
 }
 
-void TeamChangeIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &channel, const Jupiter::ReadableString &nick, const Jupiter::ReadableString &parameters)
-{
-	if (parameters.isNotEmpty())
-	{
+void TeamChangeIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &channel, const Jupiter::ReadableString &nick, const Jupiter::ReadableString &parameters) {
+	if (parameters.isNotEmpty()) {
 		Jupiter::IRC::Client::Channel *chan = source->getChannel(channel);
-		if (chan != nullptr)
-		{
+		if (chan != nullptr) {
 			int type = chan->getType();
-			Jupiter::ReferenceString playerName = Jupiter::ReferenceString::getWord(parameters, 0, WHITESPACE);
+			std::string_view playerName = std::string_view{parameters};
 			bool playerFound = false;
-			for (unsigned int i = 0; i != RenX::getCore()->getServerCount(); i++)
-			{
+			for (unsigned int i = 0; i != RenX::getCore()->getServerCount(); i++) {
 				RenX::Server *server = RenX::getCore()->getServer(i);
-				if (server->isLogChanType(type) && server->players.size() != 0)
-				{
-					for (auto node = server->players.begin(); node != server->players.end(); ++node)
-					{
-						if (jessilib::findi(node->name, playerName) != std::string::npos)
-						{
+				if (server->isLogChanType(type) && server->players.size() != 0) {
+					for (auto node = server->players.begin(); node != server->players.end(); ++node) {
+						if (jessilib::findi(node->name, playerName) != std::string::npos) {
 							playerFound = true;
-							if (server->changeTeam(*node) == false)
-								source->sendMessage(channel, STRING_LITERAL_AS_REFERENCE("Error: Server does not support team changing."));
+							if (!server->changeTeam(*node)) {
+								source->sendMessage(channel, "Error: Server does not support team changing."sv);
+							}
 						}
 					}
 				}
@@ -3135,28 +3170,22 @@ void TeamChange2IRCCommand::create()
 	this->setAccessLevel(3);
 }
 
-void TeamChange2IRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &channel, const Jupiter::ReadableString &nick, const Jupiter::ReadableString &parameters)
-{
-	if (parameters.isNotEmpty())
-	{
+void TeamChange2IRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &channel, const Jupiter::ReadableString &nick, const Jupiter::ReadableString &parameters) {
+	if (parameters.isNotEmpty()) {
 		Jupiter::IRC::Client::Channel *chan = source->getChannel(channel);
-		if (chan != nullptr)
-		{
+		if (chan != nullptr) {
 			int type = chan->getType();
-			Jupiter::ReferenceString playerName = Jupiter::ReferenceString::getWord(parameters, 0, WHITESPACE);
+			std::string_view playerName{ parameters };
 			bool playerFound = false;
-			for (unsigned int i = 0; i != RenX::getCore()->getServerCount(); i++)
-			{
+			for (unsigned int i = 0; i != RenX::getCore()->getServerCount(); i++) {
 				RenX::Server *server = RenX::getCore()->getServer(i);
-				if (server->isLogChanType(type) && server->players.size() != 0)
-				{
-					for (auto node = server->players.begin(); node != server->players.end(); ++node)
-					{
-						if (jessilib::findi(node->name, playerName) != std::string::npos)
-						{
+				if (server->isLogChanType(type) && server->players.size() != 0) {
+					for (auto node = server->players.begin(); node != server->players.end(); ++node) {
+						if (jessilib::findi(node->name, playerName) != std::string::npos) {
 							playerFound = true;
-							if (server->changeTeam(*node, false) == false)
-								source->sendMessage(channel, STRING_LITERAL_AS_REFERENCE("Error: Server does not support team changing."));
+							if (server->changeTeam(*node, false) == false) {
+								source->sendMessage(channel, "Error: Server does not support team changing."sv);
+							}
 						}
 					}
 				}
@@ -3186,7 +3215,7 @@ void NModeIRCCommand::create()
 
 void NModeIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &channel, const Jupiter::ReadableString &nick, const Jupiter::ReadableString &parameters)
 {
-	if (parameters.isEmpty()) {
+	if (parameters.empty()) {
 		source->sendNotice(nick, STRING_LITERAL_AS_REFERENCE("Error: Too Few Parameters. Syntax: nmode <Player>"));
 		return;
 	}
@@ -3232,7 +3261,7 @@ void SModeIRCCommand::create() {
 }
 
 void SModeIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &channel, const Jupiter::ReadableString &nick, const Jupiter::ReadableString &parameters) {
-	if (parameters.isEmpty()) {
+	if (parameters.empty()) {
 		source->sendNotice(nick, STRING_LITERAL_AS_REFERENCE("Error: Too Few Parameters. Syntax: smode <Player>"));
 		return;
 	}
@@ -3293,7 +3322,7 @@ void CancelVoteIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableStrin
 	bool cancel_all = false;
 	RenX::TeamType target = RenX::TeamType::None;
 
-	if (parameters.isEmpty()) {
+	if (parameters.empty()) {
 		cancel_all = true;
 	} else {
 		if (parameters.equalsi("all") || parameters.equalsi("a")) {
@@ -3351,26 +3380,21 @@ void HelpGameCommand::create() {
 void HelpGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *player, const Jupiter::ReadableString &parameters) {
 	RenX::GameCommand *cmd;
 	unsigned int cmdCount = 0;
-	auto getAccessCommands = [&](int accessLevel)
-	{
+	auto getAccessCommands = [&](int accessLevel) {
 		std::string list;
 		unsigned int i = 0;
-		while (i != source->getCommandCount())
-		{
+		while (i != source->getCommandCount()) {
 			cmd = source->getCommand(i++);
-			if (cmd->getAccessLevel() == accessLevel)
-			{
+			if (cmd->getAccessLevel() == accessLevel) {
 				cmdCount++;
 				list = "Access level "s + std::to_string(accessLevel) + " commands: "s;
 				list += cmd->getTrigger();
 				break;
 			}
 		}
-		while (i != source->getCommandCount())
-		{
+		while (i != source->getCommandCount()) {
 			cmd = source->getCommand(i++);
-			if (cmd->getAccessLevel() == accessLevel)
-			{
+			if (cmd->getAccessLevel() == accessLevel) {
 				cmdCount++;
 				list += ", ";
 				list += cmd->getTrigger();
@@ -3379,29 +3403,31 @@ void HelpGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *player, co
 		return list;
 	};
 
-	if (parameters.wordCount(WHITESPACE) == 0)
-	{
-		for (int i = 0; i <= player->access; i++)
-		{
+	auto split_parameters = jessilib::word_split_once_view(std::string_view{parameters}, WHITESPACE_SV);
+	if (split_parameters.first.empty()) {
+		for (int i = 0; i <= player->access; i++) {
 			auto msg = getAccessCommands(i);
-			if (!msg.empty())
+			if (!msg.empty()) {
 				source->sendMessage(*player, getAccessCommands(i));
+			}
 		}
-		if (cmdCount == 0)
-			source->sendMessage(*player, STRING_LITERAL_AS_REFERENCE("No listed commands available."));
+		if (cmdCount == 0) {
+			source->sendMessage(*player, "No listed commands available."sv);
+		}
 	}
-	else
-	{
-		cmd = source->getCommand(Jupiter::ReferenceString::getWord(parameters, 0, WHITESPACE));
-		if (cmd != nullptr)
-		{
-			if (player->access >= cmd->getAccessLevel())
-				source->sendMessage(*player, cmd->getHelp(Jupiter::ReferenceString::gotoWord(parameters, 1, WHITESPACE)));
-			else
+	else {
+		cmd = source->getCommand(split_parameters.first);
+		if (cmd != nullptr) {
+			if (player->access >= cmd->getAccessLevel()) {
+				source->sendMessage(*player, cmd->getHelp(Jupiter::ReferenceString{split_parameters.second}));
+			}
+			else {
 				source->sendMessage(*player, STRING_LITERAL_AS_REFERENCE("Access Denied."));
+			}
 		}
-		else
+		else {
 			source->sendMessage(*player, STRING_LITERAL_AS_REFERENCE("Error: Command not found."));
+		}
 	}
 }
 
@@ -3425,7 +3451,7 @@ void ModsGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *, const Ju
 	const Jupiter::ReadableString &staff_word = pluginInstance.getStaffTitle();
 	for (auto node = source->players.begin(); node != source->players.end(); ++node) {
 		if (node->isBot == false && (node->adminType.isNotEmpty() || (node->access != 0 && (node->gamePrefix.isNotEmpty() || node->formatNamePrefix.isNotEmpty())))) {
-			if (msg.isEmpty())
+			if (msg.empty())
 				msg = staff_word + "s in-game: "_jrs;
 			else
 				msg += ", ";
@@ -3434,7 +3460,7 @@ void ModsGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *, const Ju
 			msg += node->name;
 		}
 	}
-	if (msg.isEmpty()) {
+	if (msg.empty()) {
 		msg += "No "_jrs + staff_word + "s are in-game"_jrs;
 		RenX::GameCommand *cmd = source->getCommand(STRING_LITERAL_AS_REFERENCE("modrequest"));
 		if (cmd != nullptr)
@@ -3480,7 +3506,7 @@ void ModRequestGameCommand::create() {
 }
 
 void ModRequestGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *player, const Jupiter::ReadableString &parameters) {
-	if (parameters.isEmpty()) {
+	if (parameters.empty()) {
 		source->sendMessage(*player, "Please specify a reason for requesting moderator assistance."_jrs);
 		return;
 	}
@@ -3576,17 +3602,20 @@ void PAdminMessageGameCommand::create() {
 }
 
 void PAdminMessageGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *player, const Jupiter::ReadableString &parameters) {
-	if (parameters.wordCount(WHITESPACE) >= 2) {
-		Jupiter::StringS name = Jupiter::StringS::getWord(parameters, 0, WHITESPACE);
-		Jupiter::StringS msg = player->gamePrefix + player->name + ": "_jrs + Jupiter::ReferenceString::gotoWord(parameters, 1, WHITESPACE);
-
-		RenX::PlayerInfo *target = source->getPlayerByPartName(name);
+	auto split_parameters = jessilib::word_split_once_view(std::string_view{parameters}, WHITESPACE_SV);
+	if (!split_parameters.second.empty()) {
+		RenX::PlayerInfo *target = source->getPlayerByPartName(split_parameters.first);
 		if (target == nullptr) {
 			source->sendMessage(*player, "Error: Player not found."_jrs);
 		}
-		else
-		{
-			source->sendAdminMessage(*target, msg);
+		else {
+			std::string message;
+			message += std::string_view{player->gamePrefix};
+			message += player->name;
+			message += ": "sv;
+			message += split_parameters.second;
+
+			source->sendAdminMessage(*target, message);
 			source->sendMessage(*player, "Message sent to "_jrs + target->name);
 		}
 	}
@@ -3768,22 +3797,23 @@ void KickGameCommand::create() {
 }
 
 void KickGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *player, const Jupiter::ReadableString &parameters) {
-	if (parameters.isNotEmpty()) {
-		Jupiter::StringS name = Jupiter::StringS::getWord(parameters, 0, WHITESPACE);
-		Jupiter::StringS reason;
-		if (parameters.wordCount(WHITESPACE) > 1) {
-			reason = Jupiter::StringS::gotoWord(parameters, 1, WHITESPACE);
+	auto split_parameters = jessilib::word_split_once_view(std::string_view{parameters}, WHITESPACE_SV);
+	if (!split_parameters.first.empty()) {
+		std::string_view reason = split_parameters.second;
+		if (reason.empty()) {
+			reason = "No reason"sv;
 		}
-		else {
-			reason = STRING_LITERAL_AS_REFERENCE("No reason");
-		}
-		RenX::PlayerInfo *target = source->getPlayerByPartName(name);
-		if (target == nullptr)
+
+		RenX::PlayerInfo *target = source->getPlayerByPartName(split_parameters.first);
+		if (target == nullptr) {
 			source->sendMessage(*player, "Error: Player not found."_jrs);
-		else if (player == target)
+		}
+		else if (player == target) {
 			source->sendMessage(*player, "Error: You cannot kick yourself."_jrs);
-		else if (target->access >= player->access)
+		}
+		else if (target->access >= player->access) {
 			source->sendMessage(*player, "Error: You can not kick higher level "_jrs + pluginInstance.getStaffTitle() + "s."_jrs);
+		}
 		else
 		{
 			source->kickPlayer(*target, reason);
@@ -3809,16 +3839,13 @@ void MuteGameCommand::create() {
 }
 
 void MuteGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *player, const Jupiter::ReadableString &parameters) {
-	if (parameters.isNotEmpty()) {
-		Jupiter::StringS name = Jupiter::StringS::getWord(parameters, 0, WHITESPACE);
-		Jupiter::StringS reason;
-		if (parameters.wordCount(WHITESPACE) > 1) {
-			reason = Jupiter::StringS::gotoWord(parameters, 1, WHITESPACE);
+	auto split_parameters = jessilib::word_split_once_view(std::string_view{parameters}, WHITESPACE_SV);
+	if (!split_parameters.first.empty()) {
+		std::string_view reason = split_parameters.second;
+		if (reason.empty()) {
+			reason = "No reason"sv;
 		}
-		else {
-			reason = STRING_LITERAL_AS_REFERENCE("No reason");
-		}
-		RenX::PlayerInfo *target = source->getPlayerByPartName(name);
+		RenX::PlayerInfo *target = source->getPlayerByPartName(split_parameters.first);
 		if (target == nullptr)
 			source->sendMessage(*player, "Error: Player not found."_jrs);
 		else if (player == target)
@@ -3828,7 +3855,7 @@ void MuteGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *player, co
 		else
 		{
 			source->mute(*target);
-			source->sendMessage(*target, "You have been muted for: "_jrs + reason);
+			source->sendMessage(*target, "You have been muted for: "s + std::string{reason});
 			source->sendMessage(*player, "Player has been muted from chat."_jrs);
 		}
 	}
@@ -3853,31 +3880,28 @@ void TempBanGameCommand::create() {
 }
 
 void TempBanGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *player, const Jupiter::ReadableString &parameters) {
-	if (parameters.isNotEmpty()) {
-		Jupiter::StringS name = Jupiter::StringS::getWord(parameters, 0, WHITESPACE);
+	auto split_parameters = jessilib::word_split_once_view(std::string_view{parameters}, WHITESPACE_SV);
+	if (!split_parameters.first.empty()) {
+		std::string_view name = split_parameters.first;
 		std::chrono::seconds duration = pluginInstance.getDefaultTBanTime();
-		Jupiter::StringS reason;
-		auto word_count = parameters.wordCount(WHITESPACE);
-		size_t reason_pos = 1;
+		std::string_view reason = split_parameters.second;
 
 		RenX::PlayerInfo *target = source->getPlayerByPartName(name);
 		if (target == nullptr
-			&& word_count > 1) {
+			&& !split_parameters.second.empty()) {
 			// Try reading first token as duration
-			duration = jessilib::duration_from_string(name.ptr(), name.ptr() + name.size()).duration;
+			duration = jessilib::duration_from_string(name.data(), name.data() + name.size()).duration;
 			if (duration.count() > 0) {
 				duration = std::min(duration, pluginInstance.getMaxTBanTime());
-				++reason_pos;
-				name = Jupiter::StringS::getWord(parameters, 1, WHITESPACE);
+				split_parameters = jessilib::word_split_once_view(split_parameters.second, WHITESPACE_SV);
+				name = split_parameters.first;
+				reason = split_parameters.second;
 				target = source->getPlayerByPartName(name);
 			}
 		}
 
-		if (word_count > reason_pos) {
-			reason = Jupiter::StringS::gotoWord(parameters, reason_pos, WHITESPACE);
-		}
-		else {
-			reason = STRING_LITERAL_AS_REFERENCE("No reason");
+		if (reason.empty()) {
+			reason = "No reason"sv;
 		}
 
 		if (target == nullptr)
@@ -3893,11 +3917,11 @@ void TempBanGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *player,
 		}
 	}
 	else
-		source->sendMessage(*player, "Error: Too few parameters. Syntax: tban <player> [Reason]"_jrs);
+		source->sendMessage(*player, "Error: Too few parameters. Syntax: tban [Duration] <player> [Reason]"_jrs);
 }
 
 const Jupiter::ReadableString &TempBanGameCommand::getHelp(const Jupiter::ReadableString &) {
-	static STRING_LITERAL_AS_NAMED_REFERENCE(defaultHelp, "Kicks and temporarily bans a player from the game. Syntax: tban <player> [Reason]");
+	static STRING_LITERAL_AS_NAMED_REFERENCE(defaultHelp, "Kicks and temporarily bans a player from the game. Syntax: tban [Duration] <player> [Reason]");
 	return defaultHelp;
 }
 
@@ -3914,31 +3938,28 @@ void TempChatBanGameCommand::create() {
 }
 
 void TempChatBanGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *player, const Jupiter::ReadableString &parameters) {
-	if (parameters.isNotEmpty()) {
-		Jupiter::StringS name = Jupiter::StringS::getWord(parameters, 0, WHITESPACE);
+	auto split_parameters = jessilib::word_split_once_view(std::string_view{parameters}, WHITESPACE_SV);
+	if (!split_parameters.first.empty()) {
+		std::string_view name = split_parameters.first;
 		std::chrono::seconds duration = pluginInstance.getDefaultTBanTime();
-		Jupiter::StringS reason;
-		auto word_count = parameters.wordCount(WHITESPACE);
-		size_t reason_pos = 1;
+		std::string_view reason = split_parameters.second;
 
 		RenX::PlayerInfo *target = source->getPlayerByPartName(name);
 		if (target == nullptr
-			&& word_count > 1) {
+			&& !split_parameters.second.empty()) {
 			// Try reading first token as duration
-			duration = jessilib::duration_from_string(name.ptr(), name.ptr() + name.size()).duration;
+			duration = jessilib::duration_from_string(name.data(), name.data() + name.size()).duration;
 			if (duration.count() > 0) {
 				duration = std::min(duration, pluginInstance.getMaxTBanTime());
-				++reason_pos;
-				name = Jupiter::StringS::getWord(parameters, 1, WHITESPACE);
+				split_parameters = jessilib::word_split_once_view(split_parameters.second, WHITESPACE_SV);
+				name = split_parameters.first;
+				reason = split_parameters.second;
 				target = source->getPlayerByPartName(name);
 			}
 		}
 
-		if (word_count > reason_pos) {
-			reason = Jupiter::StringS::gotoWord(parameters, reason_pos, WHITESPACE);
-		}
-		else {
-			reason = STRING_LITERAL_AS_REFERENCE("No reason");
+		if (reason.empty()) {
+			reason = "No reason"sv;
 		}
 
 		if (target == nullptr)
@@ -3975,35 +3996,35 @@ void KickBanGameCommand::create() {
 }
 
 void KickBanGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *player, const Jupiter::ReadableString &parameters) {
-	if (parameters.isNotEmpty()) {
-		Jupiter::StringS name = Jupiter::StringS::getWord(parameters, 0, WHITESPACE);
-		Jupiter::StringS reason;
-		if (parameters.wordCount(WHITESPACE) > 1) {
-			reason = Jupiter::StringS::gotoWord(parameters, 1, WHITESPACE);
+	auto split_parameters = jessilib::word_split_once_view(std::string_view{parameters}, WHITESPACE_SV);
+	if (!split_parameters.first.empty()) {
+		std::string_view reason = split_parameters.second;
+		if (reason.empty()) {
+			reason = "No reason"sv;
+		}
+		RenX::PlayerInfo *target = source->getPlayerByPartName(split_parameters.first);
+		if (target == nullptr) {
+			source->sendMessage(*player, "Error: Player not found."_jrs);
+		}
+		else if (player == target) {
+			source->sendMessage(*player, "Error: You can not ban yourself."_jrs);
+		}
+		else if (target->access >= player->access) {
+			source->sendMessage(*player, "Error: You can not ban higher level "_jrs + pluginInstance.getStaffTitle() + "s."_jrs);
 		}
 		else {
-			reason = STRING_LITERAL_AS_REFERENCE("No reason");
-		}
-		RenX::PlayerInfo *target = source->getPlayerByPartName(name);
-		if (target == nullptr)
-			source->sendMessage(*player, "Error: Player not found."_jrs);
-		else if (player == target)
-			source->sendMessage(*player, "Error: You can not ban yourself."_jrs);
-		else if (target->access >= player->access)
-			source->sendMessage(*player, "Error: You can not ban higher level "_jrs + pluginInstance.getStaffTitle() + "s."_jrs);
-		else
-		{
 			source->banPlayer(*target, player->name, reason);
 			source->sendMessage(*player, "Player has been banned and kicked from the game."_jrs);
 			RenX::getCore()->banCheck();
 		}
 	}
-	else
-		source->sendMessage(*player, "Error: Too few parameters. Syntax: ban [Duration] <player> [reason]"_jrs);
+	else {
+		source->sendMessage(*player, "Error: Too few parameters. Syntax: ban <player> [reason]"_jrs);
+	}
 }
 
 const Jupiter::ReadableString &KickBanGameCommand::getHelp(const Jupiter::ReadableString &) {
-	static STRING_LITERAL_AS_NAMED_REFERENCE(defaultHelp, "Kicks and bans a player from the game. Syntax: ban [Duration] <player> [reason]");
+	static STRING_LITERAL_AS_NAMED_REFERENCE(defaultHelp, "Kicks and bans a player from the game. Syntax: ban <player> [reason]");
 	return defaultHelp;
 }
 
@@ -4020,7 +4041,11 @@ void AddBotsGameCommand::create() {
 }
 
 void AddBotsGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *player, const Jupiter::ReadableString &parameters) {
-	RenX::TeamType team = RenX::getTeam(Jupiter::ReferenceString::getWord(parameters, 1, WHITESPACE));
+	std::vector<std::string_view> split_parameters = jessilib::word_split_view(std::string_view{parameters}, WHITESPACE_SV);
+	RenX::TeamType team = RenX::TeamType::None;
+	if (split_parameters.size() >= 2) {
+		team = RenX::getTeam(split_parameters[1]);
+	}
 
 	Jupiter::StringS cmd;
 	switch (team)
@@ -4039,10 +4064,13 @@ void AddBotsGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *player,
 	}
 
 	unsigned int amount;
-	if (parameters.isEmpty())
+	if (split_parameters.empty()) {
 		amount = 1;
-	else
-		amount = parameters.asUnsignedInt();
+	}
+	else {
+		amount = Jupiter::asUnsignedInt(split_parameters.front());
+	}
+
 	cmd += Jupiter::StringS::Format("%u", amount);
 
 	source->send(cmd);
@@ -4087,7 +4115,7 @@ void PhaseBotsGameCommand::create() {
 }
 
 void PhaseBotsGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *player, const Jupiter::ReadableString &parameters) {
-	if (parameters.isEmpty())
+	if (parameters.empty())
 	{
 		if (togglePhasing(source))
 			source->sendMessage(*player, STRING_LITERAL_AS_REFERENCE("Bot phasing has been enabled."));
@@ -4120,7 +4148,7 @@ void NModeGameCommand::create() {
 }
 
 void NModeGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *player, const Jupiter::ReadableString &parameters) {
-	if (parameters.isEmpty()) {
+	if (parameters.empty()) {
 		source->sendMessage(*player, "Error: Too few parameters. Syntax: nmode <player-name>"_jrs);
 		return;
 	}
@@ -4154,7 +4182,7 @@ void SModeGameCommand::create() {
 }
 
 void SModeGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *player, const Jupiter::ReadableString &parameters) {
-	if (parameters.isEmpty()) {
+	if (parameters.empty()) {
 		source->sendMessage(*player, "Error: Too few parameters. Syntax: smode <player-name>"_jrs);
 		return;
 	}
@@ -4193,7 +4221,7 @@ void CancelVoteGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *play
 	bool cancel_all = false;
 	RenX::TeamType target = RenX::TeamType::None;
 
-	if (parameters.isEmpty()) {
+	if (parameters.empty()) {
 		cancel_all = true;
 	}
 	else {

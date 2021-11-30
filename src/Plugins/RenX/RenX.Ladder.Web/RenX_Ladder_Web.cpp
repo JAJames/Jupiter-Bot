@@ -180,8 +180,9 @@ Jupiter::String generate_database_selector(RenX::LadderDatabase *db, const Jupit
 		result += db->getName();
 		result += "</option>"_jrs;
 	}
-	else if (RenX::ladder_databases.size() == 0)
-		return Jupiter::String::empty;
+	else if (RenX::ladder_databases.size() == 0) {
+		return {};
+	}
 
 	for (const auto& database : RenX::ladder_databases) {
 		if (database != db) {

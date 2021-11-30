@@ -25,7 +25,7 @@
 class ChannelRelayPlugin : public Jupiter::Plugin
 {
 public: // Jupiter::Plugin
-	void OnChat(Jupiter::IRC::Client *server, const Jupiter::ReadableString &channel, const Jupiter::ReadableString &nick, const Jupiter::ReadableString &message) override;
+	void OnChat(Jupiter::IRC::Client *server, std::string_view channel, std::string_view nick, std::string_view message) override;
 	int OnRehash() override;
 
 	virtual bool initialize() override;

@@ -187,7 +187,7 @@ namespace RenX
 	* @param str String to escapify
 	* @return Escapified version of str.
 	*/
-	RENX_API Jupiter::String escapifyRCON(std::string_view str);
+	RENX_API std::string escapifyRCON(std::string_view str);
 
 	/** Constant variables */
 	RENX_API extern const char DelimC; /** RCON message deliminator */
