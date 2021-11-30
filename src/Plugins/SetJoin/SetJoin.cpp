@@ -74,9 +74,11 @@ void ViewJoinIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString 
 	std::string_view setjoin = pluginInstance.setjoin_file[source->getConfigSection()].get(target);
 
 	if (setjoin.empty())
-		source->sendMessage(channel, Jupiter::StringS::Format("No setjoin has been set for \"%.*s\".", target.size(), target.ptr()));
+		source->sendMessage(channel, Jupiter::StringS::Format("No setjoin has been set for \"%.*s\".", target.size(),
+			target.data()));
 	else
-		source->sendMessage(channel, Jupiter::StringS::Format(IRCBOLD IRCCOLOR "07[%.*s]" IRCCOLOR IRCBOLD ": %.*s", target.size(), target.ptr(), setjoin.size(), setjoin.data()));
+		source->sendMessage(channel, Jupiter::StringS::Format(IRCBOLD IRCCOLOR "07[%.*s]" IRCCOLOR IRCBOLD ": %.*s", target.size(),
+			target.data(), setjoin.size(), setjoin.data()));
 }
 
 const Jupiter::ReadableString &ViewJoinIRCCommand::getHelp(const Jupiter::ReadableString &)

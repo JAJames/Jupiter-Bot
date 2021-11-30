@@ -439,11 +439,11 @@ const Jupiter::ReadableString &RenX::getCharacter(const Jupiter::ReadableString 
 
 	object = chr;
 	if (object.find(STRING_LITERAL_AS_REFERENCE("Rx_")) == 0)
-		object.shiftRight(3);
+		object.remove_prefix(3);
 	if (object.find(STRING_LITERAL_AS_REFERENCE("InventoryManager_")) == 0)
-		object.shiftRight(17);
+		object.remove_prefix(17);
 	else if (object.find(STRING_LITERAL_AS_REFERENCE("FamilyInfo_")) == 0)
-		object.shiftRight(11);
+		object.remove_prefix(11);
 
 	return object;
 }
@@ -452,7 +452,7 @@ const Jupiter::ReferenceString &translateCharacter(Jupiter::ReferenceString &obj
 {
 	if (object.find(STRING_LITERAL_AS_REFERENCE("GDI_")) == 0)
 	{
-		object.shiftRight(4);
+		object.remove_prefix(4);
 		if (object == "Deadeye"sv) return translated_GDI_Deadeye;
 		if (object == "Engineer"sv) return translated_GDI_Engineer;
 		if (object == "Grenadier"sv) return translated_GDI_Grenadier;
@@ -471,7 +471,7 @@ const Jupiter::ReferenceString &translateCharacter(Jupiter::ReferenceString &obj
 	}
 	else if (object.find(STRING_LITERAL_AS_REFERENCE("Nod_")) == 0)
 	{
-		object.shiftRight(4);
+		object.remove_prefix(4);
 		if (object == "BlackHandSniper"sv) return translated_Nod_BlackHandSniper;
 		if (object == "ChemicalTrooper"sv) return translated_Nod_ChemicalTrooper;
 		if (object == "Engineer"sv) return translated_Nod_Engineer;
@@ -504,16 +504,16 @@ std::string_view RenX::translateName(std::string_view obj)
 	Jupiter::ReferenceString object = obj;
 
 	if (object.find(STRING_LITERAL_AS_REFERENCE("nBab_")) == 0)
-		object.shiftRight(5);
+		object.remove_prefix(5);
 	
 	if (object.find(STRING_LITERAL_AS_REFERENCE("Rx_")) == 0)
-		object.shiftRight(3);
+		object.remove_prefix(3);
 	else if (object.find(STRING_LITERAL_AS_REFERENCE("TS_")) == 0)
-		object.shiftRight(3);
+		object.remove_prefix(3);
 
 	if (object.find(STRING_LITERAL_AS_REFERENCE("Vehicle_")) == 0)
 	{
-		object.shiftRight(8);
+		object.remove_prefix(8);
 
 		/** Nod Vehicles */
 		if (object == "Harvester_Nod"sv) return translated_Vehicle_Harvester_Nod;
@@ -551,7 +551,7 @@ std::string_view RenX::translateName(std::string_view obj)
 	}
 	else if (object.find(STRING_LITERAL_AS_REFERENCE("Weapon_")) == 0)
 	{
-		object.shiftRight(7);
+		object.remove_prefix(7);
 		if (object == "HeavyPistol"sv) return translated_Weapon_HeavyPistol;
 		if (object == "Carbine"sv) return translated_Weapon_Carbine;
 		if (object == "Airstrike_GDI"sv) return translated_Weapon_Airstrike_GDI;
@@ -578,23 +578,23 @@ std::string_view RenX::translateName(std::string_view obj)
 	}
 	else if (object.find(STRING_LITERAL_AS_REFERENCE("Projectile_")) == 0)
 	{
-		object.shiftRight(11);
+		object.remove_prefix(11);
 		if (object == "EMPGrenade"sv) return translated_Projectile_EMPGrenade;
 		if (object == "SmokeGrenade"sv) return translated_Projectile_SmokeGrenade;
 	}
 	else if (object.find(STRING_LITERAL_AS_REFERENCE("InventoryManager_")) == 0)
 	{
-		object.shiftRight(17);
+		object.remove_prefix(17);
 		return translateCharacter(object);
 	}
 	else if (object.find(STRING_LITERAL_AS_REFERENCE("FamilyInfo_")) == 0)
 	{
-		object.shiftRight(11);
+		object.remove_prefix(11);
 		return translateCharacter(object);
 	}
 	else if (object.find(STRING_LITERAL_AS_REFERENCE("DmgType_")) == 0)
 	{
-		object.shiftRight(8);
+		object.remove_prefix(8);
 
 		/** Non-weapon damage types */
 		if (object == "Suicided"sv) return translated_DmgType_Suicided;
@@ -706,7 +706,7 @@ std::string_view RenX::translateName(std::string_view obj)
 	}
 	else if (object.find(STRING_LITERAL_AS_REFERENCE("Building_")) == 0)
 	{
-		object.shiftRight(9);
+		object.remove_prefix(9);
 		/** Nod structures */
 		if (object == "HandOfNod"sv) return translated_Building_HandOfNod;
 		if (object == "AirTower"sv) return translated_Building_AirTower;
@@ -743,7 +743,7 @@ std::string_view RenX::translateName(std::string_view obj)
 	}
 	else if (object.find(STRING_LITERAL_AS_REFERENCE("CapturableMCT_")) == 0)
 	{
-		object.shiftRight(14);
+		object.remove_prefix(14);
 		if (object == "Fort"sv) return translated_CapturableMCT_Fort;
 		if (object == "MC"sv) return translated_CapturableMCT_MC;
 		if (object == "Fort_Internals"sv) return translated_CapturableMCT_Fort_Internals;
@@ -751,7 +751,7 @@ std::string_view RenX::translateName(std::string_view obj)
 	}
 	else if (object.find(STRING_LITERAL_AS_REFERENCE("Defence_")) == 0)
 	{
-		object.shiftRight(8);
+		object.remove_prefix(8);
 		if (object == "GuardTower"sv) return translated_Defence_GuardTower;
 		if (object == "Turret"sv) return translated_Defence_Turret;
 		if (object == "SAMSite"sv) return translated_Defence_SAMSite;
@@ -761,20 +761,20 @@ std::string_view RenX::translateName(std::string_view obj)
 	}
 	else if (object.find(STRING_LITERAL_AS_REFERENCE("Sentinel_")) == 0)
 	{
-		object.shiftRight(9);
+		object.remove_prefix(9);
 		if (object == "AGT_MG_Base"sv) return translated_Sentinel_AGT_MG_Base;
 		if (object == "AGT_Rockets_Base"sv) return translated_Sentinel_AGT_Rockets_Base;
 		if (object == "Obelisk_Laser_Base"sv) return translated_Sentinel_Obelisk_Laser_Base;
 	}
 	else if (object.find(STRING_LITERAL_AS_REFERENCE("UTDmgType_")) == 0)
 	{
-		object.shiftRight(10);
+		object.remove_prefix(10);
 		if (object == "VehicleExplosion"sv) return translated_UTDmgType_VehicleExplosion;
 		if (object == "Drowned"sv) return translated_UTDmgType_Drowned;
 	}
 	else if (object.find(STRING_LITERAL_AS_REFERENCE("VoteMenuChoice_")) == 0)
 	{
-		object.shiftRight(15);
+		object.remove_prefix(15);
 		if (object == "AddBots"sv) return translated_VoteMenuChoice_AddBots;
 		if (object == "ChangeMap"sv) return translated_VoteMenuChoice_ChangeMap;
 		if (object == "Donate"sv) return translated_VoteMenuChoice_Donate;

@@ -77,10 +77,11 @@ void RenX_CommandsPlugin::RenX_OnDie(RenX::Server &server, const RenX::PlayerInf
 bool RenX_CommandsPlugin::initialize() {
 	auto default_tban_time = this->config.get("DefaultTBanTime"_jrs, "1d"_jrs);
 	auto max_tban_time = this->config.get("MaxTBanTime"_jrs, "1w"_jrs);
-	m_defaultTempBanTime = jessilib::duration_from_string(default_tban_time.ptr(), default_tban_time.ptr() + default_tban_time.size()).duration;
-	m_maxTempBanTime = std::max(jessilib::duration_from_string(max_tban_time.ptr(), max_tban_time.ptr() + max_tban_time.size()).duration, m_defaultTempBanTime);
+	m_defaultTempBanTime = jessilib::duration_from_string(default_tban_time.data(), default_tban_time.data() + default_tban_time.size()).duration;
+	m_maxTempBanTime = std::max(jessilib::duration_from_string(max_tban_time.data(), max_tban_time.data() + max_tban_time.size()).duration, m_defaultTempBanTime);
 	m_playerInfoFormat = this->config.get("PlayerInfoFormat"_jrs, IRCCOLOR "03[Player Info]" IRCCOLOR "{TCOLOR} Name: " IRCBOLD "{RNAME}" IRCBOLD " - ID: {ID} - Team: " IRCBOLD "{TEAML}" IRCBOLD " - Vehicle Kills: {VEHICLEKILLS} - Building Kills {BUILDINGKILLS} - Kills {KILLS} - Deaths: {DEATHS} - KDR: {KDR} - Access: {ACCESS}"_jrs);
-	m_adminPlayerInfoFormat = this->config.get("AdminPlayerInfoFormat"_jrs, Jupiter::StringS::Format("%.*s - IP: " IRCBOLD "{IP}" IRCBOLD " - HWID: " IRCBOLD "{HWID}" IRCBOLD " - RDNS: " IRCBOLD "{RDNS}" IRCBOLD " - Steam ID: " IRCBOLD "{STEAM}", m_playerInfoFormat.size(), m_playerInfoFormat.ptr()));
+	m_adminPlayerInfoFormat = this->config.get("AdminPlayerInfoFormat"_jrs, Jupiter::StringS::Format("%.*s - IP: " IRCBOLD "{IP}" IRCBOLD " - HWID: " IRCBOLD "{HWID}" IRCBOLD " - RDNS: " IRCBOLD "{RDNS}" IRCBOLD " - Steam ID: " IRCBOLD "{STEAM}", m_playerInfoFormat.size(),
+		m_playerInfoFormat.data()));
 	m_buildingInfoFormat = this->config.get("BuildingInfoFormat"_jrs, ""_jrs IRCCOLOR + RenX::tags->buildingTeamColorTag + RenX::tags->buildingNameTag + IRCCOLOR " - " IRCCOLOR "07"_jrs + RenX::tags->buildingHealthPercentageTag + "%"_jrs);
 	m_staffTitle = this->config.get("StaffTitle"_jrs, "Moderator"_jrs);
 
@@ -482,10 +483,12 @@ void PlayersIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &
 						if (nCurrent == nullptr || nCurrent->size() + name.size() > STRING_LENGTH)
 						{
 							nCurrent = new Jupiter::StringL(STRING_LENGTH);
-							nCurrent->format(IRCCOLOR "%.*s[%.*s]: " IRCBOLD "%.*s" IRCBOLD, nTeamColor.size(), nTeamColor.ptr(), nTeam.size(), nTeam.ptr(), name.size(), name.ptr());
+							nCurrent->format(IRCCOLOR "%.*s[%.*s]: " IRCBOLD "%.*s" IRCBOLD, nTeamColor.size(),
+								nTeamColor.data(), nTeam.size(),
+								nTeam.data(), name.size(), name.data());
 							nStrings.push_back(nCurrent);
 						}
-						else nCurrent->aformat(IRCCOLOR ", " IRCBOLD "%.*s" IRCBOLD, name.size(), name.ptr());
+						else nCurrent->aformat(IRCCOLOR ", " IRCBOLD "%.*s" IRCBOLD, name.size(), name.data());
 						nTotal++;
 						if (node->isBot)
 							nBots++;
@@ -494,10 +497,12 @@ void PlayersIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &
 						if (gCurrent == nullptr || gCurrent->size() + name.size() > STRING_LENGTH)
 						{
 							gCurrent = new Jupiter::StringL(STRING_LENGTH);
-							gCurrent->format(IRCCOLOR "%.*s[%.*s]: " IRCBOLD "%.*s" IRCBOLD, gTeamColor.size(), gTeamColor.ptr(), gTeam.size(), gTeam.ptr(), name.size(), name.ptr());
+							gCurrent->format(IRCCOLOR "%.*s[%.*s]: " IRCBOLD "%.*s" IRCBOLD, gTeamColor.size(),
+								gTeamColor.data(), gTeam.size(),
+								gTeam.data(), name.size(), name.data());
 							gStrings.push_back(gCurrent);
 						}
-						else gCurrent->aformat(IRCCOLOR ", " IRCBOLD "%.*s" IRCBOLD, name.size(), name.ptr());
+						else gCurrent->aformat(IRCCOLOR ", " IRCBOLD "%.*s" IRCBOLD, name.size(), name.data());
 						gTotal++;
 						if (node->isBot)
 							gBots++;
@@ -506,10 +511,12 @@ void PlayersIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &
 						if (oCurrent == nullptr || oCurrent->size() + name.size() > STRING_LENGTH)
 						{
 							oCurrent = new Jupiter::StringL(STRING_LENGTH);
-							oCurrent->format(IRCCOLOR "%.*s[%.*s]: " IRCBOLD "%.*s" IRCBOLD, oTeamColor.size(), oTeamColor.ptr(), oTeam.size(), oTeam.ptr(), name.size(), name.ptr());
+							oCurrent->format(IRCCOLOR "%.*s[%.*s]: " IRCBOLD "%.*s" IRCBOLD, oTeamColor.size(),
+								oTeamColor.data(), oTeam.size(),
+								oTeam.data(), name.size(), name.data());
 							oStrings.push_back(oCurrent);
 						}
-						else oCurrent->aformat(IRCCOLOR ", " IRCBOLD "%.*s" IRCBOLD, name.size(), name.ptr());
+						else oCurrent->aformat(IRCCOLOR ", " IRCBOLD "%.*s" IRCBOLD, name.size(), name.data());
 						oTotal++;
 						if (node->isBot)
 							oBots++;
@@ -548,19 +555,25 @@ void PlayersIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &
 					out.aformat(" (%u bots)", gBots + nBots + oBots);
 				if (gTotal > 0)
 				{
-					out.aformat(IRCCOLOR "02 | " IRCCOLOR "%.*s%.*s" IRCCOLOR ": %u", gTeamColor.size(), gTeamColor.ptr(), gTeam.size(), gTeam.ptr(), gTotal);
+					out.aformat(IRCCOLOR "02 | " IRCCOLOR "%.*s%.*s" IRCCOLOR ": %u", gTeamColor.size(),
+						gTeamColor.data(), gTeam.size(),
+						gTeam.data(), gTotal);
 					if (gBots > 0)
 						out.aformat(" (%u bots)", gBots);
 				}
 				if (nTotal > 0)
 				{
-					out.aformat(IRCCOLOR "02 | " IRCCOLOR "%.*s%.*s" IRCCOLOR ": %u", nTeamColor.size(), nTeamColor.ptr(), nTeam.size(), nTeam.ptr(), nTotal);
+					out.aformat(IRCCOLOR "02 | " IRCCOLOR "%.*s%.*s" IRCCOLOR ": %u", nTeamColor.size(),
+						nTeamColor.data(), nTeam.size(),
+						nTeam.data(), nTotal);
 					if (nBots > 0)
 						out.aformat(" (%u bots)", nBots);
 				}
 				if (oTotal > 0)
 				{
-					out.aformat(IRCCOLOR "02 | " IRCCOLOR "%.*s%.*s" IRCCOLOR ": %u", oTeamColor.size(), oTeamColor.ptr(), oTeam.size(), oTeam.ptr(), oTotal);
+					out.aformat(IRCCOLOR "02 | " IRCCOLOR "%.*s%.*s" IRCCOLOR ": %u", oTeamColor.size(),
+						oTeamColor.data(), oTeam.size(),
+						oTeam.data(), oTotal);
 					if (oBots > 0)
 						out.aformat(" (%u bots)", oBots);
 				}
@@ -667,16 +680,18 @@ void PlayerTableIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableStri
 					++creditColLen;
 
 				if (server->isAdminLogChanType(type))
-					source->sendMessage(channel, Jupiter::StringS::Format(IRCUNDERLINE IRCCOLOR "03%*.*s | %*s | %*s | %*s | IP Address", maxNickLen, NICK_COL_HEADER.size(), NICK_COL_HEADER.ptr(), idColLen, "ID", scoreColLen, "Score", creditColLen, "Credits"));
+					source->sendMessage(channel, Jupiter::StringS::Format(IRCUNDERLINE IRCCOLOR "03%*.*s | %*s | %*s | %*s | IP Address", maxNickLen, NICK_COL_HEADER.size(), NICK_COL_HEADER.data(), idColLen, "ID", scoreColLen, "Score", creditColLen, "Credits"));
 				else
-					source->sendMessage(channel, Jupiter::StringS::Format(IRCUNDERLINE IRCCOLOR "03%*.*s | %*s | %*s | %*s", maxNickLen, NICK_COL_HEADER.size(), NICK_COL_HEADER.ptr(), idColLen, "ID", scoreColLen, "Score", creditColLen, "Credits"));
+					source->sendMessage(channel, Jupiter::StringS::Format(IRCUNDERLINE IRCCOLOR "03%*.*s | %*s | %*s | %*s", maxNickLen, NICK_COL_HEADER.size(), NICK_COL_HEADER.data(), idColLen, "ID", scoreColLen, "Score", creditColLen, "Credits"));
 
 				auto output_player = [server, type, source, &channel, maxNickLen, idColLen, scoreColLen, creditColLen](RenX::PlayerInfo *player, const Jupiter::ReadableString &color)
 				{
 					if (server->isAdminLogChanType(type))
-						source->sendMessage(channel, Jupiter::StringS::Format(IRCCOLOR "%.*s%*.*s" IRCCOLOR " " IRCCOLOR "03|" IRCCOLOR " %*d " IRCCOLOR "03|" IRCCOLOR " %*.0f " IRCCOLOR "03|" IRCCOLOR " %*.0f " IRCCOLOR "03|" IRCNORMAL " %.*s", color.size(), color.ptr(), maxNickLen, player->name.size(), player->name.data(), idColLen, player->id, scoreColLen, player->score, creditColLen, player->credits, player->ip.size(), player->ip.data()));
+						source->sendMessage(channel, Jupiter::StringS::Format(IRCCOLOR "%.*s%*.*s" IRCCOLOR " " IRCCOLOR "03|" IRCCOLOR " %*d " IRCCOLOR "03|" IRCCOLOR " %*.0f " IRCCOLOR "03|" IRCCOLOR " %*.0f " IRCCOLOR "03|" IRCNORMAL " %.*s", color.size(),
+							color.data(), maxNickLen, player->name.size(), player->name.data(), idColLen, player->id, scoreColLen, player->score, creditColLen, player->credits, player->ip.size(), player->ip.data()));
 					else
-						source->sendMessage(channel, Jupiter::StringS::Format(IRCCOLOR "%.*s%*.*s" IRCCOLOR " " IRCCOLOR "03|" IRCCOLOR " %*d " IRCCOLOR "03|" IRCCOLOR " %*.0f " IRCCOLOR "03|" IRCCOLOR " %*.0f", color.size(), color.ptr(), maxNickLen, player->name.size(), player->name.data(), idColLen, player->id, scoreColLen, player->score, creditColLen, player->credits));
+						source->sendMessage(channel, Jupiter::StringS::Format(IRCCOLOR "%.*s%*.*s" IRCCOLOR " " IRCCOLOR "03|" IRCCOLOR " %*d " IRCCOLOR "03|" IRCCOLOR " %*.0f " IRCCOLOR "03|" IRCCOLOR " %*.0f", color.size(),
+							color.data(), maxNickLen, player->name.size(), player->name.data(), idColLen, player->id, scoreColLen, player->score, creditColLen, player->credits));
 				};
 
 				for (auto node = gPlayers.begin(); node != gPlayers.end(); ++node)
@@ -1041,7 +1056,8 @@ void SteamIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &ch
 						if (jessilib::findi(node->name, Jupiter::ReferenceString{parameters}) != std::string::npos)
 						{
 							Jupiter::String playerName = RenX::getFormattedPlayerName(*node);
-							msg.format(IRCCOLOR "03[Steam] " IRCCOLOR "%.*s (ID: %d) ", playerName.size(), playerName.ptr(), node->id);
+							msg.format(IRCCOLOR "03[Steam] " IRCCOLOR "%.*s (ID: %d) ", playerName.size(),
+								playerName.data(), node->id);
 							if (node->steamid != 0)
 							{
 								msg += "is using steam ID " IRCBOLD;
@@ -1127,7 +1143,8 @@ void KillDeathRatioIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableS
 						if (jessilib::findi(node->name, Jupiter::ReferenceString{parameters}) != std::string::npos)
 						{
 							Jupiter::String playerName = RenX::getFormattedPlayerName(*node);
-							msg.format(IRCBOLD "%.*s" IRCBOLD IRCCOLOR ": Kills: %u - Deaths: %u - KDR: %.2f", playerName.size(), playerName.ptr(), node->kills, node->deaths, static_cast<double>(node->kills) / (node->deaths == 0 ? 1.0f : static_cast<double>(node->deaths)));
+							msg.format(IRCBOLD "%.*s" IRCBOLD IRCCOLOR ": Kills: %u - Deaths: %u - KDR: %.2f", playerName.size(),
+								playerName.data(), node->kills, node->deaths, static_cast<double>(node->kills) / (node->deaths == 0 ? 1.0f : static_cast<double>(node->deaths)));
 							source->sendMessage(channel, msg);
 						}
 					}
@@ -1997,8 +2014,8 @@ void BanSearchIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString
 					}
 
 					out.format("ID: %lu (" IRCCOLOR "%sactive" IRCCOLOR "); Added: %s; Expires: %s; IP: %.*s/%u; HWID: %.*s; Steam: %llu; Types:%.*s Name: %.*s; Banner: %.*s",
-						i, entry->is_active() ? "12" : "04in", dateStr, expireStr, ip_str.size(), ip_str.ptr(), entry->prefix_length, entry->hwid.size(), entry->hwid.data(), entry->steamid,
-						types.size(), types.ptr(), entry->name.size(), entry->name.data(), entry->banner.size(), entry->banner.data());
+						i, entry->is_active() ? "12" : "04in", dateStr, expireStr, ip_str.size(), ip_str.data(), entry->prefix_length, entry->hwid.size(), entry->hwid.data(), entry->steamid,
+						types.size(), types.data(), entry->name.size(), entry->name.data(), entry->banner.size(), entry->banner.data());
 
 					if (!entry->rdns.empty())
 					{
@@ -2563,8 +2580,8 @@ void ExemptionSearchIRCCommand::trigger(IRC_Bot *source, const Jupiter::Readable
 					}
 
 					out.format("ID: %lu (%sactive); Date: %s; IP: %.*s/%u; Steam: %llu; Types:%.*s Setter: %.*s",
-						i, entry->is_active() ? "" : "in", timeStr, ip_str.size(), ip_str.ptr(), entry->prefix_length, entry->steamid,
-						types.size(), types.ptr(), entry->setter.size(), entry->setter.data());
+						i, entry->is_active() ? "" : "in", timeStr, ip_str.size(), ip_str.data(), entry->prefix_length, entry->steamid,
+						types.size(), types.data(), entry->setter.size(), entry->setter.data());
 
 					source->sendNotice(nick, out);
 				}
@@ -3084,7 +3101,7 @@ void RefundIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &c
 					player = server->getPlayerByPartName(playerName);
 					if (player != nullptr) {
 						if (server->giveCredits(*player, credits)) {
-							msg.format("You have been refunded %.0f credits by %.*s.", credits, nick.size(), nick.ptr());
+							msg.format("You have been refunded %.0f credits by %.*s.", credits, nick.size(), nick.data());
 							server->sendMessage(*player, msg);
 							msg.format("%.*s has been refunded %.0f credits.", player->name.size(), player->name.data(), credits);
 						}
@@ -3487,7 +3504,7 @@ void RulesGameCommand::create() {
 }
 
 void RulesGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *player, const Jupiter::ReadableString &parameters) {
-	source->sendMessage(Jupiter::StringS::Format("Rules: %.*s", source->getRules().size(), source->getRules().ptr()));
+	source->sendMessage(Jupiter::StringS::Format("Rules: %.*s", source->getRules().size(), source->getRules().data()));
 }
 
 const Jupiter::ReadableString &RulesGameCommand::getHelp(const Jupiter::ReadableString &) {
@@ -3513,8 +3530,12 @@ void ModRequestGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *play
 
 	const Jupiter::ReadableString &staff_word = pluginInstance.getStaffTitle();
 	Jupiter::String fmtName = RenX::getFormattedPlayerName(*player);
-	Jupiter::StringL user_message = Jupiter::StringL::Format(IRCCOLOR "12[%.*s Request] " IRCCOLOR IRCBOLD "%.*s" IRCBOLD IRCCOLOR "07 has requested assistance in-game for \"%.*s\"; please look in ", staff_word.size(), staff_word.ptr(), fmtName.size(), fmtName.ptr(), parameters.size(), parameters.ptr());
-	Jupiter::StringS channel_message = Jupiter::StringS::Format(IRCCOLOR "12[%.*s Request] " IRCCOLOR IRCBOLD "%.*s" IRCBOLD IRCCOLOR "07 has requested assistance in-game! Reason: %.*s" IRCCOLOR, staff_word.size(), staff_word.ptr(), fmtName.size(), fmtName.ptr(), parameters.size(), parameters.ptr());
+	Jupiter::StringL user_message = Jupiter::StringL::Format(IRCCOLOR "12[%.*s Request] " IRCCOLOR IRCBOLD "%.*s" IRCBOLD IRCCOLOR "07 has requested assistance in-game for \"%.*s\"; please look in ", staff_word.size(),
+		staff_word.data(), fmtName.size(), fmtName.data(), parameters.size(),
+		parameters.data());
+	Jupiter::StringS channel_message = Jupiter::StringS::Format(IRCCOLOR "12[%.*s Request] " IRCCOLOR IRCBOLD "%.*s" IRCBOLD IRCCOLOR "07 has requested assistance in-game! Reason: %.*s" IRCCOLOR, staff_word.size(),
+		staff_word.data(), fmtName.size(), fmtName.data(), parameters.size(),
+		parameters.data());
 
 	// Alerts a channel and all relevant users in the channel
 	auto alert_channel = [&user_message, &channel_message](Jupiter::IRC::Client& server, const Jupiter::IRC::Client::Channel& channel) {
@@ -3554,7 +3575,8 @@ void ModRequestGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *play
 	}
 
 	// Inform the user of the result
-	source->sendMessage(*player, Jupiter::StringS::Format("A total of %u %.*ss have been notified of your assistance request.", total_user_alerts, staff_word.size(), staff_word.ptr()));
+	source->sendMessage(*player, Jupiter::StringS::Format("A total of %u %.*ss have been notified of your assistance request.", total_user_alerts, staff_word.size(),
+		staff_word.data()));
 }
 
 const Jupiter::ReadableString &ModRequestGameCommand::getHelp(const Jupiter::ReadableString &) {

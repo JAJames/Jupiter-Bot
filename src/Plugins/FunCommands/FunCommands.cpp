@@ -72,10 +72,10 @@ void EightBallIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString
 		msg.set("Good thing I bend that way!"_jrs);
 		break;
 	case 10:
-		msg.format("Hai %.*s ;)", nick.size(), nick.ptr());
+		msg.format("Hai %.*s ;)", nick.size(), nick.data());
 		break;
 	case 11:
-		msg.format("Let's ban %.*s!", nick.size(), nick.ptr());
+		msg.format("Let's ban %.*s!", nick.size(), nick.data());
 		break;
 	case 12:
 		msg.set("Fuck your lineage."_jrs);

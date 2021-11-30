@@ -116,16 +116,16 @@ void IRC_Bot::setCommandAccessLevels(IRCCommand *in_command) {
 			IRCCommand *command;
 
 			tmp_index = entry.first.find('.');
-			if (tmp_index != Jupiter::INVALID_INDEX) {
+			if (tmp_index != std::string_view::npos) {
 				// non-default access assignment
 
-				tmp_key.set(entry.first.data(), tmp_index);
+				tmp_key = std::string_view(entry.first.data(), tmp_index);
 
 				tmp_sub_key = entry.first;
-				tmp_sub_key.shiftRight(tmp_index + 1);
+				tmp_sub_key.remove_prefix(tmp_index + 1);
 
 				if (jessilib::starts_withi(tmp_sub_key, "Type."sv)) {
-					tmp_sub_key.shiftRight(5); // shift beyond "Type."
+					tmp_sub_key.remove_prefix(5); // strip "Type."
 
 					command = this->getCommand(tmp_key);
 					if (command != nullptr && (in_command == nullptr || in_command == command)) {
@@ -133,7 +133,7 @@ void IRC_Bot::setCommandAccessLevels(IRCCommand *in_command) {
 					}
 				}
 				else if (jessilib::starts_withi(tmp_sub_key, "Channel."sv)) {
-					tmp_sub_key.shiftRight(8); // shift beyond "Channel."
+					tmp_sub_key.remove_prefix(8); // strip "Channel."
 
 					// Assign access level to command (if command exists)
 					command = this->getCommand(tmp_key);

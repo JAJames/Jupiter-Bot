@@ -89,7 +89,8 @@ void WarnIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &cha
 				}
 				else {
 					player->varData[pluginInstance.getName()].set(WARNS_KEY, std::to_string(warns));
-					server->sendWarnMessage(*player, Jupiter::StringS::Format("You have been warned by %.*s@IRC for: %.*s. You have %d warnings.", nick.size(), nick.ptr(), reason.size(), reason.data(), warns));
+					server->sendWarnMessage(*player, Jupiter::StringS::Format("You have been warned by %.*s@IRC for: %.*s. You have %d warnings.", nick.size(),
+						nick.data(), reason.size(), reason.data(), warns));
 					source->sendNotice(nick, Jupiter::StringS::Format("%.*s has been warned; they now have %d warnings.", player->name.size(), player->name.data(), warns));
 				}
 			}
@@ -137,7 +138,8 @@ void PardonIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &c
 			player = server->getPlayerByPartName(parameters);
 			if (player != nullptr) {
 				player->varData[pluginInstance.getName()].remove(WARNS_KEY);
-				server->sendMessage(*player, Jupiter::StringS::Format("You have been pardoned by %.*s@IRC; your warnings have been reset.", nick.size(), nick.ptr()));
+				server->sendMessage(*player, Jupiter::StringS::Format("You have been pardoned by %.*s@IRC; your warnings have been reset.", nick.size(),
+					nick.data()));
 				source->sendNotice(nick, Jupiter::StringS::Format("%.*s has been pardoned; their warnings have been reset.", player->name.size(), player->name.data()));
 			}
 		}

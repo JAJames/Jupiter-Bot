@@ -76,7 +76,8 @@ void HelpIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &in_
 				if (cmds.size() != 0) {
 					Jupiter::StringL triggers = source->getTriggers(cmds);
 					if (triggers.size() >= 0) {
-						source->sendNotice(nick, Jupiter::StringS::Format("Access level %d commands: %.*s", i, triggers.size(), triggers.ptr()));
+						source->sendNotice(nick, Jupiter::StringS::Format("Access level %d commands: %.*s", i, triggers.size(),
+							triggers.data()));
 					}
 				}
 			}

@@ -219,12 +219,12 @@ int main(int argc, const char **args) {
 
 	if (plugins_directory.isNotEmpty()) {
 		Jupiter::Plugin::setDirectory(plugins_directory);
-		printf("Plugins will be loaded from \"%.*s\"." ENDL, static_cast<int>(plugins_directory.size()), plugins_directory.ptr());
+		printf("Plugins will be loaded from \"%.*s\"." ENDL, static_cast<int>(plugins_directory.size()), plugins_directory.data());
 	}
 
 	if (configs_directory.isNotEmpty()) {
 		Jupiter::Plugin::setConfigDirectory(configs_directory);
-		printf("Plugin configs will be loaded from \"%.*s\"." ENDL, static_cast<int>(configs_directory.size()), configs_directory.ptr());
+		printf("Plugin configs will be loaded from \"%.*s\"." ENDL, static_cast<int>(configs_directory.size()), configs_directory.data());
 	}
 
 	initialize_plugins();

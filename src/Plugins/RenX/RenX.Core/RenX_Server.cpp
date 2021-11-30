@@ -275,7 +275,8 @@ int RenX::Server::sendMessage(std::string_view message) {
 		if (this->players.size() != 0) {
 			for (auto node = this->players.begin(); node != this->players.end(); ++node) {
 				if (node->isBot == false) {
-					result += sendSocket(Jupiter::StringS::Format("chostprivatesay pid%d %.*s\n", node->id, msg.size(), msg.ptr()));
+					result += sendSocket(Jupiter::StringS::Format("chostprivatesay pid%d %.*s\n", node->id, msg.size(),
+						msg.data()));
 				}
 			}
 		}
@@ -581,10 +582,12 @@ void RenX::Server::banCheck(RenX::PlayerInfo &player) {
 		time_t current_time = std::chrono::system_clock::to_time_t(last_to_expire[0]->timestamp + last_to_expire[0]->length);
 		strftime(timeStr, sizeof(timeStr), "%b %d %Y at %H:%M:%S", localtime(&current_time));
 		if (last_to_expire[0]->length == std::chrono::seconds::zero()) {
-			forceKickPlayer(player, Jupiter::StringS::Format("You were permanently banned from %.*s on %s for: %.*s", m_ban_from_str.size(), m_ban_from_str.ptr(), timeStr, last_to_expire[0]->reason.size(), last_to_expire[0]->reason.data()));
+			forceKickPlayer(player, Jupiter::StringS::Format("You were permanently banned from %.*s on %s for: %.*s", m_ban_from_str.size(),
+				m_ban_from_str.data(), timeStr, last_to_expire[0]->reason.size(), last_to_expire[0]->reason.data()));
 		}
 		else {
-			forceKickPlayer(player, Jupiter::StringS::Format("You are banned from %.*s until %s for: %.*s", m_ban_from_str.size(), m_ban_from_str.ptr(), timeStr, last_to_expire[0]->reason.size(), last_to_expire[0]->reason.data()));
+			forceKickPlayer(player, Jupiter::StringS::Format("You are banned from %.*s until %s for: %.*s", m_ban_from_str.size(),
+				m_ban_from_str.data(), timeStr, last_to_expire[0]->reason.size(), last_to_expire[0]->reason.data()));
 		}
 
 		player.ban_flags |= RenX::BanDatabase::Entry::FLAG_TYPE_BOT; // implies FLAG_TYPE_BOT
@@ -595,9 +598,11 @@ void RenX::Server::banCheck(RenX::PlayerInfo &player) {
 			strftime(timeStr, sizeof(timeStr), "%b %d %Y at %H:%M:%S", localtime(&current_time));
 			mute(player);
 			if (last_to_expire[1]->length == std::chrono::seconds::zero())
-				sendMessage(player, Jupiter::StringS::Format("You were permanently muted from %.*s on %s for: %.*s", m_ban_from_str.size(), m_ban_from_str.ptr(), timeStr, last_to_expire[1]->reason.size(), last_to_expire[1]->reason.data()));
+				sendMessage(player, Jupiter::StringS::Format("You were permanently muted from %.*s on %s for: %.*s", m_ban_from_str.size(),
+					m_ban_from_str.data(), timeStr, last_to_expire[1]->reason.size(), last_to_expire[1]->reason.data()));
 			else
-				sendMessage(player, Jupiter::StringS::Format("You are muted from %.*s until %s for: %.*s", m_ban_from_str.size(), m_ban_from_str.ptr(), timeStr, last_to_expire[1]->reason.size(), last_to_expire[1]->reason.data()));
+				sendMessage(player, Jupiter::StringS::Format("You are muted from %.*s until %s for: %.*s", m_ban_from_str.size(),
+					m_ban_from_str.data(), timeStr, last_to_expire[1]->reason.size(), last_to_expire[1]->reason.data()));
 
 			player.ban_flags |= RenX::BanDatabase::Entry::FLAG_TYPE_BOT; // implies FLAG_TYPE_BOT
 		}
@@ -605,40 +610,50 @@ void RenX::Server::banCheck(RenX::PlayerInfo &player) {
 			time_t current_time = std::chrono::system_clock::to_time_t(last_to_expire[2]->timestamp + last_to_expire[2]->length);
 			strftime(timeStr, sizeof(timeStr), "%b %d %Y at %H:%M:%S", localtime(&current_time));
 			if (last_to_expire[2]->length == std::chrono::seconds::zero())
-				sendMessage(player, Jupiter::StringS::Format("You were permanently bot-muted from %.*s on %s for: %.*s", m_ban_from_str.size(), m_ban_from_str.ptr(), timeStr, last_to_expire[2]->reason.size(), last_to_expire[2]->reason.data()));
+				sendMessage(player, Jupiter::StringS::Format("You were permanently bot-muted from %.*s on %s for: %.*s", m_ban_from_str.size(),
+					m_ban_from_str.data(), timeStr, last_to_expire[2]->reason.size(), last_to_expire[2]->reason.data()));
 			else
-				sendMessage(player, Jupiter::StringS::Format("You are bot-muted from %.*s until %s for: %.*s", m_ban_from_str.size(), m_ban_from_str.ptr(), timeStr, last_to_expire[2]->reason.size(), last_to_expire[2]->reason.data()));
+				sendMessage(player, Jupiter::StringS::Format("You are bot-muted from %.*s until %s for: %.*s", m_ban_from_str.size(),
+					m_ban_from_str.data(), timeStr, last_to_expire[2]->reason.size(), last_to_expire[2]->reason.data()));
 		}
 		if (last_to_expire[3] != nullptr) { // Vote ban
 			time_t current_time = std::chrono::system_clock::to_time_t(last_to_expire[3]->timestamp + last_to_expire[3]->length);
 			strftime(timeStr, sizeof(timeStr), "%b %d %Y at %H:%M:%S", localtime(&current_time));
 			if (last_to_expire[3]->length == std::chrono::seconds::zero())
-				sendMessage(player, Jupiter::StringS::Format("You were permanently vote-muted from %.*s on %s for: %.*s", m_ban_from_str.size(), m_ban_from_str.ptr(), timeStr, last_to_expire[3]->reason.size(), last_to_expire[3]->reason.data()));
+				sendMessage(player, Jupiter::StringS::Format("You were permanently vote-muted from %.*s on %s for: %.*s", m_ban_from_str.size(),
+					m_ban_from_str.data(), timeStr, last_to_expire[3]->reason.size(), last_to_expire[3]->reason.data()));
 			else
-				sendMessage(player, Jupiter::StringS::Format("You are vote-muted from %.*s until %s for: %.*s", m_ban_from_str.size(), m_ban_from_str.ptr(), timeStr, last_to_expire[3]->reason.size(), last_to_expire[3]->reason.data()));
+				sendMessage(player, Jupiter::StringS::Format("You are vote-muted from %.*s until %s for: %.*s", m_ban_from_str.size(),
+					m_ban_from_str.data(), timeStr, last_to_expire[3]->reason.size(), last_to_expire[3]->reason.data()));
 		}
 		if (last_to_expire[4] != nullptr) { // Mine ban
 			time_t current_time = std::chrono::system_clock::to_time_t(last_to_expire[4]->timestamp + last_to_expire[4]->length);
 			mineBan(player);
 			strftime(timeStr, sizeof(timeStr), "%b %d %Y at %H:%M:%S", localtime(&current_time));
 			if (last_to_expire[4]->length == std::chrono::seconds::zero())
-				sendMessage(player, Jupiter::StringS::Format("You were permanently mine-banned from %.*s on %s for: %.*s", m_ban_from_str.size(), m_ban_from_str.ptr(), timeStr, last_to_expire[4]->reason.size(), last_to_expire[4]->reason.data()));
+				sendMessage(player, Jupiter::StringS::Format("You were permanently mine-banned from %.*s on %s for: %.*s", m_ban_from_str.size(),
+					m_ban_from_str.data(), timeStr, last_to_expire[4]->reason.size(), last_to_expire[4]->reason.data()));
 			else
-				sendMessage(player, Jupiter::StringS::Format("You are mine-banned from %.*s until %s for: %.*s", m_ban_from_str.size(), m_ban_from_str.ptr(), timeStr, last_to_expire[4]->reason.size(), last_to_expire[4]->reason.data()));
+				sendMessage(player, Jupiter::StringS::Format("You are mine-banned from %.*s until %s for: %.*s", m_ban_from_str.size(),
+					m_ban_from_str.data(), timeStr, last_to_expire[4]->reason.size(), last_to_expire[4]->reason.data()));
 		}
 		if (last_to_expire[5] != nullptr) { // Ladder ban
 			time_t current_time = std::chrono::system_clock::to_time_t(last_to_expire[5]->timestamp + last_to_expire[5]->length);
 			strftime(timeStr, sizeof(timeStr), "%b %d %Y at %H:%M:%S", localtime(&current_time));
 			if (last_to_expire[5]->length == std::chrono::seconds::zero())
-				sendMessage(player, Jupiter::StringS::Format("You were permanently ladder-banned from %.*s on %s for: %.*s", m_ban_from_str.size(), m_ban_from_str.ptr(), timeStr, last_to_expire[5]->reason.size(), last_to_expire[5]->reason.data()));
+				sendMessage(player, Jupiter::StringS::Format("You were permanently ladder-banned from %.*s on %s for: %.*s", m_ban_from_str.size(),
+					m_ban_from_str.data(), timeStr, last_to_expire[5]->reason.size(), last_to_expire[5]->reason.data()));
 			else
-				sendMessage(player, Jupiter::StringS::Format("You are ladder-banned from %.*s until %s for: %.*s", m_ban_from_str.size(), m_ban_from_str.ptr(), timeStr, last_to_expire[5]->reason.size(), last_to_expire[5]->reason.data()));
+				sendMessage(player, Jupiter::StringS::Format("You are ladder-banned from %.*s until %s for: %.*s", m_ban_from_str.size(),
+					m_ban_from_str.data(), timeStr, last_to_expire[5]->reason.size(), last_to_expire[5]->reason.data()));
 		}
 		if (last_to_expire[6] != nullptr) { // Alert
 			IRC_Bot *server;
 			Jupiter::String fmtName = RenX::getFormattedPlayerName(player);
-			Jupiter::StringL user_message = Jupiter::StringL::Format(IRCCOLOR "04[Alert] " IRCCOLOR IRCBOLD "%.*s" IRCBOLD IRCCOLOR " is marked for monitoring by %.*s for: \"%.*s\". Please keep an eye on them in ", fmtName.size(), fmtName.ptr(), last_to_expire[6]->banner.size(), last_to_expire[6]->banner.data(), last_to_expire[6]->reason.size(), last_to_expire[6]->reason.data());
-			Jupiter::StringS channel_message = Jupiter::StringS::Format(IRCCOLOR "04[Alert] " IRCCOLOR IRCBOLD "%.*s" IRCBOLD IRCCOLOR " is marked for monitoring by %.*s for: \"%.*s\"." IRCCOLOR, fmtName.size(), fmtName.ptr(), last_to_expire[6]->banner.size(), last_to_expire[6]->banner.data(), last_to_expire[6]->reason.size(), last_to_expire[6]->reason.data());
+			Jupiter::StringL user_message = Jupiter::StringL::Format(IRCCOLOR "04[Alert] " IRCCOLOR IRCBOLD "%.*s" IRCBOLD IRCCOLOR " is marked for monitoring by %.*s for: \"%.*s\". Please keep an eye on them in ", fmtName.size(),
+				fmtName.data(), last_to_expire[6]->banner.size(), last_to_expire[6]->banner.data(), last_to_expire[6]->reason.size(), last_to_expire[6]->reason.data());
+			Jupiter::StringS channel_message = Jupiter::StringS::Format(IRCCOLOR "04[Alert] " IRCCOLOR IRCBOLD "%.*s" IRCBOLD IRCCOLOR " is marked for monitoring by %.*s for: \"%.*s\"." IRCCOLOR, fmtName.size(),
+				fmtName.data(), last_to_expire[6]->banner.size(), last_to_expire[6]->banner.data(), last_to_expire[6]->reason.size(), last_to_expire[6]->reason.data());
 
 			for (size_t server_index = 0; server_index < serverManager->size(); ++server_index) {
 				server = serverManager->getServer(server_index);
@@ -662,7 +677,7 @@ void RenX::Server::banCheck(RenX::PlayerInfo &player) {
 void RenX::Server::banPlayer(int id, std::string_view banner, std::string_view reason) {
 	if (m_rconBan) {
 		Jupiter::String out_reason = RenX::escapifyRCON(reason);
-		sendSocket(Jupiter::StringS::Format("ckickban pid%d %.*s\n", id, out_reason.size(), out_reason.ptr()));
+		sendSocket(Jupiter::StringS::Format("ckickban pid%d %.*s\n", id, out_reason.size(), out_reason.data()));
 	}
 	else {
 		RenX::PlayerInfo *player = getPlayer(id);
@@ -681,21 +696,26 @@ void RenX::Server::banPlayer(const RenX::PlayerInfo &player, std::string_view ba
 		if (length == std::chrono::seconds::zero()) {
 			if (m_rconBan) {
 				Jupiter::String out_reason = RenX::escapifyRCON(reason);
-				sendSocket(Jupiter::StringS::Format("ckickban pid%d %.*s\n", player.id, out_reason.size(), out_reason.ptr()));
+				sendSocket(Jupiter::StringS::Format("ckickban pid%d %.*s\n", player.id, out_reason.size(),
+					out_reason.data()));
 			}
 			else if (!banner.empty()) {
-				forceKickPlayer(player, Jupiter::StringS::Format("You are permanently banned from %.*s by %.*s for: %.*s", m_ban_from_str.size(), m_ban_from_str.ptr(), banner.size(), banner.data(), reason.size(), reason.data()));
+				forceKickPlayer(player, Jupiter::StringS::Format("You are permanently banned from %.*s by %.*s for: %.*s", m_ban_from_str.size(),
+					m_ban_from_str.data(), banner.size(), banner.data(), reason.size(), reason.data()));
 			}
 			else {
-				forceKickPlayer(player, Jupiter::StringS::Format("You are permanently banned from %.*s for: %.*s", m_ban_from_str.size(), m_ban_from_str.ptr(), reason.size(), reason.data()));
+				forceKickPlayer(player, Jupiter::StringS::Format("You are permanently banned from %.*s for: %.*s", m_ban_from_str.size(),
+					m_ban_from_str.data(), reason.size(), reason.data()));
 			}
 		}
 		else if (!banner.empty()) {
 			// TODO: make the time formatting not complete nonsense
-			forceKickPlayer(player, Jupiter::StringS::Format("You are banned from %.*s by %.*s for the next %lld days, %.2d:%.2d:%.2d for: %.*s", m_ban_from_str.size(), m_ban_from_str.ptr(), banner.size(), banner.data(), static_cast<long long>(length.count() / 86400), static_cast<int>(length.count() % 3600), static_cast<int>((length.count() % 3600) / 60), static_cast<int>(length.count() % 60), reason.size(), reason.data()));
+			forceKickPlayer(player, Jupiter::StringS::Format("You are banned from %.*s by %.*s for the next %lld days, %.2d:%.2d:%.2d for: %.*s", m_ban_from_str.size(),
+				m_ban_from_str.data(), banner.size(), banner.data(), static_cast<long long>(length.count() / 86400), static_cast<int>(length.count() % 3600), static_cast<int>((length.count() % 3600) / 60), static_cast<int>(length.count() % 60), reason.size(), reason.data()));
 		}
 		else {
-			forceKickPlayer(player, Jupiter::StringS::Format("You are banned from %.*s for the next %lld days, %.2d:%.2d:%.2d for: %.*s", m_ban_from_str.size(), m_ban_from_str.ptr(), static_cast<long long>(length.count() / 86400), static_cast<int>(length.count() % 3600), static_cast<int>((length.count() % 3600) / 60), static_cast<int>(length.count() % 60), reason.size(), reason.data()));
+			forceKickPlayer(player, Jupiter::StringS::Format("You are banned from %.*s for the next %lld days, %.2d:%.2d:%.2d for: %.*s", m_ban_from_str.size(),
+				m_ban_from_str.data(), static_cast<long long>(length.count() / 86400), static_cast<int>(length.count() % 3600), static_cast<int>((length.count() % 3600) / 60), static_cast<int>(length.count() % 60), reason.size(), reason.data()));
 		}
 	}
 }
@@ -808,11 +828,11 @@ bool RenX::Server::setMap(std::string_view map) {
 }
 
 bool RenX::Server::loadMutator(const Jupiter::ReadableString &mutator) {
-	return send(Jupiter::StringS::Format("loadmutator %.*s", mutator.size(), mutator.ptr())) > 0;
+	return send(Jupiter::StringS::Format("loadmutator %.*s", mutator.size(), mutator.data())) > 0;
 }
 
 bool RenX::Server::unloadMutator(const Jupiter::ReadableString &mutator) {
-	return send(Jupiter::StringS::Format("unloadmutator %.*s", mutator.size(), mutator.ptr())) > 0;
+	return send(Jupiter::StringS::Format("unloadmutator %.*s", mutator.size(), mutator.data())) > 0;
 }
 
 bool RenX::Server::cancelVote(const RenX::TeamType team) {
@@ -1018,7 +1038,7 @@ const Jupiter::ReadableString &RenX::Server::getPassword() const {
 	return m_pass;
 }
 
-const Jupiter::ReadableString &RenX::Server::getUser() const {
+std::string_view RenX::Server::getUser() const {
 	return m_rconUser;
 }
 
@@ -1307,11 +1327,12 @@ void process_escape_sequences(std::string& out_string) {
 }
 
 void RenX::Server::processLine(const Jupiter::ReadableString &line) {
+	std::string_view in_line = line;
 	if (line.empty())
 		return;
 
 	auto& xPlugins = RenX::getCore()->getPlugins();
-	auto tokens_view = jessilib::split_view(std::string_view{line}, m_rconVersion == 3 ? RenX::DelimC3 : RenX::DelimC);
+	auto tokens_view = jessilib::split_view(in_line, m_rconVersion == 3 ? RenX::DelimC3 : RenX::DelimC);
 	std::vector<Jupiter::StringS> tokens;
 
 	for (auto& token : tokens_view) {
@@ -1435,7 +1456,7 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line) {
 		result.name = player_tokens[2];
 		result.team = RenX::getTeam(player_tokens[0]);
 		if (idToken.isNotEmpty() && idToken[0] == 'b') {
-			idToken.shiftRight(1);
+			idToken.remove_prefix(1);
 			result.isBot = true;
 			result.isPlayer = true;
 		}
@@ -1570,17 +1591,17 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line) {
 	{
 		auto parsed_token = parsePlayerData(token);
 		if (parsed_token.id == 0 && parsed_token.name.empty()) {
-			sendAdmChan(IRCCOLOR "04[Error]" IRCCOLOR" Failed to parse player token: %.*s", token.size(), token.ptr());
+			sendAdmChan(IRCCOLOR "04[Error]" IRCCOLOR" Failed to parse player token: %.*s", token.size(), token.data());
 		}
 		return getPlayerOrAdd(parsed_token.name, parsed_token.id, parsed_token.team, parsed_token.isBot, 0U, ""_jrs, ""_jrs);
 	};
-	auto gotoToken = [&line, &tokens, this](size_t index)
+	auto gotoToken = [&in_line, &tokens, this](size_t index)
 	{
 		if (index >= tokens.size())
-			return ""_jrs;
+			return ""sv;
 
 		const char delim = getVersion() >= 4 ? RenX::DelimC : RenX::DelimC3;
-		const char *itr = line.ptr();
+		const char *itr = in_line.data();
 
 		while (index != 0)
 		{
@@ -1589,7 +1610,7 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line) {
 			++itr;
 		}
 
-		return Jupiter::ReferenceString::substring(line, itr - line.ptr());
+		return in_line.substr(itr - in_line.data());
 	};
 	auto finished_connecting = [this, &xPlugins]()
 	{
@@ -1602,7 +1623,7 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line) {
 
 	if (tokens[0].isNotEmpty())
 	{
-		char header = tokens[0].get(0);
+		char header = tokens[0][0];
 		tokens[0].shiftRight(1);
 		switch (header)
 		{
@@ -1619,7 +1640,7 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line) {
 					Jupiter::ReferenceString steamToken = getToken(2);
 					Jupiter::ReferenceString adminToken = getToken(3);
 					Jupiter::ReferenceString teamToken = getToken(4);
-					if (tokens[0].get(0) == 'b')
+					if (tokens[0][0] == 'b')
 					{
 						isBot = true;
 						tokens[0].shiftRight(1);
@@ -2007,8 +2028,8 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line) {
 				const Jupiter::ReferenceString guid_token = getToken(1);
 
 				if (guid_token.size() == 32U) {
-					m_map.guid[0] = Jupiter::asUnsignedLongLong(guid_token.substring(size_t{ 0 }, 16U), 16);
-					m_map.guid[1] = Jupiter::asUnsignedLongLong(guid_token.substring(16U), 16);
+					m_map.guid[0] = Jupiter::asUnsignedLongLong(guid_token.substr(size_t{ 0 }, 16U), 16);
+					m_map.guid[1] = Jupiter::asUnsignedLongLong(guid_token.substr(16U), 16);
 				}
 			}
 			else if (jessilib::equalsi(m_lastCommand, "serverinfo"sv))
@@ -2023,8 +2044,8 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line) {
 					const Jupiter::ReferenceString guid_token = getToken(11);
 					if (guid_token.size() == 32U)
 					{
-						m_map.guid[0] = Jupiter::asUnsignedLongLong(guid_token.substring(size_t{ 0 }, 16U), 16);
-						m_map.guid[1] = Jupiter::asUnsignedLongLong(guid_token.substring(16U), 16);
+						m_map.guid[0] = Jupiter::asUnsignedLongLong(guid_token.substr(size_t{ 0 }, 16U), 16);
+						m_map.guid[1] = Jupiter::asUnsignedLongLong(guid_token.substr(16U), 16);
 					}
 				}
 			}
@@ -2089,8 +2110,8 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line) {
 
 					const Jupiter::ReferenceString guid_token = getToken(1);
 					if (guid_token.size() == 32U) {
-						this->maps.back().guid[0] = Jupiter::asUnsignedLongLong(guid_token.substring(size_t{ 0 }, 16U), 16);
-						this->maps.back().guid[1] = Jupiter::asUnsignedLongLong(guid_token.substring(16U), 16);
+						this->maps.back().guid[0] = Jupiter::asUnsignedLongLong(guid_token.substr(size_t{ 0 }, 16U), 16);
+						this->maps.back().guid[1] = Jupiter::asUnsignedLongLong(guid_token.substr(16U), 16);
 					}
 				}
 			}
@@ -3187,7 +3208,7 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line) {
 							RenX::PlayerInfo *player = parseGetPlayerOrAdd(getToken(tokens.size() - 1));
 
 							if ((player->ban_flags & RenX::BanDatabase::Entry::FLAG_TYPE_VOTE) != 0)
-								sendData(Jupiter::StringS::Format("ccancelvote %.*s\n", teamToken.size(), teamToken.ptr()));
+								sendData(Jupiter::StringS::Format("ccancelvote %.*s\n", teamToken.size(), teamToken.data()));
 
 							for (const auto& plugin : xPlugins) {
 								plugin->RenX_OnVoteOther(*this, team, voteType, *player);
@@ -3198,13 +3219,13 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line) {
 							RenX::PlayerInfo *player = parseGetPlayerOrAdd(getToken(5));
 
 							if ((player->ban_flags & RenX::BanDatabase::Entry::FLAG_TYPE_VOTE) != 0)
-								sendData(Jupiter::StringS::Format("ccancelvote %.*s\n", teamToken.size(), teamToken.ptr()));
+								sendData(Jupiter::StringS::Format("ccancelvote %.*s\n", teamToken.size(), teamToken.data()));
 
 							// PARSE PARAMETERS HERE
 
 							if (voteType.find("Rx_VoteMenuChoice_"_jrs) == 0)
 							{
-								voteType.shiftRight(18);
+								voteType.remove_prefix(18);
 
 								if (voteType == "AddBots"sv)
 								{
@@ -3286,7 +3307,7 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line) {
 								}
 								else
 								{
-									voteType.shiftLeft(18);
+									voteType = getToken(3);
 									for (const auto& plugin : xPlugins) {
 										plugin->RenX_OnVoteOther(*this, team, voteType, *player);
 									}
@@ -3323,7 +3344,7 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line) {
 						Jupiter::ReferenceString votes_token = getToken(5);
 						if (votes_token.size() > 4)
 						{
-							votes_token.shiftRight(4);
+							votes_token.remove_prefix(4);
 							yesVotes = Jupiter::from_string<int>(votes_token);
 						}
 
@@ -3331,7 +3352,7 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line) {
 						votes_token = getToken(6);
 						if (votes_token.size() > 3)
 						{
-							votes_token.shiftRight(3);
+							votes_token.remove_prefix(3);
 							noVotes = Jupiter::from_string<int>(votes_token);
 						}
 
@@ -3465,7 +3486,7 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line) {
 				}*/
 				else
 				{
-					Jupiter::ReferenceString raw = Jupiter::ReferenceString::substring(line, 1);
+					Jupiter::ReferenceString raw = in_line.substr(1);
 					for (const auto& plugin : xPlugins) {
 						plugin->RenX_OnLog(*this, raw);
 					}
@@ -3481,7 +3502,7 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line) {
 
 		case 'c':
 			{
-				Jupiter::ReferenceString raw = Jupiter::ReferenceString::substring(line, 1);
+				Jupiter::ReferenceString raw = in_line.substr(1);
 				for (const auto& plugin : xPlugins) {
 					plugin->RenX_OnCommand(*this, raw);
 				}
@@ -3493,7 +3514,7 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line) {
 
 		case 'e':
 			{
-				Jupiter::ReferenceString raw = Jupiter::ReferenceString::substring(line, 1);
+				Jupiter::ReferenceString raw = in_line.substr(1);
 				for (const auto& plugin : xPlugins) {
 					plugin->RenX_OnError(*this, raw);
 				}
@@ -3502,15 +3523,17 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line) {
 
 		case 'v':
 			{
-				Jupiter::ReferenceString raw = Jupiter::ReferenceString::substring(line, 1);
+				Jupiter::ReferenceString raw = in_line.substr(1);
 				m_rconVersion = Jupiter::asInt(raw, 10);
 				
 				if (m_rconVersion >= 3)
 				{
-					if (m_rconVersion == 3) // Old format: 003Open Beta 5.12
-						m_gameVersion = raw.substring(3);
-					else // New format: 004 | Game Version Number | Game Version
-					{
+					if (m_rconVersion == 3) { // Old format: 003Open Beta 5.12
+						if (raw.size() > 3) {
+							m_gameVersion = raw.substr(3);
+						}
+					}
+					else { // New format: 004 | Game Version Number | Game Version
 						m_gameVersionNumber = Jupiter::asInt(getToken(1), 10);
 						m_gameVersion = getToken(2);
 
@@ -3549,19 +3572,19 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line) {
 
 		case 'a':
 			{
-				m_rconUser = Jupiter::ReferenceString::substring(line, 1);
+				m_rconUser = in_line.substr(1);
 				if (m_rconUser == RenX::DevBotName)
 					m_devBot = true;
 
 				for (const auto& plugin : xPlugins) {
-					plugin->RenX_OnAuthorized(*this, m_rconUser);
+					plugin->RenX_OnAuthorized(*this, Jupiter::ReferenceString{m_rconUser});
 				}
 			}
 			break;
 
 		default:
 			{
-				Jupiter::ReferenceString raw = Jupiter::ReferenceString::substring(line, 1);
+				Jupiter::ReferenceString raw = in_line.substr(1);
 				for (const auto& plugin : xPlugins) {
 					plugin->RenX_OnOther(*this, header, raw);
 				}
@@ -3590,7 +3613,7 @@ bool RenX::Server::connect() {
 	if (m_sock.connect(m_hostname.c_str(), m_port, m_clientHostname.empty() ? nullptr : m_clientHostname.c_str()))
 	{
 		m_sock.setBlocking(false);
-		sendSocket(Jupiter::StringS::Format("a%.*s\n", m_pass.size(), m_pass.ptr()));
+		sendSocket(Jupiter::StringS::Format("a%.*s\n", m_pass.size(), m_pass.data()));
 		m_connected = true;
 		m_attempts = 0;
 		return true;
@@ -3622,7 +3645,7 @@ void RenX::Server::wipeData() {
 	this->maps.clear();
 	m_awaitingPong = false;
 	m_rconVersion = 0;
-	m_rconUser.truncate(m_rconUser.size());
+	m_rconUser.clear();
 }
 
 void RenX::Server::wipePlayers() {
@@ -3665,7 +3688,7 @@ std::string_view RenX::Server::getRCONUsername() const {
 RenX::Server::Server(Jupiter::Socket &&socket, std::string_view configurationSection) : Server(configurationSection) {
 	m_sock = std::move(socket);
 	m_hostname = m_sock.getRemoteHostname();
-	sendSocket(Jupiter::StringS::Format("a%.*s\n", m_pass.size(), m_pass.ptr()));
+	sendSocket(Jupiter::StringS::Format("a%.*s\n", m_pass.size(), m_pass.data()));
 	m_connected = true;
 }
 

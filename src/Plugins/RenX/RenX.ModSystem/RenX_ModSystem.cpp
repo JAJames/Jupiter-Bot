@@ -198,7 +198,8 @@ int RenX_ModSystemPlugin::auth(RenX::Server &server, const RenX::PlayerInfo &pla
 					}
 				}
 				Jupiter::String playerName = RenX::getFormattedPlayerName(player);
-				server.sendLogChan(IRCCOLOR "03[Authentication] " IRCBOLD "%.*s" IRCBOLD IRCCOLOR " is now authenticated with access level %d; group: %.*s.", playerName.size(), playerName.ptr(), player.access, group->name.size(), group->name.data());
+				server.sendLogChan(IRCCOLOR "03[Authentication] " IRCBOLD "%.*s" IRCBOLD IRCCOLOR " is now authenticated with access level %d; group: %.*s.", playerName.size(),
+					playerName.data(), player.access, group->name.size(), group->name.data());
 				return player.access;
 			};
 

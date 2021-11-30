@@ -56,7 +56,7 @@ RenX_ChatLogPlugin::~RenX_ChatLogPlugin()
 }
 
 std::ostream& operator<<(std::ostream& in_stream, const Jupiter::ReadableString& in_string) {
-	in_stream.write(in_string.ptr(), in_string.size());
+	in_stream.write(in_string.data(), in_string.size());
 	return in_stream;
 }
 

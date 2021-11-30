@@ -46,9 +46,13 @@ int RenX_ExtraLoggingPlugin::OnRehash()
 }
 
 bool RenX_ExtraLoggingPlugin::initialize() {
-	RenX_ExtraLoggingPlugin::filePrefix = this->config.get("FilePrefix"_jrs, Jupiter::StringS::Format("[%.*s] %.*s", RenX::tags->timeTag.size(), RenX::tags->timeTag.ptr(), RenX::tags->serverPrefixTag.size(), RenX::tags->serverPrefixTag.ptr()));
+	RenX_ExtraLoggingPlugin::filePrefix = this->config.get("FilePrefix"_jrs, Jupiter::StringS::Format("[%.*s] %.*s", RenX::tags->timeTag.size(),
+		RenX::tags->timeTag.data(), RenX::tags->serverPrefixTag.size(),
+		RenX::tags->serverPrefixTag.data()));
 	RenX_ExtraLoggingPlugin::consolePrefix = this->config.get("ConsolePrefix"_jrs, RenX_ExtraLoggingPlugin::filePrefix);
-	RenX_ExtraLoggingPlugin::newDayFmt = this->config.get("NewDayFormat"_jrs, Jupiter::StringS::Format("Time: %.*s %.*s", RenX::tags->timeTag.size(), RenX::tags->timeTag.ptr(), RenX::tags->dateTag.size(), RenX::tags->dateTag.ptr()));
+	RenX_ExtraLoggingPlugin::newDayFmt = this->config.get("NewDayFormat"_jrs, Jupiter::StringS::Format("Time: %.*s %.*s", RenX::tags->timeTag.size(),
+		RenX::tags->timeTag.data(), RenX::tags->dateTag.size(),
+		RenX::tags->dateTag.data()));
 	RenX_ExtraLoggingPlugin::printToConsole = this->config.get<bool>("PrintToConsole"_jrs, true);
 	const std::string logFile = static_cast<std::string>(this->config.get("LogFile"_jrs));
 
@@ -61,7 +65,7 @@ bool RenX_ExtraLoggingPlugin::initialize() {
 		if (RenX_ExtraLoggingPlugin::file != nullptr && RenX_ExtraLoggingPlugin::newDayFmt.isNotEmpty()) {
 			Jupiter::String line = RenX_ExtraLoggingPlugin::newDayFmt;
 			RenX::processTags(line);
-			fwrite(line.ptr(), sizeof(char), line.size(), file);
+			fwrite(line.data(), sizeof(char), line.size(), file);
 			fputs("\r\n", file);
 		}
 	}
@@ -80,7 +84,7 @@ int RenX_ExtraLoggingPlugin::think() {
 			RenX_ExtraLoggingPlugin::day = currentDay;
 			Jupiter::String line = RenX_ExtraLoggingPlugin::newDayFmt;
 			RenX::processTags(line);
-			fwrite(line.ptr(), sizeof(char), line.size(), file);
+			fwrite(line.data(), sizeof(char), line.size(), file);
 			fputs("\r\n", file);
 		}
 	}
@@ -92,10 +96,10 @@ void RenX_ExtraLoggingPlugin::RenX_OnRaw(RenX::Server &server, const Jupiter::Re
 		if (RenX_ExtraLoggingPlugin::consolePrefix.isNotEmpty()) {
 			Jupiter::StringS cPrefix = RenX_ExtraLoggingPlugin::consolePrefix;
 			RenX::processTags(cPrefix, &server);
-			fwrite(cPrefix.ptr(), sizeof(char), cPrefix.size(), stdout);
+			fwrite(cPrefix.data(), sizeof(char), cPrefix.size(), stdout);
 			fputc(' ', stdout);
 		}
-		fwrite(raw.ptr(), sizeof(char), raw.size(), stdout);
+		fwrite(raw.data(), sizeof(char), raw.size(), stdout);
 		fputs("\r\n", stdout);
 	}
 
@@ -103,10 +107,10 @@ void RenX_ExtraLoggingPlugin::RenX_OnRaw(RenX::Server &server, const Jupiter::Re
 		if (RenX_ExtraLoggingPlugin::filePrefix.isNotEmpty()) {
 			Jupiter::StringS fPrefix = RenX_ExtraLoggingPlugin::filePrefix;
 			RenX::processTags(fPrefix, &server);
-			fwrite(fPrefix.ptr(), sizeof(char), fPrefix.size(), file);
+			fwrite(fPrefix.data(), sizeof(char), fPrefix.size(), file);
 			fputc(' ', RenX_ExtraLoggingPlugin::file);
 		}
-		fwrite(raw.ptr(), sizeof(char), raw.size(), file);
+		fwrite(raw.data(), sizeof(char), raw.size(), file);
 		fputs("\r\n", file);
 		fflush(RenX_ExtraLoggingPlugin::file);
 	}

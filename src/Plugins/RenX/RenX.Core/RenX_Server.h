@@ -827,7 +827,7 @@ namespace RenX
 		*
 		* @return String containing the RCON user name.
 		*/
-		const Jupiter::ReadableString &getUser() const;
+		std::string_view getUser() const;
 
 		/**
 		* @brief Checks if this connection is a DevBot connection.
@@ -1111,7 +1111,7 @@ namespace RenX
 		std::chrono::steady_clock::time_point m_lastSendActivity = std::chrono::steady_clock::now();
 		std::chrono::steady_clock::time_point m_gameover_time;
 		std::string m_lastLine;
-		Jupiter::StringS m_rconUser;
+		std::string m_rconUser;
 		std::string m_gameVersion;
 		Jupiter::StringS m_serverName;
 		std::string m_lastCommand;

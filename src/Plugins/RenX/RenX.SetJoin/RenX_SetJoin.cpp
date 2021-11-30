@@ -128,7 +128,8 @@ void SetJoinGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *player,
 		if (!parameters.empty()) {
 			pluginInstance.setjoin_file.set(player->uuid, static_cast<std::string>(parameters));
 			pluginInstance.setjoin_file.write();
-			source->sendMessage(*player, Jupiter::StringS::Format("%.*s, your join message is now: %.*s", player->name.size(), player->name.data(), parameters.size(), parameters.ptr()));
+			source->sendMessage(*player, Jupiter::StringS::Format("%.*s, your join message is now: %.*s", player->name.size(), player->name.data(), parameters.size(),
+				parameters.data()));
 		}
 		else DelJoinGameCommand_instance.trigger(source, player, parameters);
 	}

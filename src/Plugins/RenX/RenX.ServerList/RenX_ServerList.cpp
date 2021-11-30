@@ -204,12 +204,12 @@ Jupiter::StringS RenX_ServerListPlugin::server_as_json(const RenX::Server &serve
 
 	// Build block
 	server_json_block.format(R"json({"Name":"%.*s",%.*s"Current Map":"%.*s","Bots":%u,"Players":%u,"Game Version":"%.*s",%.*s"Variables":{"Mine Limit":%d,"bSteamRequired":%s,"bPrivateMessageTeamOnly":%s,"bPassworded":%s,"bAllowPrivateMessaging":%s,"bRanked":%s,"Game Type":%d,"Player Limit":%d,"Vehicle Limit":%d,"bAutoBalanceTeams":%s,"Team Mode":%d,"bSpawnCrates":%s,"CrateRespawnAfterPickup":%f,"Time Limit":%d},"Port":%u,"IP":"%.*s")json",
-		server_name.size(), server_name.ptr(),
-		server_prefix.size(), server_prefix.ptr(),
-		server_map.size(), server_map.ptr(),
+		server_name.size(), server_name.data(),
+		server_prefix.size(), server_prefix.data(),
+		server_map.size(), server_map.data(),
 		server.getBotCount(),
 		getListedPlayerCount(server),
-		server_version.size(), server_version.ptr(),
+		server_version.size(), server_version.data(),
 		server_attributes.size(), server_attributes.data(),
 		server.getMineLimit(),
 		json_bool_as_cstring(server.isSteamRequired()),
@@ -226,7 +226,7 @@ Jupiter::StringS RenX_ServerListPlugin::server_as_json(const RenX::Server &serve
 		server.getCrateRespawnDelay(),
 		server.getTimeLimit(),
 		server_port,
-		server_hostname.size(), server_hostname.ptr());
+		server_hostname.size(), server_hostname.data());
 
 	server_json_block += '}';
 
@@ -369,12 +369,12 @@ Jupiter::StringS RenX_ServerListPlugin::server_as_long_json(const RenX::Server &
 		},
 		"Port": %u,
 		"IP": "%.*s")json",
-		server_name.size(), server_name.ptr(),
-		server_prefix.size(), server_prefix.ptr(),
-		server_map.size(), server_map.ptr(),
+		server_name.size(), server_name.data(),
+		server_prefix.size(), server_prefix.data(),
+		server_map.size(), server_map.data(),
 		server.getBotCount(),
 		activePlayers.size(),
-		server_version.size(), server_version.ptr(),
+		server_version.size(), server_version.data(),
 		server_attributes.size(), server_attributes.data(),
 
 		server.getMineLimit(),
@@ -391,7 +391,7 @@ Jupiter::StringS RenX_ServerListPlugin::server_as_long_json(const RenX::Server &
 		server.getTimeLimit(),
 
 		server_port,
-		server_hostname.size(), server_hostname.ptr());
+		server_hostname.size(), server_hostname.data());
 
 	// Level Rotation
 	if (server.maps.size() != 0) {

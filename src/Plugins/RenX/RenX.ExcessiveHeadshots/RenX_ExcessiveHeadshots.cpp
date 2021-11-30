@@ -60,7 +60,8 @@ void RenX_ExcessiveHeadshotsPlugin::RenX_OnKill(RenX::Server &server, const RenX
 			server.banPlayer(player, "Jupiter Bot"_jrs, "Aimbot detected"_jrs);
 			server.sendPubChan(IRCCOLOR "13[Aimbot]" IRCCOLOR " %.*s was banned from the server! Kills: %u - Deaths: %u - Headshots: %u", player.name.size(), player.name.data(), player.kills, player.deaths, player.headshots);
 			const Jupiter::ReadableString &steamid = server.formatSteamID(player);
-			server.sendAdmChan(IRCCOLOR "13[Aimbot]" IRCCOLOR " %.*s was banned from the server! Kills: %u - Deaths: %u - Headshots: %u - IP: " IRCBOLD "%.*s" IRCBOLD " - Steam ID: " IRCBOLD "%.*s" IRCBOLD, player.name.size(), player.name.data(), player.kills, player.deaths, player.headshots, player.ip.size(), player.ip.data(), steamid.size(), steamid.ptr());
+			server.sendAdmChan(IRCCOLOR "13[Aimbot]" IRCCOLOR " %.*s was banned from the server! Kills: %u - Deaths: %u - Headshots: %u - IP: " IRCBOLD "%.*s" IRCBOLD " - Steam ID: " IRCBOLD "%.*s" IRCBOLD, player.name.size(), player.name.data(), player.kills, player.deaths, player.headshots, player.ip.size(), player.ip.data(), steamid.size(),
+				steamid.data());
 		}
 	}
 }
