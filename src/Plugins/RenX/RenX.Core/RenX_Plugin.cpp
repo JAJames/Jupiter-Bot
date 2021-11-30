@@ -33,11 +33,11 @@ RenX::Plugin::~Plugin() {
 	}
 }
 
-void RenX::Plugin::RenX_SanitizeTags(Jupiter::StringType &) {
+void RenX::Plugin::RenX_SanitizeTags(std::string&) {
 	return;
 }
 
-void RenX::Plugin::RenX_ProcessTags(Jupiter::StringType &, const Server *, const PlayerInfo *, const PlayerInfo *, const BuildingInfo *) {
+void RenX::Plugin::RenX_ProcessTags(std::string&, const Server *, const PlayerInfo *, const PlayerInfo *, const BuildingInfo *) {
 	return;
 }
 

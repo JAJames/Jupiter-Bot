@@ -67,7 +67,7 @@ void RenX_CommandLoggingPlugin::RenX_OnCommandTriggered(RenX::Server& server, co
 		return;
 	}
 
-	WriteToLog(server, player, trigger + " " + parameters);
+	WriteToLog(server, player, static_cast<std::string>(trigger) + " " + parameters);
 }
 
 std::ostream& operator<<(std::ostream& in_stream, const Jupiter::ReadableString& in_string) {

@@ -96,20 +96,20 @@ void congratPlayer(unsigned int, void *params)
 	delete congratPlayerData;
 }
 
-void RenX_MedalsPlugin::RenX_SanitizeTags(Jupiter::StringType &fmt) {
-	fmt.replace(RenX_MedalsPlugin::recsTag, this->INTERNAL_RECS_TAG);
-	fmt.replace(RenX_MedalsPlugin::noobTag, this->INTERNAL_NOOB_TAG);
-	fmt.replace(RenX_MedalsPlugin::worthTag, this->INTERNAL_WORTH_TAG);
+void RenX_MedalsPlugin::RenX_SanitizeTags(std::string& fmt) {
+	RenX::replace_tag(fmt, RenX_MedalsPlugin::recsTag, this->INTERNAL_RECS_TAG);
+	RenX::replace_tag(fmt, RenX_MedalsPlugin::noobTag, this->INTERNAL_NOOB_TAG);
+	RenX::replace_tag(fmt, RenX_MedalsPlugin::worthTag, this->INTERNAL_WORTH_TAG);
 }
 
-void RenX_MedalsPlugin::RenX_ProcessTags(Jupiter::StringType &msg, const RenX::Server *server, const RenX::PlayerInfo *player, const RenX::PlayerInfo *, const RenX::BuildingInfo *) {
+void RenX_MedalsPlugin::RenX_ProcessTags(std::string& msg, const RenX::Server *server, const RenX::PlayerInfo *player, const RenX::PlayerInfo *, const RenX::BuildingInfo *) {
 	if (player != nullptr) {
 		const Jupiter::ReadableString &recs = RenX_MedalsPlugin::medalsFile.get(player->uuid, "Recs"_jrs);
 		const Jupiter::ReadableString &noobs = RenX_MedalsPlugin::medalsFile.get(player->uuid, "Noobs"_jrs);
 
-		msg.replace(this->INTERNAL_RECS_TAG, recs);
-		msg.replace(this->INTERNAL_NOOB_TAG, noobs);
-		msg.replace(this->INTERNAL_WORTH_TAG, Jupiter::StringS::Format("%d", Jupiter::from_string<int>(recs) - Jupiter::from_string<int>(noobs)));
+		RenX::replace_tag(msg, this->INTERNAL_RECS_TAG, recs);
+		RenX::replace_tag(msg, this->INTERNAL_NOOB_TAG, noobs);
+		RenX::replace_tag(msg, this->INTERNAL_WORTH_TAG, Jupiter::StringS::Format("%d", Jupiter::from_string<int>(recs) - Jupiter::from_string<int>(noobs)));
 	}
 }
 
@@ -142,7 +142,7 @@ void RenX_MedalsPlugin::RenX_OnJoin(RenX::Server &server, const RenX::PlayerInfo
 				std::string_view msg = section->get(Jupiter::StringS::Format("%u", (rand() % table_size) + 1));
 
 				if (!msg.empty()) {
-					Jupiter::StringS tagged_msg = static_cast<Jupiter::ReferenceString>(msg);
+					std::string tagged_msg = static_cast<std::string>(msg);
 					RenX::sanitizeTags(tagged_msg);
 					RenX::processTags(tagged_msg, &server, &player);
 					server.sendMessage(tagged_msg);

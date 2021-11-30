@@ -47,10 +47,10 @@ public:
 private:
 	std::chrono::seconds m_defaultTempBanTime;
 	std::chrono::seconds m_maxTempBanTime;
-	Jupiter::StringS m_playerInfoFormat;
-	Jupiter::StringS m_adminPlayerInfoFormat;
-	Jupiter::StringS m_buildingInfoFormat;
-	Jupiter::StringS m_staffTitle;
+	std::string m_playerInfoFormat;
+	std::string m_adminPlayerInfoFormat;
+	std::string m_buildingInfoFormat;
+	std::string m_staffTitle;
 };
 
 GENERIC_CONSOLE_COMMAND(RawRCONConsoleCommand)

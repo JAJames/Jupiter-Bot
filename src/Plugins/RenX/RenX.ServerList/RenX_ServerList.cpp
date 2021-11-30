@@ -150,15 +150,15 @@ size_t RenX_ServerListPlugin::getListedPlayerCount(const RenX::Server& server) {
 	return std::min(server.activePlayers(false).size(), player_limit);
 }
 
-Jupiter::ReadableString *RenX_ServerListPlugin::getServerListJSON() {
+std::string* RenX_ServerListPlugin::getServerListJSON() {
 	return &m_server_list_json;
 }
 
-Jupiter::ReadableString *RenX_ServerListPlugin::getMetadataJSON() {
+std::string* RenX_ServerListPlugin::getMetadataJSON() {
 	return &m_metadata_json;
 }
 
-Jupiter::ReadableString *RenX_ServerListPlugin::getMetadataPrometheus() {
+std::string* RenX_ServerListPlugin::getMetadataPrometheus() {
 	return &m_metadata_prometheus;
 }
 
@@ -166,13 +166,13 @@ constexpr const char *json_bool_as_cstring(bool in) {
 	return in ? "true" : "false";
 }
 
-Jupiter::StringS RenX_ServerListPlugin::server_as_json(const RenX::Server &server) {
-	Jupiter::String server_json_block(128);
+std::string RenX_ServerListPlugin::server_as_json(const RenX::Server &server) {
+	Jupiter::String server_json_block(128); // TODO: use std::string
 	ListServerInfo serverInfo = getListServerInfo(server);
 
 	if (serverInfo.hostname.empty()) {
 		server_json_block = "null";
-		return server_json_block;
+		return static_cast<std::string>(server_json_block);
 	}
 
 	Jupiter::String server_name = jsonify(server.getName());
@@ -184,7 +184,7 @@ Jupiter::StringS RenX_ServerListPlugin::server_as_json(const RenX::Server &serve
 
 	// Some members we only include if they're populated
 	if (!server_prefix.empty()) {
-		server_prefix = R"json("NamePrefix":")json"_jrs + server_prefix + "\","_jrs;
+		server_prefix = R"json("NamePrefix":")json"s + server_prefix + "\","_jrs;
 	}
 
 	std::string server_attributes;
@@ -230,7 +230,7 @@ Jupiter::StringS RenX_ServerListPlugin::server_as_json(const RenX::Server &serve
 
 	server_json_block += '}';
 
-	return server_json_block;
+	return static_cast<std::string>(server_json_block);
 }
 
 std::string RenX_ServerListPlugin::server_as_server_details_json(const RenX::Server& server) {
@@ -315,8 +315,8 @@ std::string RenX_ServerListPlugin::server_as_server_details_json(const RenX::Ser
 	return server_json_block;
 }
 
-Jupiter::StringS RenX_ServerListPlugin::server_as_long_json(const RenX::Server &server) {
-	Jupiter::String server_json_block(128);
+std::string RenX_ServerListPlugin::server_as_long_json(const RenX::Server &server) {
+	Jupiter::String server_json_block(128); // TODO: use std::string
 	ListServerInfo serverInfo = getListServerInfo(server);
 
 	Jupiter::String server_name = jsonify(server.getName());
@@ -456,7 +456,7 @@ Jupiter::StringS RenX_ServerListPlugin::server_as_long_json(const RenX::Server &
 
 	server_json_block += "\n\t}"_jrs;
 
-	return server_json_block;
+	return static_cast<std::string>(server_json_block);
 }
 
 void RenX_ServerListPlugin::addServerToServerList(RenX::Server &server) {
@@ -468,7 +468,7 @@ void RenX_ServerListPlugin::addServerToServerList(RenX::Server &server) {
 		m_server_list_json = '[';
 	}
 	else {
-		m_server_list_json.truncate(1); // remove trailing ']'.
+		m_server_list_json.pop_back(); // remove trailing ']'.
 		m_server_list_json += ',';
 	}
 	m_server_list_json += server_json_block;
@@ -526,10 +526,11 @@ void RenX_ServerListPlugin::updateMetadata() {
 		}
 	}
 
-	m_metadata_json.format(R"json({"player_count":%zu,"server_count":%u})json",
+	// TODO: not rely on StringS
+	m_metadata_json = Jupiter::StringS::Format(R"json({"player_count":%zu,"server_count":%u})json",
 		player_count, server_count);
 
-	m_metadata_prometheus.format("player_count %zu\nserver_count %u\n",
+	m_metadata_prometheus = Jupiter::StringS::Format("player_count %zu\nserver_count %u\n",
 		player_count, server_count);
 }
 
@@ -619,15 +620,16 @@ void RenX_ServerListPlugin::RenX_OnMapLoad(RenX::Server &server, const Jupiter::
 // Plugin instantiation and entry point.
 RenX_ServerListPlugin pluginInstance;
 
-Jupiter::ReadableString *handle_server_list_page(std::string_view) {
+std::string* handle_server_list_page(std::string_view) {
 	return pluginInstance.getServerListJSON();
 }
 
-Jupiter::ReadableString *handle_server_list_long_page(std::string_view) {
+std::string* handle_server_list_long_page(std::string_view) {
 	const auto& servers = RenX::getCore()->getServers();
 	size_t index = 0;
 	RenX::Server *server;
-	Jupiter::String *server_list_long_json = new Jupiter::String(256 * servers.size());
+	std::string *server_list_long_json = new std::string;
+	server_list_long_json->reserve(256 * servers.size());
 
 	// regenerate server_list_json
 
@@ -657,7 +659,7 @@ Jupiter::ReadableString *handle_server_list_long_page(std::string_view) {
 	return server_list_long_json;
 }
 
-Jupiter::ReadableString *handle_server_page(std::string_view query_string) {
+std::string* handle_server_page(std::string_view query_string) {
 	Jupiter::HTTP::HTMLFormResponse html_form_response(query_string);
 	Jupiter::ReferenceString address;
 	int port = 0;
@@ -666,7 +668,7 @@ Jupiter::ReadableString *handle_server_page(std::string_view query_string) {
 	// parse form data
 
 	if (html_form_response.table.size() < 2)
-		return new Jupiter::ReferenceString();
+		return new std::string();
 
 	if (html_form_response.table.size() != 0) {
 		address = html_form_response.tableGet("ip"sv, address);
@@ -679,7 +681,7 @@ Jupiter::ReadableString *handle_server_page(std::string_view query_string) {
 
 	while (true) {
 		if (index == servers.size())
-			return new Jupiter::ReferenceString();
+			return new std::string();
 
 		server = servers[index];
 		if (address == pluginInstance.getListServerAddress(*server) && server->getPort() == port)
@@ -690,14 +692,14 @@ Jupiter::ReadableString *handle_server_page(std::string_view query_string) {
 
 	// return server data
 	pluginInstance.touchDetails(*server);
-	return new Jupiter::ReferenceString(server->varData[pluginInstance.getName()].get("j"_jrs));
+	return new std::string(server->varData[pluginInstance.getName()].get("j"_jrs));
 }
 
-Jupiter::ReadableString *handle_metadata_page(std::string_view) {
+std::string* handle_metadata_page(std::string_view) {
 	return pluginInstance.getMetadataJSON();
 }
 
-Jupiter::ReadableString *handle_metadata_prometheus_page(std::string_view) {
+std::string* handle_metadata_prometheus_page(std::string_view) {
 	return pluginInstance.getMetadataPrometheus();
 }
 

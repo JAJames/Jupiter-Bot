@@ -35,9 +35,9 @@ public: // RenX_ServerListPlugin
 
 	size_t getListedPlayerCount(const RenX::Server& server);
 
-	Jupiter::ReadableString *getServerListJSON();
-	Jupiter::ReadableString* getMetadataJSON();
-	Jupiter::ReadableString* getMetadataPrometheus();
+	std::string* getServerListJSON();
+	std::string* getMetadataJSON();
+	std::string* getMetadataPrometheus();
 
 	void addServerToServerList(RenX::Server &server);
 	void updateServerList();
@@ -46,9 +46,9 @@ public: // RenX_ServerListPlugin
 	void touchDetails(RenX::Server& in_server);
 	std::string_view getListServerAddress(const RenX::Server& server);
 	ListServerInfo getListServerInfo(const RenX::Server& server);
-	Jupiter::StringS server_as_json(const RenX::Server &server);
+	std::string server_as_json(const RenX::Server &server);
 	std::string server_as_server_details_json(const RenX::Server& server);
-	Jupiter::StringS server_as_long_json(const RenX::Server &server);
+	std::string server_as_long_json(const RenX::Server &server);
 
 	virtual bool initialize() override;
 	~RenX_ServerListPlugin();
@@ -61,15 +61,15 @@ public: // RenX::Plugin
 	void RenX_OnMapLoad(RenX::Server &server, const Jupiter::ReadableString &map) override;
 
 private:
-	Jupiter::StringS m_server_list_json, m_metadata_json, m_metadata_prometheus;
+	std::string m_server_list_json, m_metadata_json, m_metadata_prometheus;
 	std::string m_web_hostname, m_web_path;
 	std::string m_server_list_page_name, m_server_list_long_page_name, m_server_page_name, m_metadata_page_name, m_metadata_prometheus_page_name;
 };
 
-Jupiter::ReadableString *handle_server_list_page(std::string_view);
-Jupiter::ReadableString *handle_server_list_long_page(std::string_view);
-Jupiter::ReadableString *handle_server_page(std::string_view);
-Jupiter::ReadableString *handle_metadata_page(std::string_view);
-Jupiter::ReadableString *handle_metadata_prometheus_page(std::string_view);
+std::string* handle_server_list_page(std::string_view);
+std::string* handle_server_list_long_page(std::string_view);
+std::string* handle_server_page(std::string_view);
+std::string* handle_metadata_page(std::string_view);
+std::string* handle_metadata_prometheus_page(std::string_view);
 
 #endif // _RENX_SERVERLIST_H_HEADER

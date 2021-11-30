@@ -63,7 +63,7 @@ bool RenX_ExtraLoggingPlugin::initialize() {
 	if (!logFile.empty()) {
 		RenX_ExtraLoggingPlugin::file = fopen(logFile.c_str(), "a+b");
 		if (RenX_ExtraLoggingPlugin::file != nullptr && !RenX_ExtraLoggingPlugin::newDayFmt.empty()) {
-			Jupiter::String line = RenX_ExtraLoggingPlugin::newDayFmt;
+			std::string line = RenX_ExtraLoggingPlugin::newDayFmt;
 			RenX::processTags(line);
 			fwrite(line.data(), sizeof(char), line.size(), file);
 			fputs("\r\n", file);
@@ -82,7 +82,7 @@ int RenX_ExtraLoggingPlugin::think() {
 		if (currentDay != RenX_ExtraLoggingPlugin::day)
 		{
 			RenX_ExtraLoggingPlugin::day = currentDay;
-			Jupiter::String line = RenX_ExtraLoggingPlugin::newDayFmt;
+			std::string line = RenX_ExtraLoggingPlugin::newDayFmt;
 			RenX::processTags(line);
 			fwrite(line.data(), sizeof(char), line.size(), file);
 			fputs("\r\n", file);
@@ -94,7 +94,7 @@ int RenX_ExtraLoggingPlugin::think() {
 void RenX_ExtraLoggingPlugin::RenX_OnRaw(RenX::Server &server, const Jupiter::ReadableString &raw) {
 	if (RenX_ExtraLoggingPlugin::printToConsole) {
 		if (!RenX_ExtraLoggingPlugin::consolePrefix.empty()) {
-			Jupiter::StringS cPrefix = RenX_ExtraLoggingPlugin::consolePrefix;
+			std::string cPrefix = RenX_ExtraLoggingPlugin::consolePrefix;
 			RenX::processTags(cPrefix, &server);
 			fwrite(cPrefix.data(), sizeof(char), cPrefix.size(), stdout);
 			fputc(' ', stdout);
@@ -105,7 +105,7 @@ void RenX_ExtraLoggingPlugin::RenX_OnRaw(RenX::Server &server, const Jupiter::Re
 
 	if (RenX_ExtraLoggingPlugin::file != nullptr) {
 		if (!RenX_ExtraLoggingPlugin::filePrefix.empty()) {
-			Jupiter::StringS fPrefix = RenX_ExtraLoggingPlugin::filePrefix;
+			std::string fPrefix = RenX_ExtraLoggingPlugin::filePrefix;
 			RenX::processTags(fPrefix, &server);
 			fwrite(fPrefix.data(), sizeof(char), fPrefix.size(), file);
 			fputc(' ', RenX_ExtraLoggingPlugin::file);

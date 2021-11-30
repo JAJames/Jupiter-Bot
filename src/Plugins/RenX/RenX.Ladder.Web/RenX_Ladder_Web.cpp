@@ -266,10 +266,11 @@ Jupiter::String RenX_Ladder_WebPlugin::generate_entry_table(RenX::LadderDatabase
 	}
 
 	// append rows
-	Jupiter::String row(256);
+	std::string row;
+	row.reserve(256);
 	while (count != 0) {
 		row = RenX_Ladder_WebPlugin::entry_table_row;
-		row.replace(RenX::tags->INTERNAL_OBJECT_TAG, db->getName());
+		RenX::replace_tag(row, RenX::tags->INTERNAL_OBJECT_TAG, db->getName());
 		RenX::processTags(row, *node);
 		result += row;
 		node = node->next;
@@ -286,22 +287,23 @@ Jupiter::String RenX_Ladder_WebPlugin::generate_entry_table(RenX::LadderDatabase
 	return result;
 }
 
-Jupiter::String *RenX_Ladder_WebPlugin::generate_ladder_page(RenX::LadderDatabase *db, uint8_t format, size_t index, size_t count, const Jupiter::HTTP::HTMLFormResponse& query_params) {
-	Jupiter::String *result = new Jupiter::String(2048);
+std::string* RenX_Ladder_WebPlugin::generate_ladder_page(RenX::LadderDatabase *db, uint8_t format, size_t index, size_t count, const Jupiter::HTTP::HTMLFormResponse& query_params) {
+	std::string* result = new std::string();
+	result->reserve(2048);
 
 	if ((format & this->FLAG_INCLUDE_PAGE_HEADER) != 0) // Header
-		result->concat(RenX_Ladder_WebPlugin::header);
+		result->append(RenX_Ladder_WebPlugin::header);
 
 	if ((format & this->FLAG_INCLUDE_SEARCH) != 0) // Search
-		result->concat(generate_search(db));
+		result->append(generate_search(db));
 
 	if ((format & this->FLAG_INCLUDE_SELECTOR) != 0) // Selector
-		result->concat(generate_database_selector(db, query_params));
+		result->append(generate_database_selector(db, query_params));
 
-	result->concat(this->generate_entry_table(db, format, index, count));
+	result->append(this->generate_entry_table(db, format, index, count));
 
 	if ((format & this->FLAG_INCLUDE_PAGE_FOOTER) != 0) // Footer
-		result->concat(RenX_Ladder_WebPlugin::footer);
+		result->append(RenX_Ladder_WebPlugin::footer);
 
 	return result;
 }
@@ -310,70 +312,73 @@ Jupiter::String *RenX_Ladder_WebPlugin::generate_ladder_page(RenX::LadderDatabas
 //	include_header | include_footer | include_any_headers | include_any_footers
 
 /** Search page */
-Jupiter::String *RenX_Ladder_WebPlugin::generate_search_page(RenX::LadderDatabase *db, uint8_t format, size_t start_index, size_t count, std::string_view name, const Jupiter::HTTP::HTMLFormResponse& query_params) {
-	Jupiter::String *result = new Jupiter::String(2048);
+std::string* RenX_Ladder_WebPlugin::generate_search_page(RenX::LadderDatabase *db, uint8_t format, size_t start_index, size_t count, std::string_view name, const Jupiter::HTTP::HTMLFormResponse& query_params) {
+	std::string* result = new std::string();
+	result->reserve(2048);
 
 	if ((format & this->FLAG_INCLUDE_PAGE_HEADER) != 0) // Header
-		result->concat(RenX_Ladder_WebPlugin::header);
+		result->append(RenX_Ladder_WebPlugin::header);
 
 	if ((format & this->FLAG_INCLUDE_SEARCH) != 0) // Search
-		result->concat(generate_search(db));
+		result->append(generate_search(db));
 
 	if ((format & this->FLAG_INCLUDE_SELECTOR) != 0) // Selector
-		result->concat(generate_database_selector(db, query_params));
+		result->append(generate_database_selector(db, query_params));
 
 	if (db->getEntries() == 0) { // No ladder data
-		result->concat("Error: No ladder data"_jrs);
+		result->append("Error: No ladder data"_jrs);
 
 		if ((format & this->FLAG_INCLUDE_PAGE_FOOTER) != 0) // Footer
-			result->concat(RenX_Ladder_WebPlugin::footer);
+			result->append(RenX_Ladder_WebPlugin::footer);
 
 		return result;
 	}
 
 	if ((format & this->FLAG_INCLUDE_DATA_HEADER) != 0) // Data header
-		result->concat(RenX_Ladder_WebPlugin::ladder_table_header);
+		result->append(RenX_Ladder_WebPlugin::ladder_table_header);
 
 	// append rows
-	Jupiter::String row(256);
+	std::string row;
+	row.reserve(256);
 	RenX::LadderDatabase::Entry *node = db->getHead();
 	while (node != nullptr) {
 		if (jessilib::findi(node->most_recent_name, name) != std::string::npos) { // match found
 			row = RenX_Ladder_WebPlugin::entry_table_row;
-			row.replace(RenX::tags->INTERNAL_OBJECT_TAG, db->getName());
+			RenX::replace_tag(row, RenX::tags->INTERNAL_OBJECT_TAG, db->getName());
 			RenX::processTags(row, *node);
-			result->concat(row);
+			result->append(row);
 		}
 		node = node->next;
 	}
 	
 	if ((format & this->FLAG_INCLUDE_DATA_FOOTER) != 0) // Data footer
-		result->concat(RenX_Ladder_WebPlugin::ladder_table_footer);
+		result->append(RenX_Ladder_WebPlugin::ladder_table_footer);
 
 	if ((format & this->FLAG_INCLUDE_PAGE_FOOTER) != 0) // Footer
-		result->concat(RenX_Ladder_WebPlugin::footer);
+		result->append(RenX_Ladder_WebPlugin::footer);
 
 	return result;
 }
 
 /** Profile page */
-Jupiter::String *RenX_Ladder_WebPlugin::generate_profile_page(RenX::LadderDatabase *db, uint8_t format, uint64_t steam_id, const Jupiter::HTTP::HTMLFormResponse& query_params) {
-	Jupiter::String *result = new Jupiter::String(2048);
+std::string* RenX_Ladder_WebPlugin::generate_profile_page(RenX::LadderDatabase *db, uint8_t format, uint64_t steam_id, const Jupiter::HTTP::HTMLFormResponse& query_params) {
+	std::string* result = new std::string();
+	result->reserve(2048);
 
 	if ((format & this->FLAG_INCLUDE_PAGE_HEADER) != 0)
-		result->concat(RenX_Ladder_WebPlugin::header);
+		result->append(RenX_Ladder_WebPlugin::header);
 
 	if ((format & this->FLAG_INCLUDE_SEARCH) != 0) // Search
-		result->concat(generate_search(db));
+		result->append(generate_search(db));
 
 	if ((format & this->FLAG_INCLUDE_SELECTOR) != 0) // Selector
-		result->concat(generate_database_selector(db, query_params));
+		result->append(generate_database_selector(db, query_params));
 
 	if (db->getEntries() == 0) { // No ladder data
-		result->concat("Error: No ladder data"_jrs);
+		result->append("Error: No ladder data"_jrs);
 
 		if ((format & this->FLAG_INCLUDE_PAGE_FOOTER) != 0) // Footer
-			result->concat(RenX_Ladder_WebPlugin::footer);
+			result->append(RenX_Ladder_WebPlugin::footer);
 
 		return result;
 	}
@@ -386,56 +391,56 @@ Jupiter::String *RenX_Ladder_WebPlugin::generate_profile_page(RenX::LadderDataba
 	}
 
 	if (entry == nullptr) {
-		result->concat("Error: Player not found"_jrs);
+		result->append("Error: Player not found"_jrs);
 	}
 	else {
-		Jupiter::String profile_data(RenX_Ladder_WebPlugin::entry_profile);
+		std::string profile_data(RenX_Ladder_WebPlugin::entry_profile);
 		RenX::processTags(profile_data, *entry);
-		result->concat(profile_data);
+		result->append(profile_data);
 
-		result->concat("<div class=\"profile-navigation\">"_jrs);
+		result->append("<div class=\"profile-navigation\">"_jrs);
 		if (entry->prev != nullptr)
 		{
 			profile_data = RenX_Ladder_WebPlugin::entry_profile_previous;
-			profile_data.replace(RenX::tags->INTERNAL_OBJECT_TAG, db->getName());
-			profile_data.replace(RenX::tags->INTERNAL_WEAPON_TAG, Jupiter::StringS::Format("%llu", entry->prev->steam_id));
+			RenX::replace_tag(profile_data, RenX::tags->INTERNAL_OBJECT_TAG, db->getName());
+			RenX::replace_tag(profile_data, RenX::tags->INTERNAL_WEAPON_TAG, Jupiter::StringS::Format("%llu", entry->prev->steam_id));
 			RenX::processTags(profile_data, *entry->prev);
-			result->concat(profile_data);
+			result->append(profile_data);
 		}
 		if (entry->next != nullptr)
 		{
 			profile_data = RenX_Ladder_WebPlugin::entry_profile_next;
-			profile_data.replace(RenX::tags->INTERNAL_OBJECT_TAG, db->getName());
-			profile_data.replace(RenX::tags->INTERNAL_VICTIM_STEAM_TAG, Jupiter::StringS::Format("%llu", entry->next->steam_id));
+			RenX::replace_tag(profile_data, RenX::tags->INTERNAL_OBJECT_TAG, db->getName());
+			RenX::replace_tag(profile_data, RenX::tags->INTERNAL_VICTIM_STEAM_TAG, Jupiter::StringS::Format("%llu", entry->next->steam_id));
 			RenX::processTags(profile_data, *entry->next);
-			result->concat(profile_data);
+			result->append(profile_data);
 		}
-		result->concat("</div>"_jrs);
+		result->append("</div>"_jrs);
 	}
 
 	if ((format & this->FLAG_INCLUDE_PAGE_FOOTER) != 0) // Footer
-		result->concat(RenX_Ladder_WebPlugin::footer);
+		result->append(RenX_Ladder_WebPlugin::footer);
 
 	return result;
 }
 
 /** Content functions */
 
-Jupiter::ReadableString *generate_no_db_page(const Jupiter::HTTP::HTMLFormResponse& query_params) {
-	Jupiter::String *result = new Jupiter::String(pluginInstance.header);
+std::string* generate_no_db_page(const Jupiter::HTTP::HTMLFormResponse& query_params) {
+	std::string* result = new std::string(pluginInstance.header);
 	if (RenX::ladder_databases.size() != 0) {
-		result->concat(generate_search(nullptr));
-		result->concat(generate_database_selector(nullptr, query_params));
-		result->concat("Error: No such database exists"_jrs);
+		result->append(generate_search(nullptr));
+		result->append(generate_database_selector(nullptr, query_params));
+		result->append("Error: No such database exists"_jrs);
 	}
 	else {
-		result->concat("Error: No ladder databases loaded"_jrs);
+		result->append("Error: No ladder databases loaded"_jrs);
 	}
-	result->concat(pluginInstance.footer);
+	result->append(pluginInstance.footer);
 	return result;
 }
 
-Jupiter::ReadableString *handle_ladder_page(std::string_view query_string) {
+std::string* handle_ladder_page(std::string_view query_string) {
 	Jupiter::HTTP::HTMLFormResponse html_form_response(query_string);
 	RenX::LadderDatabase *db = RenX::default_ladder_database;
 	size_t start_index = 0, count = pluginInstance.getEntriesPerPage();
@@ -464,7 +469,7 @@ Jupiter::ReadableString *handle_ladder_page(std::string_view query_string) {
 	return pluginInstance.generate_ladder_page(db, format, start_index, count, html_form_response);
 }
 
-Jupiter::ReadableString *handle_search_page(std::string_view query_string) {
+std::string* handle_search_page(std::string_view query_string) {
 	Jupiter::HTTP::HTMLFormResponse html_form_response(query_string);
 	RenX::LadderDatabase *db = RenX::default_ladder_database;
 	uint8_t format = 0xFF;
@@ -498,8 +503,7 @@ Jupiter::ReadableString *handle_search_page(std::string_view query_string) {
 	return pluginInstance.generate_search_page(db, format, start_index, count, name, html_form_response);
 }
 
-Jupiter::ReadableString *handle_profile_page(std::string_view query_string)
-{
+std::string* handle_profile_page(std::string_view query_string) {
 	Jupiter::HTTP::HTMLFormResponse html_form_response(query_string);
 	RenX::LadderDatabase *db = RenX::default_ladder_database;
 	uint64_t steam_id = 0;

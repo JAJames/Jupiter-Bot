@@ -31,9 +31,9 @@ using namespace Jupiter::literals;
 struct TagsImp : RenX::Tags
 {
 	bool initialize();
-	void processTags(Jupiter::StringType &msg, const RenX::Server *server, const RenX::PlayerInfo *player, const RenX::PlayerInfo *victim, const RenX::BuildingInfo *building);
-	void processTags(Jupiter::StringType &msg, const RenX::LadderDatabase::Entry &entry);
-	void sanitizeTags(Jupiter::StringType &fmt);
+	void processTags(std::string& msg, const RenX::Server *server, const RenX::PlayerInfo *player, const RenX::PlayerInfo *victim, const RenX::BuildingInfo *building);
+	void processTags(std::string& msg, const RenX::LadderDatabase::Entry &entry);
+	void sanitizeTags(std::string& fmt);
 	const Jupiter::ReadableString &getUniqueInternalTag();
 private:
 	Jupiter::StringS uniqueTag;
@@ -443,7 +443,7 @@ double get_ratio(double num, double denom)
 	return num / denom;
 }
 
-void TagsImp::processTags(Jupiter::StringType &msg, const RenX::Server *server, const RenX::PlayerInfo *player, const RenX::PlayerInfo *victim, const RenX::BuildingInfo *building)
+void TagsImp::processTags(std::string& msg, const RenX::Server *server, const RenX::PlayerInfo *player, const RenX::PlayerInfo *victim, const RenX::BuildingInfo *building)
 {
 	size_t index;
 	PROCESS_TAG(this->INTERNAL_DATE_TAG, std::string_view(getTimeFormat(this->dateFmt.c_str())));
@@ -586,7 +586,7 @@ void TagsImp::processTags(Jupiter::StringType &msg, const RenX::Server *server, 
 	}
 }
 
-void TagsImp::processTags(Jupiter::StringType &msg, const RenX::LadderDatabase::Entry &entry)
+void TagsImp::processTags(std::string& msg, const RenX::LadderDatabase::Entry &entry)
 {
 	size_t index;
 	uint32_t total_tied_games = entry.total_wins - entry.total_gdi_wins - entry.total_nod_wins;
@@ -681,191 +681,191 @@ void TagsImp::processTags(Jupiter::StringType &msg, const RenX::LadderDatabase::
 	PROCESS_TAG(this->INTERNAL_VICTIM_PROXY_DISARMS_TAG, Jupiter::StringS::Format("%u", entry.top_proxy_disarms));
 }
 
-void TagsImp::sanitizeTags(Jupiter::StringType &fmt)
+void TagsImp::sanitizeTags(std::string& fmt)
 {
 	/** Global tags */
-	fmt.replace(this->dateTag, this->INTERNAL_DATE_TAG);
-	fmt.replace(this->timeTag, this->INTERNAL_TIME_TAG);
+	RenX::replace_tag(fmt, this->dateTag, this->INTERNAL_DATE_TAG);
+	RenX::replace_tag(fmt, this->timeTag, this->INTERNAL_TIME_TAG);
 
 	/** Server tags */
-	fmt.replace(this->rconVersionTag, this->INTERNAL_RCON_VERSION_TAG);
-	fmt.replace(this->gameVersionTag, this->INTERNAL_GAME_VERSION_TAG);
-	fmt.replace(this->rulesTag, this->INTERNAL_RULES_TAG);
-	fmt.replace(this->userTag, this->INTERNAL_USER_TAG);
-	fmt.replace(this->serverNameTag, this->INTERNAL_SERVER_NAME_TAG);
-	fmt.replace(this->mapTag, this->INTERNAL_MAP_TAG);
-	fmt.replace(this->mapGUIDTag, this->INTERNAL_MAP_GUID_TAG);
-	fmt.replace(this->serverHostnameTag, this->INTERNAL_SERVER_HOSTNAME_TAG);
-	fmt.replace(this->serverPortTag, this->INTERNAL_SERVER_PORT_TAG);
-	fmt.replace(this->socketHostnameTag, this->INTERNAL_SOCKET_HOSTNAME_TAG);
-	fmt.replace(this->socketPortTag, this->INTERNAL_SOCKET_PORT_TAG);
-	fmt.replace(this->serverPrefixTag, this->INTERNAL_SERVER_PREFIX_TAG);
+	RenX::replace_tag(fmt, this->rconVersionTag, this->INTERNAL_RCON_VERSION_TAG);
+	RenX::replace_tag(fmt, this->gameVersionTag, this->INTERNAL_GAME_VERSION_TAG);
+	RenX::replace_tag(fmt, this->rulesTag, this->INTERNAL_RULES_TAG);
+	RenX::replace_tag(fmt, this->userTag, this->INTERNAL_USER_TAG);
+	RenX::replace_tag(fmt, this->serverNameTag, this->INTERNAL_SERVER_NAME_TAG);
+	RenX::replace_tag(fmt, this->mapTag, this->INTERNAL_MAP_TAG);
+	RenX::replace_tag(fmt, this->mapGUIDTag, this->INTERNAL_MAP_GUID_TAG);
+	RenX::replace_tag(fmt, this->serverHostnameTag, this->INTERNAL_SERVER_HOSTNAME_TAG);
+	RenX::replace_tag(fmt, this->serverPortTag, this->INTERNAL_SERVER_PORT_TAG);
+	RenX::replace_tag(fmt, this->socketHostnameTag, this->INTERNAL_SOCKET_HOSTNAME_TAG);
+	RenX::replace_tag(fmt, this->socketPortTag, this->INTERNAL_SOCKET_PORT_TAG);
+	RenX::replace_tag(fmt, this->serverPrefixTag, this->INTERNAL_SERVER_PREFIX_TAG);
 
 	/** Player tags */
-	fmt.replace(this->nameTag, this->INTERNAL_NAME_TAG);
-	fmt.replace(this->rawNameTag, this->INTERNAL_RAW_NAME_TAG);
-	fmt.replace(this->ipTag, this->INTERNAL_IP_TAG);
-	fmt.replace(this->hwidTag, this->INTERNAL_HWID_TAG);
-	fmt.replace(this->rdnsTag, this->INTERNAL_RDNS_TAG);
-	fmt.replace(this->steamTag, this->INTERNAL_STEAM_TAG);
-	fmt.replace(this->uuidTag, this->INTERNAL_UUID_TAG);
-	fmt.replace(this->idTag, this->INTERNAL_ID_TAG);
-	fmt.replace(this->characterTag, this->INTERNAL_CHARACTER_TAG);
-	fmt.replace(this->vehicleTag, this->INTERNAL_VEHICLE_TAG);
-	fmt.replace(this->adminTag, this->INTERNAL_ADMIN_TAG);
-	fmt.replace(this->prefixTag, this->INTERNAL_PREFIX_TAG);
-	fmt.replace(this->gamePrefixTag, this->INTERNAL_GAME_PREFIX_TAG);
-	fmt.replace(this->teamColorTag, this->INTERNAL_TEAM_COLOR_TAG);
-	fmt.replace(this->teamShortTag, this->INTERNAL_TEAM_SHORT_TAG);
-	fmt.replace(this->teamLongTag, this->INTERNAL_TEAM_LONG_TAG);
-	fmt.replace(this->pingTag, this->INTERNAL_PING_TAG);
-	fmt.replace(this->scoreTag, this->INTERNAL_SCORE_TAG);
-	fmt.replace(this->scorePerMinuteTag, this->INTERNAL_SCORE_PER_MINUTE_TAG);
-	fmt.replace(this->creditsTag, this->INTERNAL_CREDITS_TAG);
-	fmt.replace(this->killsTag, this->INTERNAL_KILLS_TAG);
-	fmt.replace(this->deathsTag, this->INTERNAL_DEATHS_TAG);
-	fmt.replace(this->kdrTag, this->INTERNAL_KDR_TAG);
-	fmt.replace(this->suicidesTag, this->INTERNAL_SUICIDES_TAG);
-	fmt.replace(this->headshotsTag, this->INTERNAL_HEADSHOTS_TAG);
-	fmt.replace(this->headshotKillRatioTag, this->INTERNAL_HEADSHOT_KILL_RATIO_TAG);
-	fmt.replace(this->vehicleKillsTag, this->INTERNAL_VEHICLE_KILLS_TAG);
-	fmt.replace(this->buildingKillsTag, this->INTERNAL_BUILDING_KILLS_TAG);
-	fmt.replace(this->defenceKillsTag, this->INTERNAL_DEFENCE_KILLS_TAG);
-	fmt.replace(this->gameTimeTag, this->INTERNAL_GAME_TIME_TAG);
-	fmt.replace(this->gamesTag, this->INTERNAL_GAMES_TAG);
-	fmt.replace(this->GDIGamesTag, this->INTERNAL_GDI_GAMES_TAG);
-	fmt.replace(this->NodGamesTag, this->INTERNAL_NOD_GAMES_TAG);
-	fmt.replace(this->winsTag, this->INTERNAL_WINS_TAG);
-	fmt.replace(this->GDIWinsTag, this->INTERNAL_GDI_WINS_TAG);
-	fmt.replace(this->NodWinsTag, this->INTERNAL_NOD_WINS_TAG);
-	fmt.replace(this->tiesTag, this->INTERNAL_TIES_TAG);
-	fmt.replace(this->lossesTag, this->INTERNAL_LOSSES_TAG);
-	fmt.replace(this->GDILossesTag, this->INTERNAL_GDI_LOSSES_TAG);
-	fmt.replace(this->NodLossesTag, this->INTERNAL_NOD_LOSSES_TAG);
-	fmt.replace(this->winLossRatioTag, this->INTERNAL_WIN_LOSS_RATIO_TAG);
-	fmt.replace(this->GDIWinLossRatioTag, this->INTERNAL_GDI_WIN_LOSS_RATIO_TAG);
-	fmt.replace(this->NodWinLossRatioTag, this->INTERNAL_NOD_WIN_LOSS_RATIO_TAG);
-	fmt.replace(this->beaconPlacementsTag, this->INTERNAL_BEACON_PLACEMENTS_TAG);
-	fmt.replace(this->beaconDisarmsTag, this->INTERNAL_BEACON_DISARMS_TAG);
-	fmt.replace(this->proxyPlacementsTag, this->INTERNAL_PROXY_PLACEMENTS_TAG);
-	fmt.replace(this->proxyDisarmsTag, this->INTERNAL_PROXY_DISARMS_TAG);
-	fmt.replace(this->capturesTag, this->INTERNAL_CAPTURES_TAG);
-	fmt.replace(this->stealsTag, this->INTERNAL_STEALS_TAG);
-	fmt.replace(this->stolenTag, this->INTERNAL_STOLEN_TAG);
-	fmt.replace(this->accessTag, this->INTERNAL_ACCESS_TAG);
+	RenX::replace_tag(fmt, this->nameTag, this->INTERNAL_NAME_TAG);
+	RenX::replace_tag(fmt, this->rawNameTag, this->INTERNAL_RAW_NAME_TAG);
+	RenX::replace_tag(fmt, this->ipTag, this->INTERNAL_IP_TAG);
+	RenX::replace_tag(fmt, this->hwidTag, this->INTERNAL_HWID_TAG);
+	RenX::replace_tag(fmt, this->rdnsTag, this->INTERNAL_RDNS_TAG);
+	RenX::replace_tag(fmt, this->steamTag, this->INTERNAL_STEAM_TAG);
+	RenX::replace_tag(fmt, this->uuidTag, this->INTERNAL_UUID_TAG);
+	RenX::replace_tag(fmt, this->idTag, this->INTERNAL_ID_TAG);
+	RenX::replace_tag(fmt, this->characterTag, this->INTERNAL_CHARACTER_TAG);
+	RenX::replace_tag(fmt, this->vehicleTag, this->INTERNAL_VEHICLE_TAG);
+	RenX::replace_tag(fmt, this->adminTag, this->INTERNAL_ADMIN_TAG);
+	RenX::replace_tag(fmt, this->prefixTag, this->INTERNAL_PREFIX_TAG);
+	RenX::replace_tag(fmt, this->gamePrefixTag, this->INTERNAL_GAME_PREFIX_TAG);
+	RenX::replace_tag(fmt, this->teamColorTag, this->INTERNAL_TEAM_COLOR_TAG);
+	RenX::replace_tag(fmt, this->teamShortTag, this->INTERNAL_TEAM_SHORT_TAG);
+	RenX::replace_tag(fmt, this->teamLongTag, this->INTERNAL_TEAM_LONG_TAG);
+	RenX::replace_tag(fmt, this->pingTag, this->INTERNAL_PING_TAG);
+	RenX::replace_tag(fmt, this->scoreTag, this->INTERNAL_SCORE_TAG);
+	RenX::replace_tag(fmt, this->scorePerMinuteTag, this->INTERNAL_SCORE_PER_MINUTE_TAG);
+	RenX::replace_tag(fmt, this->creditsTag, this->INTERNAL_CREDITS_TAG);
+	RenX::replace_tag(fmt, this->killsTag, this->INTERNAL_KILLS_TAG);
+	RenX::replace_tag(fmt, this->deathsTag, this->INTERNAL_DEATHS_TAG);
+	RenX::replace_tag(fmt, this->kdrTag, this->INTERNAL_KDR_TAG);
+	RenX::replace_tag(fmt, this->suicidesTag, this->INTERNAL_SUICIDES_TAG);
+	RenX::replace_tag(fmt, this->headshotsTag, this->INTERNAL_HEADSHOTS_TAG);
+	RenX::replace_tag(fmt, this->headshotKillRatioTag, this->INTERNAL_HEADSHOT_KILL_RATIO_TAG);
+	RenX::replace_tag(fmt, this->vehicleKillsTag, this->INTERNAL_VEHICLE_KILLS_TAG);
+	RenX::replace_tag(fmt, this->buildingKillsTag, this->INTERNAL_BUILDING_KILLS_TAG);
+	RenX::replace_tag(fmt, this->defenceKillsTag, this->INTERNAL_DEFENCE_KILLS_TAG);
+	RenX::replace_tag(fmt, this->gameTimeTag, this->INTERNAL_GAME_TIME_TAG);
+	RenX::replace_tag(fmt, this->gamesTag, this->INTERNAL_GAMES_TAG);
+	RenX::replace_tag(fmt, this->GDIGamesTag, this->INTERNAL_GDI_GAMES_TAG);
+	RenX::replace_tag(fmt, this->NodGamesTag, this->INTERNAL_NOD_GAMES_TAG);
+	RenX::replace_tag(fmt, this->winsTag, this->INTERNAL_WINS_TAG);
+	RenX::replace_tag(fmt, this->GDIWinsTag, this->INTERNAL_GDI_WINS_TAG);
+	RenX::replace_tag(fmt, this->NodWinsTag, this->INTERNAL_NOD_WINS_TAG);
+	RenX::replace_tag(fmt, this->tiesTag, this->INTERNAL_TIES_TAG);
+	RenX::replace_tag(fmt, this->lossesTag, this->INTERNAL_LOSSES_TAG);
+	RenX::replace_tag(fmt, this->GDILossesTag, this->INTERNAL_GDI_LOSSES_TAG);
+	RenX::replace_tag(fmt, this->NodLossesTag, this->INTERNAL_NOD_LOSSES_TAG);
+	RenX::replace_tag(fmt, this->winLossRatioTag, this->INTERNAL_WIN_LOSS_RATIO_TAG);
+	RenX::replace_tag(fmt, this->GDIWinLossRatioTag, this->INTERNAL_GDI_WIN_LOSS_RATIO_TAG);
+	RenX::replace_tag(fmt, this->NodWinLossRatioTag, this->INTERNAL_NOD_WIN_LOSS_RATIO_TAG);
+	RenX::replace_tag(fmt, this->beaconPlacementsTag, this->INTERNAL_BEACON_PLACEMENTS_TAG);
+	RenX::replace_tag(fmt, this->beaconDisarmsTag, this->INTERNAL_BEACON_DISARMS_TAG);
+	RenX::replace_tag(fmt, this->proxyPlacementsTag, this->INTERNAL_PROXY_PLACEMENTS_TAG);
+	RenX::replace_tag(fmt, this->proxyDisarmsTag, this->INTERNAL_PROXY_DISARMS_TAG);
+	RenX::replace_tag(fmt, this->capturesTag, this->INTERNAL_CAPTURES_TAG);
+	RenX::replace_tag(fmt, this->stealsTag, this->INTERNAL_STEALS_TAG);
+	RenX::replace_tag(fmt, this->stolenTag, this->INTERNAL_STOLEN_TAG);
+	RenX::replace_tag(fmt, this->accessTag, this->INTERNAL_ACCESS_TAG);
 
 	/** Victim tags */
-	fmt.replace(this->victimNameTag, this->INTERNAL_VICTIM_NAME_TAG);
-	fmt.replace(this->victimRawNameTag, this->INTERNAL_VICTIM_RAW_NAME_TAG);
-	fmt.replace(this->victimIPTag, this->INTERNAL_VICTIM_IP_TAG);
-	fmt.replace(this->victimHWIDTag, this->INTERNAL_VICTIM_HWID_TAG);
-	fmt.replace(this->victimRDNSTag, this->INTERNAL_VICTIM_RDNS_TAG);
-	fmt.replace(this->victimSteamTag, this->INTERNAL_VICTIM_STEAM_TAG);
-	fmt.replace(this->victimUUIDTag, this->INTERNAL_VICTIM_UUID_TAG);
-	fmt.replace(this->victimIDTag, this->INTERNAL_VICTIM_ID_TAG);
-	fmt.replace(this->victimCharacterTag, this->INTERNAL_VICTIM_CHARACTER_TAG);
-	fmt.replace(this->victimVehicleTag, this->INTERNAL_VICTIM_VEHICLE_TAG);
-	fmt.replace(this->victimAdminTag, this->INTERNAL_VICTIM_ADMIN_TAG);
-	fmt.replace(this->victimPrefixTag, this->INTERNAL_VICTIM_PREFIX_TAG);
-	fmt.replace(this->victimGamePrefixTag, this->INTERNAL_VICTIM_GAME_PREFIX_TAG);
-	fmt.replace(this->victimTeamColorTag, this->INTERNAL_VICTIM_TEAM_COLOR_TAG);
-	fmt.replace(this->victimTeamShortTag, this->INTERNAL_VICTIM_TEAM_SHORT_TAG);
-	fmt.replace(this->victimTeamLongTag, this->INTERNAL_VICTIM_TEAM_LONG_TAG);
-	fmt.replace(this->victimPingTag, this->INTERNAL_VICTIM_PING_TAG);
-	fmt.replace(this->victimScoreTag, this->INTERNAL_VICTIM_SCORE_TAG);
-	fmt.replace(this->victimScorePerMinuteTag, this->INTERNAL_VICTIM_SCORE_PER_MINUTE_TAG);
-	fmt.replace(this->victimCreditsTag, this->INTERNAL_VICTIM_CREDITS_TAG);
-	fmt.replace(this->victimKillsTag, this->INTERNAL_VICTIM_KILLS_TAG);
-	fmt.replace(this->victimDeathsTag, this->INTERNAL_VICTIM_DEATHS_TAG);
-	fmt.replace(this->victimKDRTag, this->INTERNAL_VICTIM_KDR_TAG);
-	fmt.replace(this->victimSuicidesTag, this->INTERNAL_VICTIM_SUICIDES_TAG);
-	fmt.replace(this->victimHeadshotsTag, this->INTERNAL_VICTIM_HEADSHOTS_TAG);
-	fmt.replace(this->victimHeadshotKillRatioTag, this->INTERNAL_VICTIM_HEADSHOT_KILL_RATIO_TAG);
-	fmt.replace(this->victimVehicleKillsTag, this->INTERNAL_VICTIM_VEHICLE_KILLS_TAG);
-	fmt.replace(this->victimBuildingKillsTag, this->INTERNAL_VICTIM_BUILDING_KILLS_TAG);
-	fmt.replace(this->victimDefenceKillsTag, this->INTERNAL_VICTIM_DEFENCE_KILLS_TAG);
-	fmt.replace(this->victimGameTimeTag, this->INTERNAL_VICTIM_GAME_TIME_TAG);
-	fmt.replace(this->victimGamesTag, this->INTERNAL_VICTIM_GAMES_TAG);
-	fmt.replace(this->victimGDIGamesTag, this->INTERNAL_VICTIM_GDI_GAMES_TAG);
-	fmt.replace(this->victimNodGamesTag, this->INTERNAL_VICTIM_NOD_GAMES_TAG);
-	fmt.replace(this->victimWinsTag, this->INTERNAL_VICTIM_WINS_TAG);
-	fmt.replace(this->victimGDIWinsTag, this->INTERNAL_VICTIM_GDI_WINS_TAG);
-	fmt.replace(this->victimNodWinsTag, this->INTERNAL_VICTIM_NOD_WINS_TAG);
-	fmt.replace(this->victimTiesTag, this->INTERNAL_VICTIM_TIES_TAG);
-	fmt.replace(this->victimLossesTag, this->INTERNAL_VICTIM_LOSSES_TAG);
-	fmt.replace(this->victimGDILossesTag, this->INTERNAL_VICTIM_GDI_LOSSES_TAG);
-	fmt.replace(this->victimNodLossesTag, this->INTERNAL_VICTIM_NOD_LOSSES_TAG);
-	fmt.replace(this->victimWinLossRatioTag, this->INTERNAL_VICTIM_WIN_LOSS_RATIO_TAG);
-	fmt.replace(this->victimGDIWinLossRatioTag, this->INTERNAL_VICTIM_GDI_WIN_LOSS_RATIO_TAG);
-	fmt.replace(this->victimNodWinLossRatioTag, this->INTERNAL_VICTIM_NOD_WIN_LOSS_RATIO_TAG);
-	fmt.replace(this->victimBeaconPlacementsTag, this->INTERNAL_VICTIM_BEACON_PLACEMENTS_TAG);
-	fmt.replace(this->victimBeaconDisarmsTag, this->INTERNAL_VICTIM_BEACON_DISARMS_TAG);
-	fmt.replace(this->victimProxyPlacementsTag, this->INTERNAL_VICTIM_PROXY_PLACEMENTS_TAG);
-	fmt.replace(this->victimProxyDisarmsTag, this->INTERNAL_VICTIM_PROXY_DISARMS_TAG);
-	fmt.replace(this->victimCapturesTag, this->INTERNAL_VICTIM_CAPTURES_TAG);
-	fmt.replace(this->victimStealsTag, this->INTERNAL_VICTIM_STEALS_TAG);
-	fmt.replace(this->victimStolenTag, this->INTERNAL_VICTIM_STOLEN_TAG);
-	fmt.replace(this->victimAccessTag, this->INTERNAL_VICTIM_ACCESS_TAG);
+	RenX::replace_tag(fmt, this->victimNameTag, this->INTERNAL_VICTIM_NAME_TAG);
+	RenX::replace_tag(fmt, this->victimRawNameTag, this->INTERNAL_VICTIM_RAW_NAME_TAG);
+	RenX::replace_tag(fmt, this->victimIPTag, this->INTERNAL_VICTIM_IP_TAG);
+	RenX::replace_tag(fmt, this->victimHWIDTag, this->INTERNAL_VICTIM_HWID_TAG);
+	RenX::replace_tag(fmt, this->victimRDNSTag, this->INTERNAL_VICTIM_RDNS_TAG);
+	RenX::replace_tag(fmt, this->victimSteamTag, this->INTERNAL_VICTIM_STEAM_TAG);
+	RenX::replace_tag(fmt, this->victimUUIDTag, this->INTERNAL_VICTIM_UUID_TAG);
+	RenX::replace_tag(fmt, this->victimIDTag, this->INTERNAL_VICTIM_ID_TAG);
+	RenX::replace_tag(fmt, this->victimCharacterTag, this->INTERNAL_VICTIM_CHARACTER_TAG);
+	RenX::replace_tag(fmt, this->victimVehicleTag, this->INTERNAL_VICTIM_VEHICLE_TAG);
+	RenX::replace_tag(fmt, this->victimAdminTag, this->INTERNAL_VICTIM_ADMIN_TAG);
+	RenX::replace_tag(fmt, this->victimPrefixTag, this->INTERNAL_VICTIM_PREFIX_TAG);
+	RenX::replace_tag(fmt, this->victimGamePrefixTag, this->INTERNAL_VICTIM_GAME_PREFIX_TAG);
+	RenX::replace_tag(fmt, this->victimTeamColorTag, this->INTERNAL_VICTIM_TEAM_COLOR_TAG);
+	RenX::replace_tag(fmt, this->victimTeamShortTag, this->INTERNAL_VICTIM_TEAM_SHORT_TAG);
+	RenX::replace_tag(fmt, this->victimTeamLongTag, this->INTERNAL_VICTIM_TEAM_LONG_TAG);
+	RenX::replace_tag(fmt, this->victimPingTag, this->INTERNAL_VICTIM_PING_TAG);
+	RenX::replace_tag(fmt, this->victimScoreTag, this->INTERNAL_VICTIM_SCORE_TAG);
+	RenX::replace_tag(fmt, this->victimScorePerMinuteTag, this->INTERNAL_VICTIM_SCORE_PER_MINUTE_TAG);
+	RenX::replace_tag(fmt, this->victimCreditsTag, this->INTERNAL_VICTIM_CREDITS_TAG);
+	RenX::replace_tag(fmt, this->victimKillsTag, this->INTERNAL_VICTIM_KILLS_TAG);
+	RenX::replace_tag(fmt, this->victimDeathsTag, this->INTERNAL_VICTIM_DEATHS_TAG);
+	RenX::replace_tag(fmt, this->victimKDRTag, this->INTERNAL_VICTIM_KDR_TAG);
+	RenX::replace_tag(fmt, this->victimSuicidesTag, this->INTERNAL_VICTIM_SUICIDES_TAG);
+	RenX::replace_tag(fmt, this->victimHeadshotsTag, this->INTERNAL_VICTIM_HEADSHOTS_TAG);
+	RenX::replace_tag(fmt, this->victimHeadshotKillRatioTag, this->INTERNAL_VICTIM_HEADSHOT_KILL_RATIO_TAG);
+	RenX::replace_tag(fmt, this->victimVehicleKillsTag, this->INTERNAL_VICTIM_VEHICLE_KILLS_TAG);
+	RenX::replace_tag(fmt, this->victimBuildingKillsTag, this->INTERNAL_VICTIM_BUILDING_KILLS_TAG);
+	RenX::replace_tag(fmt, this->victimDefenceKillsTag, this->INTERNAL_VICTIM_DEFENCE_KILLS_TAG);
+	RenX::replace_tag(fmt, this->victimGameTimeTag, this->INTERNAL_VICTIM_GAME_TIME_TAG);
+	RenX::replace_tag(fmt, this->victimGamesTag, this->INTERNAL_VICTIM_GAMES_TAG);
+	RenX::replace_tag(fmt, this->victimGDIGamesTag, this->INTERNAL_VICTIM_GDI_GAMES_TAG);
+	RenX::replace_tag(fmt, this->victimNodGamesTag, this->INTERNAL_VICTIM_NOD_GAMES_TAG);
+	RenX::replace_tag(fmt, this->victimWinsTag, this->INTERNAL_VICTIM_WINS_TAG);
+	RenX::replace_tag(fmt, this->victimGDIWinsTag, this->INTERNAL_VICTIM_GDI_WINS_TAG);
+	RenX::replace_tag(fmt, this->victimNodWinsTag, this->INTERNAL_VICTIM_NOD_WINS_TAG);
+	RenX::replace_tag(fmt, this->victimTiesTag, this->INTERNAL_VICTIM_TIES_TAG);
+	RenX::replace_tag(fmt, this->victimLossesTag, this->INTERNAL_VICTIM_LOSSES_TAG);
+	RenX::replace_tag(fmt, this->victimGDILossesTag, this->INTERNAL_VICTIM_GDI_LOSSES_TAG);
+	RenX::replace_tag(fmt, this->victimNodLossesTag, this->INTERNAL_VICTIM_NOD_LOSSES_TAG);
+	RenX::replace_tag(fmt, this->victimWinLossRatioTag, this->INTERNAL_VICTIM_WIN_LOSS_RATIO_TAG);
+	RenX::replace_tag(fmt, this->victimGDIWinLossRatioTag, this->INTERNAL_VICTIM_GDI_WIN_LOSS_RATIO_TAG);
+	RenX::replace_tag(fmt, this->victimNodWinLossRatioTag, this->INTERNAL_VICTIM_NOD_WIN_LOSS_RATIO_TAG);
+	RenX::replace_tag(fmt, this->victimBeaconPlacementsTag, this->INTERNAL_VICTIM_BEACON_PLACEMENTS_TAG);
+	RenX::replace_tag(fmt, this->victimBeaconDisarmsTag, this->INTERNAL_VICTIM_BEACON_DISARMS_TAG);
+	RenX::replace_tag(fmt, this->victimProxyPlacementsTag, this->INTERNAL_VICTIM_PROXY_PLACEMENTS_TAG);
+	RenX::replace_tag(fmt, this->victimProxyDisarmsTag, this->INTERNAL_VICTIM_PROXY_DISARMS_TAG);
+	RenX::replace_tag(fmt, this->victimCapturesTag, this->INTERNAL_VICTIM_CAPTURES_TAG);
+	RenX::replace_tag(fmt, this->victimStealsTag, this->INTERNAL_VICTIM_STEALS_TAG);
+	RenX::replace_tag(fmt, this->victimStolenTag, this->INTERNAL_VICTIM_STOLEN_TAG);
+	RenX::replace_tag(fmt, this->victimAccessTag, this->INTERNAL_VICTIM_ACCESS_TAG);
 
 	/** Building tags */
-	fmt.replace(this->buildingNameTag, this->INTERNAL_BUILDING_NAME_TAG);
-	fmt.replace(this->buildingRawNameTag, this->INTERNAL_BUILDING_RAW_NAME_TAG);
-	fmt.replace(this->buildingHealthTag, this->INTERNAL_BUILDING_HEALTH_TAG);
-	fmt.replace(this->buildingMaxHealthTag, this->INTERNAL_BUILDING_MAX_HEALTH_TAG);
-	fmt.replace(this->buildingHealthPercentageTag, this->INTERNAL_BUILDING_HEALTH_PERCENTAGE_TAG);
-	fmt.replace(this->buildingArmorTag, this->INTERNAL_BUILDING_ARMOR_TAG);
-	fmt.replace(this->buildingMaxArmorTag, this->INTERNAL_BUILDING_MAX_ARMOR_TAG);
-	fmt.replace(this->buildingArmorPercentageTag, this->INTERNAL_BUILDING_ARMOR_PERCENTAGE_TAG);
-	fmt.replace(this->buildingDurabilityTag, this->INTERNAL_BUILDING_DURABILITY_TAG);
-	fmt.replace(this->buildingMaxDurabilityTag, this->INTERNAL_BUILDING_MAX_DURABILITY_TAG);
-	fmt.replace(this->buildingDurabilityPercentageTag, this->INTERNAL_BUILDING_DURABILITY_PERCENTAGE_TAG);
-	fmt.replace(this->buildingTeamColorTag, this->INTERNAL_BUILDING_TEAM_COLOR_TAG);
-	fmt.replace(this->buildingTeamShortTag, this->INTERNAL_BUILDING_TEAM_SHORT_TAG);
-	fmt.replace(this->buildingTeamLongTag, this->INTERNAL_BUILDING_TEAM_LONG_TAG);
+	RenX::replace_tag(fmt, this->buildingNameTag, this->INTERNAL_BUILDING_NAME_TAG);
+	RenX::replace_tag(fmt, this->buildingRawNameTag, this->INTERNAL_BUILDING_RAW_NAME_TAG);
+	RenX::replace_tag(fmt, this->buildingHealthTag, this->INTERNAL_BUILDING_HEALTH_TAG);
+	RenX::replace_tag(fmt, this->buildingMaxHealthTag, this->INTERNAL_BUILDING_MAX_HEALTH_TAG);
+	RenX::replace_tag(fmt, this->buildingHealthPercentageTag, this->INTERNAL_BUILDING_HEALTH_PERCENTAGE_TAG);
+	RenX::replace_tag(fmt, this->buildingArmorTag, this->INTERNAL_BUILDING_ARMOR_TAG);
+	RenX::replace_tag(fmt, this->buildingMaxArmorTag, this->INTERNAL_BUILDING_MAX_ARMOR_TAG);
+	RenX::replace_tag(fmt, this->buildingArmorPercentageTag, this->INTERNAL_BUILDING_ARMOR_PERCENTAGE_TAG);
+	RenX::replace_tag(fmt, this->buildingDurabilityTag, this->INTERNAL_BUILDING_DURABILITY_TAG);
+	RenX::replace_tag(fmt, this->buildingMaxDurabilityTag, this->INTERNAL_BUILDING_MAX_DURABILITY_TAG);
+	RenX::replace_tag(fmt, this->buildingDurabilityPercentageTag, this->INTERNAL_BUILDING_DURABILITY_PERCENTAGE_TAG);
+	RenX::replace_tag(fmt, this->buildingTeamColorTag, this->INTERNAL_BUILDING_TEAM_COLOR_TAG);
+	RenX::replace_tag(fmt, this->buildingTeamShortTag, this->INTERNAL_BUILDING_TEAM_SHORT_TAG);
+	RenX::replace_tag(fmt, this->buildingTeamLongTag, this->INTERNAL_BUILDING_TEAM_LONG_TAG);
 
 	/** Ladder tags */
-	fmt.replace(this->rankTag, this->INTERNAL_RANK_TAG);
-	fmt.replace(this->lastGameTag, this->INTERNAL_LAST_GAME_TAG);
-	fmt.replace(this->GDIScoreTag, this->INTERNAL_GDI_SCORE_TAG);
-	fmt.replace(this->GDISPMTag, this->INTERNAL_GDI_SPM_TAG);
-	fmt.replace(this->GDIGameTimeTag, this->INTERNAL_GDI_GAME_TIME_TAG);
-	fmt.replace(this->GDITiesTag, this->INTERNAL_GDI_TIES_TAG);
-	fmt.replace(this->GDIBeaconPlacementsTag, this->INTERNAL_GDI_BEACON_PLACEMENTS_TAG);
-	fmt.replace(this->GDIBeaconDisarmsTag, this->INTERNAL_GDI_BEACON_DISARMS_TAG);
-	fmt.replace(this->GDIProxyPlacementsTag, this->INTERNAL_GDI_PROXY_PLACEMENTS_TAG);
-	fmt.replace(this->GDIProxyDisarmsTag, this->INTERNAL_GDI_PROXY_DISARMS_TAG);
-	fmt.replace(this->GDIKillsTag, this->INTERNAL_GDI_KILLS_TAG);
-	fmt.replace(this->GDIDeathsTag, this->INTERNAL_GDI_DEATHS_TAG);
-	fmt.replace(this->GDIVehicleKillsTag, this->INTERNAL_GDI_VEHICLE_KILLS_TAG);
-	fmt.replace(this->GDIDefenceKillsTag, this->INTERNAL_GDI_DEFENCE_KILLS_TAG);
-	fmt.replace(this->GDIBuildingKillsTag, this->INTERNAL_GDI_BUILDING_KILLS_TAG);
-	fmt.replace(this->GDIKDRTag, this->INTERNAL_GDI_KDR_TAG);
-	fmt.replace(this->GDIHeadshotsTag, this->INTERNAL_GDI_HEADSHOTS_TAG);
-	fmt.replace(this->GDIHeadshotKillRatioTag, this->INTERNAL_GDI_HEADSHOT_KILL_RATIO_TAG);
-	fmt.replace(this->NodScoreTag, this->INTERNAL_NOD_SCORE_TAG);
-	fmt.replace(this->NodSPMTag, this->INTERNAL_NOD_SPM_TAG);
-	fmt.replace(this->NodGameTimeTag, this->INTERNAL_NOD_GAME_TIME_TAG);
-	fmt.replace(this->NodTiesTag, this->INTERNAL_NOD_TIES_TAG);
-	fmt.replace(this->NodBeaconPlacementsTag, this->INTERNAL_NOD_BEACON_PLACEMENTS_TAG);
-	fmt.replace(this->NodBeaconDisarmsTag, this->INTERNAL_NOD_BEACON_DISARMS_TAG);
-	fmt.replace(this->NodProxyPlacementsTag, this->INTERNAL_NOD_PROXY_PLACEMENTS_TAG);
-	fmt.replace(this->NodProxyDisarmsTag, this->INTERNAL_NOD_PROXY_DISARMS_TAG);
-	fmt.replace(this->NodKillsTag, this->INTERNAL_NOD_KILLS_TAG);
-	fmt.replace(this->NodDeathsTag, this->INTERNAL_NOD_DEATHS_TAG);
-	fmt.replace(this->NodVehicleKillsTag, this->INTERNAL_NOD_VEHICLE_KILLS_TAG);
-	fmt.replace(this->NodDefenceKillsTag, this->INTERNAL_NOD_DEFENCE_KILLS_TAG);
-	fmt.replace(this->NodBuildingKillsTag, this->INTERNAL_NOD_BUILDING_KILLS_TAG);
-	fmt.replace(this->NodKDRTag, this->INTERNAL_NOD_KDR_TAG);
-	fmt.replace(this->NodHeadshotsTag, this->INTERNAL_NOD_HEADSHOTS_TAG);
-	fmt.replace(this->NodHeadshotKillRatioTag, this->INTERNAL_NOD_HEADSHOT_KILL_RATIO_TAG);
+	RenX::replace_tag(fmt, this->rankTag, this->INTERNAL_RANK_TAG);
+	RenX::replace_tag(fmt, this->lastGameTag, this->INTERNAL_LAST_GAME_TAG);
+	RenX::replace_tag(fmt, this->GDIScoreTag, this->INTERNAL_GDI_SCORE_TAG);
+	RenX::replace_tag(fmt, this->GDISPMTag, this->INTERNAL_GDI_SPM_TAG);
+	RenX::replace_tag(fmt, this->GDIGameTimeTag, this->INTERNAL_GDI_GAME_TIME_TAG);
+	RenX::replace_tag(fmt, this->GDITiesTag, this->INTERNAL_GDI_TIES_TAG);
+	RenX::replace_tag(fmt, this->GDIBeaconPlacementsTag, this->INTERNAL_GDI_BEACON_PLACEMENTS_TAG);
+	RenX::replace_tag(fmt, this->GDIBeaconDisarmsTag, this->INTERNAL_GDI_BEACON_DISARMS_TAG);
+	RenX::replace_tag(fmt, this->GDIProxyPlacementsTag, this->INTERNAL_GDI_PROXY_PLACEMENTS_TAG);
+	RenX::replace_tag(fmt, this->GDIProxyDisarmsTag, this->INTERNAL_GDI_PROXY_DISARMS_TAG);
+	RenX::replace_tag(fmt, this->GDIKillsTag, this->INTERNAL_GDI_KILLS_TAG);
+	RenX::replace_tag(fmt, this->GDIDeathsTag, this->INTERNAL_GDI_DEATHS_TAG);
+	RenX::replace_tag(fmt, this->GDIVehicleKillsTag, this->INTERNAL_GDI_VEHICLE_KILLS_TAG);
+	RenX::replace_tag(fmt, this->GDIDefenceKillsTag, this->INTERNAL_GDI_DEFENCE_KILLS_TAG);
+	RenX::replace_tag(fmt, this->GDIBuildingKillsTag, this->INTERNAL_GDI_BUILDING_KILLS_TAG);
+	RenX::replace_tag(fmt, this->GDIKDRTag, this->INTERNAL_GDI_KDR_TAG);
+	RenX::replace_tag(fmt, this->GDIHeadshotsTag, this->INTERNAL_GDI_HEADSHOTS_TAG);
+	RenX::replace_tag(fmt, this->GDIHeadshotKillRatioTag, this->INTERNAL_GDI_HEADSHOT_KILL_RATIO_TAG);
+	RenX::replace_tag(fmt, this->NodScoreTag, this->INTERNAL_NOD_SCORE_TAG);
+	RenX::replace_tag(fmt, this->NodSPMTag, this->INTERNAL_NOD_SPM_TAG);
+	RenX::replace_tag(fmt, this->NodGameTimeTag, this->INTERNAL_NOD_GAME_TIME_TAG);
+	RenX::replace_tag(fmt, this->NodTiesTag, this->INTERNAL_NOD_TIES_TAG);
+	RenX::replace_tag(fmt, this->NodBeaconPlacementsTag, this->INTERNAL_NOD_BEACON_PLACEMENTS_TAG);
+	RenX::replace_tag(fmt, this->NodBeaconDisarmsTag, this->INTERNAL_NOD_BEACON_DISARMS_TAG);
+	RenX::replace_tag(fmt, this->NodProxyPlacementsTag, this->INTERNAL_NOD_PROXY_PLACEMENTS_TAG);
+	RenX::replace_tag(fmt, this->NodProxyDisarmsTag, this->INTERNAL_NOD_PROXY_DISARMS_TAG);
+	RenX::replace_tag(fmt, this->NodKillsTag, this->INTERNAL_NOD_KILLS_TAG);
+	RenX::replace_tag(fmt, this->NodDeathsTag, this->INTERNAL_NOD_DEATHS_TAG);
+	RenX::replace_tag(fmt, this->NodVehicleKillsTag, this->INTERNAL_NOD_VEHICLE_KILLS_TAG);
+	RenX::replace_tag(fmt, this->NodDefenceKillsTag, this->INTERNAL_NOD_DEFENCE_KILLS_TAG);
+	RenX::replace_tag(fmt, this->NodBuildingKillsTag, this->INTERNAL_NOD_BUILDING_KILLS_TAG);
+	RenX::replace_tag(fmt, this->NodKDRTag, this->INTERNAL_NOD_KDR_TAG);
+	RenX::replace_tag(fmt, this->NodHeadshotsTag, this->INTERNAL_NOD_HEADSHOTS_TAG);
+	RenX::replace_tag(fmt, this->NodHeadshotKillRatioTag, this->INTERNAL_NOD_HEADSHOT_KILL_RATIO_TAG);
 
 	/** Other tags */
-	fmt.replace(this->weaponTag, this->INTERNAL_WEAPON_TAG);
-	fmt.replace(this->objectTag, this->INTERNAL_OBJECT_TAG);
-	fmt.replace(this->messageTag, this->INTERNAL_MESSAGE_TAG);
-	fmt.replace(this->newNameTag, this->INTERNAL_NEW_NAME_TAG);
-	fmt.replace(this->winScoreTag, this->INTERNAL_WIN_SCORE_TAG);
-	fmt.replace(this->loseScoreTag, this->INTERNAL_LOSE_SCORE_TAG);
+	RenX::replace_tag(fmt, this->weaponTag, this->INTERNAL_WEAPON_TAG);
+	RenX::replace_tag(fmt, this->objectTag, this->INTERNAL_OBJECT_TAG);
+	RenX::replace_tag(fmt, this->messageTag, this->INTERNAL_MESSAGE_TAG);
+	RenX::replace_tag(fmt, this->newNameTag, this->INTERNAL_NEW_NAME_TAG);
+	RenX::replace_tag(fmt, this->winScoreTag, this->INTERNAL_WIN_SCORE_TAG);
+	RenX::replace_tag(fmt, this->loseScoreTag, this->INTERNAL_LOSE_SCORE_TAG);
 
 	for (const auto& plugin : RenX::getCore()->getPlugins()) {
 		plugin->RenX_SanitizeTags(fmt);
@@ -879,24 +879,38 @@ const Jupiter::ReadableString &TagsImp::getUniqueInternalTag()
 	return this->uniqueTag;
 }
 
-/** Foward functions */
+void RenX::replace_tag(std::string& fmt, std::string_view tag, std::string_view internal_tag) {
+	// Search for tag
+	size_t tag_pos = fmt.find(tag);
+	if (tag_pos == std::string::npos) {
+		return;
+	}
+
+	// Replace the tag
+	fmt.replace(tag_pos, tag.size(), internal_tag);
+
+	// Recurse for any further instances; less efficient than old replace() but should be rare anyways
+	replace_tag(fmt, tag, internal_tag);
+}
+
+/** Forward functions */
 
 const Jupiter::ReadableString &RenX::getUniqueInternalTag()
 {
 	return _tags.getUniqueInternalTag();
 }
 
-void RenX::processTags(Jupiter::StringType &msg, const RenX::Server *server, const RenX::PlayerInfo *player, const RenX::PlayerInfo *victim, const RenX::BuildingInfo *building)
+void RenX::processTags(std::string& msg, const RenX::Server *server, const RenX::PlayerInfo *player, const RenX::PlayerInfo *victim, const RenX::BuildingInfo *building)
 {
 	_tags.processTags(msg, server, player, victim, building);
 }
 
-void RenX::processTags(Jupiter::StringType &msg, const RenX::LadderDatabase::Entry &entry)
+void RenX::processTags(std::string& msg, const RenX::LadderDatabase::Entry &entry)
 {
 	_tags.processTags(msg, entry);
 }
 
-void RenX::sanitizeTags(Jupiter::StringType &fmt)
+void RenX::sanitizeTags(std::string& fmt)
 {
 	_tags.sanitizeTags(fmt);
 }

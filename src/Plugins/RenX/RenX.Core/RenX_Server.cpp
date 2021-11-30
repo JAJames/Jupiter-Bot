@@ -166,7 +166,7 @@ int RenX::Server::think() {
 int RenX::Server::OnRehash() {
 	std::string oldHostname = m_hostname;
 	std::string oldClientHostname = m_clientHostname;
-	Jupiter::StringS oldPass = m_pass;
+	std::string oldPass = m_pass;
 	unsigned short oldPort = m_port;
 	int oldSteamFormat = m_steamFormat;
 	m_commands.clear();
@@ -177,10 +177,10 @@ int RenX::Server::OnRehash() {
 		m_pass = oldPass;
 		m_port = oldPort;
 	}
-	else if (Jupiter::ReferenceString(oldHostname.c_str()).equalsi(m_hostname) == false
+	else if (!jessilib::equalsi(oldHostname, m_hostname)
 		|| oldPort != m_port
-		|| Jupiter::ReferenceString(oldClientHostname.c_str()).equalsi(m_clientHostname) == false
-		|| oldPass.equalsi(m_pass) == false) {
+		|| !jessilib::equalsi(oldClientHostname, m_clientHostname)
+		|| !jessilib::equalsi(oldPass, m_pass)) {
 		reconnect(RenX::DisconnectReason::Rehash);
 	}
 
@@ -260,7 +260,7 @@ bool RenX::Server::isPure() const {
 }
 
 int RenX::Server::send(const Jupiter::ReadableString &command) {
-	return sendSocket("c"_jrs + RenX::escapifyRCON(command) + '\n');
+	return sendSocket("c"s + RenX::escapifyRCON(command) + '\n');
 }
 
 int RenX::Server::sendSocket(const Jupiter::ReadableString &text) {
@@ -283,23 +283,23 @@ int RenX::Server::sendMessage(std::string_view message) {
 		return result;
 	}
 
-	return sendSocket("chostsay "_jrs + msg + '\n');
+	return sendSocket("chostsay "s + msg + '\n');
 }
 
 int RenX::Server::sendMessage(const RenX::PlayerInfo &player, std::string_view message) {
-	return sendSocket("chostprivatesay pid"_jrs + Jupiter::StringS::Format("%d ", player.id) + RenX::escapifyRCON(message) + '\n');
+	return sendSocket("chostprivatesay pid"s + Jupiter::StringS::Format("%d ", player.id) + RenX::escapifyRCON(message) + '\n');
 }
 
 int RenX::Server::sendAdminMessage(const Jupiter::ReadableString &message) {
-	return sendSocket("camsg "_jrs + RenX::escapifyRCON(message) + '\n');
+	return sendSocket("camsg "s + RenX::escapifyRCON(message) + '\n');
 }
 
 int RenX::Server::sendAdminMessage(const RenX::PlayerInfo &player, std::string_view message) {
-	return sendSocket("cpamsg pid"_jrs + Jupiter::StringS::Format("%d ", player.id) + RenX::escapifyRCON(message) + '\n');
+	return sendSocket("cpamsg pid"s + Jupiter::StringS::Format("%d ", player.id) + RenX::escapifyRCON(message) + '\n');
 }
 
 int RenX::Server::sendWarnMessage(const RenX::PlayerInfo &player, std::string_view message) {
-	return sendSocket("cwarn pid"_jrs + Jupiter::StringS::Format("%d ", player.id) + RenX::escapifyRCON(message) + '\n');
+	return sendSocket("cwarn pid"s + Jupiter::StringS::Format("%d ", player.id) + RenX::escapifyRCON(message) + '\n');
 }
 
 int RenX::Server::sendData(const Jupiter::ReadableString &data) {
@@ -927,13 +927,14 @@ bool RenX::Server::smodePlayer(const RenX::PlayerInfo &player) {
 }
 
 const Jupiter::ReadableString &RenX::Server::getPrefix() const {
-	static Jupiter::String parsed; // TODO: What the hell?
+	static std::string parsed; // TODO: What the hell?
 	RenX::processTags(parsed = m_IRCPrefix, this);
 	return parsed;
 }
 
 void RenX::Server::setPrefix(std::string_view prefix) {
-	Jupiter::StringS tagged_prefix = Jupiter::ReferenceString{ prefix };
+	// TODO: pass in std::string here instead
+	std::string tagged_prefix = static_cast<std::string>(prefix);
 	RenX::sanitizeTags(tagged_prefix);
 	m_IRCPrefix = tagged_prefix;
 }
@@ -1356,7 +1357,7 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line) {
 	};
 
 	auto tokens_as_command_table = [&tokens, this]() {
-		std::unordered_map<Jupiter::StringS, Jupiter::StringS, Jupiter::default_hash_function> table;
+		std::unordered_map<std::string_view, std::string_view, Jupiter::default_hash_function> table;
 		size_t total_tokens = std::min(tokens.size(), m_commandListFormat.size());
 		for (size_t index = 0; index != total_tokens; ++index) {
 			table[m_commandListFormat[index]] = tokens[index];
@@ -1654,7 +1655,7 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line) {
 						steamid = Jupiter::from_string<uint64_t>(steamToken);
 					team = RenX::getTeam(teamToken);
 
-					if (adminToken.equalsi("None"_jrs))
+					if (jessilib::equalsi(adminToken, "None"_jrs))
 						getPlayerOrAdd(getToken(5), id, team, isBot, steamid, getToken(1), ""_jrs);
 					else
 						getPlayerOrAdd(getToken(5), id, team, isBot, steamid, getToken(1), ""_jrs)->adminType = adminToken;
@@ -1674,7 +1675,7 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line) {
 					*/
 					auto table = tokens_as_command_table();
 
-					auto table_get = [&table](const Jupiter::ReadableString& in_key) -> Jupiter::StringS* {
+					auto table_get = [&table](const Jupiter::ReadableString& in_key) -> std::string_view* {
 						auto value = table.find(in_key);
 						if (value != table.end()) {
 							return &value->second;
@@ -1843,7 +1844,7 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line) {
 					*/
 					auto table = tokens_as_command_table();
 
-					auto table_get = [&table](const Jupiter::ReadableString& in_key) -> Jupiter::StringS* {
+					auto table_get = [&table](const Jupiter::ReadableString& in_key) -> std::string_view* {
 						auto value = table.find(in_key);
 						if (value != table.end()) {
 							return &value->second;
@@ -1961,7 +1962,7 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line) {
 					*/
 					auto table = tokens_as_command_table();
 
-					auto table_get = [&table](const Jupiter::ReadableString& in_key) -> Jupiter::StringS* {
+					auto table_get = [&table](const Jupiter::ReadableString& in_key) -> std::string_view* {
 						auto value = table.find(in_key);
 						if (value != table.end()) {
 							return &value->second;
@@ -2071,13 +2072,13 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line) {
 						m_competitive = Jupiter::from_string<bool>(getToken(23));
 
 						const Jupiter::ReadableString &match_state_token = getToken(25);
-						if (match_state_token.equalsi("PendingMatch"_jrs))
+						if (jessilib::equalsi(match_state_token, "PendingMatch"_jrs))
 							m_match_state = 0;
-						else if (match_state_token.equalsi("MatchInProgress"_jrs))
+						else if (jessilib::equalsi(match_state_token, "MatchInProgress"_jrs))
 							m_match_state = 1;
-						else if (match_state_token.equalsi("RoundOver"_jrs) || match_state_token.equalsi("MatchOver"_jrs))
+						else if (jessilib::equalsi(match_state_token, "RoundOver"_jrs) || jessilib::equalsi(match_state_token, "MatchOver"_jrs))
 							m_match_state = 2;
-						else if (match_state_token.equalsi("TravelTheWorld"_jrs))
+						else if (jessilib::equalsi(match_state_token, "TravelTheWorld"_jrs))
 							m_match_state = 3;
 						else // Unknown state -- assume it's in progress
 							m_match_state = 1;

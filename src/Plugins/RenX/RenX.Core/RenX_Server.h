@@ -1143,7 +1143,7 @@ namespace RenX
 		std::chrono::milliseconds m_pingTimeoutThreshold;
 		std::string m_clientHostname;
 		std::string m_hostname;
-		Jupiter::StringS m_pass;
+		std::string m_pass;
 		std::string m_configSection;
 		Jupiter::StringS m_rules;
 		Jupiter::StringS m_ban_from_str;

@@ -38,9 +38,9 @@ public: // RenX_ExtraLoggingPlugin
 	~RenX_ExtraLoggingPlugin();
 
 private:
-	Jupiter::StringS filePrefix;
-	Jupiter::StringS consolePrefix;
-	Jupiter::StringS newDayFmt;
+	std::string filePrefix;
+	std::string consolePrefix;
+	std::string newDayFmt;
 	bool printToConsole;
 	FILE *file;
 

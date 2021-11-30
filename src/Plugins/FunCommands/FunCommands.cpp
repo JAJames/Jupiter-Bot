@@ -190,9 +190,9 @@ const Jupiter::ReadableString &ResolveGenericCommand::getHelp(const Jupiter::Rea
 	static STRING_LITERAL_AS_NAMED_REFERENCE(hostHelp, "Resolves a hostname to an IP address. Syntax: resolve hostname <address>");
 	static STRING_LITERAL_AS_NAMED_REFERENCE(ipHelp, "Reverse-resolves an IP address to a hostname. Syntax: resolve ip <address>");
 
-	if (parameters.equalsi("hostname"_jrs) || parameters.equalsi("host"_jrs))
+	if (jessilib::equalsi(parameters, "hostname"_jrs) || jessilib::equalsi(parameters, "host"_jrs))
 		return hostHelp;
-	if (parameters.equalsi("ip"_jrs))
+	if (jessilib::equalsi(parameters, "ip"_jrs))
 		return ipHelp;
 
 	return defaultHelp;

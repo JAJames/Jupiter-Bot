@@ -35,7 +35,7 @@ bool ChannelRelayPlugin::initialize() {
 	}
 
 	for (const auto& type : split_types) {
-		ChannelRelayPlugin::types.concat(Jupiter::asInt(type));
+		m_types.push_back(Jupiter::asInt(type));
 	}
 
 	return true;
@@ -44,7 +44,7 @@ bool ChannelRelayPlugin::initialize() {
 int ChannelRelayPlugin::OnRehash() {
 	Jupiter::Plugin::OnRehash();
 
-	ChannelRelayPlugin::types.erase();
+	m_types.clear();
 	return this->initialize() ? 0 : -1;
 }
 
@@ -52,7 +52,7 @@ void ChannelRelayPlugin::OnChat(Jupiter::IRC::Client *server, std::string_view c
 	Jupiter::IRC::Client::Channel *chan = server->getChannel(channel);
 	if (chan != nullptr) {
 		int type = chan->getType();
-		if (ChannelRelayPlugin::types.find(type) != std::string_view::npos) {
+		if (std::find(m_types.begin(), m_types.end(), type) != m_types.end()) {
 			size_t serverCount = serverManager->size();
 			char prefix = chan->getUserPrefix(nick);
 			std::string user_string;

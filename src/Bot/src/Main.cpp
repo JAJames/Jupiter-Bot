@@ -23,6 +23,7 @@
 #include <exception>
 #include <thread>
 #include <mutex>
+#include "jessilib/unicode.hpp"
 #include "Jupiter/Functions.h"
 #include "Jupiter/INIConfig.h"
 #include "Jupiter/Socket.h"
@@ -183,17 +184,18 @@ int main(int argc, const char **args) {
 	const char *configFileName = "Config.ini";
 
 	for (int i = 1; i < argc; i++) {
-		if ("-help"_jrs.equalsi(args[i])) {
+		std::string_view arg_view = args[i];
+		if (jessilib::equalsi("-help"_jrs, arg_view)) {
 			puts("Help coming soon, to a theatre near you!");
 			return 0;
 		}
-		else if ("-config"_jrs.equalsi(args[i]) && ++i < argc)
+		else if (jessilib::equalsi("-config"_jrs, arg_view) && ++i < argc)
 			configFileName = args[i];
-		else if ("-pluginsdir"_jrs.equalsi(args[i]) && ++i < argc)
-			plugins_directory = args[i];
-		else if ("-configsdir"_jrs.equalsi(args[i]) && ++i < argc)
-			configs_directory = args[i];
-		else if ("-configFormat"_jrs.equalsi(args[i]) && ++i < argc)
+		else if (jessilib::equalsi("-pluginsdir"_jrs, arg_view) && ++i < argc)
+			plugins_directory = arg_view;
+		else if (jessilib::equalsi("-configsdir"_jrs, arg_view) && ++i < argc)
+			configs_directory = arg_view;
+		else if (jessilib::equalsi("-configFormat"_jrs, arg_view) && ++i < argc)
 			puts("Feature not yet supported!");
 		else
 			printf("Warning: Unknown command line argument \"%s\" specified. Ignoring...", args[i]);

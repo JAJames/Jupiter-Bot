@@ -790,7 +790,7 @@ void RenX_LoggingPlugin::RenX_OnPlayerRDNS(RenX::Server &server, const RenX::Pla
 	else
 		func = &RenX::Server::sendAdmChan;
 
-	Jupiter::String msg = this->playerRDNSFmt;
+	std::string msg = this->playerRDNSFmt;
 	if (!msg.empty())
 	{
 		RenX::processTags(msg, &server, &player);
@@ -806,7 +806,7 @@ void RenX_LoggingPlugin::RenX_OnPlayerIdentify(RenX::Server &server, const RenX:
 	else
 		func = &RenX::Server::sendAdmChan;
 
-	Jupiter::String msg = this->playerIdentifyFmt;
+	std::string msg = this->playerIdentifyFmt;
 	if (!msg.empty() && server.isMatchPending() == false)
 	{
 		RenX::processTags(msg, &server, &player);
@@ -816,7 +816,7 @@ void RenX_LoggingPlugin::RenX_OnPlayerIdentify(RenX::Server &server, const RenX:
 
 void RenX_LoggingPlugin::RenX_OnJoin(RenX::Server &server, const RenX::PlayerInfo &player)
 {
-	Jupiter::String msg;
+	std::string msg;
 	if (RenX_LoggingPlugin::joinPublic)
 	{
 		msg = this->joinPublicFmt;
@@ -846,7 +846,7 @@ void RenX_LoggingPlugin::RenX_OnPart(RenX::Server &server, const RenX::PlayerInf
 	else
 		func = &RenX::Server::sendAdmChan;
 
-	Jupiter::String msg = this->partFmt;
+	std::string msg = this->partFmt;
 	if (!msg.empty() && (server.isTravelling() == false || server.isSeamless()))
 	{
 		RenX::processTags(msg, &server, &player);
@@ -862,11 +862,11 @@ void RenX_LoggingPlugin::RenX_OnKick(RenX::Server &server, const RenX::PlayerInf
 	else
 		func = &RenX::Server::sendAdmChan;
 
-	Jupiter::String msg = this->kickFmt;
+	std::string msg = this->kickFmt;
 	if (!msg.empty())
 	{
 		RenX::processTags(msg, &server, &player);
-		msg.replace(RenX::tags->INTERNAL_MESSAGE_TAG, reason);
+		RenX::replace_tag(msg, RenX::tags->INTERNAL_MESSAGE_TAG, reason);
 		(server.*func)(msg);
 	}
 }
@@ -879,11 +879,11 @@ void RenX_LoggingPlugin::RenX_OnNameChange(RenX::Server &server, const RenX::Pla
 	else
 		func = &RenX::Server::sendAdmChan;
 
-	Jupiter::String msg = this->nameChangeFmt;
+	std::string msg = this->nameChangeFmt;
 	if (!msg.empty())
 	{
 		RenX::processTags(msg, &server, &player);
-		msg.replace(RenX::tags->INTERNAL_NEW_NAME_TAG, newPlayerName);
+		RenX::replace_tag(msg, RenX::tags->INTERNAL_NEW_NAME_TAG, newPlayerName);
 		(server.*func)(msg);
 	}
 }
@@ -896,7 +896,7 @@ void RenX_LoggingPlugin::RenX_OnTeamChange(RenX::Server &server, const RenX::Pla
 	else
 		func = &RenX::Server::sendAdmChan;
 
-	Jupiter::String msg = this->teamChangeFmt;
+	std::string msg = this->teamChangeFmt;
 	if (!msg.empty())
 	{
 		RenX::processTags(msg, &server, &player);
@@ -912,7 +912,7 @@ void RenX_LoggingPlugin::RenX_OnSpeedHack(RenX::Server &server, const RenX::Play
 	else
 		func = &RenX::Server::sendAdmChan;
 
-	Jupiter::String msg = this->speedHackFmt;
+	std::string msg = this->speedHackFmt;
 	if (!msg.empty())
 	{
 		RenX::processTags(msg, &server, &player);
@@ -928,11 +928,11 @@ void RenX_LoggingPlugin::RenX_OnExecute(RenX::Server &server, const RenX::Player
 	else
 		func = &RenX::Server::sendAdmChan;
 
-	Jupiter::String msg = this->playerExecuteFmt;
+	std::string msg = this->playerExecuteFmt;
 	if (!msg.empty())
 	{
 		RenX::processTags(msg, &server, &player);
-		msg.replace(RenX::tags->INTERNAL_MESSAGE_TAG, command);
+		RenX::replace_tag(msg, RenX::tags->INTERNAL_MESSAGE_TAG, command);
 		(server.*func)(msg);
 	}
 }
@@ -945,14 +945,14 @@ void RenX_LoggingPlugin::RenX_OnPlayerCommand(RenX::Server &server, const RenX::
 	else
 		func = &RenX::Server::sendAdmChan;
 
-	Jupiter::String msg = command != nullptr
+	std::string msg = command != nullptr
 		? this->playerCommandSuccessFmt
 		: this->playerCommandFailFmt;
 
 	if (!msg.empty())
 	{
 		RenX::processTags(msg, &server, &player);
-		msg.replace(RenX::tags->INTERNAL_MESSAGE_TAG, message);
+		RenX::replace_tag(msg, RenX::tags->INTERNAL_MESSAGE_TAG, message);
 		(server.*func)(msg);
 	}
 }
@@ -965,11 +965,11 @@ void RenX_LoggingPlugin::RenX_OnPlayer(RenX::Server &server, const Jupiter::Read
 	else
 		func = &RenX::Server::sendAdmChan;
 
-	Jupiter::String msg = this->playerFmt;
+	std::string msg = this->playerFmt;
 	if (!msg.empty())
 	{
 		RenX::processTags(msg, &server);
-		msg.replace(RenX::tags->INTERNAL_MESSAGE_TAG, raw);
+		RenX::replace_tag(msg, RenX::tags->INTERNAL_MESSAGE_TAG, raw);
 		(server.*func)(msg);
 	}
 }
@@ -982,11 +982,11 @@ void RenX_LoggingPlugin::RenX_OnChat(RenX::Server &server, const RenX::PlayerInf
 	else
 		func = &RenX::Server::sendAdmChan;
 	
-	Jupiter::String msg = this->chatFmt;
+	std::string msg = this->chatFmt;
 	if (!msg.empty())
 	{
 		RenX::processTags(msg, &server, &player);
-		msg.replace(RenX::tags->INTERNAL_MESSAGE_TAG, message);
+		RenX::replace_tag(msg, RenX::tags->INTERNAL_MESSAGE_TAG, message);
 		(server.*func)(msg);
 	}
 }
@@ -999,11 +999,11 @@ void RenX_LoggingPlugin::RenX_OnTeamChat(RenX::Server &server, const RenX::Playe
 	else
 		func = &RenX::Server::sendAdmChan;
 	
-	Jupiter::String msg = this->teamChatFmt;
+	std::string msg = this->teamChatFmt;
 	if (!msg.empty())
 	{
 		RenX::processTags(msg, &server, &player);
-		msg.replace(RenX::tags->INTERNAL_MESSAGE_TAG, message);
+		RenX::replace_tag(msg, RenX::tags->INTERNAL_MESSAGE_TAG, message);
 		(server.*func)(msg);
 	}
 }
@@ -1016,11 +1016,11 @@ void RenX_LoggingPlugin::RenX_OnRadioChat(RenX::Server &server, const RenX::Play
 	else
 		func = &RenX::Server::sendAdmChan;
 
-	Jupiter::String msg = this->radioChatFmt;
+	std::string msg = this->radioChatFmt;
 	if (!msg.empty())
 	{
 		RenX::processTags(msg, &server, &player);
-		msg.replace(RenX::tags->INTERNAL_MESSAGE_TAG, message);
+		RenX::replace_tag(msg, RenX::tags->INTERNAL_MESSAGE_TAG, message);
 		(server.*func)(msg);
 	}
 }
@@ -1033,11 +1033,11 @@ void RenX_LoggingPlugin::RenX_OnHostChat(RenX::Server &server, const Jupiter::Re
 	else
 		func = &RenX::Server::sendAdmChan;
 
-	Jupiter::String msg = this->hostChatFmt;
+	std::string msg = this->hostChatFmt;
 	if (!msg.empty())
 	{
 		RenX::processTags(msg, &server);
-		msg.replace(RenX::tags->INTERNAL_MESSAGE_TAG, message);
+		RenX::replace_tag(msg, RenX::tags->INTERNAL_MESSAGE_TAG, message);
 		(server.*func)(msg);
 	}
 }
@@ -1050,11 +1050,11 @@ void RenX_LoggingPlugin::RenX_OnHostPage(RenX::Server &server, const RenX::Playe
 	else
 		func = &RenX::Server::sendAdmChan;
 
-	Jupiter::String msg = this->hostPageFmt;
+	std::string msg = this->hostPageFmt;
 	if (!msg.empty())
 	{
 		RenX::processTags(msg, &server, &player);
-		msg.replace(RenX::tags->INTERNAL_MESSAGE_TAG, message);
+		RenX::replace_tag(msg, RenX::tags->INTERNAL_MESSAGE_TAG, message);
 		(server.*func)(msg);
 	}
 }
@@ -1067,11 +1067,11 @@ void RenX_LoggingPlugin::RenX_OnAdminMessage(RenX::Server &server, const RenX::P
 	else
 		func = &RenX::Server::sendAdmChan;
 
-	Jupiter::String msg = this->adminMsgFmt;
+	std::string msg = this->adminMsgFmt;
 	if (!msg.empty())
 	{
 		RenX::processTags(msg, &server, &player);
-		msg.replace(RenX::tags->INTERNAL_MESSAGE_TAG, message);
+		RenX::replace_tag(msg, RenX::tags->INTERNAL_MESSAGE_TAG, message);
 		(server.*func)(msg);
 	}
 }
@@ -1084,11 +1084,11 @@ void RenX_LoggingPlugin::RenX_OnWarnMessage(RenX::Server &server, const RenX::Pl
 	else
 		func = &RenX::Server::sendAdmChan;
 
-	Jupiter::String msg = this->warnMsgFmt;
+	std::string msg = this->warnMsgFmt;
 	if (!msg.empty())
 	{
 		RenX::processTags(msg, &server, &player);
-		msg.replace(RenX::tags->INTERNAL_MESSAGE_TAG, message);
+		RenX::replace_tag(msg, RenX::tags->INTERNAL_MESSAGE_TAG, message);
 		(server.*func)(msg);
 	}
 }
@@ -1101,11 +1101,11 @@ void RenX_LoggingPlugin::RenX_OnAdminPMessage(RenX::Server &server, const RenX::
 	else
 		func = &RenX::Server::sendAdmChan;
 
-	Jupiter::String msg = this->pAdminMsgFmt;
+	std::string msg = this->pAdminMsgFmt;
 	if (!msg.empty())
 	{
 		RenX::processTags(msg, &server, &player, &target);
-		msg.replace(RenX::tags->INTERNAL_MESSAGE_TAG, message);
+		RenX::replace_tag(msg, RenX::tags->INTERNAL_MESSAGE_TAG, message);
 		(server.*func)(msg);
 	}
 }
@@ -1118,11 +1118,11 @@ void RenX_LoggingPlugin::RenX_OnWarnPMessage(RenX::Server &server, const RenX::P
 	else
 		func = &RenX::Server::sendAdmChan;
 
-	Jupiter::String msg = this->pWarnMsgFmt;
+	std::string msg = this->pWarnMsgFmt;
 	if (!msg.empty())
 	{
 		RenX::processTags(msg, &server, &player, &target);
-		msg.replace(RenX::tags->INTERNAL_MESSAGE_TAG, message);
+		RenX::replace_tag(msg, RenX::tags->INTERNAL_MESSAGE_TAG, message);
 		(server.*func)(msg);
 	}
 }
@@ -1135,13 +1135,13 @@ void RenX_LoggingPlugin::RenX_OnHostAdminMessage(RenX::Server &server, const Jup
 	else
 		func = &RenX::Server::sendAdmChan;
 
-	Jupiter::String msg = this->adminMsgFmt;
+	std::string msg = this->adminMsgFmt;
 	if (!msg.empty())
 	{
 		RenX::processTags(msg, &server);
-		msg.replace(RenX::tags->INTERNAL_NAME_TAG, "Host"_jrs);
-		msg.replace(RenX::tags->INTERNAL_RAW_NAME_TAG, "Host"_jrs);
-		msg.replace(RenX::tags->INTERNAL_MESSAGE_TAG, message);
+		RenX::replace_tag(msg, RenX::tags->INTERNAL_NAME_TAG, "Host"_jrs);
+		RenX::replace_tag(msg, RenX::tags->INTERNAL_RAW_NAME_TAG, "Host"_jrs);
+		RenX::replace_tag(msg, RenX::tags->INTERNAL_MESSAGE_TAG, message);
 		(server.*func)(msg);
 	}
 }
@@ -1154,13 +1154,13 @@ void RenX_LoggingPlugin::RenX_OnHostAdminPMessage(RenX::Server &server, const Re
 	else
 		func = &RenX::Server::sendAdmChan;
 
-	Jupiter::String msg = this->pAdminMsgFmt;
+	std::string msg = this->pAdminMsgFmt;
 	if (!msg.empty())
 	{
 		RenX::processTags(msg, &server, nullptr, &player);
-		msg.replace(RenX::tags->INTERNAL_NAME_TAG, "Host"_jrs);
-		msg.replace(RenX::tags->INTERNAL_RAW_NAME_TAG, "Host"_jrs);
-		msg.replace(RenX::tags->INTERNAL_MESSAGE_TAG, message);
+		RenX::replace_tag(msg, RenX::tags->INTERNAL_NAME_TAG, "Host"_jrs);
+		RenX::replace_tag(msg, RenX::tags->INTERNAL_RAW_NAME_TAG, "Host"_jrs);
+		RenX::replace_tag(msg, RenX::tags->INTERNAL_MESSAGE_TAG, message);
 		(server.*func)(msg);
 	}
 }
@@ -1173,13 +1173,13 @@ void RenX_LoggingPlugin::RenX_OnHostWarnMessage(RenX::Server &server, const Jupi
 	else
 		func = &RenX::Server::sendAdmChan;
 
-	Jupiter::String msg = this->warnMsgFmt;
+	std::string msg = this->warnMsgFmt;
 	if (!msg.empty())
 	{
 		RenX::processTags(msg, &server);
-		msg.replace(RenX::tags->INTERNAL_NAME_TAG, "Host"_jrs);
-		msg.replace(RenX::tags->INTERNAL_RAW_NAME_TAG, "Host"_jrs);
-		msg.replace(RenX::tags->INTERNAL_MESSAGE_TAG, message);
+		RenX::replace_tag(msg, RenX::tags->INTERNAL_NAME_TAG, "Host"_jrs);
+		RenX::replace_tag(msg, RenX::tags->INTERNAL_RAW_NAME_TAG, "Host"_jrs);
+		RenX::replace_tag(msg, RenX::tags->INTERNAL_MESSAGE_TAG, message);
 		(server.*func)(msg);
 	}
 }
@@ -1192,13 +1192,13 @@ void RenX_LoggingPlugin::RenX_OnHostWarnPMessage(RenX::Server &server, const Ren
 	else
 		func = &RenX::Server::sendAdmChan;
 
-	Jupiter::String msg = this->pWarnMsgFmt;
+	std::string msg = this->pWarnMsgFmt;
 	if (!msg.empty())
 	{
 		RenX::processTags(msg, &server, nullptr, &player);
-		msg.replace(RenX::tags->INTERNAL_NAME_TAG, "Host"_jrs);
-		msg.replace(RenX::tags->INTERNAL_RAW_NAME_TAG, "Host"_jrs);
-		msg.replace(RenX::tags->INTERNAL_MESSAGE_TAG, message);
+		RenX::replace_tag(msg, RenX::tags->INTERNAL_NAME_TAG, "Host"_jrs);
+		RenX::replace_tag(msg, RenX::tags->INTERNAL_RAW_NAME_TAG, "Host"_jrs);
+		RenX::replace_tag(msg, RenX::tags->INTERNAL_MESSAGE_TAG, message);
 		(server.*func)(msg);
 	}
 }
@@ -1211,18 +1211,18 @@ void RenX_LoggingPlugin::RenX_OnOtherChat(RenX::Server &server, const Jupiter::R
 	else
 		func = &RenX::Server::sendAdmChan;
 
-	Jupiter::String msg = this->otherChatFmt;
+	std::string msg = this->otherChatFmt;
 	if (!msg.empty())
 	{
 		RenX::processTags(msg, &server);
-		msg.replace(RenX::tags->INTERNAL_MESSAGE_TAG, raw);
+		RenX::replace_tag(msg, RenX::tags->INTERNAL_MESSAGE_TAG, raw);
 		(server.*func)(msg);
 	}
 }
 
 void RenX_LoggingPlugin::RenX_OnDeploy(RenX::Server &server, const RenX::PlayerInfo &player, const Jupiter::ReadableString &object) {
 	logFuncType func;
-	Jupiter::String msg;
+	std::string msg;
 	if (std::string_view{object}.ends_with("Beacon")) {
 		if (RenX_LoggingPlugin::deployPublic)
 			func = &RenX::Server::sendLogChan;
@@ -1241,7 +1241,7 @@ void RenX_LoggingPlugin::RenX_OnDeploy(RenX::Server &server, const RenX::PlayerI
 	}
 	if (!msg.empty()) {
 		RenX::processTags(msg, &server, &player);
-		msg.replace(RenX::tags->INTERNAL_OBJECT_TAG, RenX::translateName(object));
+		RenX::replace_tag(msg, RenX::tags->INTERNAL_OBJECT_TAG, RenX::translateName(object));
 		(server.*func)(msg);
 	}
 }
@@ -1254,18 +1254,18 @@ void RenX_LoggingPlugin::RenX_OnOverMine(RenX::Server &server, const RenX::Playe
 	else
 		func = &RenX::Server::sendAdmChan;
 
-	Jupiter::String msg = this->overMineFmt;
+	std::string msg = this->overMineFmt;
 	if (!msg.empty())
 	{
 		RenX::processTags(msg, &server, &player);
-		msg.replace(RenX::tags->INTERNAL_OBJECT_TAG, RenX::translateName(location));
+		RenX::replace_tag(msg, RenX::tags->INTERNAL_OBJECT_TAG, RenX::translateName(location));
 		(server.*func)(msg);
 	}
 }
 
 void RenX_LoggingPlugin::RenX_OnDisarm(RenX::Server &server, const RenX::PlayerInfo &player, const Jupiter::ReadableString &object, const RenX::PlayerInfo &victim) {
 	logFuncType func;
-	Jupiter::String msg;
+	std::string msg;
 
 	if (std::string_view{object}.ends_with("Beacon")) {
 		if (RenX_LoggingPlugin::disarmPublic)
@@ -1285,14 +1285,14 @@ void RenX_LoggingPlugin::RenX_OnDisarm(RenX::Server &server, const RenX::PlayerI
 	}
 	if (!msg.empty()) {
 		RenX::processTags(msg, &server, &player, &victim);
-		msg.replace(RenX::tags->INTERNAL_OBJECT_TAG, RenX::translateName(object));
+		RenX::replace_tag(msg, RenX::tags->INTERNAL_OBJECT_TAG, RenX::translateName(object));
 		(server.*func)(msg);
 	}
 }
 
 void RenX_LoggingPlugin::RenX_OnDisarm(RenX::Server &server, const RenX::PlayerInfo &player, const Jupiter::ReadableString &object) {
 	logFuncType func;
-	Jupiter::String msg;
+	std::string msg;
 
 	if (std::string_view{object}.ends_with("Beacon")) {
 		if (RenX_LoggingPlugin::disarmPublic)
@@ -1312,7 +1312,7 @@ void RenX_LoggingPlugin::RenX_OnDisarm(RenX::Server &server, const RenX::PlayerI
 	}
 	if (!msg.empty()) {
 		RenX::processTags(msg, &server, &player);
-		msg.replace(RenX::tags->INTERNAL_OBJECT_TAG, RenX::translateName(object));
+		RenX::replace_tag(msg, RenX::tags->INTERNAL_OBJECT_TAG, RenX::translateName(object));
 		(server.*func)(msg);
 	}
 }
@@ -1325,12 +1325,12 @@ void RenX_LoggingPlugin::RenX_OnExplode(RenX::Server &server, const RenX::Player
 	else
 		func = &RenX::Server::sendAdmChan;
 
-	Jupiter::String msg = this->explodeFmt;
+	std::string msg = this->explodeFmt;
 	if (!msg.empty())
 	{
 		RenX::processTags(msg, &server, &player);
-		msg.replace(RenX::tags->INTERNAL_WEAPON_TAG, RenX::translateName(object));
-		msg.replace(RenX::tags->INTERNAL_OBJECT_TAG, RenX::translateName(object));
+		RenX::replace_tag(msg, RenX::tags->INTERNAL_WEAPON_TAG, RenX::translateName(object));
+		RenX::replace_tag(msg, RenX::tags->INTERNAL_OBJECT_TAG, RenX::translateName(object));
 		(server.*func)(msg);
 	}
 }
@@ -1343,12 +1343,12 @@ void RenX_LoggingPlugin::RenX_OnExplode(RenX::Server &server, const Jupiter::Rea
 	else
 		func = &RenX::Server::sendAdmChan;
 
-	Jupiter::String msg = this->explodeNoOwnerFmt;
+	std::string msg = this->explodeNoOwnerFmt;
 	if (!msg.empty())
 	{
 		RenX::processTags(msg, &server);
-		msg.replace(RenX::tags->INTERNAL_WEAPON_TAG, RenX::translateName(object));
-		msg.replace(RenX::tags->INTERNAL_OBJECT_TAG, RenX::translateName(object));
+		RenX::replace_tag(msg, RenX::tags->INTERNAL_WEAPON_TAG, RenX::translateName(object));
+		RenX::replace_tag(msg, RenX::tags->INTERNAL_OBJECT_TAG, RenX::translateName(object));
 		(server.*func)(msg);
 	}
 }
@@ -1361,11 +1361,11 @@ void RenX_LoggingPlugin::RenX_OnSuicide(RenX::Server &server, const RenX::Player
 	else
 		func = &RenX::Server::sendAdmChan;
 	
-	Jupiter::String msg = this->suicideFmt;
+	std::string msg = this->suicideFmt;
 	if (!msg.empty())
 	{
 		RenX::processTags(msg, &server, &player);
-		msg.replace(RenX::tags->INTERNAL_WEAPON_TAG, RenX::translateName(damageType));
+		RenX::replace_tag(msg, RenX::tags->INTERNAL_WEAPON_TAG, RenX::translateName(damageType));
 		(server.*func)(msg);
 	}
 }
@@ -1378,11 +1378,11 @@ void RenX_LoggingPlugin::RenX_OnKill(RenX::Server &server, const RenX::PlayerInf
 	else
 		func = &RenX::Server::sendAdmChan;
 	
-	Jupiter::String msg = this->killFmt;
+	std::string msg = this->killFmt;
 	if (!msg.empty())
 	{
 		RenX::processTags(msg, &server, &player, &victim);
-		msg.replace(RenX::tags->INTERNAL_WEAPON_TAG, RenX::translateName(damageType));
+		RenX::replace_tag(msg, RenX::tags->INTERNAL_WEAPON_TAG, RenX::translateName(damageType));
 		(server.*func)(msg);
 	}
 }
@@ -1395,15 +1395,15 @@ void RenX_LoggingPlugin::RenX_OnKill(RenX::Server &server, const Jupiter::Readab
 	else
 		func = &RenX::Server::sendAdmChan;
 
-	Jupiter::String msg = this->killFmt2;
+	std::string msg = this->killFmt2;
 	if (!msg.empty())
 	{
 		RenX::processTags(msg, &server, nullptr, &victim);
-		msg.replace(RenX::tags->INTERNAL_NAME_TAG, RenX::translateName(killer));
-		msg.replace(RenX::tags->INTERNAL_TEAM_COLOR_TAG, RenX::getTeamColor(killerTeam));
-		msg.replace(RenX::tags->INTERNAL_TEAM_SHORT_TAG, RenX::getTeamName(killerTeam));
-		msg.replace(RenX::tags->INTERNAL_TEAM_LONG_TAG, RenX::getFullTeamName(killerTeam));
-		msg.replace(RenX::tags->INTERNAL_WEAPON_TAG, RenX::translateName(damageType));
+		RenX::replace_tag(msg, RenX::tags->INTERNAL_NAME_TAG, RenX::translateName(killer));
+		RenX::replace_tag(msg, RenX::tags->INTERNAL_TEAM_COLOR_TAG, RenX::getTeamColor(killerTeam));
+		RenX::replace_tag(msg, RenX::tags->INTERNAL_TEAM_SHORT_TAG, RenX::getTeamName(killerTeam));
+		RenX::replace_tag(msg, RenX::tags->INTERNAL_TEAM_LONG_TAG, RenX::getFullTeamName(killerTeam));
+		RenX::replace_tag(msg, RenX::tags->INTERNAL_WEAPON_TAG, RenX::translateName(damageType));
 		(server.*func)(msg);
 	}
 }
@@ -1416,11 +1416,11 @@ void RenX_LoggingPlugin::RenX_OnDie(RenX::Server &server, const RenX::PlayerInfo
 	else
 		func = &RenX::Server::sendAdmChan;
 
-	Jupiter::String msg = this->dieFmt;
+	std::string msg = this->dieFmt;
 	if (!msg.empty())
 	{
 		RenX::processTags(msg, &server, &player);
-		msg.replace(RenX::tags->INTERNAL_WEAPON_TAG, RenX::translateName(damageType));
+		RenX::replace_tag(msg, RenX::tags->INTERNAL_WEAPON_TAG, RenX::translateName(damageType));
 		(server.*func)(msg);
 	}
 }
@@ -1433,15 +1433,15 @@ void RenX_LoggingPlugin::RenX_OnDie(RenX::Server &server, const Jupiter::Readabl
 	else
 		func = &RenX::Server::sendAdmChan;
 
-	Jupiter::String msg = this->dieFmt2;
+	std::string msg = this->dieFmt2;
 	if (!msg.empty())
 	{
 		RenX::processTags(msg, &server);
-		msg.replace(RenX::tags->INTERNAL_NAME_TAG, RenX::translateName(object));
-		msg.replace(RenX::tags->INTERNAL_TEAM_COLOR_TAG, RenX::getTeamColor(objectTeam));
-		msg.replace(RenX::tags->INTERNAL_TEAM_SHORT_TAG, RenX::getTeamName(objectTeam));
-		msg.replace(RenX::tags->INTERNAL_TEAM_LONG_TAG, RenX::getFullTeamName(objectTeam));
-		msg.replace(RenX::tags->INTERNAL_WEAPON_TAG, RenX::translateName(damageType));
+		RenX::replace_tag(msg, RenX::tags->INTERNAL_NAME_TAG, RenX::translateName(object));
+		RenX::replace_tag(msg, RenX::tags->INTERNAL_TEAM_COLOR_TAG, RenX::getTeamColor(objectTeam));
+		RenX::replace_tag(msg, RenX::tags->INTERNAL_TEAM_SHORT_TAG, RenX::getTeamName(objectTeam));
+		RenX::replace_tag(msg, RenX::tags->INTERNAL_TEAM_LONG_TAG, RenX::getFullTeamName(objectTeam));
+		RenX::replace_tag(msg, RenX::tags->INTERNAL_WEAPON_TAG, RenX::translateName(damageType));
 		(server.*func)(msg);
 	}
 }
@@ -1454,7 +1454,7 @@ void RenX_LoggingPlugin::RenX_OnDestroy(RenX::Server &server, const RenX::Player
 	else
 		func = &RenX::Server::sendAdmChan;
 
-	Jupiter::String msg;
+	std::string msg;
 	switch (type)
 	{
 	case RenX::ObjectType::Building:
@@ -1470,11 +1470,11 @@ void RenX_LoggingPlugin::RenX_OnDestroy(RenX::Server &server, const RenX::Player
 	if (!msg.empty())
 	{
 		RenX::processTags(msg, &server, &player);
-		msg.replace(RenX::tags->INTERNAL_VICTIM_TEAM_COLOR_TAG, RenX::getTeamColor(objectTeam));
-		msg.replace(RenX::tags->INTERNAL_VICTIM_TEAM_SHORT_TAG, RenX::getTeamName(objectTeam));
-		msg.replace(RenX::tags->INTERNAL_VICTIM_TEAM_LONG_TAG, RenX::getFullTeamName(objectTeam));
-		msg.replace(RenX::tags->INTERNAL_OBJECT_TAG, RenX::translateName(objectName));
-		msg.replace(RenX::tags->INTERNAL_WEAPON_TAG, RenX::translateName(damageType));
+		RenX::replace_tag(msg, RenX::tags->INTERNAL_VICTIM_TEAM_COLOR_TAG, RenX::getTeamColor(objectTeam));
+		RenX::replace_tag(msg, RenX::tags->INTERNAL_VICTIM_TEAM_SHORT_TAG, RenX::getTeamName(objectTeam));
+		RenX::replace_tag(msg, RenX::tags->INTERNAL_VICTIM_TEAM_LONG_TAG, RenX::getFullTeamName(objectTeam));
+		RenX::replace_tag(msg, RenX::tags->INTERNAL_OBJECT_TAG, RenX::translateName(objectName));
+		RenX::replace_tag(msg, RenX::tags->INTERNAL_WEAPON_TAG, RenX::translateName(damageType));
 		(server.*func)(msg);
 	}
 }
@@ -1487,14 +1487,14 @@ void RenX_LoggingPlugin::RenX_OnCapture(RenX::Server &server, const RenX::Player
 	else
 		func = &RenX::Server::sendAdmChan;
 
-	Jupiter::String msg = this->captureFmt;
+	std::string msg = this->captureFmt;
 	if (!msg.empty())
 	{
 		RenX::processTags(msg, &server, &player);
-		msg.replace(RenX::tags->INTERNAL_OBJECT_TAG, RenX::translateName(building));
-		msg.replace(RenX::tags->INTERNAL_VICTIM_TEAM_COLOR_TAG, RenX::getTeamColor(oldTeam));
-		msg.replace(RenX::tags->INTERNAL_VICTIM_TEAM_SHORT_TAG, RenX::getTeamName(oldTeam));
-		msg.replace(RenX::tags->INTERNAL_VICTIM_TEAM_LONG_TAG, RenX::getFullTeamName(oldTeam));
+		RenX::replace_tag(msg, RenX::tags->INTERNAL_OBJECT_TAG, RenX::translateName(building));
+		RenX::replace_tag(msg, RenX::tags->INTERNAL_VICTIM_TEAM_COLOR_TAG, RenX::getTeamColor(oldTeam));
+		RenX::replace_tag(msg, RenX::tags->INTERNAL_VICTIM_TEAM_SHORT_TAG, RenX::getTeamName(oldTeam));
+		RenX::replace_tag(msg, RenX::tags->INTERNAL_VICTIM_TEAM_LONG_TAG, RenX::getFullTeamName(oldTeam));
 		(server.*func)(msg);
 	}
 }
@@ -1507,14 +1507,14 @@ void RenX_LoggingPlugin::RenX_OnNeutralize(RenX::Server &server, const RenX::Pla
 	else
 		func = &RenX::Server::sendAdmChan;
 
-	Jupiter::String msg = this->neutralizeFmt;
+	std::string msg = this->neutralizeFmt;
 	if (!msg.empty())
 	{
 		RenX::processTags(msg, &server, &player);
-		msg.replace(RenX::tags->INTERNAL_OBJECT_TAG, RenX::translateName(building));
-		msg.replace(RenX::tags->INTERNAL_VICTIM_TEAM_COLOR_TAG, RenX::getTeamColor(oldTeam));
-		msg.replace(RenX::tags->INTERNAL_VICTIM_TEAM_SHORT_TAG, RenX::getTeamName(oldTeam));
-		msg.replace(RenX::tags->INTERNAL_VICTIM_TEAM_LONG_TAG, RenX::getFullTeamName(oldTeam));
+		RenX::replace_tag(msg, RenX::tags->INTERNAL_OBJECT_TAG, RenX::translateName(building));
+		RenX::replace_tag(msg, RenX::tags->INTERNAL_VICTIM_TEAM_COLOR_TAG, RenX::getTeamColor(oldTeam));
+		RenX::replace_tag(msg, RenX::tags->INTERNAL_VICTIM_TEAM_SHORT_TAG, RenX::getTeamName(oldTeam));
+		RenX::replace_tag(msg, RenX::tags->INTERNAL_VICTIM_TEAM_LONG_TAG, RenX::getFullTeamName(oldTeam));
 		(server.*func)(msg);
 	}
 }
@@ -1527,11 +1527,11 @@ void RenX_LoggingPlugin::RenX_OnCharacterPurchase(RenX::Server &server, const Re
 	else
 		func = &RenX::Server::sendAdmChan;
 
-	Jupiter::String msg = this->characterPurchaseFmt;
+	std::string msg = this->characterPurchaseFmt;
 	if (!msg.empty())
 	{
 		RenX::processTags(msg, &server, &player);
-		msg.replace(RenX::tags->INTERNAL_VICTIM_CHARACTER_TAG, RenX::translateName(character));
+		RenX::replace_tag(msg, RenX::tags->INTERNAL_VICTIM_CHARACTER_TAG, RenX::translateName(character));
 		(server.*func)(msg);
 	}
 }
@@ -1544,11 +1544,11 @@ void RenX_LoggingPlugin::RenX_OnItemPurchase(RenX::Server &server, const RenX::P
 	else
 		func = &RenX::Server::sendAdmChan;
 
-	Jupiter::String msg = this->itemPurchaseFmt;
+	std::string msg = this->itemPurchaseFmt;
 	if (!msg.empty())
 	{
 		RenX::processTags(msg, &server, &player);
-		msg.replace(RenX::tags->INTERNAL_OBJECT_TAG, RenX::translateName(item));
+		RenX::replace_tag(msg, RenX::tags->INTERNAL_OBJECT_TAG, RenX::translateName(item));
 		(server.*func)(msg);
 	}
 }
@@ -1561,11 +1561,11 @@ void RenX_LoggingPlugin::RenX_OnWeaponPurchase(RenX::Server &server, const RenX:
 	else
 		func = &RenX::Server::sendAdmChan;
 
-	Jupiter::String msg = this->weaponPurchaseFmt;
+	std::string msg = this->weaponPurchaseFmt;
 	if (!msg.empty())
 	{
 		RenX::processTags(msg, &server, &player);
-		msg.replace(RenX::tags->INTERNAL_WEAPON_TAG, RenX::translateName(weapon));
+		RenX::replace_tag(msg, RenX::tags->INTERNAL_WEAPON_TAG, RenX::translateName(weapon));
 		(server.*func)(msg);
 	}
 }
@@ -1578,7 +1578,7 @@ void RenX_LoggingPlugin::RenX_OnRefillPurchase(RenX::Server &server, const RenX:
 	else
 		func = &RenX::Server::sendAdmChan;
 
-	Jupiter::String msg = this->refillPurchaseFmt;
+	std::string msg = this->refillPurchaseFmt;
 	if (!msg.empty())
 	{
 		RenX::processTags(msg, &server, &player);
@@ -1594,11 +1594,11 @@ void RenX_LoggingPlugin::RenX_OnVehiclePurchase(RenX::Server &server, const RenX
 	else
 		func = &RenX::Server::sendAdmChan;
 
-	Jupiter::String msg = this->vehiclePurchaseFmt;
+	std::string msg = this->vehiclePurchaseFmt;
 	if (!msg.empty())
 	{
 		RenX::processTags(msg, &server, &owner);
-		msg.replace(RenX::tags->INTERNAL_VICTIM_VEHICLE_TAG, RenX::translateName(vehicle));
+		RenX::replace_tag(msg, RenX::tags->INTERNAL_VICTIM_VEHICLE_TAG, RenX::translateName(vehicle));
 		(server.*func)(msg);
 	}
 }
@@ -1611,18 +1611,18 @@ void RenX_LoggingPlugin::RenX_OnVehicleSpawn(RenX::Server &server, const RenX::T
 	else
 		func = &RenX::Server::sendAdmChan;
 
-	Jupiter::String msg = this->vehicleSpawnFmt;
+	std::string msg = this->vehicleSpawnFmt;
 	if (!msg.empty())
 	{
 		RenX::TeamType otherTeam = RenX::getEnemy(team);
 		RenX::processTags(msg, &server);
-		msg.replace(RenX::tags->INTERNAL_TEAM_COLOR_TAG, RenX::getTeamColor(team));
-		msg.replace(RenX::tags->INTERNAL_TEAM_SHORT_TAG, RenX::getTeamName(team));
-		msg.replace(RenX::tags->INTERNAL_TEAM_LONG_TAG, RenX::getFullTeamName(team));
-		msg.replace(RenX::tags->INTERNAL_VICTIM_TEAM_COLOR_TAG, RenX::getTeamColor(otherTeam));
-		msg.replace(RenX::tags->INTERNAL_VICTIM_TEAM_SHORT_TAG, RenX::getTeamName(otherTeam));
-		msg.replace(RenX::tags->INTERNAL_VICTIM_TEAM_LONG_TAG, RenX::getFullTeamName(otherTeam));
-		msg.replace(RenX::tags->INTERNAL_VEHICLE_TAG, RenX::translateName(vehicle));
+		RenX::replace_tag(msg, RenX::tags->INTERNAL_TEAM_COLOR_TAG, RenX::getTeamColor(team));
+		RenX::replace_tag(msg, RenX::tags->INTERNAL_TEAM_SHORT_TAG, RenX::getTeamName(team));
+		RenX::replace_tag(msg, RenX::tags->INTERNAL_TEAM_LONG_TAG, RenX::getFullTeamName(team));
+		RenX::replace_tag(msg, RenX::tags->INTERNAL_VICTIM_TEAM_COLOR_TAG, RenX::getTeamColor(otherTeam));
+		RenX::replace_tag(msg, RenX::tags->INTERNAL_VICTIM_TEAM_SHORT_TAG, RenX::getTeamName(otherTeam));
+		RenX::replace_tag(msg, RenX::tags->INTERNAL_VICTIM_TEAM_LONG_TAG, RenX::getFullTeamName(otherTeam));
+		RenX::replace_tag(msg, RenX::tags->INTERNAL_VEHICLE_TAG, RenX::translateName(vehicle));
 		(server.*func)(msg);
 	}
 }
@@ -1635,11 +1635,11 @@ void RenX_LoggingPlugin::RenX_OnSpawn(RenX::Server &server, const RenX::PlayerIn
 	else
 		func = &RenX::Server::sendAdmChan;
 
-	Jupiter::String msg = this->spawnFmt;
+	std::string msg = this->spawnFmt;
 	if (!msg.empty())
 	{
 		RenX::processTags(msg, &server, &player);
-		msg.replace(RenX::tags->INTERNAL_VICTIM_CHARACTER_TAG, RenX::translateName(character));
+		RenX::replace_tag(msg, RenX::tags->INTERNAL_VICTIM_CHARACTER_TAG, RenX::translateName(character));
 		(server.*func)(msg);
 	}
 }
@@ -1652,7 +1652,7 @@ void RenX_LoggingPlugin::RenX_OnBotJoin(RenX::Server &server, const RenX::Player
 	else
 		func = &RenX::Server::sendAdmChan;
 
-	Jupiter::String msg = this->botJoinFmt;
+	std::string msg = this->botJoinFmt;
 	if (!msg.empty())
 	{
 		RenX::processTags(msg, &server, &player);
@@ -1668,11 +1668,11 @@ void RenX_LoggingPlugin::RenX_OnVehicleCrate(RenX::Server &server, const RenX::P
 	else
 		func = &RenX::Server::sendAdmChan;
 
-	Jupiter::String msg = this->vehicleCrateFmt;
+	std::string msg = this->vehicleCrateFmt;
 	if (!msg.empty())
 	{
 		RenX::processTags(msg, &server, &player);
-		msg.replace(RenX::tags->INTERNAL_OBJECT_TAG, RenX::translateName(vehicle));
+		RenX::replace_tag(msg, RenX::tags->INTERNAL_OBJECT_TAG, RenX::translateName(vehicle));
 		(server.*func)(msg);
 	}
 }
@@ -1685,11 +1685,11 @@ void RenX_LoggingPlugin::RenX_OnTSVehicleCrate(RenX::Server &server, const RenX:
 	else
 		func = &RenX::Server::sendAdmChan;
 
-	Jupiter::String msg = this->TSVehicleCrateFmt;
+	std::string msg = this->TSVehicleCrateFmt;
 	if (!msg.empty())
 	{
 		RenX::processTags(msg, &server, &player);
-		msg.replace(RenX::tags->INTERNAL_OBJECT_TAG, RenX::translateName(vehicle));
+		RenX::replace_tag(msg, RenX::tags->INTERNAL_OBJECT_TAG, RenX::translateName(vehicle));
 		(server.*func)(msg);
 	}
 }
@@ -1702,11 +1702,11 @@ void RenX_LoggingPlugin::RenX_OnRAVehicleCrate(RenX::Server &server, const RenX:
 	else
 		func = &RenX::Server::sendAdmChan;
 
-	Jupiter::String msg = this->RAVehicleCrateFmt;
+	std::string msg = this->RAVehicleCrateFmt;
 	if (!msg.empty())
 	{
 		RenX::processTags(msg, &server, &player);
-		msg.replace(RenX::tags->INTERNAL_OBJECT_TAG, RenX::translateName(vehicle));
+		RenX::replace_tag(msg, RenX::tags->INTERNAL_OBJECT_TAG, RenX::translateName(vehicle));
 		(server.*func)(msg);
 	}
 }
@@ -1719,7 +1719,7 @@ void RenX_LoggingPlugin::RenX_OnDeathCrate(RenX::Server &server, const RenX::Pla
 	else
 		func = &RenX::Server::sendAdmChan;
 
-	Jupiter::String msg = this->deathCrateFmt;
+	std::string msg = this->deathCrateFmt;
 	if (!msg.empty())
 	{
 		RenX::processTags(msg, &server, &player);
@@ -1735,11 +1735,11 @@ void RenX_LoggingPlugin::RenX_OnMoneyCrate(RenX::Server &server, const RenX::Pla
 	else
 		func = &RenX::Server::sendAdmChan;
 
-	Jupiter::String msg = this->moneyCrateFmt;
+	std::string msg = this->moneyCrateFmt;
 	if (!msg.empty())
 	{
 		RenX::processTags(msg, &server, &player);
-		msg.replace(RenX::tags->INTERNAL_OBJECT_TAG, Jupiter::StringS::Format("%d", amount));
+		RenX::replace_tag(msg, RenX::tags->INTERNAL_OBJECT_TAG, Jupiter::StringS::Format("%d", amount));
 		(server.*func)(msg);
 	}
 }
@@ -1752,11 +1752,11 @@ void RenX_LoggingPlugin::RenX_OnCharacterCrate(RenX::Server &server, const RenX:
 	else
 		func = &RenX::Server::sendAdmChan;
 
-	Jupiter::String msg = this->characterCrateFmt;
+	std::string msg = this->characterCrateFmt;
 	if (!msg.empty())
 	{
 		RenX::processTags(msg, &server, &player);
-		msg.replace(RenX::tags->INTERNAL_VICTIM_CHARACTER_TAG, RenX::translateName(character));
+		RenX::replace_tag(msg, RenX::tags->INTERNAL_VICTIM_CHARACTER_TAG, RenX::translateName(character));
 		(server.*func)(msg);
 	}
 }
@@ -1769,12 +1769,12 @@ void RenX_LoggingPlugin::RenX_OnSpyCrate(RenX::Server &server, const RenX::Playe
 	else
 		func = &RenX::Server::sendAdmChan;
 
-	Jupiter::String msg = this->spyCrateFmt;
+	std::string msg = this->spyCrateFmt;
 	if (!msg.empty())
 	{
 		RenX::processTags(msg, &server, &player);
-		msg.replace(RenX::tags->INTERNAL_VICTIM_TEAM_COLOR_TAG, RenX::getTeamColor(RenX::getEnemy(player.team)));
-		msg.replace(RenX::tags->INTERNAL_VICTIM_CHARACTER_TAG, RenX::translateName(character));
+		RenX::replace_tag(msg, RenX::tags->INTERNAL_VICTIM_TEAM_COLOR_TAG, RenX::getTeamColor(RenX::getEnemy(player.team)));
+		RenX::replace_tag(msg, RenX::tags->INTERNAL_VICTIM_CHARACTER_TAG, RenX::translateName(character));
 		(server.*func)(msg);
 	}
 }
@@ -1787,7 +1787,7 @@ void RenX_LoggingPlugin::RenX_OnRefillCrate(RenX::Server &server, const RenX::Pl
 	else
 		func = &RenX::Server::sendAdmChan;
 
-	Jupiter::String msg = this->refillCrateFmt;
+	std::string msg = this->refillCrateFmt;
 	if (!msg.empty())
 	{
 		RenX::processTags(msg, &server, &player);
@@ -1803,7 +1803,7 @@ void RenX_LoggingPlugin::RenX_OnTimeBombCrate(RenX::Server &server, const RenX::
 	else
 		func = &RenX::Server::sendAdmChan;
 
-	Jupiter::String msg = this->timeBombCrateFmt;
+	std::string msg = this->timeBombCrateFmt;
 	if (!msg.empty())
 	{
 		RenX::processTags(msg, &server, &player);
@@ -1819,7 +1819,7 @@ void RenX_LoggingPlugin::RenX_OnSpeedCrate(RenX::Server &server, const RenX::Pla
 	else
 		func = &RenX::Server::sendAdmChan;
 
-	Jupiter::String msg = this->speedCrateFmt;
+	std::string msg = this->speedCrateFmt;
 	if (!msg.empty())
 	{
 		RenX::processTags(msg, &server, &player);
@@ -1835,7 +1835,7 @@ void RenX_LoggingPlugin::RenX_OnNukeCrate(RenX::Server &server, const RenX::Play
 	else
 		func = &RenX::Server::sendAdmChan;
 
-	Jupiter::String msg = this->nukeCrateFmt;
+	std::string msg = this->nukeCrateFmt;
 	if (!msg.empty())
 	{
 		RenX::processTags(msg, &server, &player);
@@ -1851,7 +1851,7 @@ void RenX_LoggingPlugin::RenX_OnAbductionCrate(RenX::Server &server, const RenX:
 	else
 		func = &RenX::Server::sendAdmChan;
 
-	Jupiter::String msg = this->abductionCrateFmt;
+	std::string msg = this->abductionCrateFmt;
 	if (!msg.empty())
 	{
 		RenX::processTags(msg, &server, &player);
@@ -1867,7 +1867,7 @@ void RenX_LoggingPlugin::RenX_OnUnspecifiedCrate(RenX::Server &server, const Ren
 	else
 		func = &RenX::Server::sendAdmChan;
 
-	Jupiter::String msg = this->unspecifiedCrateFmt;
+	std::string msg = this->unspecifiedCrateFmt;
 	if (!msg.empty())
 	{
 		RenX::processTags(msg, &server, &player);
@@ -1883,11 +1883,11 @@ void RenX_LoggingPlugin::RenX_OnOtherCrate(RenX::Server &server, const RenX::Pla
 	else
 		func = &RenX::Server::sendAdmChan;
 
-	Jupiter::String msg = this->otherCrateFmt;
+	std::string msg = this->otherCrateFmt;
 	if (!msg.empty())
 	{
 		RenX::processTags(msg, &server, &player);
-		msg.replace(RenX::tags->INTERNAL_OBJECT_TAG, type);
+		RenX::replace_tag(msg, RenX::tags->INTERNAL_OBJECT_TAG, type);
 		(server.*func)(msg);
 	}
 }
@@ -1900,11 +1900,11 @@ void RenX_LoggingPlugin::RenX_OnSteal(RenX::Server &server, const RenX::PlayerIn
 	else
 		func = &RenX::Server::sendAdmChan;
 
-	Jupiter::String msg = this->stealNoOwnerFmt;
+	std::string msg = this->stealNoOwnerFmt;
 	if (!msg.empty())
 	{
 		RenX::processTags(msg, &server, &player);
-		msg.replace(RenX::tags->INTERNAL_OBJECT_TAG, RenX::translateName(vehicle));
+		RenX::replace_tag(msg, RenX::tags->INTERNAL_OBJECT_TAG, RenX::translateName(vehicle));
 		(server.*func)(msg);
 	}
 }
@@ -1917,11 +1917,11 @@ void RenX_LoggingPlugin::RenX_OnSteal(RenX::Server &server, const RenX::PlayerIn
 	else
 		func = &RenX::Server::sendAdmChan;
 
-	Jupiter::String msg = this->stealFmt;
+	std::string msg = this->stealFmt;
 	if (!msg.empty())
 	{
 		RenX::processTags(msg, &server, &player, &victim);
-		msg.replace(RenX::tags->INTERNAL_OBJECT_TAG, RenX::translateName(vehicle));
+		RenX::replace_tag(msg, RenX::tags->INTERNAL_OBJECT_TAG, RenX::translateName(vehicle));
 		(server.*func)(msg);
 	}
 }
@@ -1934,11 +1934,11 @@ void RenX_LoggingPlugin::RenX_OnDonate(RenX::Server &server, const RenX::PlayerI
 	else
 		func = &RenX::Server::sendAdmChan;
 
-	Jupiter::String msg = this->donateFmt;
+	std::string msg = this->donateFmt;
 	if (!msg.empty())
 	{
 		RenX::processTags(msg, &server, &donor, &player);
-		msg.replace(RenX::tags->INTERNAL_OBJECT_TAG, Jupiter::StringS::Format("%.0f", amount));
+		RenX::replace_tag(msg, RenX::tags->INTERNAL_OBJECT_TAG, Jupiter::StringS::Format("%.0f", amount));
 		(server.*func)(msg);
 	}
 }
@@ -1951,7 +1951,7 @@ void RenX_LoggingPlugin::RenX_OnDestroy(RenX::Server &server, const Jupiter::Rea
 	else
 		func = &RenX::Server::sendAdmChan;
 
-	Jupiter::String msg;
+	std::string msg;
 	switch (type)
 	{
 	case RenX::ObjectType::Building:
@@ -1967,15 +1967,15 @@ void RenX_LoggingPlugin::RenX_OnDestroy(RenX::Server &server, const Jupiter::Rea
 	if (!msg.empty())
 	{
 		RenX::processTags(msg, &server);
-		msg.replace(RenX::tags->INTERNAL_NAME_TAG, RenX::translateName(killer));
-		msg.replace(RenX::tags->INTERNAL_TEAM_COLOR_TAG, RenX::getTeamColor(killerTeam));
-		msg.replace(RenX::tags->INTERNAL_TEAM_SHORT_TAG, RenX::getTeamName(killerTeam));
-		msg.replace(RenX::tags->INTERNAL_TEAM_LONG_TAG, RenX::getFullTeamName(killerTeam));
-		msg.replace(RenX::tags->INTERNAL_VICTIM_TEAM_COLOR_TAG, RenX::getTeamColor(objectTeam));
-		msg.replace(RenX::tags->INTERNAL_VICTIM_TEAM_SHORT_TAG, RenX::getTeamName(objectTeam));
-		msg.replace(RenX::tags->INTERNAL_VICTIM_TEAM_LONG_TAG, RenX::getFullTeamName(objectTeam));
-		msg.replace(RenX::tags->INTERNAL_OBJECT_TAG, RenX::translateName(objectName));
-		msg.replace(RenX::tags->INTERNAL_WEAPON_TAG, RenX::translateName(damageType));
+		RenX::replace_tag(msg, RenX::tags->INTERNAL_NAME_TAG, RenX::translateName(killer));
+		RenX::replace_tag(msg, RenX::tags->INTERNAL_TEAM_COLOR_TAG, RenX::getTeamColor(killerTeam));
+		RenX::replace_tag(msg, RenX::tags->INTERNAL_TEAM_SHORT_TAG, RenX::getTeamName(killerTeam));
+		RenX::replace_tag(msg, RenX::tags->INTERNAL_TEAM_LONG_TAG, RenX::getFullTeamName(killerTeam));
+		RenX::replace_tag(msg, RenX::tags->INTERNAL_VICTIM_TEAM_COLOR_TAG, RenX::getTeamColor(objectTeam));
+		RenX::replace_tag(msg, RenX::tags->INTERNAL_VICTIM_TEAM_SHORT_TAG, RenX::getTeamName(objectTeam));
+		RenX::replace_tag(msg, RenX::tags->INTERNAL_VICTIM_TEAM_LONG_TAG, RenX::getFullTeamName(objectTeam));
+		RenX::replace_tag(msg, RenX::tags->INTERNAL_OBJECT_TAG, RenX::translateName(objectName));
+		RenX::replace_tag(msg, RenX::tags->INTERNAL_WEAPON_TAG, RenX::translateName(damageType));
 		(server.*func)(msg);
 	}
 }
@@ -2004,7 +2004,7 @@ void RenX_LoggingPlugin::RenX_OnGameOver(RenX::Server &server, RenX::WinType win
 	else
 		func = &RenX::Server::sendAdmChan;
 
-	Jupiter::String msg;
+	std::string msg;
 	if (winType == RenX::WinType::Tie)
 	{
 		if (team == RenX::TeamType::None)
@@ -2017,15 +2017,15 @@ void RenX_LoggingPlugin::RenX_OnGameOver(RenX::Server &server, RenX::WinType win
 
 	if (!msg.empty() && team != RenX::TeamType::None)
 	{
-		msg.replace(RenX::tags->INTERNAL_TEAM_COLOR_TAG, RenX::getTeamColor(team));
-		msg.replace(RenX::tags->INTERNAL_TEAM_SHORT_TAG, RenX::getTeamName(team));
-		msg.replace(RenX::tags->INTERNAL_TEAM_LONG_TAG, RenX::getFullTeamName(team));
-		msg.replace(RenX::tags->INTERNAL_WIN_SCORE_TAG, Jupiter::StringS::Format("%d", winScore));
-		msg.replace(RenX::tags->INTERNAL_LOSE_SCORE_TAG, Jupiter::StringS::Format("%d", loseScore));
-		msg.replace(RenX::tags->INTERNAL_VICTIM_TEAM_COLOR_TAG, RenX::getTeamColor(loserTeam));
-		msg.replace(RenX::tags->INTERNAL_VICTIM_TEAM_SHORT_TAG, RenX::getTeamName(loserTeam));
-		msg.replace(RenX::tags->INTERNAL_VICTIM_TEAM_LONG_TAG, RenX::getFullTeamName(loserTeam));
-		msg.replace(RenX::tags->INTERNAL_MESSAGE_TAG, RenX::translateWinType(winType));
+		RenX::replace_tag(msg, RenX::tags->INTERNAL_TEAM_COLOR_TAG, RenX::getTeamColor(team));
+		RenX::replace_tag(msg, RenX::tags->INTERNAL_TEAM_SHORT_TAG, RenX::getTeamName(team));
+		RenX::replace_tag(msg, RenX::tags->INTERNAL_TEAM_LONG_TAG, RenX::getFullTeamName(team));
+		RenX::replace_tag(msg, RenX::tags->INTERNAL_WIN_SCORE_TAG, Jupiter::StringS::Format("%d", winScore));
+		RenX::replace_tag(msg, RenX::tags->INTERNAL_LOSE_SCORE_TAG, Jupiter::StringS::Format("%d", loseScore));
+		RenX::replace_tag(msg, RenX::tags->INTERNAL_VICTIM_TEAM_COLOR_TAG, RenX::getTeamColor(loserTeam));
+		RenX::replace_tag(msg, RenX::tags->INTERNAL_VICTIM_TEAM_SHORT_TAG, RenX::getTeamName(loserTeam));
+		RenX::replace_tag(msg, RenX::tags->INTERNAL_VICTIM_TEAM_LONG_TAG, RenX::getFullTeamName(loserTeam));
+		RenX::replace_tag(msg, RenX::tags->INTERNAL_MESSAGE_TAG, RenX::translateWinType(winType));
 		(server.*func)(msg);
 	}
 
@@ -2034,29 +2034,29 @@ void RenX_LoggingPlugin::RenX_OnGameOver(RenX::Server &server, RenX::WinType win
 	{
 		if (!msg.empty())
 		{
-			msg.replace(RenX::tags->INTERNAL_TEAM_COLOR_TAG, RenX::getTeamColor(RenX::TeamType::GDI));
-			msg.replace(RenX::tags->INTERNAL_TEAM_SHORT_TAG, RenX::getTeamName(RenX::TeamType::GDI));
-			msg.replace(RenX::tags->INTERNAL_TEAM_LONG_TAG, RenX::getFullTeamName(RenX::TeamType::GDI));
-			msg.replace(RenX::tags->INTERNAL_WIN_SCORE_TAG, Jupiter::StringS::Format("%d", winScore));
-			msg.replace(RenX::tags->INTERNAL_LOSE_SCORE_TAG, Jupiter::StringS::Format("%d", loseScore));
-			msg.replace(RenX::tags->INTERNAL_VICTIM_TEAM_COLOR_TAG, RenX::getTeamColor(RenX::TeamType::Nod));
-			msg.replace(RenX::tags->INTERNAL_VICTIM_TEAM_SHORT_TAG, RenX::getTeamName(RenX::TeamType::Nod));
-			msg.replace(RenX::tags->INTERNAL_VICTIM_TEAM_LONG_TAG, RenX::getFullTeamName(RenX::TeamType::Nod));
-			msg.replace(RenX::tags->INTERNAL_MESSAGE_TAG, RenX::translateWinType(winType));
+			RenX::replace_tag(msg, RenX::tags->INTERNAL_TEAM_COLOR_TAG, RenX::getTeamColor(RenX::TeamType::GDI));
+			RenX::replace_tag(msg, RenX::tags->INTERNAL_TEAM_SHORT_TAG, RenX::getTeamName(RenX::TeamType::GDI));
+			RenX::replace_tag(msg, RenX::tags->INTERNAL_TEAM_LONG_TAG, RenX::getFullTeamName(RenX::TeamType::GDI));
+			RenX::replace_tag(msg, RenX::tags->INTERNAL_WIN_SCORE_TAG, Jupiter::StringS::Format("%d", winScore));
+			RenX::replace_tag(msg, RenX::tags->INTERNAL_LOSE_SCORE_TAG, Jupiter::StringS::Format("%d", loseScore));
+			RenX::replace_tag(msg, RenX::tags->INTERNAL_VICTIM_TEAM_COLOR_TAG, RenX::getTeamColor(RenX::TeamType::Nod));
+			RenX::replace_tag(msg, RenX::tags->INTERNAL_VICTIM_TEAM_SHORT_TAG, RenX::getTeamName(RenX::TeamType::Nod));
+			RenX::replace_tag(msg, RenX::tags->INTERNAL_VICTIM_TEAM_LONG_TAG, RenX::getFullTeamName(RenX::TeamType::Nod));
+			RenX::replace_tag(msg, RenX::tags->INTERNAL_MESSAGE_TAG, RenX::translateWinType(winType));
 			(server.*func)(msg);
 		}
 	}
 	else if (!msg.empty())
 	{
-		msg.replace(RenX::tags->INTERNAL_TEAM_COLOR_TAG, RenX::getTeamColor(team));
-		msg.replace(RenX::tags->INTERNAL_TEAM_SHORT_TAG, RenX::getTeamName(team));
-		msg.replace(RenX::tags->INTERNAL_TEAM_LONG_TAG, RenX::getFullTeamName(team));
-		msg.replace(RenX::tags->INTERNAL_WIN_SCORE_TAG, Jupiter::StringS::Format("%d", winScore));
-		msg.replace(RenX::tags->INTERNAL_LOSE_SCORE_TAG, Jupiter::StringS::Format("%d", loseScore));
-		msg.replace(RenX::tags->INTERNAL_VICTIM_TEAM_COLOR_TAG, RenX::getTeamColor(loserTeam));
-		msg.replace(RenX::tags->INTERNAL_VICTIM_TEAM_SHORT_TAG, RenX::getTeamName(loserTeam));
-		msg.replace(RenX::tags->INTERNAL_VICTIM_TEAM_LONG_TAG, RenX::getFullTeamName(loserTeam));
-		msg.replace(RenX::tags->INTERNAL_MESSAGE_TAG, RenX::translateWinType(winType));
+		RenX::replace_tag(msg, RenX::tags->INTERNAL_TEAM_COLOR_TAG, RenX::getTeamColor(team));
+		RenX::replace_tag(msg, RenX::tags->INTERNAL_TEAM_SHORT_TAG, RenX::getTeamName(team));
+		RenX::replace_tag(msg, RenX::tags->INTERNAL_TEAM_LONG_TAG, RenX::getFullTeamName(team));
+		RenX::replace_tag(msg, RenX::tags->INTERNAL_WIN_SCORE_TAG, Jupiter::StringS::Format("%d", winScore));
+		RenX::replace_tag(msg, RenX::tags->INTERNAL_LOSE_SCORE_TAG, Jupiter::StringS::Format("%d", loseScore));
+		RenX::replace_tag(msg, RenX::tags->INTERNAL_VICTIM_TEAM_COLOR_TAG, RenX::getTeamColor(loserTeam));
+		RenX::replace_tag(msg, RenX::tags->INTERNAL_VICTIM_TEAM_SHORT_TAG, RenX::getTeamName(loserTeam));
+		RenX::replace_tag(msg, RenX::tags->INTERNAL_VICTIM_TEAM_LONG_TAG, RenX::getFullTeamName(loserTeam));
+		RenX::replace_tag(msg, RenX::tags->INTERNAL_MESSAGE_TAG, RenX::translateWinType(winType));
 		(server.*func)(msg);
 	}
 }
@@ -2069,11 +2069,11 @@ void RenX_LoggingPlugin::RenX_OnGame(RenX::Server &server, const Jupiter::Readab
 	else
 		func = &RenX::Server::sendAdmChan;
 
-	Jupiter::String msg = this->gameFmt;
+	std::string msg = this->gameFmt;
 	if (!msg.empty())
 	{
 		RenX::processTags(msg, &server);
-		msg.replace(RenX::tags->INTERNAL_MESSAGE_TAG, raw);
+		RenX::replace_tag(msg, RenX::tags->INTERNAL_MESSAGE_TAG, raw);
 		(server.*func)(msg);
 	}
 }
@@ -2086,7 +2086,7 @@ void RenX_LoggingPlugin::RenX_OnExecute(RenX::Server &server, const Jupiter::Rea
 		else
 			func = &RenX::Server::sendAdmChan;
 
-		Jupiter::String msg;
+		std::string msg;
 		if (user == RenX::DevBotName)
 			msg = this->devBotExecuteFmt;
 		else
@@ -2095,8 +2095,8 @@ void RenX_LoggingPlugin::RenX_OnExecute(RenX::Server &server, const Jupiter::Rea
 		if (!msg.empty())
 		{
 			RenX::processTags(msg, &server);
-			msg.replace(RenX::tags->INTERNAL_NAME_TAG, user);
-			msg.replace(RenX::tags->INTERNAL_MESSAGE_TAG, command);
+			RenX::replace_tag(msg, RenX::tags->INTERNAL_NAME_TAG, user);
+			RenX::replace_tag(msg, RenX::tags->INTERNAL_MESSAGE_TAG, command);
 			(server.*func)(msg);
 		}
 	}
@@ -2110,11 +2110,11 @@ void RenX_LoggingPlugin::RenX_OnSubscribe(RenX::Server &server, const Jupiter::R
 	else
 		func = &RenX::Server::sendAdmChan;
 
-	Jupiter::String msg = this->subscribeFmt;
+	std::string msg = this->subscribeFmt;
 	if (!msg.empty())
 	{
 		RenX::processTags(msg, &server);
-		msg.replace(RenX::tags->INTERNAL_NAME_TAG, user);
+		RenX::replace_tag(msg, RenX::tags->INTERNAL_NAME_TAG, user);
 		(server.*func)(msg);
 	}
 }
@@ -2127,11 +2127,11 @@ void RenX_LoggingPlugin::RenX_OnRCON(RenX::Server &server, const Jupiter::Readab
 	else
 		func = &RenX::Server::sendAdmChan;
 
-	Jupiter::String msg = this->rconFmt;
+	std::string msg = this->rconFmt;
 	if (!msg.empty())
 	{
 		RenX::processTags(msg, &server);
-		msg.replace(RenX::tags->INTERNAL_MESSAGE_TAG, raw);
+		RenX::replace_tag(msg, RenX::tags->INTERNAL_MESSAGE_TAG, raw);
 		(server.*func)(msg);
 	}
 }
@@ -2144,7 +2144,7 @@ void RenX_LoggingPlugin::RenX_OnAdminLogin(RenX::Server &server, const RenX::Pla
 	else
 		func = &RenX::Server::sendAdmChan;
 
-	Jupiter::String msg = this->adminLoginFmt;
+	std::string msg = this->adminLoginFmt;
 	if (!msg.empty())
 	{
 		RenX::processTags(msg, &server, &player);
@@ -2160,7 +2160,7 @@ void RenX_LoggingPlugin::RenX_OnAdminGrant(RenX::Server &server, const RenX::Pla
 	else
 		func = &RenX::Server::sendAdmChan;
 
-	Jupiter::String msg = this->adminGrantFmt;
+	std::string msg = this->adminGrantFmt;
 	if (!msg.empty())
 	{
 		RenX::processTags(msg, &server, &player);
@@ -2176,7 +2176,7 @@ void RenX_LoggingPlugin::RenX_OnAdminLogout(RenX::Server &server, const RenX::Pl
 	else
 		func = &RenX::Server::sendAdmChan;
 	
-	Jupiter::String msg = this->adminLogoutFmt;
+	std::string msg = this->adminLogoutFmt;
 	if (!msg.empty())
 	{
 		RenX::processTags(msg, &server, &player);
@@ -2192,11 +2192,11 @@ void RenX_LoggingPlugin::RenX_OnAdmin(RenX::Server &server, const Jupiter::Reada
 	else
 		func = &RenX::Server::sendAdmChan;
 	
-	Jupiter::String msg = this->adminFmt;
+	std::string msg = this->adminFmt;
 	if (!msg.empty())
 	{
 		RenX::processTags(msg, &server);
-		msg.replace(RenX::tags->INTERNAL_MESSAGE_TAG, raw);
+		RenX::replace_tag(msg, RenX::tags->INTERNAL_MESSAGE_TAG, raw);
 		(server.*func)(msg);
 	}
 }
@@ -2209,15 +2209,15 @@ void RenX_LoggingPlugin::RenX_OnVoteAddBots(RenX::Server &server, const RenX::Te
 	else
 		func = &RenX::Server::sendAdmChan;
 
-	Jupiter::String msg = this->voteAddBotsFmt;
+	std::string msg = this->voteAddBotsFmt;
 	if (!msg.empty())
 	{
 		RenX::processTags(msg, &server, &player);
-		msg.replace(RenX::tags->INTERNAL_VICTIM_TEAM_COLOR_TAG, RenX::getTeamColor(victim));
-		msg.replace(RenX::tags->INTERNAL_VICTIM_TEAM_SHORT_TAG, RenX::getTeamName(victim));
-		msg.replace(RenX::tags->INTERNAL_VICTIM_TEAM_LONG_TAG, RenX::getFullTeamName(victim));
-		msg.replace(RenX::tags->INTERNAL_OBJECT_TAG, Jupiter::StringS::Format("%d", amount));
-		msg.replace(RenX::tags->INTERNAL_WEAPON_TAG, Jupiter::StringS::Format("%d", skill));
+		RenX::replace_tag(msg, RenX::tags->INTERNAL_VICTIM_TEAM_COLOR_TAG, RenX::getTeamColor(victim));
+		RenX::replace_tag(msg, RenX::tags->INTERNAL_VICTIM_TEAM_SHORT_TAG, RenX::getTeamName(victim));
+		RenX::replace_tag(msg, RenX::tags->INTERNAL_VICTIM_TEAM_LONG_TAG, RenX::getFullTeamName(victim));
+		RenX::replace_tag(msg, RenX::tags->INTERNAL_OBJECT_TAG, Jupiter::StringS::Format("%d", amount));
+		RenX::replace_tag(msg, RenX::tags->INTERNAL_WEAPON_TAG, Jupiter::StringS::Format("%d", skill));
 		(server.*func)(msg);
 	}
 }
@@ -2230,13 +2230,13 @@ void RenX_LoggingPlugin::RenX_OnVoteChangeMap(RenX::Server &server, const RenX::
 	else
 		func = &RenX::Server::sendAdmChan;
 
-	Jupiter::String msg = this->voteChangeMapFmt;
+	std::string msg = this->voteChangeMapFmt;
 	if (!msg.empty())
 	{
 		RenX::processTags(msg, &server, &player);
-		msg.replace(RenX::tags->INTERNAL_VICTIM_TEAM_COLOR_TAG, RenX::getTeamColor(team));
-		msg.replace(RenX::tags->INTERNAL_VICTIM_TEAM_SHORT_TAG, RenX::getTeamName(team));
-		msg.replace(RenX::tags->INTERNAL_VICTIM_TEAM_LONG_TAG, RenX::getFullTeamName(team));
+		RenX::replace_tag(msg, RenX::tags->INTERNAL_VICTIM_TEAM_COLOR_TAG, RenX::getTeamColor(team));
+		RenX::replace_tag(msg, RenX::tags->INTERNAL_VICTIM_TEAM_SHORT_TAG, RenX::getTeamName(team));
+		RenX::replace_tag(msg, RenX::tags->INTERNAL_VICTIM_TEAM_LONG_TAG, RenX::getFullTeamName(team));
 		(server.*func)(msg);
 	}
 }
@@ -2249,7 +2249,7 @@ void RenX_LoggingPlugin::RenX_OnVoteKick(RenX::Server &server, const RenX::TeamT
 	else
 		func = &RenX::Server::sendAdmChan;
 
-	Jupiter::String msg = this->voteKickFmt;
+	std::string msg = this->voteKickFmt;
 	if (!msg.empty())
 	{
 		RenX::processTags(msg, &server, &player, &victim);
@@ -2265,7 +2265,7 @@ void RenX_LoggingPlugin::RenX_OnVoteMineBan(RenX::Server &server, const RenX::Te
 	else
 		func = &RenX::Server::sendAdmChan;
 
-	Jupiter::String msg = this->voteMineBanFmt;
+	std::string msg = this->voteMineBanFmt;
 	if (!msg.empty())
 	{
 		RenX::processTags(msg, &server, &player, &victim);
@@ -2281,14 +2281,14 @@ void RenX_LoggingPlugin::RenX_OnVoteRemoveBots(RenX::Server &server, const RenX:
 	else
 		func = &RenX::Server::sendAdmChan;
 
-	Jupiter::String msg = this->voteRemoveBotsFmt;
+	std::string msg = this->voteRemoveBotsFmt;
 	if (!msg.empty())
 	{
 		RenX::processTags(msg, &server, &player);
-		msg.replace(RenX::tags->INTERNAL_VICTIM_TEAM_COLOR_TAG, RenX::getTeamColor(victim));
-		msg.replace(RenX::tags->INTERNAL_VICTIM_TEAM_SHORT_TAG, RenX::getTeamName(victim));
-		msg.replace(RenX::tags->INTERNAL_VICTIM_TEAM_LONG_TAG, RenX::getFullTeamName(victim));
-		msg.replace(RenX::tags->INTERNAL_OBJECT_TAG, Jupiter::StringS::Format("%d", amount));
+		RenX::replace_tag(msg, RenX::tags->INTERNAL_VICTIM_TEAM_COLOR_TAG, RenX::getTeamColor(victim));
+		RenX::replace_tag(msg, RenX::tags->INTERNAL_VICTIM_TEAM_SHORT_TAG, RenX::getTeamName(victim));
+		RenX::replace_tag(msg, RenX::tags->INTERNAL_VICTIM_TEAM_LONG_TAG, RenX::getFullTeamName(victim));
+		RenX::replace_tag(msg, RenX::tags->INTERNAL_OBJECT_TAG, Jupiter::StringS::Format("%d", amount));
 		(server.*func)(msg);
 	}
 }
@@ -2301,13 +2301,13 @@ void RenX_LoggingPlugin::RenX_OnVoteRestartMap(RenX::Server &server, const RenX:
 	else
 		func = &RenX::Server::sendAdmChan;
 
-	Jupiter::String msg = this->voteRestartMapFmt;
+	std::string msg = this->voteRestartMapFmt;
 	if (!msg.empty())
 	{
 		RenX::processTags(msg, &server, &player);
-		msg.replace(RenX::tags->INTERNAL_VICTIM_TEAM_COLOR_TAG, RenX::getTeamColor(team));
-		msg.replace(RenX::tags->INTERNAL_VICTIM_TEAM_SHORT_TAG, RenX::getTeamName(team));
-		msg.replace(RenX::tags->INTERNAL_VICTIM_TEAM_LONG_TAG, RenX::getFullTeamName(team));
+		RenX::replace_tag(msg, RenX::tags->INTERNAL_VICTIM_TEAM_COLOR_TAG, RenX::getTeamColor(team));
+		RenX::replace_tag(msg, RenX::tags->INTERNAL_VICTIM_TEAM_SHORT_TAG, RenX::getTeamName(team));
+		RenX::replace_tag(msg, RenX::tags->INTERNAL_VICTIM_TEAM_LONG_TAG, RenX::getFullTeamName(team));
 		(server.*func)(msg);
 	}
 }
@@ -2320,13 +2320,13 @@ void RenX_LoggingPlugin::RenX_OnVoteSurrender(RenX::Server &server, const RenX::
 	else
 		func = &RenX::Server::sendAdmChan;
 
-	Jupiter::String msg = this->voteSurrenderFmt;
+	std::string msg = this->voteSurrenderFmt;
 	if (!msg.empty())
 	{
 		RenX::processTags(msg, &server, &player);
-		msg.replace(RenX::tags->INTERNAL_VICTIM_TEAM_COLOR_TAG, RenX::getTeamColor(team));
-		msg.replace(RenX::tags->INTERNAL_VICTIM_TEAM_SHORT_TAG, RenX::getTeamName(team));
-		msg.replace(RenX::tags->INTERNAL_VICTIM_TEAM_LONG_TAG, RenX::getFullTeamName(team));
+		RenX::replace_tag(msg, RenX::tags->INTERNAL_VICTIM_TEAM_COLOR_TAG, RenX::getTeamColor(team));
+		RenX::replace_tag(msg, RenX::tags->INTERNAL_VICTIM_TEAM_SHORT_TAG, RenX::getTeamName(team));
+		RenX::replace_tag(msg, RenX::tags->INTERNAL_VICTIM_TEAM_LONG_TAG, RenX::getFullTeamName(team));
 		(server.*func)(msg);
 	}
 }
@@ -2339,14 +2339,14 @@ void RenX_LoggingPlugin::RenX_OnVoteSurvey(RenX::Server &server, const RenX::Tea
 	else
 		func = &RenX::Server::sendAdmChan;
 
-	Jupiter::String msg = this->voteSurveyFmt;
+	std::string msg = this->voteSurveyFmt;
 	if (!msg.empty())
 	{
 		RenX::processTags(msg, &server, &player);
-		msg.replace(RenX::tags->INTERNAL_VICTIM_TEAM_COLOR_TAG, RenX::getTeamColor(team));
-		msg.replace(RenX::tags->INTERNAL_VICTIM_TEAM_SHORT_TAG, RenX::getTeamName(team));
-		msg.replace(RenX::tags->INTERNAL_VICTIM_TEAM_LONG_TAG, RenX::getFullTeamName(team));
-		msg.replace(RenX::tags->INTERNAL_MESSAGE_TAG, text);
+		RenX::replace_tag(msg, RenX::tags->INTERNAL_VICTIM_TEAM_COLOR_TAG, RenX::getTeamColor(team));
+		RenX::replace_tag(msg, RenX::tags->INTERNAL_VICTIM_TEAM_SHORT_TAG, RenX::getTeamName(team));
+		RenX::replace_tag(msg, RenX::tags->INTERNAL_VICTIM_TEAM_LONG_TAG, RenX::getFullTeamName(team));
+		RenX::replace_tag(msg, RenX::tags->INTERNAL_MESSAGE_TAG, text);
 		(server.*func)(msg);
 	}
 }
@@ -2359,14 +2359,14 @@ void RenX_LoggingPlugin::RenX_OnVoteOther(RenX::Server &server, const RenX::Team
 	else
 		func = &RenX::Server::sendAdmChan;
 
-	Jupiter::String msg = this->voteOtherFmt;
+	std::string msg = this->voteOtherFmt;
 	if (!msg.empty())
 	{
 		RenX::processTags(msg, &server, &player);
-		msg.replace(RenX::tags->INTERNAL_VICTIM_TEAM_COLOR_TAG, RenX::getTeamColor(team));
-		msg.replace(RenX::tags->INTERNAL_VICTIM_TEAM_SHORT_TAG, RenX::getTeamName(team));
-		msg.replace(RenX::tags->INTERNAL_VICTIM_TEAM_LONG_TAG, RenX::getFullTeamName(team));
-		msg.replace(RenX::tags->INTERNAL_OBJECT_TAG, RenX::translateName(type));
+		RenX::replace_tag(msg, RenX::tags->INTERNAL_VICTIM_TEAM_COLOR_TAG, RenX::getTeamColor(team));
+		RenX::replace_tag(msg, RenX::tags->INTERNAL_VICTIM_TEAM_SHORT_TAG, RenX::getTeamName(team));
+		RenX::replace_tag(msg, RenX::tags->INTERNAL_VICTIM_TEAM_LONG_TAG, RenX::getFullTeamName(team));
+		RenX::replace_tag(msg, RenX::tags->INTERNAL_OBJECT_TAG, RenX::translateName(type));
 		(server.*func)(msg);
 	}
 }
@@ -2379,19 +2379,19 @@ void RenX_LoggingPlugin::RenX_OnVoteOver(RenX::Server &server, const RenX::TeamT
 	else
 		func = &RenX::Server::sendAdmChan;
 
-	Jupiter::String msg = success ? this->voteOverSuccessFmt : this->voteOverFailFmt;
+	std::string msg = success ? this->voteOverSuccessFmt : this->voteOverFailFmt;
 	if (!msg.empty())
 	{
 		RenX::processTags(msg, &server);
-		msg.replace(RenX::tags->INTERNAL_OBJECT_TAG, RenX::translateName(type));
-		msg.replace(RenX::tags->INTERNAL_TEAM_COLOR_TAG, RenX::getTeamColor(team));
-		msg.replace(RenX::tags->INTERNAL_TEAM_SHORT_TAG, RenX::getTeamName(team));
-		msg.replace(RenX::tags->INTERNAL_TEAM_LONG_TAG, RenX::getFullTeamName(team));
-		msg.replace(RenX::tags->INTERNAL_VICTIM_TEAM_COLOR_TAG, RenX::getTeamColor(team));
-		msg.replace(RenX::tags->INTERNAL_VICTIM_TEAM_SHORT_TAG, RenX::getTeamName(team));
-		msg.replace(RenX::tags->INTERNAL_VICTIM_TEAM_LONG_TAG, RenX::getFullTeamName(team));
-		msg.replace(RenX::tags->INTERNAL_WIN_SCORE_TAG, Jupiter::StringS::Format("%d", yesVotes));
-		msg.replace(RenX::tags->INTERNAL_LOSE_SCORE_TAG, Jupiter::StringS::Format("%d", noVotes));
+		RenX::replace_tag(msg, RenX::tags->INTERNAL_OBJECT_TAG, RenX::translateName(type));
+		RenX::replace_tag(msg, RenX::tags->INTERNAL_TEAM_COLOR_TAG, RenX::getTeamColor(team));
+		RenX::replace_tag(msg, RenX::tags->INTERNAL_TEAM_SHORT_TAG, RenX::getTeamName(team));
+		RenX::replace_tag(msg, RenX::tags->INTERNAL_TEAM_LONG_TAG, RenX::getFullTeamName(team));
+		RenX::replace_tag(msg, RenX::tags->INTERNAL_VICTIM_TEAM_COLOR_TAG, RenX::getTeamColor(team));
+		RenX::replace_tag(msg, RenX::tags->INTERNAL_VICTIM_TEAM_SHORT_TAG, RenX::getTeamName(team));
+		RenX::replace_tag(msg, RenX::tags->INTERNAL_VICTIM_TEAM_LONG_TAG, RenX::getFullTeamName(team));
+		RenX::replace_tag(msg, RenX::tags->INTERNAL_WIN_SCORE_TAG, Jupiter::StringS::Format("%d", yesVotes));
+		RenX::replace_tag(msg, RenX::tags->INTERNAL_LOSE_SCORE_TAG, Jupiter::StringS::Format("%d", noVotes));
 		(server.*func)(msg);
 	}
 }
@@ -2404,17 +2404,17 @@ void RenX_LoggingPlugin::RenX_OnVoteCancel(RenX::Server &server, const RenX::Tea
 	else
 		func = &RenX::Server::sendAdmChan;
 
-	Jupiter::String msg = this->voteCancelFmt;
+	std::string msg = this->voteCancelFmt;
 	if (!msg.empty())
 	{
 		RenX::processTags(msg, &server);
-		msg.replace(RenX::tags->INTERNAL_OBJECT_TAG, RenX::translateName(type));
-		msg.replace(RenX::tags->INTERNAL_TEAM_COLOR_TAG, RenX::getTeamColor(team));
-		msg.replace(RenX::tags->INTERNAL_TEAM_SHORT_TAG, RenX::getTeamName(team));
-		msg.replace(RenX::tags->INTERNAL_TEAM_LONG_TAG, RenX::getFullTeamName(team));
-		msg.replace(RenX::tags->INTERNAL_VICTIM_TEAM_COLOR_TAG, RenX::getTeamColor(team));
-		msg.replace(RenX::tags->INTERNAL_VICTIM_TEAM_SHORT_TAG, RenX::getTeamName(team));
-		msg.replace(RenX::tags->INTERNAL_VICTIM_TEAM_LONG_TAG, RenX::getFullTeamName(team));
+		RenX::replace_tag(msg, RenX::tags->INTERNAL_OBJECT_TAG, RenX::translateName(type));
+		RenX::replace_tag(msg, RenX::tags->INTERNAL_TEAM_COLOR_TAG, RenX::getTeamColor(team));
+		RenX::replace_tag(msg, RenX::tags->INTERNAL_TEAM_SHORT_TAG, RenX::getTeamName(team));
+		RenX::replace_tag(msg, RenX::tags->INTERNAL_TEAM_LONG_TAG, RenX::getFullTeamName(team));
+		RenX::replace_tag(msg, RenX::tags->INTERNAL_VICTIM_TEAM_COLOR_TAG, RenX::getTeamColor(team));
+		RenX::replace_tag(msg, RenX::tags->INTERNAL_VICTIM_TEAM_SHORT_TAG, RenX::getTeamName(team));
+		RenX::replace_tag(msg, RenX::tags->INTERNAL_VICTIM_TEAM_LONG_TAG, RenX::getFullTeamName(team));
 		(server.*func)(msg);
 	}
 }
@@ -2427,11 +2427,11 @@ void RenX_LoggingPlugin::RenX_OnVote(RenX::Server &server, const Jupiter::Readab
 	else
 		func = &RenX::Server::sendAdmChan;
 
-	Jupiter::String msg = this->voteFmt;
+	std::string msg = this->voteFmt;
 	if (!msg.empty())
 	{
 		RenX::processTags(msg, &server);
-		msg.replace(RenX::tags->INTERNAL_MESSAGE_TAG, raw);
+		RenX::replace_tag(msg, RenX::tags->INTERNAL_MESSAGE_TAG, raw);
 		(server.*func)(msg);
 	}
 }
@@ -2444,11 +2444,11 @@ void RenX_LoggingPlugin::RenX_OnMapChange(RenX::Server &server, const Jupiter::R
 	else
 		func = &RenX::Server::sendAdmChan;
 
-	Jupiter::String msg = this->mapChangeFmt;
+	std::string msg = this->mapChangeFmt;
 	if (!msg.empty())
 	{
 		RenX::processTags(msg, &server);
-		msg.replace(RenX::tags->INTERNAL_MESSAGE_TAG, map);
+		RenX::replace_tag(msg, RenX::tags->INTERNAL_MESSAGE_TAG, map);
 		(server.*func)(msg);
 	}
 }
@@ -2461,11 +2461,11 @@ void RenX_LoggingPlugin::RenX_OnMapLoad(RenX::Server &server, const Jupiter::Rea
 	else
 		func = &RenX::Server::sendAdmChan;
 
-	Jupiter::String msg = this->mapLoadFmt;
+	std::string msg = this->mapLoadFmt;
 	if (!msg.empty())
 	{
 		RenX::processTags(msg, &server);
-		msg.replace(RenX::tags->INTERNAL_MESSAGE_TAG, map);
+		RenX::replace_tag(msg, RenX::tags->INTERNAL_MESSAGE_TAG, map);
 		(server.*func)(msg);
 	}
 }
@@ -2478,11 +2478,11 @@ void RenX_LoggingPlugin::RenX_OnMapStart(RenX::Server &server, const Jupiter::Re
 	else
 		func = &RenX::Server::sendAdmChan;
 
-	Jupiter::String msg = this->mapStartFmt;
+	std::string msg = this->mapStartFmt;
 	if (!msg.empty())
 	{
 		RenX::processTags(msg, &server);
-		msg.replace(RenX::tags->INTERNAL_MESSAGE_TAG, map);
+		RenX::replace_tag(msg, RenX::tags->INTERNAL_MESSAGE_TAG, map);
 		(server.*func)(msg);
 	}
 }
@@ -2495,11 +2495,11 @@ void RenX_LoggingPlugin::RenX_OnMap(RenX::Server &server, const Jupiter::Readabl
 	else
 		func = &RenX::Server::sendAdmChan;
 
-	Jupiter::String msg = this->mapFmt;
+	std::string msg = this->mapFmt;
 	if (!msg.empty())
 	{
 		RenX::processTags(msg, &server);
-		msg.replace(RenX::tags->INTERNAL_MESSAGE_TAG, raw);
+		RenX::replace_tag(msg, RenX::tags->INTERNAL_MESSAGE_TAG, raw);
 		(server.*func)(msg);
 	}
 }
@@ -2512,7 +2512,7 @@ void RenX_LoggingPlugin::RenX_OnDemoRecord(RenX::Server &server, const RenX::Pla
 	else
 		func = &RenX::Server::sendAdmChan;
 
-	Jupiter::String msg = this->demoRecordFmt;
+	std::string msg = this->demoRecordFmt;
 	if (!msg.empty())
 	{
 		RenX::processTags(msg, &server, &player);
@@ -2528,11 +2528,11 @@ void RenX_LoggingPlugin::RenX_OnDemoRecord(RenX::Server &server, const Jupiter::
 	else
 		func = &RenX::Server::sendAdmChan;
 
-	Jupiter::String msg = this->rconDemoRecordFmt;
+	std::string msg = this->rconDemoRecordFmt;
 	if (!msg.empty())
 	{
 		RenX::processTags(msg, &server);
-		msg.replace(RenX::tags->nameTag, user);
+		RenX::replace_tag(msg, RenX::tags->nameTag, user);
 		(server.*func)(msg);
 	}
 }
@@ -2545,7 +2545,7 @@ void RenX_LoggingPlugin::RenX_OnDemoRecordStop(RenX::Server &server)
 	else
 		func = &RenX::Server::sendAdmChan;
 
-	Jupiter::String msg = this->demoRecordStopFmt;
+	std::string msg = this->demoRecordStopFmt;
 	if (!msg.empty())
 	{
 		RenX::processTags(msg, &server);
@@ -2561,11 +2561,11 @@ void RenX_LoggingPlugin::RenX_OnDemo(RenX::Server &server, const Jupiter::Readab
 	else
 		func = &RenX::Server::sendAdmChan;
 
-	Jupiter::String msg = this->demoFmt;
+	std::string msg = this->demoFmt;
 	if (!msg.empty())
 	{
 		RenX::processTags(msg, &server);
-		msg.replace(RenX::tags->INTERNAL_MESSAGE_TAG, raw);
+		RenX::replace_tag(msg, RenX::tags->INTERNAL_MESSAGE_TAG, raw);
 		(server.*func)(msg);
 	}
 }
@@ -2578,11 +2578,11 @@ void RenX_LoggingPlugin::RenX_OnLog(RenX::Server &server, const Jupiter::Readabl
 	else
 		func = &RenX::Server::sendAdmChan;
 	
-	Jupiter::String msg = this->logFmt;
+	std::string msg = this->logFmt;
 	if (!msg.empty())
 	{
 		RenX::processTags(msg, &server);
-		msg.replace(RenX::tags->INTERNAL_MESSAGE_TAG, raw);
+		RenX::replace_tag(msg, RenX::tags->INTERNAL_MESSAGE_TAG, raw);
 		(server.*func)(msg);
 	}
 }
@@ -2595,11 +2595,11 @@ void RenX_LoggingPlugin::RenX_OnCommand(RenX::Server &server, const Jupiter::Rea
 	else
 		func = &RenX::Server::sendAdmChan;
 
-	Jupiter::String msg = this->commandFmt;
+	std::string msg = this->commandFmt;
 	if (!msg.empty())
 	{
 		RenX::processTags(msg, &server);
-		msg.replace(RenX::tags->INTERNAL_MESSAGE_TAG, raw);
+		RenX::replace_tag(msg, RenX::tags->INTERNAL_MESSAGE_TAG, raw);
 		(server.*func)(msg);
 	}
 }
@@ -2612,11 +2612,11 @@ void RenX_LoggingPlugin::RenX_OnError(RenX::Server &server, const Jupiter::Reada
 	else
 		func = &RenX::Server::sendAdmChan;
 	
-	Jupiter::String msg = this->errorFmt;
+	std::string msg = this->errorFmt;
 	if (!msg.empty())
 	{
 		RenX::processTags(msg, &server);
-		msg.replace(RenX::tags->INTERNAL_MESSAGE_TAG, raw);
+		RenX::replace_tag(msg, RenX::tags->INTERNAL_MESSAGE_TAG, raw);
 		(server.*func)(msg);
 	}
 }
@@ -2629,11 +2629,11 @@ void RenX_LoggingPlugin::RenX_OnVersion(RenX::Server &server, const Jupiter::Rea
 	else
 		func = &RenX::Server::sendAdmChan;
 	
-	Jupiter::String msg = this->versionFmt;
+	std::string msg = this->versionFmt;
 	if (!msg.empty())
 	{
 		RenX::processTags(msg, &server);
-		msg.replace(RenX::tags->INTERNAL_MESSAGE_TAG, raw);
+		RenX::replace_tag(msg, RenX::tags->INTERNAL_MESSAGE_TAG, raw);
 		(server.*func)(msg);
 	}
 }
@@ -2646,11 +2646,11 @@ void RenX_LoggingPlugin::RenX_OnAuthorized(RenX::Server &server, const Jupiter::
 	else
 		func = &RenX::Server::sendAdmChan;
 	
-	Jupiter::String msg = this->authorizedFmt;
+	std::string msg = this->authorizedFmt;
 	if (!msg.empty())
 	{
 		RenX::processTags(msg, &server);
-		msg.replace(RenX::tags->INTERNAL_MESSAGE_TAG, raw);
+		RenX::replace_tag(msg, RenX::tags->INTERNAL_MESSAGE_TAG, raw);
 		(server.*func)(msg);
 	}
 }
@@ -2663,11 +2663,11 @@ void RenX_LoggingPlugin::RenX_OnOther(RenX::Server &server, char token, const Ju
 	else
 		func = &RenX::Server::sendAdmChan;
 	
-	Jupiter::String msg = this->otherFmt;
+	std::string msg = this->otherFmt;
 	if (!msg.empty())
 	{
 		RenX::processTags(msg, &server);
-		msg.replace(RenX::tags->INTERNAL_MESSAGE_TAG, raw);
+		RenX::replace_tag(msg, RenX::tags->INTERNAL_MESSAGE_TAG, raw);
 		(server.*func)(msg);
 	}
 }

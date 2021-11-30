@@ -27,7 +27,7 @@ using namespace std::literals;
 
 void RenX_GreetingsPlugin::RenX_OnJoin(RenX::Server &server, const RenX::PlayerInfo &player) {
 	auto sendMessage = [&](const std::string& raw_message) {
-		Jupiter::String msg = raw_message;
+		std::string msg = raw_message;
 
 		RenX::sanitizeTags(msg);
 		RenX::processTags(msg, &server, &player);

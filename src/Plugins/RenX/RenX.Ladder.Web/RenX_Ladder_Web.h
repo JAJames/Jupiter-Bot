@@ -39,9 +39,9 @@ public:
 
 	Jupiter::StringS header;
 	Jupiter::StringS footer;
-	Jupiter::String *generate_ladder_page(RenX::LadderDatabase *db, uint8_t format, size_t start_index, size_t count, const Jupiter::HTTP::HTMLFormResponse& query_params);
-	Jupiter::String *generate_search_page(RenX::LadderDatabase *db, uint8_t format, size_t start_index, size_t count, std::string_view name, const Jupiter::HTTP::HTMLFormResponse& query_params);
-	Jupiter::String *generate_profile_page(RenX::LadderDatabase *db, uint8_t format, uint64_t steam_id, const Jupiter::HTTP::HTMLFormResponse& query_params);
+	std::string* generate_ladder_page(RenX::LadderDatabase *db, uint8_t format, size_t start_index, size_t count, const Jupiter::HTTP::HTMLFormResponse& query_params);
+	std::string* generate_search_page(RenX::LadderDatabase *db, uint8_t format, size_t start_index, size_t count, std::string_view name, const Jupiter::HTTP::HTMLFormResponse& query_params);
+	std::string* generate_profile_page(RenX::LadderDatabase *db, uint8_t format, uint64_t steam_id, const Jupiter::HTTP::HTMLFormResponse& query_params);
 	inline size_t getEntriesPerPage() const { return this->entries_per_page; }
 	inline size_t getMinSearchNameLength() const { return this->min_search_name_length; };
 
@@ -66,11 +66,11 @@ private:
 	std::string web_ladder_table_header_filename;
 	std::string web_ladder_table_footer_filename;
 
-	Jupiter::StringS entry_table_row, entry_profile, entry_profile_previous, entry_profile_next;
+	std::string entry_table_row, entry_profile, entry_profile_previous, entry_profile_next;
 };
 
-Jupiter::ReadableString *handle_ladder_page(std::string_view query_string);
-Jupiter::ReadableString *handle_search_page(std::string_view query_string);
-Jupiter::ReadableString *handle_profile_page(std::string_view query_string);
+std::string* handle_ladder_page(std::string_view query_string);
+std::string* handle_search_page(std::string_view query_string);
+std::string* handle_profile_page(std::string_view query_string);
 
 #endif // _RENX_LADDER_WEB_H

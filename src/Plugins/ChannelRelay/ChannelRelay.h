@@ -29,8 +29,9 @@ public: // Jupiter::Plugin
 	int OnRehash() override;
 
 	virtual bool initialize() override;
+
 private:
-	Jupiter::String_Strict<int> types;
+	std::vector<int> m_types;
 };
 
 #endif // _CHANNELRELAY_H_HEADER

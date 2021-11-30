@@ -161,7 +161,7 @@ private:
 	std::vector<IRCCommand::TypeAccessPair> m_types; /** Access levels for channel types */
 
 	struct ChannelAccessPair {
-		Jupiter::StringS channel;
+		std::string channel;
 		int access;
 	};
 	std::vector<IRCCommand::ChannelAccessPair> m_channels; /** Access levels for specific channels */

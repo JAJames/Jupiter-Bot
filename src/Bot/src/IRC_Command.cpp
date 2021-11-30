@@ -16,6 +16,7 @@
  * Written by Jessica James <jessica.aj@outlook.com>
  */
 
+#include "jessilib/unicode.hpp"
 #include "IRC_Command.h"
 
 std::vector<IRCCommand*> g_IRCMasterCommandList;
@@ -72,7 +73,7 @@ int IRCCommand::getAccessLevel(int type) {
 
 int IRCCommand::getAccessLevel(const Jupiter::ReadableString &channel) {
 	for (const auto& pair : m_channels) {
-		if (pair.channel.equalsi(channel)) {
+		if (jessilib::equalsi(pair.channel, channel)) {
 			return pair.access;
 		}
 	}
@@ -82,7 +83,7 @@ int IRCCommand::getAccessLevel(const Jupiter::ReadableString &channel) {
 
 int IRCCommand::getAccessLevel(Jupiter::IRC::Client::Channel *channel) {
 	for (const auto& pair : m_channels) {
-		if (pair.channel.equalsi(channel->getName())) {
+		if (jessilib::equalsi(pair.channel, channel->getName())) {
 			return pair.access;
 		}
 	}
@@ -105,7 +106,7 @@ void IRCCommand::setAccessLevel(int type, int accessLevel) {
 }
 
 void IRCCommand::setAccessLevel(const Jupiter::ReadableString &channel, int accessLevel) {
-	m_channels.push_back({ channel, accessLevel });
+	m_channels.push_back({ static_cast<std::string>(channel), accessLevel });
 }
 
 void IRCCommand::create() {

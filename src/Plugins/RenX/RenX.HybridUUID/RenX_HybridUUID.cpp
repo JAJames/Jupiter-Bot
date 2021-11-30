@@ -24,12 +24,13 @@
 #include "RenX_HybridUUID.h"
 
 using namespace Jupiter::literals;
+using namespace std::literals;
 
 Jupiter::StringS calc_uuid(RenX::PlayerInfo &player)
 {
 	if (player.steamid != 0U)
 		return Jupiter::StringS::Format("S%.16llX", player.steamid);
-	return "N"_jrs + player.name;
+	return "N"s + player.name;
 }
 
 RenX_HybridUUIDPlugin::RenX_HybridUUIDPlugin()

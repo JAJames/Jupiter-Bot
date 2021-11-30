@@ -46,7 +46,7 @@ Jupiter::GenericCommand::ResponseLine *SelectGenericCommand::trigger(const Jupit
 
 	IRCCommand::selected_server = serverManager->getServer(parameters);
 	if (IRCCommand::selected_server == nullptr)
-		return new Jupiter::GenericCommand::ResponseLine("Error: IRC server \""_jrs + parameters + "\" not found. No IRC server is currently selected."_jrs, GenericCommand::DisplayType::PublicError);
+		return new Jupiter::GenericCommand::ResponseLine("Error: IRC server \""s + parameters + "\" not found. No IRC server is currently selected."_jrs, GenericCommand::DisplayType::PublicError);
 
 	if (IRCCommand::active_server == nullptr)
 		IRCCommand::active_server = IRCCommand::selected_server;

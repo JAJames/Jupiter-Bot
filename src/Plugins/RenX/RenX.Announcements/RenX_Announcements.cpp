@@ -46,10 +46,10 @@ void RenX_AnnouncementsPlugin::announce(unsigned int, void *)
 		while (trand == RenX_AnnouncementsPlugin::lastLine);
 		RenX_AnnouncementsPlugin::lastLine = trand;
 	}
-	Jupiter::StringS announcement = RenX_AnnouncementsPlugin::announcementsFile.getLine(RenX_AnnouncementsPlugin::lastLine);
+	std::string announcement = RenX_AnnouncementsPlugin::announcementsFile.getLine(RenX_AnnouncementsPlugin::lastLine);
 	RenX::sanitizeTags(announcement);
 	
-	Jupiter::String msg;
+	std::string msg;
 	RenX::Core *core = RenX::getCore();
 	RenX::Server *server;
 	for (unsigned int i = 0; i != RenX::getCore()->getServerCount(); i++)

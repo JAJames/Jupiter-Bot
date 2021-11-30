@@ -118,15 +118,15 @@ const Jupiter::ReadableString &PluginGenericCommand::getHelp(const Jupiter::Read
 	static STRING_LITERAL_AS_NAMED_REFERENCE(listHelp, "Lists all of the plugins currently loaded. Syntax: plugin [list]");
 	static STRING_LITERAL_AS_NAMED_REFERENCE(defaultHelp, "Manages plugins. Syntax: plugin {[list], <load> <plugin>, <unload> <plugin>, <reload> [plugin]}");
 
-	if (parameters.equalsi(STRING_LITERAL_AS_REFERENCE("load"))) {
+	if (jessilib::equalsi(parameters, STRING_LITERAL_AS_REFERENCE("load"))) {
 		return loadHelp;
 	}
 
-	if (parameters.equalsi(STRING_LITERAL_AS_REFERENCE("unload"))) {
+	if (jessilib::equalsi(parameters, STRING_LITERAL_AS_REFERENCE("unload"))) {
 		return unloadHelp;
 	}
 
-	if (parameters.equalsi(STRING_LITERAL_AS_REFERENCE("list"))) {
+	if (jessilib::equalsi(parameters, STRING_LITERAL_AS_REFERENCE("list"))) {
 		return listHelp;
 	}
 

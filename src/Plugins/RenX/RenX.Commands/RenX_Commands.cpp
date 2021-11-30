@@ -82,7 +82,7 @@ bool RenX_CommandsPlugin::initialize() {
 	m_playerInfoFormat = this->config.get("PlayerInfoFormat"_jrs, IRCCOLOR "03[Player Info]" IRCCOLOR "{TCOLOR} Name: " IRCBOLD "{RNAME}" IRCBOLD " - ID: {ID} - Team: " IRCBOLD "{TEAML}" IRCBOLD " - Vehicle Kills: {VEHICLEKILLS} - Building Kills {BUILDINGKILLS} - Kills {KILLS} - Deaths: {DEATHS} - KDR: {KDR} - Access: {ACCESS}"_jrs);
 	m_adminPlayerInfoFormat = this->config.get("AdminPlayerInfoFormat"_jrs, Jupiter::StringS::Format("%.*s - IP: " IRCBOLD "{IP}" IRCBOLD " - HWID: " IRCBOLD "{HWID}" IRCBOLD " - RDNS: " IRCBOLD "{RDNS}" IRCBOLD " - Steam ID: " IRCBOLD "{STEAM}", m_playerInfoFormat.size(),
 		m_playerInfoFormat.data()));
-	m_buildingInfoFormat = this->config.get("BuildingInfoFormat"_jrs, ""_jrs IRCCOLOR + RenX::tags->buildingTeamColorTag + RenX::tags->buildingNameTag + IRCCOLOR " - " IRCCOLOR "07"_jrs + RenX::tags->buildingHealthPercentageTag + "%"_jrs);
+	m_buildingInfoFormat = this->config.get("BuildingInfoFormat"_jrs, ""s IRCCOLOR + RenX::tags->buildingTeamColorTag + RenX::tags->buildingNameTag + IRCCOLOR " - " IRCCOLOR "07"_jrs + RenX::tags->buildingHealthPercentageTag + "%"_jrs);
 	m_staffTitle = this->config.get("StaffTitle"_jrs, "Moderator"_jrs);
 
 	RenX::sanitizeTags(m_playerInfoFormat);
@@ -730,7 +730,7 @@ void PlayerInfoIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableStrin
 	Jupiter::IRC::Client::Channel *chan = source->getChannel(channel);
 	if (chan != nullptr) {
 		int type = chan->getType();
-		Jupiter::StringL msg;
+		std::string msg;
 		RenX::Server *server;
 		const Jupiter::ReadableString &player_info_format = source->getAccessLevel(channel, nick) > 1 ? pluginInstance.getAdminPlayerInfoFormat() : pluginInstance.getPlayerInfoFormat();
 		size_t index = 0;
@@ -792,13 +792,14 @@ void BuildingInfoIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableStr
 
 	int type = chan->getType();
 	bool seenStrip;
-	std::forward_list<Jupiter::String *> gStrings;
-	std::forward_list<Jupiter::String *> nStrings;
-	std::forward_list<Jupiter::String *> oStrings;
-	std::forward_list<Jupiter::String *> cStrings;
-	Jupiter::String *str = nullptr;
+	bool foundServer{};
+	std::forward_list<std::string> gStrings;
+	std::forward_list<std::string> nStrings;
+	std::forward_list<std::string> oStrings;
+	std::forward_list<std::string> cStrings;
 	for (const auto& server : RenX::getCore()->getServers()) {
 		if (server->isLogChanType(type)) {
+			foundServer = true;
 			seenStrip = false;
 			for (const auto& building : server->buildings){
 				if (building->name.find("Rx_Building_Air"_jrs) == 0) {
@@ -808,8 +809,8 @@ void BuildingInfoIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableStr
 
 					seenStrip = true;
 				}
-				str = new Jupiter::String(pluginInstance.getBuildingInfoFormat());
-				RenX::processTags(*str, server, nullptr, nullptr, building.get());
+				std::string str(pluginInstance.getBuildingInfoFormat());
+				RenX::processTags(str, server, nullptr, nullptr, building.get());
 
 				if (building->capturable)
 					cStrings.push_front(str);
@@ -822,33 +823,27 @@ void BuildingInfoIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableStr
 			}
 
 			while (gStrings.empty() == false) {
-				str = gStrings.front();
 				gStrings.pop_front();
-				source->sendMessage(channel, *str);
-				delete str;
+				source->sendMessage(channel, gStrings.front());
 			}
 			while (nStrings.empty() == false) {
-				str = nStrings.front();
 				nStrings.pop_front();
-				source->sendMessage(channel, *str);
-				delete str;
+				source->sendMessage(channel, nStrings.front());
 			}
 			while (oStrings.empty() == false) {
-				str = oStrings.front();
 				oStrings.pop_front();
-				source->sendMessage(channel, *str);
-				delete str;
+				source->sendMessage(channel, oStrings.front());
 			}
 			while (cStrings.empty() == false) {
-				str = cStrings.front();
 				cStrings.pop_front();
-				source->sendMessage(channel, *str);
-				delete str;
+				source->sendMessage(channel, cStrings.front());
 			}
 		}
 	}
-	if (str == nullptr)
+
+	if (!foundServer) {
 		source->sendMessage(channel, "Error: Channel not attached to any connected Renegade X servers."_jrs);
+	}
 }
 
 const Jupiter::ReadableString &BuildingInfoIRCCommand::getHelp(const Jupiter::ReadableString &) {
@@ -880,7 +875,7 @@ void MutatorsIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString 
 			{
 				list = STRING_LITERAL_AS_REFERENCE(IRCCOLOR "03[Mutators]" IRCNORMAL);
 				for (const auto& mutator : server->mutators) {
-					list += " "_jrs + mutator;
+					list += " "s + mutator;
 				}
 
 				if (server->mutators.empty()) {
@@ -925,10 +920,10 @@ void RotationIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString 
 				list = STRING_LITERAL_AS_REFERENCE(IRCCOLOR "03[Rotation]" IRCNORMAL);
 				for (const auto& map : server->maps) {
 					if (jessilib::equalsi(server->getMap().name, map.name)) {
-						list += STRING_LITERAL_AS_REFERENCE(" " IRCBOLD "[") + map.name + STRING_LITERAL_AS_REFERENCE("]" IRCBOLD);
+						list += std::string(" " IRCBOLD "[") + map.name + STRING_LITERAL_AS_REFERENCE("]" IRCBOLD);
 					}
 					else {
-						list += " "_jrs + map.name;
+						list += " "s + map.name;
 					}
 				}
 
@@ -968,7 +963,7 @@ void MapIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &chan
 			if (server->isLogChanType(type)) {
 				match = true;
 				const RenX::Map &map = server->getMap();
-				source->sendMessage(channel, "Current Map: "_jrs + map.name + "; GUID: "_jrs + RenX::formatGUID(map));
+				source->sendMessage(channel, "Current Map: "s + map.name + "; GUID: "_jrs + RenX::formatGUID(map));
 			}
 		}
 		if (match == false) {
@@ -1011,7 +1006,7 @@ void GameInfoIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString 
 				const RenX::Map &map = server->getMap();
 				std::chrono::seconds time = std::chrono::duration_cast<std::chrono::seconds>(server->getGameTime());
 				source->sendMessage(channel, Jupiter::StringS::Format(IRCCOLOR "03[GameInfo] " IRCCOLOR "%.*s", server->getGameVersion().size(), server->getGameVersion().data()));
-				source->sendMessage(channel, IRCCOLOR "03[GameInfo] " IRCCOLOR "10Map" IRCCOLOR ": "_jrs + map.name + "; " IRCCOLOR "10GUID" IRCCOLOR ": "_jrs + RenX::formatGUID(map));
+				source->sendMessage(channel, IRCCOLOR "03[GameInfo] " IRCCOLOR "10Map" IRCCOLOR ": "s + map.name + "; " IRCCOLOR "10GUID" IRCCOLOR ": "_jrs + RenX::formatGUID(map));
 				source->sendMessage(channel, Jupiter::StringS::Format(IRCCOLOR "03[GameInfo] " IRCCOLOR "10Elapsed time" IRCCOLOR ": %.2lld:%.2lld:%.2lld", time.count() / 3600, (time.count() % 3600) / 60, time.count() % 60));
 				source->sendMessage(channel, Jupiter::StringS::Format(IRCCOLOR "03[GameInfo] " IRCCOLOR "There are " IRCCOLOR "10%d" IRCCOLOR " players online.", server->players.size()));
 			}
@@ -1212,44 +1207,45 @@ void ModsIRCCommand::create()
 	this->addTrigger(STRING_LITERAL_AS_REFERENCE("mods"));
 }
 
-void ModsIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &channel, const Jupiter::ReadableString &nick, const Jupiter::ReadableString &parameters)
-{
-	if (parameters.equalsi("show")) ShowModsIRCCommand_instance.trigger(source, channel, nick, parameters);
-	else
-	{
+void ModsIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &channel, const Jupiter::ReadableString &nick, const Jupiter::ReadableString &parameters) {
+	if (jessilib::equalsi(parameters, "show"sv)) {
+		ShowModsIRCCommand_instance.trigger(source, channel, nick, parameters);
+	}
+	else {
 		Jupiter::IRC::Client::Channel *chan = source->getChannel(channel);
-		if (chan != nullptr)
-		{
+		if (chan != nullptr) {
 			int type = chan->getType();
 			Jupiter::StringL msg;
 			const Jupiter::ReadableString &staff_word = pluginInstance.getStaffTitle();
-			for (unsigned int i = 0; i != RenX::getCore()->getServerCount(); i++)
-			{
+			for (unsigned int i = 0; i != RenX::getCore()->getServerCount(); i++) {
 				RenX::Server *server = RenX::getCore()->getServer(i);
-				if (server->isLogChanType(type))
-				{
+				if (server->isLogChanType(type)) {
 					msg = "";
-					if (server->players.size() != 0)
-					{
-						for (auto node = server->players.begin(); node != server->players.end(); ++node)
-						{
-							if (node->isBot == false && (!node->adminType.empty() || (node->access != 0 && (!node->gamePrefix.empty() || !node->formatNamePrefix.empty()))))
-							{
-								if (!msg.empty())
+					if (server->players.size() != 0) {
+						for (auto node = server->players.begin(); node != server->players.end(); ++node) {
+							if (node->isBot == false && (!node->adminType.empty() || (node->access != 0 && (!node->gamePrefix.empty() || !node->formatNamePrefix.empty())))) {
+								if (!msg.empty()) {
 									msg += ", ";
-								else msg += staff_word + "s in-game: "_jrs;
+								}
+								else {
+									msg += staff_word;
+									msg += "s in-game: "_jrs;
+								}
 								msg += node->gamePrefix;
 								msg += node->name;
 							}
 						}
 					}
-					if (msg.empty())
-						msg = "No "_jrs + staff_word + "s are in-game."_jrs;
+					if (msg.empty()) {
+						msg = "No "s + staff_word + "s are in-game."_jrs;
+					}
 					source->sendMessage(channel, msg);
 				}
 			}
-			if (msg.empty())
-				source->sendMessage(channel, STRING_LITERAL_AS_REFERENCE("Error: Channel not attached to any connected Renegade X servers."));
+			if (msg.empty()) {
+				source->sendMessage(channel,
+					STRING_LITERAL_AS_REFERENCE("Error: Channel not attached to any connected Renegade X servers."));
+			}
 		}
 	}
 }
@@ -1308,7 +1304,9 @@ void RulesIRCCommand::create()
 
 void RulesIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &channel, const Jupiter::ReadableString &nick, const Jupiter::ReadableString &parameters)
 {
-	if (parameters.equalsi("show")) ShowRulesIRCCommand_instance.trigger(source, channel, nick, parameters);
+	if (jessilib::equalsi(parameters, "show"sv)) {
+		ShowRulesIRCCommand_instance.trigger(source, channel, nick, parameters);
+	}
 	else
 	{
 		Jupiter::IRC::Client::Channel *chan = source->getChannel(channel);
@@ -1406,16 +1404,16 @@ void GameOverIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString 
 			if (server->isLogChanType(type))
 			{
 				match = true;
-				if (parameters.equalsi("empty"_jrs))
+				if (jessilib::equalsi(parameters, "empty"_jrs))
 					server->gameoverWhenEmpty();
-				else if (parameters.equalsi("if empty"_jrs))
+				else if (jessilib::equalsi(parameters, "if empty"_jrs))
 				{
 					if (server->players.size() == server->getBotCount())
 						server->gameover();
 				}
-				else if (parameters.equalsi("now"_jrs))
+				else if (jessilib::equalsi(parameters, "now"_jrs))
 					server->gameover();
-				else if (parameters.equalsi("stop"_jrs) || parameters.equalsi("cancel"_jrs))
+				else if (jessilib::equalsi(parameters, "stop"_jrs) || jessilib::equalsi(parameters, "cancel"_jrs))
 				{
 					if (server->gameoverStop())
 						server->sendMessage("Notice: The scheduled gameover has been cancelled."_jrs);
@@ -1664,7 +1662,7 @@ void DisarmIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &c
 					if (player != nullptr)
 					{
 						if (server->disarm(*player))
-							source->sendMessage(channel, STRING_LITERAL_AS_REFERENCE("All deployables (c4, beacons, etc) belonging to ") + RenX::getFormattedPlayerName(*player) + STRING_LITERAL_AS_REFERENCE(IRCCOLOR " have been disarmed."));
+							source->sendMessage(channel, std::string("All deployables (c4, beacons, etc) belonging to ") + RenX::getFormattedPlayerName(*player) + STRING_LITERAL_AS_REFERENCE(IRCCOLOR " have been disarmed."));
 						else
 							source->sendMessage(channel, "Error: Server does not support disarms."_jrs);
 					}
@@ -1715,7 +1713,7 @@ void DisarmC4IRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString 
 					if (player != nullptr)
 					{
 						if (server->disarmC4(*player))
-							source->sendMessage(channel, STRING_LITERAL_AS_REFERENCE("All C4 belonging to ") + RenX::getFormattedPlayerName(*player) + STRING_LITERAL_AS_REFERENCE(IRCCOLOR " have been disarmed."));
+							source->sendMessage(channel, std::string("All C4 belonging to ") + RenX::getFormattedPlayerName(*player) + STRING_LITERAL_AS_REFERENCE(IRCCOLOR " have been disarmed."));
 						else
 							source->sendMessage(channel, "Error: Server does not support disarms."_jrs);
 					}
@@ -1768,7 +1766,7 @@ void DisarmBeaconIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableStr
 					if (player != nullptr)
 					{
 						if (server->disarmBeacon(*player))
-							source->sendMessage(channel, STRING_LITERAL_AS_REFERENCE("All beacons belonging to ") + RenX::getFormattedPlayerName(*player) + STRING_LITERAL_AS_REFERENCE(IRCCOLOR " have been disarmed."));
+							source->sendMessage(channel, std::string("All beacons belonging to ") + RenX::getFormattedPlayerName(*player) + STRING_LITERAL_AS_REFERENCE(IRCCOLOR " have been disarmed."));
 						else
 							source->sendMessage(channel, "Error: Server does not support disarms."_jrs);
 					}
@@ -2447,7 +2445,7 @@ const Jupiter::ReadableString &AddBanIRCCommand::getHelp(const Jupiter::Readable
 {
 	static STRING_LITERAL_AS_NAMED_REFERENCE(defaultHelp, "Adds a ban entry to the ban list. Use \"help addban keys\" for a list of input keys. Syntax: AddBan <Key> <Value> [<Key> <Value> ...]");
 	static STRING_LITERAL_AS_NAMED_REFERENCE(keyHelp, "Valueless keys (flags): Game, Chat, Bot, Vote, Mine, Ladder, Alert; Value-paired keys: Name, IP, Steam, RDNS, Duration, Reason (MUST BE LAST)");
-	if (!parameters.empty() && parameters.equalsi("keys"_jrs))
+	if (!parameters.empty() && jessilib::equalsi(parameters, "keys"_jrs))
 		return keyHelp;
 	return defaultHelp;
 }
@@ -2752,7 +2750,7 @@ void AddExemptionIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableStr
 				uint32_t ip = 0U;
 				uint8_t prefix_length = 32U;
 				uint64_t steamid = 0U;
-				Jupiter::String setter = nick + "@IRC"_jrs;
+				std::string setter = static_cast<std::string>(nick) + "@IRC"_jrs;
 				std::chrono::seconds duration = std::chrono::seconds::zero();
 				uint8_t flags = 0;
 
@@ -2849,7 +2847,7 @@ const Jupiter::ReadableString &AddExemptionIRCCommand::getHelp(const Jupiter::Re
 {
 	static STRING_LITERAL_AS_NAMED_REFERENCE(defaultHelp, "Adds an exemption entry to the exemption list. Use \"help addexemption keys\" for a list of input keys. Syntax: AddExemption <Key> <Value> [<Key> <Value> ...]");
 	static STRING_LITERAL_AS_NAMED_REFERENCE(keyHelp, "Valueless keys (flags): Ban, Kick; Value-paired keys: IP, Steam, Duration");
-	if (!parameters.empty() && parameters.equalsi("keys"_jrs))
+	if (!parameters.empty() && jessilib::equalsi(parameters, "keys"_jrs))
 		return keyHelp;
 	return defaultHelp;
 }
@@ -3021,7 +3019,8 @@ void PhaseBotsIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString
 				server->sendMessage(STRING_LITERAL_AS_REFERENCE("Bot phasing has been disabled."));
 			}
 		}
-		else if (parameters.equalsi("true") || parameters.equalsi("on") || parameters.equalsi("start") || parameters.equalsi("1")) {
+		else if (jessilib::equalsi(parameters, "true"sv) || jessilib::equalsi(parameters, "on"sv)
+			|| jessilib::equalsi(parameters, "start"sv) || jessilib::equalsi(parameters, "1"sv)) {
 			togglePhasing(server, true);
 			server->sendMessage(STRING_LITERAL_AS_REFERENCE("Bot phasing has been enabled."));
 		}
@@ -3342,15 +3341,15 @@ void CancelVoteIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableStrin
 	if (parameters.empty()) {
 		cancel_all = true;
 	} else {
-		if (parameters.equalsi("all") || parameters.equalsi("a")) {
+		if (jessilib::equalsi(parameters, "all"sv) || jessilib::equalsi(parameters, "a"sv)) {
 			cancel_all = true;
-		} else if (parameters.equalsi("public") || parameters.equalsi("p")) {
+		} else if (jessilib::equalsi(parameters, "public"sv) || jessilib::equalsi(parameters, "p"sv)) {
 			target = RenX::TeamType::None;
-		} else if (parameters.equalsi("gdi") || parameters.equalsi("g")) {
+		} else if (jessilib::equalsi(parameters, "gdi"sv) || jessilib::equalsi(parameters, "g"sv)) {
 			target = RenX::TeamType::GDI;
-		} else if (parameters.equalsi("blackhand") || parameters.equalsi("bh") || parameters.equalsi("b")) {
+		} else if (jessilib::equalsi(parameters, "blackhand"sv) || jessilib::equalsi(parameters, "bh"sv) || jessilib::equalsi(parameters, "b"sv)) {
 			target = RenX::TeamType::GDI;
-		} else if (parameters.equalsi("nod") || parameters.equalsi("n")) {
+		} else if (jessilib::equalsi(parameters, "nod"sv) || jessilib::equalsi(parameters, "n"sv)) {
 			target = RenX::TeamType::Nod;
 		} else {
 			source->sendNotice(nick, STRING_LITERAL_AS_REFERENCE("Error: Invalid Team. Allowed values are all/a, public/p, gdi/g, nod/n, blackhand/bh/b."));
@@ -3469,7 +3468,7 @@ void ModsGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *, const Ju
 	for (auto node = source->players.begin(); node != source->players.end(); ++node) {
 		if (node->isBot == false && (!node->adminType.empty() || (node->access != 0 && (!node->gamePrefix.empty() || !node->formatNamePrefix.empty())))) {
 			if (msg.empty())
-				msg = staff_word + "s in-game: "_jrs;
+				msg = static_cast<std::string>(staff_word) + "s in-game: "_jrs;
 			else
 				msg += ", ";
 
@@ -3478,7 +3477,7 @@ void ModsGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *, const Ju
 		}
 	}
 	if (msg.empty()) {
-		msg += "No "_jrs + staff_word + "s are in-game"_jrs;
+		msg += "No "s + staff_word + "s are in-game"_jrs;
 		RenX::GameCommand *cmd = source->getCommand(STRING_LITERAL_AS_REFERENCE("modrequest"));
 		if (cmd != nullptr)
 			msg.aformat("; please use \"%.*s%.*s\" if you require assistance.", source->getCommandPrefix().size(), source->getCommandPrefix().data(), cmd->getTrigger().size(), cmd->getTrigger().data());
@@ -3638,7 +3637,7 @@ void PAdminMessageGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *p
 			message += split_parameters.second;
 
 			source->sendAdminMessage(*target, message);
-			source->sendMessage(*player, "Message sent to "_jrs + target->name);
+			source->sendMessage(*player, "Message sent to "s + target->name);
 		}
 	}
 	else {
@@ -3667,7 +3666,7 @@ void KillGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *player, co
 			source->sendMessage(*player, "Error: Player not found."_jrs);
 		}
 		else if (target->access >= player->access) {
-			source->sendMessage(*player, "Error: You can not kill higher level "_jrs + pluginInstance.getStaffTitle() + "s."_jrs);
+			source->sendMessage(*player, "Error: You can not kill higher level "s + pluginInstance.getStaffTitle() + "s."_jrs);
 		}
 		else {
 			source->kill(*target);
@@ -3698,7 +3697,7 @@ void DisarmGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *player, 
 		if (target == nullptr)
 			source->sendMessage(*player, "Error: Player not found."_jrs);
 		else if (target->access >= player->access)
-			source->sendMessage(*player, "Error: You can not disarm higher level "_jrs + pluginInstance.getStaffTitle() + "s."_jrs);
+			source->sendMessage(*player, "Error: You can not disarm higher level "s + pluginInstance.getStaffTitle() + "s."_jrs);
 		else if (source->disarm(*target) == false)
 			source->sendMessage(*player, "Error: Server does not support disarms."_jrs);
 		else
@@ -3728,7 +3727,7 @@ void DisarmC4GameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *player
 		if (target == nullptr)
 			source->sendMessage(*player, "Error: Player not found."_jrs);
 		else if (target->access >= player->access)
-			source->sendMessage(*player, "Error: You can not disarm higher level "_jrs + pluginInstance.getStaffTitle() + "s."_jrs);
+			source->sendMessage(*player, "Error: You can not disarm higher level "s + pluginInstance.getStaffTitle() + "s."_jrs);
 		else if (source->disarmC4(*target) == false)
 			source->sendMessage(*player, "Error: Server does not support disarms."_jrs);
 		else
@@ -3760,7 +3759,7 @@ void DisarmBeaconGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *pl
 		if (target == nullptr)
 			source->sendMessage(*player, "Error: Player not found."_jrs);
 		else if (target->access >= player->access)
-			source->sendMessage(*player, "Error: You can not disarm higher level "_jrs + pluginInstance.getStaffTitle() + "s."_jrs);
+			source->sendMessage(*player, "Error: You can not disarm higher level "s + pluginInstance.getStaffTitle() + "s."_jrs);
 		else if (source->disarmBeacon(*target) == false)
 			source->sendMessage(*player, "Error: Server does not support disarms."_jrs);
 		else
@@ -3791,7 +3790,7 @@ void MineBanGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *player,
 		if (target == nullptr)
 			source->sendMessage(*player, "Error: Player not found."_jrs);
 		else if (target->access >= player->access)
-			source->sendMessage(*player, "Error: You can not mine-ban higher level "_jrs + pluginInstance.getStaffTitle() + "s."_jrs);
+			source->sendMessage(*player, "Error: You can not mine-ban higher level "s + pluginInstance.getStaffTitle() + "s."_jrs);
 		else
 		{
 			source->mineBan(*target);
@@ -3834,7 +3833,7 @@ void KickGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *player, co
 			source->sendMessage(*player, "Error: You cannot kick yourself."_jrs);
 		}
 		else if (target->access >= player->access) {
-			source->sendMessage(*player, "Error: You can not kick higher level "_jrs + pluginInstance.getStaffTitle() + "s."_jrs);
+			source->sendMessage(*player, "Error: You can not kick higher level "s + pluginInstance.getStaffTitle() + "s."_jrs);
 		}
 		else
 		{
@@ -3873,7 +3872,7 @@ void MuteGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *player, co
 		else if (player == target)
 			source->sendMessage(*player, "Error: You cannot mute yourself."_jrs);
 		else if (target->access >= player->access)
-			source->sendMessage(*player, "Error: You can not mute higher level "_jrs + pluginInstance.getStaffTitle() + "s."_jrs);
+			source->sendMessage(*player, "Error: You can not mute higher level "s + pluginInstance.getStaffTitle() + "s."_jrs);
 		else
 		{
 			source->mute(*target);
@@ -3931,7 +3930,7 @@ void TempBanGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *player,
 		else if (player == target)
 			source->sendMessage(*player, "Error: You can't ban yourself."_jrs);
 		else if (target->access >= player->access)
-			source->sendMessage(*player, "Error: You can't ban higher level "_jrs + pluginInstance.getStaffTitle() + "s."_jrs);
+			source->sendMessage(*player, "Error: You can't ban higher level "s + pluginInstance.getStaffTitle() + "s."_jrs);
 		else
 		{
 			source->banPlayer(*target, player->name, reason, duration);
@@ -3989,7 +3988,7 @@ void TempChatBanGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *pla
 		else if (player == target)
 			source->sendMessage(*player, "Error: You can not ban yourself."_jrs);
 		else if (target->access >= player->access)
-			source->sendMessage(*player, "Error: You can not ban higher level "_jrs + pluginInstance.getStaffTitle() + "s."_jrs);
+			source->sendMessage(*player, "Error: You can not ban higher level "s + pluginInstance.getStaffTitle() + "s."_jrs);
 		else {
 			source->mute(*target);
 			RenX::banDatabase->add(source, *target, player->name, reason, duration, RenX::BanDatabase::Entry::FLAG_TYPE_CHAT);
@@ -4032,7 +4031,7 @@ void KickBanGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *player,
 			source->sendMessage(*player, "Error: You can not ban yourself."_jrs);
 		}
 		else if (target->access >= player->access) {
-			source->sendMessage(*player, "Error: You can not ban higher level "_jrs + pluginInstance.getStaffTitle() + "s."_jrs);
+			source->sendMessage(*player, "Error: You can not ban higher level "s + pluginInstance.getStaffTitle() + "s."_jrs);
 		}
 		else {
 			source->banPlayer(*target, player->name, reason);
@@ -4143,8 +4142,8 @@ void PhaseBotsGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *playe
 			source->sendMessage(*player, STRING_LITERAL_AS_REFERENCE("Bot phasing has been enabled."));
 		else source->sendMessage(*player, STRING_LITERAL_AS_REFERENCE("Bot phasing has been disabled."));
 	}
-	else if (parameters.equalsi("true") || parameters.equalsi("on") || parameters.equalsi("start") || parameters.equalsi("1"))
-	{
+	else if (jessilib::equalsi(parameters, "true"sv) || jessilib::equalsi(parameters, "on"sv)
+		|| jessilib::equalsi(parameters, "start"sv) || jessilib::equalsi(parameters, "1"sv)) {
 		togglePhasing(source, true);
 		source->sendMessage(*player, STRING_LITERAL_AS_REFERENCE("Bot phasing has been enabled."));
 	}
@@ -4247,15 +4246,15 @@ void CancelVoteGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *play
 		cancel_all = true;
 	}
 	else {
-		if (parameters.equalsi("all") || parameters.equalsi("a")) {
+		if (jessilib::equalsi(parameters, "all"sv) || jessilib::equalsi(parameters, "a"sv)) {
 			cancel_all = true;
-		} else if (parameters.equalsi("public") || parameters.equalsi("p")) {
+		} else if (jessilib::equalsi(parameters, "public"sv) || jessilib::equalsi(parameters, "p"sv)) {
 			target = RenX::TeamType::None;
-		} else if (parameters.equalsi("gdi") || parameters.equalsi("g")) {
+		} else if (jessilib::equalsi(parameters, "gdi"sv) || jessilib::equalsi(parameters, "g"sv)) {
 			target = RenX::TeamType::GDI;
-		} else if (parameters.equalsi("blackhand") || parameters.equalsi("bh") || parameters.equalsi("b")) {
+		} else if (jessilib::equalsi(parameters, "blackhand"sv) || jessilib::equalsi(parameters, "bh"sv) || jessilib::equalsi(parameters, "b"sv)) {
 			target = RenX::TeamType::GDI;
-		} else if (parameters.equalsi("nod") || parameters.equalsi("n")) {
+		} else if (jessilib::equalsi(parameters, "nod"sv) || jessilib::equalsi(parameters, "n"sv)) {
 			target = RenX::TeamType::Nod;
 		} else {
 			source->sendMessage(*player, STRING_LITERAL_AS_REFERENCE("Error: Invalid Team. Allowed values are all/a, public/p, gdi/g, nod/n, blackhand/bh/b."));

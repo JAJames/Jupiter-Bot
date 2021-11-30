@@ -23,6 +23,7 @@
 #include "IRC_Bot.h"
 
 using namespace Jupiter::literals;
+using namespace std::literals;
 
 // Help Console Command
 
@@ -120,7 +121,7 @@ VersionGenericCommand::VersionGenericCommand() {
 }
 
 Jupiter::GenericCommand::ResponseLine *VersionGenericCommand::trigger(const Jupiter::ReadableString &parameters) {
-	Jupiter::GenericCommand::ResponseLine *ret = new Jupiter::GenericCommand::ResponseLine("Version: "_jrs + Jupiter::ReferenceString(Jupiter::version), GenericCommand::DisplayType::PublicSuccess);
+	Jupiter::GenericCommand::ResponseLine *ret = new Jupiter::GenericCommand::ResponseLine("Version: "s + Jupiter::ReferenceString(Jupiter::version), GenericCommand::DisplayType::PublicSuccess);
 	ret->next = new Jupiter::GenericCommand::ResponseLine(Jupiter::ReferenceString(Jupiter::copyright), GenericCommand::DisplayType::PublicSuccess);
 	return ret;
 }
