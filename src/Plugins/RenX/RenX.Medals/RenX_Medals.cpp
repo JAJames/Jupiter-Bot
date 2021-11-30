@@ -295,7 +295,7 @@ void RecsGameCommand::create()
 
 void RecsGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *player, const Jupiter::ReadableString &parameters)
 {
-	if (parameters.isNotEmpty())
+	if (!parameters.empty())
 	{
 		RenX::PlayerInfo *target = source->getPlayerByPartName(parameters);
 		if (target == nullptr)

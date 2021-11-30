@@ -433,7 +433,7 @@ void AuthIRCCommand::create()
 
 void AuthIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &channel, const Jupiter::ReadableString &nick, const Jupiter::ReadableString &parameters)
 {
-	if (parameters.isNotEmpty())
+	if (!parameters.empty())
 	{
 		Jupiter::IRC::Client::Channel *chan = source->getChannel(channel);
 		if (chan != nullptr)
@@ -503,7 +503,7 @@ void DeAuthIRCCommand::create()
 
 void DeAuthIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &channel, const Jupiter::ReadableString &nick, const Jupiter::ReadableString &parameters)
 {
-	if (parameters.isNotEmpty())
+	if (!parameters.empty())
 	{
 		Jupiter::IRC::Client::Channel *chan = source->getChannel(channel);
 		if (chan != nullptr)
@@ -795,7 +795,7 @@ void ForceAuthIRCCommand::create()
 
 void ForceAuthIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &channel, const Jupiter::ReadableString &nick, const Jupiter::ReadableString &parameters)
 {
-	if (parameters.isNotEmpty())
+	if (!parameters.empty())
 	{
 		Jupiter::IRC::Client::Channel *chan = source->getChannel(channel);
 		if (chan != nullptr)
@@ -909,7 +909,7 @@ void AuthGameCommand::create()
 
 void AuthGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *player, const Jupiter::ReadableString &parameters)
 {
-	if (parameters.isNotEmpty())
+	if (!parameters.empty())
 	{
 		RenX::PlayerInfo *target = source->getPlayerByPartName(parameters);
 		if (target == nullptr)
@@ -1021,7 +1021,7 @@ void ForceAuthGameCommand::create()
 
 void ForceAuthGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *player, const Jupiter::ReadableString &parameters)
 {
-	if (parameters.isNotEmpty())
+	if (!parameters.empty())
 	{
 		RenX::PlayerInfo *target = source->getPlayerByPartName(parameters);
 		if (target == nullptr)

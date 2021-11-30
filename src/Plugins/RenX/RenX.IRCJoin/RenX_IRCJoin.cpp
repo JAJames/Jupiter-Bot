@@ -43,7 +43,7 @@ bool RenX_IRCJoinPlugin::initialize()
 
 void RenX_IRCJoinPlugin::OnJoin(Jupiter::IRC::Client *source, std::string_view channel, std::string_view nick)
 {
-	if (RenX_IRCJoinPlugin::joinFmt.isNotEmpty())
+	if (!RenX_IRCJoinPlugin::joinFmt.empty())
 	{
 		RenX::Server *server;
 		int type = source->getChannel(channel)->getType();
@@ -69,7 +69,7 @@ void RenX_IRCJoinPlugin::OnJoin(Jupiter::IRC::Client *source, std::string_view c
 
 void RenX_IRCJoinPlugin::OnPart(Jupiter::IRC::Client *source, std::string_view channel, std::string_view nick, std::string_view reason)
 {
-	if (RenX_IRCJoinPlugin::partFmt.isNotEmpty())
+	if (!RenX_IRCJoinPlugin::partFmt.empty())
 	{
 		int access = source->getAccessLevel(channel, nick);
 

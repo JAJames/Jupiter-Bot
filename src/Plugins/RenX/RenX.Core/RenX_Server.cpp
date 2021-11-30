@@ -1183,7 +1183,7 @@ void RenX::Server::sendPubChan(const char *fmt, ...) const {
 	va_start(args, fmt);
 	Jupiter::StringL msg;
 	const Jupiter::ReadableString &serverPrefix = getPrefix();
-	if (serverPrefix.isNotEmpty()) {
+	if (!serverPrefix.empty()) {
 		msg += serverPrefix;
 		msg += ' ';
 		msg.avformat(fmt, args);
@@ -1199,7 +1199,7 @@ void RenX::Server::sendPubChan(const char *fmt, ...) const {
 
 void RenX::Server::sendPubChan(const Jupiter::ReadableString &msg) const {
 	const Jupiter::ReadableString &prefix = getPrefix();
-	if (prefix.isNotEmpty()) {
+	if (!prefix.empty()) {
 		Jupiter::String m(msg.size() + prefix.size() + 1);
 		m.set(prefix);
 		m += ' ';
@@ -1221,7 +1221,7 @@ void RenX::Server::sendAdmChan(const char *fmt, ...) const {
 	va_start(args, fmt);
 	Jupiter::StringL msg;
 	const Jupiter::ReadableString &serverPrefix = getPrefix();
-	if (serverPrefix.isNotEmpty()) {
+	if (!serverPrefix.empty()) {
 		msg += serverPrefix;
 		msg += ' ';
 		msg.avformat(fmt, args);
@@ -1237,7 +1237,7 @@ void RenX::Server::sendAdmChan(const char *fmt, ...) const {
 
 void RenX::Server::sendAdmChan(const Jupiter::ReadableString &msg) const {
 	const Jupiter::ReadableString &prefix = getPrefix();
-	if (prefix.isNotEmpty()) {
+	if (!prefix.empty()) {
 		Jupiter::String m(msg.size() + prefix.size() + 1);
 		m.set(prefix);
 		m += ' ';
@@ -1260,7 +1260,7 @@ void RenX::Server::sendLogChan(const char *fmt, ...) const {
 	va_start(args, fmt);
 	Jupiter::StringL msg;
 	const Jupiter::ReadableString &serverPrefix = getPrefix();
-	if (serverPrefix.isNotEmpty()) {
+	if (!serverPrefix.empty()) {
 		msg += serverPrefix;
 		msg += ' ';
 		msg.avformat(fmt, args);
@@ -1279,7 +1279,7 @@ void RenX::Server::sendLogChan(const char *fmt, ...) const {
 void RenX::Server::sendLogChan(const Jupiter::ReadableString &msg) const {
 	IRC_Bot *server;
 	const Jupiter::ReadableString &prefix = getPrefix();
-	if (prefix.isNotEmpty()) {
+	if (!prefix.empty()) {
 		Jupiter::String m(msg.size() + prefix.size() + 1);
 		m.set(prefix);
 		m += ' ';
@@ -1455,7 +1455,7 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line) {
 		Jupiter::ReferenceString idToken = player_tokens[1];
 		result.name = player_tokens[2];
 		result.team = RenX::getTeam(player_tokens[0]);
-		if (idToken.isNotEmpty() && idToken[0] == 'b') {
+		if (!idToken.empty() && idToken[0] == 'b') {
 			idToken.remove_prefix(1);
 			result.isBot = true;
 			result.isPlayer = true;
@@ -1548,7 +1548,7 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line) {
 		{
 			bool recalcUUID = false;
 			player->team = team;
-			if (player->ip32 == 0 && ip.isNotEmpty())
+			if (player->ip32 == 0 && !ip.empty())
 			{
 				player->ip = ip;
 				player->ip32 = Jupiter::Socket::pton4(static_cast<std::string>(player->ip).c_str());
@@ -1559,7 +1559,7 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line) {
 				}
 				recalcUUID = true;
 			}
-			if (player->hwid.empty() && hwid.isNotEmpty())
+			if (player->hwid.empty() && !hwid.empty())
 			{
 				player->hwid = hwid;
 				recalcUUID = true;
@@ -1621,7 +1621,7 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line) {
 		}
 	};
 
-	if (tokens[0].isNotEmpty())
+	if (!tokens[0].empty())
 	{
 		char header = tokens[0][0];
 		tokens[0].shiftRight(1);
@@ -1631,7 +1631,7 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line) {
 			if (jessilib::equalsi(m_lastCommand, "clientlist"sv))
 			{
 				// ID | IP | Steam ID | Admin Status | Team | Name
-				if (tokens[0].isNotEmpty())
+				if (!tokens[0].empty())
 				{
 					bool isBot = false;
 					int id;
@@ -2440,7 +2440,7 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line) {
 						// "player" | Player | "suicide by" | Damage Type
 						//		NOTE: Filter these out when Player.empty().
 						Jupiter::ReferenceString playerToken = getToken(3);
-						if (playerToken.isNotEmpty())
+						if (!playerToken.empty())
 						{
 							RenX::PlayerInfo *player = parseGetPlayerOrAdd(playerToken);
 							Jupiter::ReferenceString type = getToken(4);

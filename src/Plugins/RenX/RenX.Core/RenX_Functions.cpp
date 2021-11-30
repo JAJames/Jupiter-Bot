@@ -498,7 +498,7 @@ std::string_view RenX::translateName(std::string_view obj)
 		return ""_jrs;
 
 	Jupiter::ReferenceString iniTranslation = RenX::getCore()->getConfig()["Name"_jrs].get(Jupiter::ReferenceString{obj});
-	if (iniTranslation.isNotEmpty())
+	if (!iniTranslation.empty())
 		return iniTranslation;
 
 	Jupiter::ReferenceString object = obj;

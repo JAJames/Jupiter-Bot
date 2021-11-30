@@ -43,7 +43,7 @@ void SetJoinIRCCommand::create()
 
 void SetJoinIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &channel, const Jupiter::ReadableString &nick, const Jupiter::ReadableString &parameters)
 {
-	if (parameters.isNotEmpty())
+	if (!parameters.empty())
 	{
 		pluginInstance.setjoin_file[source->getConfigSection()].set(nick, static_cast<std::string>(parameters));
 		pluginInstance.setjoin_file.write();

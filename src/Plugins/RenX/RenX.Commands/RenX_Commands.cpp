@@ -200,7 +200,7 @@ void MsgIRCCommand::create()
 
 void MsgIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &channel, const Jupiter::ReadableString &nick, const Jupiter::ReadableString &parameters)
 {
-	if (parameters.isNotEmpty())
+	if (!parameters.empty())
 	{
 		int type = source->getChannel(channel)->getType();
 		Jupiter::StringL msg;
@@ -261,7 +261,7 @@ void PMsgIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &cha
 		msg += nick;
 		msg += "@IRC: ";
 		msg += command_split.second;
-		if (parameters.isNotEmpty())
+		if (!parameters.empty())
 		{
 			for (unsigned int i = 0; i != RenX::getCore()->getServerCount(); i++)
 			{
@@ -302,7 +302,7 @@ void HostMsgIRCCommand::create()
 
 void HostMsgIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &channel, const Jupiter::ReadableString &nick, const Jupiter::ReadableString &parameters)
 {
-	if (parameters.isNotEmpty())
+	if (!parameters.empty())
 	{
 		int type = source->getChannel(channel)->getType();
 
@@ -339,7 +339,7 @@ void AdminMsgIRCCommand::create()
 
 void AdminMsgIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &channel, const Jupiter::ReadableString &nick, const Jupiter::ReadableString &parameters)
 {
-	if (parameters.isNotEmpty())
+	if (!parameters.empty())
 	{
 		int type = source->getChannel(channel)->getType();
 
@@ -387,7 +387,7 @@ void PAdminMsgIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString
 		msg += nick;
 		msg += "@IRC: ";
 		msg += command_split.second;
-		if (parameters.isNotEmpty())
+		if (!parameters.empty())
 		{
 			for (unsigned int i = 0; i != RenX::getCore()->getServerCount(); i++)
 			{
@@ -1043,7 +1043,7 @@ void SteamIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &ch
 	if (chan != nullptr)
 	{
 		int type = chan->getType();
-		if (parameters.isNotEmpty())
+		if (!parameters.empty())
 		{
 			Jupiter::StringL msg;
 			for (unsigned int i = 0; i != RenX::getCore()->getServerCount(); i++)
@@ -1126,7 +1126,7 @@ void KillDeathRatioIRCCommand::create()
 
 void KillDeathRatioIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &channel, const Jupiter::ReadableString &nick, const Jupiter::ReadableString &parameters)
 {
-	if (parameters.isNotEmpty())
+	if (!parameters.empty())
 	{
 		Jupiter::IRC::Client::Channel *chan = source->getChannel(channel);
 		if (chan != nullptr)
@@ -1233,9 +1233,9 @@ void ModsIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &cha
 					{
 						for (auto node = server->players.begin(); node != server->players.end(); ++node)
 						{
-							if (node->isBot == false && (node->adminType.isNotEmpty() || (node->access != 0 && (node->gamePrefix.isNotEmpty() || node->formatNamePrefix.isNotEmpty()))))
+							if (node->isBot == false && (!node->adminType.empty() || (node->access != 0 && (!node->gamePrefix.empty() || !node->formatNamePrefix.empty()))))
 							{
-								if (msg.isNotEmpty())
+								if (!msg.empty())
 									msg += ", ";
 								else msg += staff_word + "s in-game: "_jrs;
 								msg += node->gamePrefix;
@@ -1457,7 +1457,7 @@ void SetMapIRCCommand::create()
 
 void SetMapIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &channel, const Jupiter::ReadableString &nick, const Jupiter::ReadableString &parameters)
 {
-	if (parameters.isNotEmpty())
+	if (!parameters.empty())
 	{
 		Jupiter::IRC::Client::Channel *chan = source->getChannel(channel);
 		if (chan != nullptr)
@@ -1502,7 +1502,7 @@ void MuteIRCCommand::create()
 
 void MuteIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &channel, const Jupiter::ReadableString &nick, const Jupiter::ReadableString &parameters)
 {
-	if (parameters.isNotEmpty())
+	if (!parameters.empty())
 	{
 		Jupiter::IRC::Client::Channel *chan = source->getChannel(channel);
 		if (chan != nullptr)
@@ -1551,7 +1551,7 @@ void UnMuteIRCCommand::create()
 
 void UnMuteIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &channel, const Jupiter::ReadableString &nick, const Jupiter::ReadableString &parameters)
 {
-	if (parameters.isNotEmpty())
+	if (!parameters.empty())
 	{
 		Jupiter::IRC::Client::Channel *chan = source->getChannel(channel);
 		if (chan != nullptr)
@@ -1600,7 +1600,7 @@ void KillIRCCommand::create()
 
 void KillIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &channel, const Jupiter::ReadableString &nick, const Jupiter::ReadableString &parameters)
 {
-	if (parameters.isNotEmpty())
+	if (!parameters.empty())
 	{
 		Jupiter::IRC::Client::Channel *chan = source->getChannel(channel);
 		if (chan != nullptr)
@@ -1646,7 +1646,7 @@ void DisarmIRCCommand::create()
 
 void DisarmIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &channel, const Jupiter::ReadableString &nick, const Jupiter::ReadableString &parameters)
 {
-	if (parameters.isNotEmpty())
+	if (!parameters.empty())
 	{
 		Jupiter::IRC::Client::Channel *chan = source->getChannel(channel);
 		if (chan != nullptr)
@@ -1697,7 +1697,7 @@ void DisarmC4IRCCommand::create()
 
 void DisarmC4IRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &channel, const Jupiter::ReadableString &nick, const Jupiter::ReadableString &parameters)
 {
-	if (parameters.isNotEmpty())
+	if (!parameters.empty())
 	{
 		Jupiter::IRC::Client::Channel *chan = source->getChannel(channel);
 		if (chan != nullptr)
@@ -1750,7 +1750,7 @@ void DisarmBeaconIRCCommand::create()
 
 void DisarmBeaconIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &channel, const Jupiter::ReadableString &nick, const Jupiter::ReadableString &parameters)
 {
-	if (parameters.isNotEmpty())
+	if (!parameters.empty())
 	{
 		Jupiter::IRC::Client::Channel *chan = source->getChannel(channel);
 		if (chan != nullptr)
@@ -1801,7 +1801,7 @@ void MineBanIRCCommand::create()
 
 void MineBanIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &channel, const Jupiter::ReadableString &nick, const Jupiter::ReadableString &parameters)
 {
-	if (parameters.isNotEmpty())
+	if (!parameters.empty())
 	{
 		Jupiter::IRC::Client::Channel *chan = source->getChannel(channel);
 		if (chan != nullptr)
@@ -2221,7 +2221,7 @@ void KickBanIRCCommand::create() {
 }
 
 void KickBanIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &channel, const Jupiter::ReadableString &nick, const Jupiter::ReadableString &parameters) {
-	if (parameters.isNotEmpty()) {
+	if (!parameters.empty()) {
 		Jupiter::IRC::Client::Channel *chan = source->getChannel(channel);
 		if (chan != nullptr) {
 			const auto& servers = RenX::getCore()->getServers(chan->getType());
@@ -2280,7 +2280,7 @@ void AddBanIRCCommand::create()
 }
 
 void AddBanIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &channel, const Jupiter::ReadableString &nick, const Jupiter::ReadableString &parameters) {
-	if (parameters.isNotEmpty()) {
+	if (!parameters.empty()) {
 		Jupiter::IRC::Client::Channel *chan = source->getChannel(channel);
 		if (chan != nullptr) {
 			std::vector<std::string_view> split_parameters = jessilib::word_split_view(std::string_view{parameters}, " \t="sv);
@@ -2447,7 +2447,7 @@ const Jupiter::ReadableString &AddBanIRCCommand::getHelp(const Jupiter::Readable
 {
 	static STRING_LITERAL_AS_NAMED_REFERENCE(defaultHelp, "Adds a ban entry to the ban list. Use \"help addban keys\" for a list of input keys. Syntax: AddBan <Key> <Value> [<Key> <Value> ...]");
 	static STRING_LITERAL_AS_NAMED_REFERENCE(keyHelp, "Valueless keys (flags): Game, Chat, Bot, Vote, Mine, Ladder, Alert; Value-paired keys: Name, IP, Steam, RDNS, Duration, Reason (MUST BE LAST)");
-	if (parameters.isNotEmpty() && parameters.equalsi("keys"_jrs))
+	if (!parameters.empty() && parameters.equalsi("keys"_jrs))
 		return keyHelp;
 	return defaultHelp;
 }
@@ -2467,7 +2467,7 @@ void UnBanIRCCommand::create()
 
 void UnBanIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &channel, const Jupiter::ReadableString &nick, const Jupiter::ReadableString &parameters)
 {
-	if (parameters.isNotEmpty())
+	if (!parameters.empty())
 	{
 		size_t index = Jupiter::from_string<size_t>(parameters);
 		if (index < RenX::banDatabase->getEntries().size())
@@ -2507,7 +2507,7 @@ void ExemptionSearchIRCCommand::create() {
 
 void ExemptionSearchIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &channel, const Jupiter::ReadableString &nick, const Jupiter::ReadableString &parameters) {
 	const auto& entries = RenX::exemptionDatabase->getEntries();
-	if (parameters.isNotEmpty())
+	if (!parameters.empty())
 	{
 		if (entries.size() == 0) {
 			source->sendNotice(nick, "The exemption database is empty!"sv);
@@ -2849,7 +2849,7 @@ const Jupiter::ReadableString &AddExemptionIRCCommand::getHelp(const Jupiter::Re
 {
 	static STRING_LITERAL_AS_NAMED_REFERENCE(defaultHelp, "Adds an exemption entry to the exemption list. Use \"help addexemption keys\" for a list of input keys. Syntax: AddExemption <Key> <Value> [<Key> <Value> ...]");
 	static STRING_LITERAL_AS_NAMED_REFERENCE(keyHelp, "Valueless keys (flags): Ban, Kick; Value-paired keys: IP, Steam, Duration");
-	if (parameters.isNotEmpty() && parameters.equalsi("keys"_jrs))
+	if (!parameters.empty() && parameters.equalsi("keys"_jrs))
 		return keyHelp;
 	return defaultHelp;
 }
@@ -2869,7 +2869,7 @@ void UnExemptIRCCommand::create()
 
 void UnExemptIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &channel, const Jupiter::ReadableString &nick, const Jupiter::ReadableString &parameters)
 {
-	if (parameters.isNotEmpty())
+	if (!parameters.empty())
 	{
 		size_t index = Jupiter::from_string<size_t>(parameters);
 		if (index < RenX::exemptionDatabase->getEntries().size())
@@ -3141,7 +3141,7 @@ void TeamChangeIRCCommand::create() {
 }
 
 void TeamChangeIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &channel, const Jupiter::ReadableString &nick, const Jupiter::ReadableString &parameters) {
-	if (parameters.isNotEmpty()) {
+	if (!parameters.empty()) {
 		Jupiter::IRC::Client::Channel *chan = source->getChannel(channel);
 		if (chan != nullptr) {
 			int type = chan->getType();
@@ -3188,7 +3188,7 @@ void TeamChange2IRCCommand::create()
 }
 
 void TeamChange2IRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &channel, const Jupiter::ReadableString &nick, const Jupiter::ReadableString &parameters) {
-	if (parameters.isNotEmpty()) {
+	if (!parameters.empty()) {
 		Jupiter::IRC::Client::Channel *chan = source->getChannel(channel);
 		if (chan != nullptr) {
 			int type = chan->getType();
@@ -3467,7 +3467,7 @@ void ModsGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *, const Ju
 	Jupiter::StringL msg;
 	const Jupiter::ReadableString &staff_word = pluginInstance.getStaffTitle();
 	for (auto node = source->players.begin(); node != source->players.end(); ++node) {
-		if (node->isBot == false && (node->adminType.isNotEmpty() || (node->access != 0 && (node->gamePrefix.isNotEmpty() || node->formatNamePrefix.isNotEmpty())))) {
+		if (node->isBot == false && (!node->adminType.empty() || (node->access != 0 && (!node->gamePrefix.empty() || !node->formatNamePrefix.empty())))) {
 			if (msg.empty())
 				msg = staff_word + "s in-game: "_jrs;
 			else
@@ -3597,7 +3597,7 @@ void AdminMessageGameCommand::create() {
 }
 
 void AdminMessageGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *player, const Jupiter::ReadableString &parameters) {
-	if (parameters.isNotEmpty()) {
+	if (!parameters.empty()) {
 		Jupiter::StringS msg = player->gamePrefix + player->name + ": "_jrs + parameters;
 		source->sendAdminMessage(msg);
 	}
@@ -3661,7 +3661,7 @@ void KillGameCommand::create() {
 }
 
 void KillGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *player, const Jupiter::ReadableString &parameters) {
-	if (parameters.isNotEmpty()) {
+	if (!parameters.empty()) {
 		RenX::PlayerInfo *target = source->getPlayerByPartName(parameters);
 		if (target == nullptr) {
 			source->sendMessage(*player, "Error: Player not found."_jrs);
@@ -3693,7 +3693,7 @@ void DisarmGameCommand::create() {
 }
 
 void DisarmGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *player, const Jupiter::ReadableString &parameters) {
-	if (parameters.isNotEmpty()) {
+	if (!parameters.empty()) {
 		RenX::PlayerInfo *target = source->getPlayerByPartName(parameters);
 		if (target == nullptr)
 			source->sendMessage(*player, "Error: Player not found."_jrs);
@@ -3723,7 +3723,7 @@ void DisarmC4GameCommand::create() {
 }
 
 void DisarmC4GameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *player, const Jupiter::ReadableString &parameters) {
-	if (parameters.isNotEmpty()) {
+	if (!parameters.empty()) {
 		RenX::PlayerInfo *target = source->getPlayerByPartName(parameters);
 		if (target == nullptr)
 			source->sendMessage(*player, "Error: Player not found."_jrs);
@@ -3755,7 +3755,7 @@ void DisarmBeaconGameCommand::create() {
 }
 
 void DisarmBeaconGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *player, const Jupiter::ReadableString &parameters) {
-	if (parameters.isNotEmpty()) {
+	if (!parameters.empty()) {
 		RenX::PlayerInfo *target = source->getPlayerByPartName(parameters);
 		if (target == nullptr)
 			source->sendMessage(*player, "Error: Player not found."_jrs);
@@ -3785,7 +3785,7 @@ void MineBanGameCommand::create() {
 }
 
 void MineBanGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *player, const Jupiter::ReadableString &parameters) {
-	if (parameters.isNotEmpty())
+	if (!parameters.empty())
 	{
 		RenX::PlayerInfo *target = source->getPlayerByPartName(parameters);
 		if (target == nullptr)
