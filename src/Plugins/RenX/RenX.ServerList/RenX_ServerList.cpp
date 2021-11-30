@@ -32,8 +32,8 @@ using namespace std::literals;
 
 static STRING_LITERAL_AS_NAMED_REFERENCE(CONTENT_TYPE_APPLICATION_JSON, "application/json");
 
-const Jupiter::ReferenceString server_list_game_header = "<html><body>"_jrs;
-const Jupiter::ReferenceString server_list_game_footer = "\n</body></html>"_jrs;
+constexpr std::string_view server_list_game_header = "<html><body>"sv;
+constexpr std::string_view server_list_game_footer = "\n</body></html>"sv;
 
 // TODO: can probably replace with some of the jessilib stuff
 Jupiter::String jsonify(std::string_view in_str) {
@@ -96,41 +96,41 @@ bool RenX_ServerListPlugin::initialize() {
 
 	// Server list page
 	std::unique_ptr<Jupiter::HTTP::Server::Content> content = std::make_unique<Jupiter::HTTP::Server::Content>(m_server_list_page_name, handle_server_list_page);
-	content->language = &Jupiter::HTTP::Content::Language::ENGLISH;
-	content->type = &CONTENT_TYPE_APPLICATION_JSON;
-	content->charset = &Jupiter::HTTP::Content::Type::Text::Charset::UTF8;
+	content->language = Jupiter::HTTP::Content::Language::ENGLISH;
+	content->type = CONTENT_TYPE_APPLICATION_JSON;
+	content->charset = Jupiter::HTTP::Content::Type::Text::Charset::UTF8;
 	content->free_result = false;
 	server.hook(m_web_hostname, m_web_path, std::move(content));
 
 	// Server list (long) page
 	content = std::make_unique<Jupiter::HTTP::Server::Content>(m_server_list_long_page_name, handle_server_list_long_page);
-	content->language = &Jupiter::HTTP::Content::Language::ENGLISH;
-	content->type = &CONTENT_TYPE_APPLICATION_JSON;
-	content->charset = &Jupiter::HTTP::Content::Type::Text::Charset::UTF8;
+	content->language = Jupiter::HTTP::Content::Language::ENGLISH;
+	content->type = CONTENT_TYPE_APPLICATION_JSON;
+	content->charset = Jupiter::HTTP::Content::Type::Text::Charset::UTF8;
 	content->free_result = true;
 	server.hook(m_web_hostname, m_web_path, std::move(content));
 
 	// Server page (GUIDs)
 	content = std::make_unique<Jupiter::HTTP::Server::Content>(m_server_page_name, handle_server_page);
-	content->language = &Jupiter::HTTP::Content::Language::ENGLISH;
-	content->type = &CONTENT_TYPE_APPLICATION_JSON;
-	content->charset = &Jupiter::HTTP::Content::Type::Text::Charset::UTF8;
+	content->language = Jupiter::HTTP::Content::Language::ENGLISH;
+	content->type = CONTENT_TYPE_APPLICATION_JSON;
+	content->charset = Jupiter::HTTP::Content::Type::Text::Charset::UTF8;
 	content->free_result = true;
 	server.hook(m_web_hostname, m_web_path, std::move(content));
 
 	// Metadata page
 	content = std::make_unique<Jupiter::HTTP::Server::Content>(m_metadata_page_name, handle_metadata_page);
-	content->language = &Jupiter::HTTP::Content::Language::ENGLISH;
-	content->type = &CONTENT_TYPE_APPLICATION_JSON;
-	content->charset = &Jupiter::HTTP::Content::Type::Text::Charset::UTF8;
+	content->language = Jupiter::HTTP::Content::Language::ENGLISH;
+	content->type = CONTENT_TYPE_APPLICATION_JSON;
+	content->charset = Jupiter::HTTP::Content::Type::Text::Charset::UTF8;
 	content->free_result = false;
 	server.hook(m_web_hostname, m_web_path, std::move(content));
 
 	// Metadata page
 	content = std::make_unique<Jupiter::HTTP::Server::Content>(m_metadata_prometheus_page_name, handle_metadata_prometheus_page);
-	content->language = &Jupiter::HTTP::Content::Language::ENGLISH;
-	content->type = &CONTENT_TYPE_APPLICATION_JSON;
-	content->charset = &Jupiter::HTTP::Content::Type::Text::Charset::UTF8;
+	content->language = Jupiter::HTTP::Content::Language::ENGLISH;
+	content->type = CONTENT_TYPE_APPLICATION_JSON;
+	content->charset = Jupiter::HTTP::Content::Type::Text::Charset::UTF8;
 	content->free_result = false;
 	server.hook(m_web_hostname, m_web_path, std::move(content));
 
@@ -612,7 +612,7 @@ void RenX_ServerListPlugin::RenX_OnPart(RenX::Server &server, const RenX::Player
 	}
 }
 
-void RenX_ServerListPlugin::RenX_OnMapLoad(RenX::Server &server, const Jupiter::ReadableString &map) {
+void RenX_ServerListPlugin::RenX_OnMapLoad(RenX::Server &server, std::string_view map) {
 	markDetailsStale(server);
 	this->updateServerList();
 }

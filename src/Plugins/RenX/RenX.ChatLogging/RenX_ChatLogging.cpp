@@ -55,22 +55,22 @@ RenX_ChatLogPlugin::~RenX_ChatLogPlugin()
 	}
 }
 
-std::ostream& operator<<(std::ostream& in_stream, const Jupiter::ReadableString& in_string) {
+std::ostream& operator<<(std::ostream& in_stream, std::string_view  in_string) {
 	in_stream.write(in_string.data(), in_string.size());
 	return in_stream;
 }
 
-void RenX_ChatLogPlugin::RenX_OnChat(RenX::Server& server, const RenX::PlayerInfo& player, const Jupiter::ReadableString& message)
+void RenX_ChatLogPlugin::RenX_OnChat(RenX::Server& server, const RenX::PlayerInfo& player, std::string_view  message)
 {
 	WriteToLog(server, player, message, "ALL");
 }
 
-void RenX_ChatLogPlugin::RenX_OnTeamChat(RenX::Server& server, const RenX::PlayerInfo& player, const Jupiter::ReadableString& message)
+void RenX_ChatLogPlugin::RenX_OnTeamChat(RenX::Server& server, const RenX::PlayerInfo& player, std::string_view  message)
 {
 	WriteToLog(server, player, message, "TEAM");
 }
 
-void RenX_ChatLogPlugin::WriteToLog(RenX::Server& server, const RenX::PlayerInfo& player, const Jupiter::ReadableString& message, std::string in_prefix)
+void RenX_ChatLogPlugin::WriteToLog(RenX::Server& server, const RenX::PlayerInfo& player, std::string_view  message, std::string in_prefix)
 {
 	// Check if new file needs to be opened
 	PrepFile();

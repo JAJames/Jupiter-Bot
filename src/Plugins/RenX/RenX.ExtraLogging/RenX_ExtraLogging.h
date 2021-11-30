@@ -26,7 +26,7 @@
 class RenX_ExtraLoggingPlugin : public RenX::Plugin
 {
 public: // RenX::Plugin
-	virtual void RenX_OnRaw(RenX::Server &server, const Jupiter::ReadableString &raw) override;
+	virtual void RenX_OnRaw(RenX::Server &server, std::string_view raw) override;
 
 public: // Jupiter::Plugin
 	virtual bool initialize() override;

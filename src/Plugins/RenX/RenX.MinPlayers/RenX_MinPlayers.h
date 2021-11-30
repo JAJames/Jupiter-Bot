@@ -26,14 +26,14 @@
 class RenX_MinPlayersPlugin : public RenX::Plugin
 {
 public:
-	void RenX_OnMapStart(RenX::Server &server, const Jupiter::ReadableString &map) override;
+	void RenX_OnMapStart(RenX::Server &server, std::string_view map) override;
 	void RenX_OnJoin(RenX::Server &server, const RenX::PlayerInfo &player) override;
 	void RenX_OnPart(RenX::Server &server, const RenX::PlayerInfo &player) override;
 
-	void RenX_OnSuicide(RenX::Server &server, const RenX::PlayerInfo &player, const Jupiter::ReadableString &damageType) override;
-	void RenX_OnKill(RenX::Server &server, const RenX::PlayerInfo &player, const RenX::PlayerInfo &victim, const Jupiter::ReadableString &damageType) override;
-	void RenX_OnKill(RenX::Server &server, const Jupiter::ReadableString &killer, const RenX::TeamType &killerTeam, const RenX::PlayerInfo &victim, const Jupiter::ReadableString &damageType) override;
-	void RenX_OnDie(RenX::Server &server, const RenX::PlayerInfo &player, const Jupiter::ReadableString &damageType) override;
+	void RenX_OnSuicide(RenX::Server &server, const RenX::PlayerInfo &player, std::string_view damageType) override;
+	void RenX_OnKill(RenX::Server &server, const RenX::PlayerInfo &player, const RenX::PlayerInfo &victim, std::string_view damageType) override;
+	void RenX_OnKill(RenX::Server &server, std::string_view killer, const RenX::TeamType &killerTeam, const RenX::PlayerInfo &victim, std::string_view damageType) override;
+	void RenX_OnDie(RenX::Server &server, const RenX::PlayerInfo &player, std::string_view damageType) override;
 
 	virtual bool initialize() override;
 

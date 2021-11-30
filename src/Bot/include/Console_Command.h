@@ -53,7 +53,7 @@ public:
 	*
 	* @param input Parameters passed to the command by the user.
 	*/
-	virtual void trigger(const Jupiter::ReadableString &input) = 0;
+	virtual void trigger(std::string_view input) = 0;
 
 	/**
 	* @brief Default constructor for the console command class.
@@ -80,8 +80,8 @@ JUPITER_BOT_API extern ConsoleCommand *getConsoleCommand(std::string_view trigge
 #define BASE_CONSOLE_COMMAND(CLASS) \
 	public: \
 	CLASS(); \
-	void trigger(const Jupiter::ReadableString &parameters); \
-	const Jupiter::ReadableString &getHelp(const Jupiter::ReadableString &parameters);
+	void trigger(std::string_view parameters); \
+	std::string_view getHelp(std::string_view parameters);
 
 /** Expands to become the entire declaration for a console command. In most cases, this will be sufficient. */
 #define GENERIC_CONSOLE_COMMAND(CLASS) \
@@ -97,8 +97,8 @@ class CLASS : public ConsoleCommand { \
 template<typename T> class Generic_Command_As_Console_Command : public ConsoleCommand
 {
 public:
-	void trigger(const Jupiter::ReadableString &parameters);
-	const Jupiter::ReadableString &getHelp(const Jupiter::ReadableString &parameters);
+	void trigger(std::string_view parameters);
+	std::string_view getHelp(std::string_view parameters);
 
 	Generic_Command_As_Console_Command();
 };
@@ -110,7 +110,7 @@ template <typename T> Generic_Command_As_Console_Command<T>::Generic_Command_As_
 	}
 }
 
-template<typename T> void Generic_Command_As_Console_Command<T>::trigger(const Jupiter::ReadableString &parameters) {
+template<typename T> void Generic_Command_As_Console_Command<T>::trigger(std::string_view parameters) {
 	std::unique_ptr<Jupiter::GenericCommand::ResponseLine> response_line{ T::instance.trigger(parameters) };
 	while (response_line != nullptr) {
 		auto& out_stream = response_line->type == Jupiter::GenericCommand::DisplayType::PublicError
@@ -121,7 +121,7 @@ template<typename T> void Generic_Command_As_Console_Command<T>::trigger(const J
 	}
 }
 
-template<typename T> const Jupiter::ReadableString &Generic_Command_As_Console_Command<T>::getHelp(const Jupiter::ReadableString &parameters)
+template<typename T> std::string_view Generic_Command_As_Console_Command<T>::getHelp(std::string_view parameters)
 {
 	return T::instance.getHelp(parameters);
 }

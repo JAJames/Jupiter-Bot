@@ -74,7 +74,7 @@ namespace RenX
 		* @param data Command to send.
 		* @return Number of servers sent to on success, less than or equal to 0 otherwise.
 		*/
-		size_t send(int type, const Jupiter::ReadableString &data);
+		size_t send(int type, std::string_view data);
 
 		/**
 		* @brief Adds a server to the server list.

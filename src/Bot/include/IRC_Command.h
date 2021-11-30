@@ -72,7 +72,7 @@ public:
 	*
 	* @return Access level.
 	*/
-	int getAccessLevel(const Jupiter::ReadableString &channel);
+	int getAccessLevel(std::string_view channel);
 
 	/**
 	* @brief Fetches a command's access level for a specific channel.
@@ -102,7 +102,7 @@ public:
 	* @param channel Specific channel name for which to set access.
 	* @param accessLevel Access level.
 	*/
-	void setAccessLevel(const Jupiter::ReadableString &channel, int accessLevel);
+	void setAccessLevel(std::string_view channel, int accessLevel);
 
 	/**
 	* @brief Called when the command is intially created. Define triggers and access levels here.
@@ -117,7 +117,7 @@ public:
 	* @param nick Nickname of the user who executed the command.
 	* @param parameters Parameters specified with the command.
 	*/
-	virtual void trigger(IRC_Bot *source, const Jupiter::ReadableString &channel, const Jupiter::ReadableString &nick, const Jupiter::ReadableString &parameters) = 0;
+	virtual void trigger(IRC_Bot *source, std::string_view channel, std::string_view nick, std::string_view parameters) = 0;
 
 	/**
 	* @brief Creates a copy of a command.
@@ -178,7 +178,7 @@ public:
 	* @param in_nick Name of the user to deliver result to (if result is 'Private' type)
 	* @param in_parameters Parameters to pass to the GenericCommand's trigger()
 	*/
-	void trigger(IRC_Bot *in_server, const Jupiter::ReadableString &in_channel, const Jupiter::ReadableString &in_nick, const Jupiter::ReadableString &in_parameters) override;
+	void trigger(IRC_Bot *in_server, std::string_view in_channel, std::string_view in_nick, std::string_view in_parameters) override;
 
 	/**
 	* @brief Forwards the help message from the underlying GenericCommand
@@ -186,7 +186,7 @@ public:
 	* @param in_parameters Parameters to forward to the GenericCommand's getHelp()
 	* @return Help string from the GenericCommand
 	*/
-	const Jupiter::ReadableString &getHelp(const Jupiter::ReadableString &in_parameters) override;
+	std::string_view getHelp(std::string_view in_parameters) override;
 
 	/**
 	* @brief Copies the GenericCommandWrapperIRCCommand
@@ -221,8 +221,8 @@ private:
 /** Defines the core of an IRC command's declaration. This should be included in every IRC command. */
 #define BASE_IRC_COMMAND(CLASS) \
 	public: \
-	void trigger(IRC_Bot *source, const Jupiter::ReadableString &channel, const Jupiter::ReadableString &nick, const Jupiter::ReadableString &parameters) override; \
-	const Jupiter::ReadableString &getHelp(const Jupiter::ReadableString &parameters) override; \
+	void trigger(IRC_Bot *source, std::string_view channel, std::string_view nick, std::string_view parameters) override; \
+	std::string_view getHelp(std::string_view parameters) override; \
 	IRCCommand *copy() override; \
 	void create() override; \
 	CLASS() { this->create(); if (serverManager != nullptr) serverManager->addCommand(this); }

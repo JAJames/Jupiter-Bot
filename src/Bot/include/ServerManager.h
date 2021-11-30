@@ -74,7 +74,7 @@ public:
 	* @param command Trigger to match against.
 	* @return Number of servers which had a command removed.
 	*/
-	size_t removeCommand(const Jupiter::ReadableString &command);
+	size_t removeCommand(std::string_view command);
 
 	/**
 	* @brief Called when m_config is rehashed

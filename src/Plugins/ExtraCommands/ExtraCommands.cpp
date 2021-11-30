@@ -33,7 +33,7 @@ SelectGenericCommand::SelectGenericCommand()
 	this->addTrigger("ircselect"_jrs);
 }
 
-Jupiter::GenericCommand::ResponseLine *SelectGenericCommand::trigger(const Jupiter::ReadableString &parameters)
+Jupiter::GenericCommand::ResponseLine *SelectGenericCommand::trigger(std::string_view parameters)
 {
 	if (parameters.empty())
 	{
@@ -53,7 +53,7 @@ Jupiter::GenericCommand::ResponseLine *SelectGenericCommand::trigger(const Jupit
 	return new Jupiter::GenericCommand::ResponseLine(std::string{IRCCommand::selected_server->getConfigSection()} + " is now selected."s, GenericCommand::DisplayType::PublicSuccess);
 }
 
-const Jupiter::ReadableString &SelectGenericCommand::getHelp(const Jupiter::ReadableString &)
+std::string_view SelectGenericCommand::getHelp(std::string_view )
 {
 	static Jupiter::ReferenceString defaultHelp = "Selects an IRC server if specified, responds with the currently selected server otherwise. Syntax: select [server]"_jrs;
 	return defaultHelp;
@@ -74,7 +74,7 @@ DeselectGenericCommand::DeselectGenericCommand()
 	this->addTrigger("ircunselect"_jrs);
 }
 
-Jupiter::GenericCommand::ResponseLine *DeselectGenericCommand::trigger(const Jupiter::ReadableString &parameters)
+Jupiter::GenericCommand::ResponseLine *DeselectGenericCommand::trigger(std::string_view parameters)
 {
 	if (IRCCommand::selected_server == nullptr)
 		return new Jupiter::GenericCommand::ResponseLine("No IRC server is currently selected."_jrs, GenericCommand::DisplayType::PublicSuccess);
@@ -85,7 +85,7 @@ Jupiter::GenericCommand::ResponseLine *DeselectGenericCommand::trigger(const Jup
 	return ret;
 }
 
-const Jupiter::ReadableString &DeselectGenericCommand::getHelp(const Jupiter::ReadableString &)
+std::string_view DeselectGenericCommand::getHelp(std::string_view )
 {
 	static Jupiter::ReferenceString defaultHelp = "Deselects the currently selected IRC server. Syntax: deselect"_jrs;
 	return defaultHelp;
@@ -102,7 +102,7 @@ RawGenericCommand::RawGenericCommand()
 	this->addTrigger("sendraw"_jrs);
 }
 
-Jupiter::GenericCommand::ResponseLine *RawGenericCommand::trigger(const Jupiter::ReadableString &parameters)
+Jupiter::GenericCommand::ResponseLine *RawGenericCommand::trigger(std::string_view parameters)
 {
 	IRC_Bot *server;
 	if (IRCCommand::selected_server != nullptr)
@@ -119,7 +119,7 @@ Jupiter::GenericCommand::ResponseLine *RawGenericCommand::trigger(const Jupiter:
 	return new Jupiter::GenericCommand::ResponseLine("Data has been successfully sent to server."_jrs, GenericCommand::DisplayType::PublicSuccess);
 }
 
-const Jupiter::ReadableString &RawGenericCommand::getHelp(const Jupiter::ReadableString &)
+std::string_view RawGenericCommand::getHelp(std::string_view )
 {
 	static STRING_LITERAL_AS_NAMED_REFERENCE(defaultHelp, "Sends a line of data to the selected IRC server. Syntax: raw <message>");
 	return defaultHelp;
@@ -137,7 +137,7 @@ IRCMessageGenericCommand::IRCMessageGenericCommand()
 	this->addTrigger("privmsg"_jrs);
 }
 
-Jupiter::GenericCommand::ResponseLine *IRCMessageGenericCommand::trigger(const Jupiter::ReadableString &parameters)
+Jupiter::GenericCommand::ResponseLine *IRCMessageGenericCommand::trigger(std::string_view parameters)
 {
 	IRC_Bot *server;
 	if (IRCCommand::selected_server != nullptr)
@@ -151,11 +151,11 @@ Jupiter::GenericCommand::ResponseLine *IRCMessageGenericCommand::trigger(const J
 	if (parameters_split.second.empty())
 		return new Jupiter::GenericCommand::ResponseLine("Error: Too few parameters. Syntax: ircmsg <destination> <message>"_jrs, GenericCommand::DisplayType::PrivateError);
 
-	server->sendMessage(Jupiter::ReferenceString{parameters_split.first}, Jupiter::ReferenceString{parameters_split.second});
+	server->sendMessage(parameters_split.first, parameters_split.second);
 	return new Jupiter::GenericCommand::ResponseLine("Message successfully sent."_jrs, GenericCommand::DisplayType::PublicSuccess);
 }
 
-const Jupiter::ReadableString &IRCMessageGenericCommand::getHelp(const Jupiter::ReadableString &)
+std::string_view IRCMessageGenericCommand::getHelp(std::string_view )
 {
 	static STRING_LITERAL_AS_NAMED_REFERENCE(defaultHelp, "Sends a message to an IRC user or channel on the selected IRC server. Syntax: ircmsg <destination> <message>");
 	return defaultHelp;
@@ -171,7 +171,7 @@ JoinGenericCommand::JoinGenericCommand()
 	this->addTrigger("Join"_jrs);
 }
 
-Jupiter::GenericCommand::ResponseLine *JoinGenericCommand::trigger(const Jupiter::ReadableString &parameters)
+Jupiter::GenericCommand::ResponseLine *JoinGenericCommand::trigger(std::string_view parameters)
 {
 	IRC_Bot *server;
 	if (IRCCommand::selected_server != nullptr)
@@ -195,7 +195,7 @@ Jupiter::GenericCommand::ResponseLine *JoinGenericCommand::trigger(const Jupiter
 	return new Jupiter::GenericCommand::ResponseLine("Request to join channel has been sent."_jrs, GenericCommand::DisplayType::PublicSuccess);
 }
 
-const Jupiter::ReadableString &JoinGenericCommand::getHelp(const Jupiter::ReadableString &)
+std::string_view JoinGenericCommand::getHelp(std::string_view )
 {
 	static STRING_LITERAL_AS_NAMED_REFERENCE(defaultHelp, "Joins a channel. Syntax: join <channel> [password]");
 	return defaultHelp;
@@ -211,7 +211,7 @@ PartGenericCommand::PartGenericCommand()
 	this->addTrigger("Part"_jrs);
 }
 
-Jupiter::GenericCommand::ResponseLine *PartGenericCommand::trigger(const Jupiter::ReadableString &parameters)
+Jupiter::GenericCommand::ResponseLine *PartGenericCommand::trigger(std::string_view parameters)
 {
 	IRC_Bot *server;
 	if (IRCCommand::selected_server != nullptr)
@@ -235,7 +235,7 @@ Jupiter::GenericCommand::ResponseLine *PartGenericCommand::trigger(const Jupiter
 	return new Jupiter::GenericCommand::ResponseLine("Part command successfuly sent."_jrs, GenericCommand::DisplayType::PublicSuccess);
 }
 
-const Jupiter::ReadableString &PartGenericCommand::getHelp(const Jupiter::ReadableString &)
+std::string_view PartGenericCommand::getHelp(std::string_view )
 {
 	static STRING_LITERAL_AS_NAMED_REFERENCE(defaultHelp, "Parts from a channel. Syntax: part <channel> [message]");
 	return defaultHelp;
@@ -251,7 +251,7 @@ DebugInfoGenericCommand::DebugInfoGenericCommand()
 	this->addTrigger("debuginfo"_jrs);
 }
 
-Jupiter::GenericCommand::ResponseLine *DebugInfoGenericCommand::trigger(const Jupiter::ReadableString &parameters)
+Jupiter::GenericCommand::ResponseLine *DebugInfoGenericCommand::trigger(std::string_view parameters)
 {
 	IRC_Bot *server;
 	if (IRCCommand::selected_server != nullptr)
@@ -287,7 +287,7 @@ Jupiter::GenericCommand::ResponseLine *DebugInfoGenericCommand::trigger(const Ju
 	return ret;
 }
 
-const Jupiter::ReadableString &DebugInfoGenericCommand::getHelp(const Jupiter::ReadableString &)
+std::string_view DebugInfoGenericCommand::getHelp(std::string_view )
 {
 	static STRING_LITERAL_AS_NAMED_REFERENCE(defaultHelp, "DEBUG COMMAND - Spits out some information about channels. Syntax: debuginfo");
 	return defaultHelp;
@@ -303,12 +303,12 @@ ExitGenericCommand::ExitGenericCommand()
 	this->addTrigger("exit"_jrs);
 }
 
-Jupiter::GenericCommand::ResponseLine *ExitGenericCommand::trigger(const Jupiter::ReadableString &parameters)
+Jupiter::GenericCommand::ResponseLine *ExitGenericCommand::trigger(std::string_view parameters)
 {
 	exit(0);
 }
 
-const Jupiter::ReadableString &ExitGenericCommand::getHelp(const Jupiter::ReadableString &)
+std::string_view ExitGenericCommand::getHelp(std::string_view )
 {
 	static STRING_LITERAL_AS_NAMED_REFERENCE(defaultHelp, "Closes the bot's application process. Syntax: exit");
 	return defaultHelp;
@@ -325,7 +325,7 @@ IRCConnectGenericCommand::IRCConnectGenericCommand()
 	this->addTrigger("IRCReconnect"_jrs);
 }
 
-Jupiter::GenericCommand::ResponseLine *IRCConnectGenericCommand::trigger(const Jupiter::ReadableString &parameters)
+Jupiter::GenericCommand::ResponseLine *IRCConnectGenericCommand::trigger(std::string_view parameters)
 {
 	if (parameters.empty())
 	{
@@ -351,7 +351,7 @@ Jupiter::GenericCommand::ResponseLine *IRCConnectGenericCommand::trigger(const J
 	return new Jupiter::GenericCommand::ResponseLine("Error: Unable to find configuration settings for server, or connection refused."_jrs, GenericCommand::DisplayType::PublicError);
 }
 
-const Jupiter::ReadableString &IRCConnectGenericCommand::getHelp(const Jupiter::ReadableString &)
+std::string_view IRCConnectGenericCommand::getHelp(std::string_view )
 {
 	static STRING_LITERAL_AS_NAMED_REFERENCE(defaultHelp, "Connects/reconnects to an IRC server, based on config entry. Syntax: IRCConnect [server=here]");
 	return defaultHelp;
@@ -367,7 +367,7 @@ IRCDisconnectGenericCommand::IRCDisconnectGenericCommand()
 	this->addTrigger("IRCDisconnect"_jrs);
 }
 
-Jupiter::GenericCommand::ResponseLine *IRCDisconnectGenericCommand::trigger(const Jupiter::ReadableString &parameters)
+Jupiter::GenericCommand::ResponseLine *IRCDisconnectGenericCommand::trigger(std::string_view parameters)
 {
 	IRC_Bot *server;
 	if (IRCCommand::selected_server != nullptr)
@@ -381,7 +381,7 @@ Jupiter::GenericCommand::ResponseLine *IRCDisconnectGenericCommand::trigger(cons
 	return new Jupiter::GenericCommand::ResponseLine("Disconnected from server."_jrs, GenericCommand::DisplayType::PublicSuccess);
 }
 
-const Jupiter::ReadableString &IRCDisconnectGenericCommand::getHelp(const Jupiter::ReadableString &)
+std::string_view IRCDisconnectGenericCommand::getHelp(std::string_view )
 {
 	static STRING_LITERAL_AS_NAMED_REFERENCE(defaultHelp, "Disconnects from an IRC server, based on config entry. Syntax: IRCDisconnect");
 	return defaultHelp;

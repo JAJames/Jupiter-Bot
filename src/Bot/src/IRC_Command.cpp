@@ -71,7 +71,7 @@ int IRCCommand::getAccessLevel(int type) {
 	return m_access;
 }
 
-int IRCCommand::getAccessLevel(const Jupiter::ReadableString &channel) {
+int IRCCommand::getAccessLevel(std::string_view channel) {
 	for (const auto& pair : m_channels) {
 		if (jessilib::equalsi(pair.channel, channel)) {
 			return pair.access;
@@ -105,7 +105,7 @@ void IRCCommand::setAccessLevel(int type, int accessLevel) {
 	m_types.push_back({type, accessLevel});
 }
 
-void IRCCommand::setAccessLevel(const Jupiter::ReadableString &channel, int accessLevel) {
+void IRCCommand::setAccessLevel(std::string_view channel, int accessLevel) {
 	m_channels.push_back({ static_cast<std::string>(channel), accessLevel });
 }
 
@@ -140,7 +140,7 @@ GenericCommandWrapperIRCCommand::GenericCommandWrapperIRCCommand(Jupiter::Generi
 
 // GenericCommandWrapperIRCCommand functions
 
-void GenericCommandWrapperIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &in_channel, const Jupiter::ReadableString &in_nick, const Jupiter::ReadableString &in_parameters) {
+void GenericCommandWrapperIRCCommand::trigger(IRC_Bot *source, std::string_view in_channel, std::string_view in_nick, std::string_view in_parameters) {
 	Jupiter::GenericCommand::ResponseLine *del;
 	Jupiter::GenericCommand::ResponseLine *result = m_command->trigger(in_parameters);
 
@@ -167,7 +167,7 @@ void GenericCommandWrapperIRCCommand::trigger(IRC_Bot *source, const Jupiter::Re
 	}
 }
 
-const Jupiter::ReadableString &GenericCommandWrapperIRCCommand::getHelp(const Jupiter::ReadableString &parameters) {
+std::string_view GenericCommandWrapperIRCCommand::getHelp(std::string_view parameters) {
 	return GenericCommandWrapperIRCCommand::m_command->getHelp(parameters);
 }
 

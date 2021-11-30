@@ -26,7 +26,7 @@
 class RenX_AlwaysRecord : public RenX::Plugin
 {
 public: // RenX::Plugin
-	void RenX_OnMapStart(RenX::Server &server, const Jupiter::ReadableString &) override;
+	void RenX_OnMapStart(RenX::Server &server, std::string_view ) override;
 };
 
 #endif // _RENX_ALWAYSRECORD_H_HEADER

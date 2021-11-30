@@ -431,7 +431,7 @@ void AuthIRCCommand::create()
 	this->setAccessLevel(3);
 }
 
-void AuthIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &channel, const Jupiter::ReadableString &nick, const Jupiter::ReadableString &parameters)
+void AuthIRCCommand::trigger(IRC_Bot *source, std::string_view channel, std::string_view nick, std::string_view parameters)
 {
 	if (!parameters.empty())
 	{
@@ -482,7 +482,7 @@ void AuthIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &cha
 		this->trigger(source, channel, nick, nick);
 }
 
-const Jupiter::ReadableString &AuthIRCCommand::getHelp(const Jupiter::ReadableString &)
+std::string_view AuthIRCCommand::getHelp(std::string_view )
 {
 	static STRING_LITERAL_AS_NAMED_REFERENCE(defaultHelp, "Authenticates a player in-game. Syntax: auth [player=you]");
 	return defaultHelp;
@@ -501,7 +501,7 @@ void DeAuthIRCCommand::create()
 	this->setAccessLevel(3);
 }
 
-void DeAuthIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &channel, const Jupiter::ReadableString &nick, const Jupiter::ReadableString &parameters)
+void DeAuthIRCCommand::trigger(IRC_Bot *source, std::string_view channel, std::string_view nick, std::string_view parameters)
 {
 	if (!parameters.empty())
 	{
@@ -542,7 +542,7 @@ void DeAuthIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &c
 		this->trigger(source, channel, nick, nick);
 }
 
-const Jupiter::ReadableString &DeAuthIRCCommand::getHelp(const Jupiter::ReadableString &)
+std::string_view DeAuthIRCCommand::getHelp(std::string_view )
 {
 	static STRING_LITERAL_AS_NAMED_REFERENCE(defaultHelp, "Unauthenticates a player in-game. Syntax: deauth [player=you]");
 	return defaultHelp;
@@ -558,7 +558,7 @@ void ATMIRCCommand::create()
 	this->setAccessLevel(3);
 }
 
-void ATMIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &channel, const Jupiter::ReadableString &nick, const Jupiter::ReadableString &parameters)
+void ATMIRCCommand::trigger(IRC_Bot *source, std::string_view channel, std::string_view nick, std::string_view parameters)
 {
 	if (parameters.empty()) {
 		this->trigger(source, channel, nick, nick);
@@ -624,7 +624,7 @@ void ATMIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &chan
 	}
 }
 
-const Jupiter::ReadableString &ATMIRCCommand::getHelp(const Jupiter::ReadableString &)
+std::string_view ATMIRCCommand::getHelp(std::string_view )
 {
 	static STRING_LITERAL_AS_NAMED_REFERENCE(defaultHelp, "Temporarily authenticates a player in-game. Syntax: atm [level] [player=you]");
 	return defaultHelp;
@@ -642,7 +642,7 @@ void AddIRCCommand::create()
 	this->setAccessLevel(5);
 }
 
-void AddIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &channel, const Jupiter::ReadableString &nick, const Jupiter::ReadableString &parameters) {
+void AddIRCCommand::trigger(IRC_Bot *source, std::string_view channel, std::string_view nick, std::string_view parameters) {
 	auto parameters_split = jessilib::word_split_once_view(std::string_view{parameters}, WHITESPACE_SV);
 	if (parameters_split.second.empty()) {
 		source->sendNotice(nick, "Error: Too few parameters. Syntax: add <level> <player>"_jrs);
@@ -699,7 +699,7 @@ void AddIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &chan
 	}
 }
 
-const Jupiter::ReadableString &AddIRCCommand::getHelp(const Jupiter::ReadableString &)
+std::string_view AddIRCCommand::getHelp(std::string_view )
 {
 	static STRING_LITERAL_AS_NAMED_REFERENCE(defaultHelp, "Adds a player to the in-game moderator list. Syntax: add <level> <player>");
 	return defaultHelp;
@@ -718,7 +718,7 @@ void DelIRCCommand::create()
 	this->setAccessLevel(5);
 }
 
-void DelIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &channel, const Jupiter::ReadableString &nick, const Jupiter::ReadableString &parameters)
+void DelIRCCommand::trigger(IRC_Bot *source, std::string_view channel, std::string_view nick, std::string_view parameters)
 {
 	std::string_view parameters_view = parameters;
 	if (parameters.empty())
@@ -776,7 +776,7 @@ void DelIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &chan
 	}
 }
 
-const Jupiter::ReadableString &DelIRCCommand::getHelp(const Jupiter::ReadableString &)
+std::string_view DelIRCCommand::getHelp(std::string_view )
 {
 	static STRING_LITERAL_AS_NAMED_REFERENCE(defaultHelp, "Removes a player from the in-game moderator list. Syntax: del <player>");
 	return defaultHelp;
@@ -793,7 +793,7 @@ void ForceAuthIRCCommand::create()
 	this->setAccessLevel(4);
 }
 
-void ForceAuthIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &channel, const Jupiter::ReadableString &nick, const Jupiter::ReadableString &parameters)
+void ForceAuthIRCCommand::trigger(IRC_Bot *source, std::string_view channel, std::string_view nick, std::string_view parameters)
 {
 	if (!parameters.empty())
 	{
@@ -843,7 +843,7 @@ void ForceAuthIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString
 		this->trigger(source, channel, nick, nick);
 }
 
-const Jupiter::ReadableString &ForceAuthIRCCommand::getHelp(const Jupiter::ReadableString &)
+std::string_view ForceAuthIRCCommand::getHelp(std::string_view )
 {
 	static STRING_LITERAL_AS_NAMED_REFERENCE(defaultHelp, "Forcefully authenticates a player in-game. Syntax: auth [player=you]");
 	return defaultHelp;
@@ -859,7 +859,7 @@ void ModListIRCCommand::create()
 	this->addTrigger("mlist"_jrs);
 }
 
-void ModListIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &channel, const Jupiter::ReadableString &nick, const Jupiter::ReadableString &parameters)
+void ModListIRCCommand::trigger(IRC_Bot *source, std::string_view channel, std::string_view nick, std::string_view parameters)
 {
 	Jupiter::String msg;
 	size_t msgBaseSize;
@@ -889,7 +889,7 @@ void ModListIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &
 		source->sendMessage(channel, "There are no configured moderators."_jrs);
 }
 
-const Jupiter::ReadableString &ModListIRCCommand::getHelp(const Jupiter::ReadableString &)
+std::string_view ModListIRCCommand::getHelp(std::string_view )
 {
 	static STRING_LITERAL_AS_NAMED_REFERENCE(defaultHelp, "Displays the moderator list. Syntax: modlist");
 	return defaultHelp;
@@ -907,7 +907,7 @@ void AuthGameCommand::create()
 	this->setAccessLevel(3);
 }
 
-void AuthGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *player, const Jupiter::ReadableString &parameters)
+void AuthGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *player, std::string_view parameters)
 {
 	if (!parameters.empty())
 	{
@@ -941,7 +941,7 @@ void AuthGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *player, co
 		source->sendMessage(*player, "Error: Too few parameters. Syntax: auth <player>"_jrs);
 }
 
-const Jupiter::ReadableString &AuthGameCommand::getHelp(const Jupiter::ReadableString &)
+std::string_view AuthGameCommand::getHelp(std::string_view )
 {
 	static STRING_LITERAL_AS_NAMED_REFERENCE(defaultHelp, "Authenticates a player. Syntax: auth <player>");
 	return defaultHelp;
@@ -957,7 +957,7 @@ void ATMGameCommand::create()
 	this->setAccessLevel(3);
 }
 
-void ATMGameCommand::trigger(RenX::Server *server, RenX::PlayerInfo *player, const Jupiter::ReadableString &parameters) {
+void ATMGameCommand::trigger(RenX::Server *server, RenX::PlayerInfo *player, std::string_view parameters) {
 	auto parameters_split = jessilib::word_split_once_view(std::string_view{parameters}, WHITESPACE_SV);
 	if (!parameters_split.first.empty()) {
 		RenX::PlayerInfo *target;
@@ -1002,7 +1002,7 @@ void ATMGameCommand::trigger(RenX::Server *server, RenX::PlayerInfo *player, con
 		server->sendMessage(*player, "Error: Too few parameters. Syntax: auth <player>"_jrs);
 }
 
-const Jupiter::ReadableString &ATMGameCommand::getHelp(const Jupiter::ReadableString &)
+std::string_view ATMGameCommand::getHelp(std::string_view )
 {
 	static STRING_LITERAL_AS_NAMED_REFERENCE(defaultHelp, "Temporarily authenticates a player. Syntax: atm [level] <player>");
 	return defaultHelp;
@@ -1019,7 +1019,7 @@ void ForceAuthGameCommand::create()
 	this->setAccessLevel(4);
 }
 
-void ForceAuthGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *player, const Jupiter::ReadableString &parameters)
+void ForceAuthGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *player, std::string_view parameters)
 {
 	if (!parameters.empty())
 	{
@@ -1052,7 +1052,7 @@ void ForceAuthGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *playe
 		source->sendMessage(*player, "Error: Too few parameters. Syntax: fauth <player>"_jrs);
 }
 
-const Jupiter::ReadableString &ForceAuthGameCommand::getHelp(const Jupiter::ReadableString &)
+std::string_view ForceAuthGameCommand::getHelp(std::string_view )
 {
 	static STRING_LITERAL_AS_NAMED_REFERENCE(defaultHelp, "Forcefully authenticates a player. Syntax: fauth <player>");
 	return defaultHelp;

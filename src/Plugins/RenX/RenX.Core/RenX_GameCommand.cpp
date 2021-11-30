@@ -77,11 +77,11 @@ RenX::BasicGameCommand::BasicGameCommand(std::string_view in_trigger, std::strin
 	m_help_message = in_help_message;
 }
 
-void RenX::BasicGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *player, const Jupiter::ReadableString &parameters) {
+void RenX::BasicGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *player, std::string_view parameters) {
 	source->sendMessage(m_message);
 }
 
-const Jupiter::ReadableString &RenX::BasicGameCommand::getHelp(const Jupiter::ReadableString &) {
+std::string_view RenX::BasicGameCommand::getHelp(std::string_view ) {
 	static STRING_LITERAL_AS_NAMED_REFERENCE(defaultHelp, "Returns a basic text string.");
 	if (m_help_message.empty()) {
 		return defaultHelp;

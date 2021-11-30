@@ -20,12 +20,12 @@ public: // Jupiter::Plugin
 	~RenX_ChatLogPlugin();
 
 public: // RenX::Plugin
-	void RenX_OnTeamChat(RenX::Server& server, const RenX::PlayerInfo& player, const Jupiter::ReadableString& message) override;
-	void RenX_OnChat(RenX::Server& server, const RenX::PlayerInfo& player, const Jupiter::ReadableString& message) override;
+	void RenX_OnTeamChat(RenX::Server& server, const RenX::PlayerInfo& player, std::string_view  message) override;
+	void RenX_OnChat(RenX::Server& server, const RenX::PlayerInfo& player, std::string_view  message) override;
 
 public: 
 	void PrepFile();
-	void WriteToLog(RenX::Server& server, const RenX::PlayerInfo& player, const Jupiter::ReadableString& message, std::string in_prefix);
+	void WriteToLog(RenX::Server& server, const RenX::PlayerInfo& player, std::string_view  message, std::string in_prefix);
 	std::string last_date;
 	std::fstream fs;
 };

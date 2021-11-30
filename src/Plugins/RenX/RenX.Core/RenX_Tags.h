@@ -45,7 +45,7 @@ namespace RenX
 	RENX_API void processTags(std::string& msg, const RenX::LadderDatabase::Entry &entry);
 	RENX_API void sanitizeTags(std::string& fmt);
 	RENX_API void replace_tag(std::string& fmt, std::string_view tag, std::string_view internal_tag);
-	RENX_API const Jupiter::ReadableString &getUniqueInternalTag();
+	RENX_API std::string_view getUniqueInternalTag();
 
 	struct RENX_API Tags
 	{

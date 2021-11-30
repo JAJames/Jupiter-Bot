@@ -111,7 +111,7 @@ namespace RenX
 		* @param player Data of the player to be exempted
 		* @param length Duration of the exempt
 		*/
-		void add(RenX::Server &server, const RenX::PlayerInfo &player, const Jupiter::ReadableString &setter, std::chrono::seconds length, uint8_t flags);
+		void add(RenX::Server &server, const RenX::PlayerInfo &player, std::string_view setter, std::chrono::seconds length, uint8_t flags);
 
 		/**
 		* @brief Adds an exemption entry for a set of player information and immediately writes it to the database.
@@ -122,7 +122,7 @@ namespace RenX
 		* @param setter Person implementing the exempt
 		* @param length Duration of the exemption
 		*/
-		void add(uint32_t ip, uint8_t prefix_length, uint64_t steamid, const Jupiter::ReadableString &setter, std::chrono::seconds length, uint8_t flags);
+		void add(uint32_t ip, uint8_t prefix_length, uint64_t steamid, std::string_view setter, std::chrono::seconds length, uint8_t flags);
 
 		/**
 		* @brief Upgrades the exemption database to the current write_version.

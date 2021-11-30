@@ -780,7 +780,7 @@ bool RenX_LoggingPlugin::initialize()
 	return true;
 }
 
-typedef void(RenX::Server::*logFuncType)(const Jupiter::ReadableString &msg) const;
+typedef void(RenX::Server::*logFuncType)(std::string_view msg) const;
 
 void RenX_LoggingPlugin::RenX_OnPlayerRDNS(RenX::Server &server, const RenX::PlayerInfo &player)
 {
@@ -854,7 +854,7 @@ void RenX_LoggingPlugin::RenX_OnPart(RenX::Server &server, const RenX::PlayerInf
 	}
 }
 
-void RenX_LoggingPlugin::RenX_OnKick(RenX::Server &server, const RenX::PlayerInfo &player, const Jupiter::ReadableString &reason)
+void RenX_LoggingPlugin::RenX_OnKick(RenX::Server &server, const RenX::PlayerInfo &player, std::string_view reason)
 {
 	logFuncType func;
 	if (RenX_LoggingPlugin::kickPublic)
@@ -871,7 +871,7 @@ void RenX_LoggingPlugin::RenX_OnKick(RenX::Server &server, const RenX::PlayerInf
 	}
 }
 
-void RenX_LoggingPlugin::RenX_OnNameChange(RenX::Server &server, const RenX::PlayerInfo &player, const Jupiter::ReadableString &newPlayerName)
+void RenX_LoggingPlugin::RenX_OnNameChange(RenX::Server &server, const RenX::PlayerInfo &player, std::string_view newPlayerName)
 {
 	logFuncType func;
 	if (RenX_LoggingPlugin::nameChangePublic)
@@ -920,7 +920,7 @@ void RenX_LoggingPlugin::RenX_OnSpeedHack(RenX::Server &server, const RenX::Play
 	}
 }
 
-void RenX_LoggingPlugin::RenX_OnExecute(RenX::Server &server, const RenX::PlayerInfo &player, const Jupiter::ReadableString &command)
+void RenX_LoggingPlugin::RenX_OnExecute(RenX::Server &server, const RenX::PlayerInfo &player, std::string_view command)
 {
 	logFuncType func;
 	if (RenX_LoggingPlugin::executePublic)
@@ -937,7 +937,7 @@ void RenX_LoggingPlugin::RenX_OnExecute(RenX::Server &server, const RenX::Player
 	}
 }
 
-void RenX_LoggingPlugin::RenX_OnPlayerCommand(RenX::Server &server, const RenX::PlayerInfo &player, const Jupiter::ReadableString &message, RenX::GameCommand *command)
+void RenX_LoggingPlugin::RenX_OnPlayerCommand(RenX::Server &server, const RenX::PlayerInfo &player, std::string_view message, RenX::GameCommand *command)
 {
 	logFuncType func;
 	if (RenX_LoggingPlugin::playerCommandPublic)
@@ -957,7 +957,7 @@ void RenX_LoggingPlugin::RenX_OnPlayerCommand(RenX::Server &server, const RenX::
 	}
 }
 
-void RenX_LoggingPlugin::RenX_OnPlayer(RenX::Server &server, const Jupiter::ReadableString &raw)
+void RenX_LoggingPlugin::RenX_OnPlayer(RenX::Server &server, std::string_view raw)
 {
 	logFuncType func;
 	if (RenX_LoggingPlugin::playerPublic)
@@ -974,7 +974,7 @@ void RenX_LoggingPlugin::RenX_OnPlayer(RenX::Server &server, const Jupiter::Read
 	}
 }
 
-void RenX_LoggingPlugin::RenX_OnChat(RenX::Server &server, const RenX::PlayerInfo &player, const Jupiter::ReadableString &message)
+void RenX_LoggingPlugin::RenX_OnChat(RenX::Server &server, const RenX::PlayerInfo &player, std::string_view message)
 {
 	logFuncType func;
 	if (RenX_LoggingPlugin::chatPublic)
@@ -991,7 +991,7 @@ void RenX_LoggingPlugin::RenX_OnChat(RenX::Server &server, const RenX::PlayerInf
 	}
 }
 
-void RenX_LoggingPlugin::RenX_OnTeamChat(RenX::Server &server, const RenX::PlayerInfo &player, const Jupiter::ReadableString &message)
+void RenX_LoggingPlugin::RenX_OnTeamChat(RenX::Server &server, const RenX::PlayerInfo &player, std::string_view message)
 {
 	logFuncType func;
 	if (RenX_LoggingPlugin::teamChatPublic)
@@ -1008,7 +1008,7 @@ void RenX_LoggingPlugin::RenX_OnTeamChat(RenX::Server &server, const RenX::Playe
 	}
 }
 
-void RenX_LoggingPlugin::RenX_OnRadioChat(RenX::Server &server, const RenX::PlayerInfo &player, const Jupiter::ReadableString &message)
+void RenX_LoggingPlugin::RenX_OnRadioChat(RenX::Server &server, const RenX::PlayerInfo &player, std::string_view message)
 {
 	logFuncType func;
 	if (RenX_LoggingPlugin::radioChatPublic)
@@ -1025,7 +1025,7 @@ void RenX_LoggingPlugin::RenX_OnRadioChat(RenX::Server &server, const RenX::Play
 	}
 }
 
-void RenX_LoggingPlugin::RenX_OnHostChat(RenX::Server &server, const Jupiter::ReadableString &message)
+void RenX_LoggingPlugin::RenX_OnHostChat(RenX::Server &server, std::string_view message)
 {
 	logFuncType func;
 	if (RenX_LoggingPlugin::hostChatPublic)
@@ -1042,7 +1042,7 @@ void RenX_LoggingPlugin::RenX_OnHostChat(RenX::Server &server, const Jupiter::Re
 	}
 }
 
-void RenX_LoggingPlugin::RenX_OnHostPage(RenX::Server &server, const RenX::PlayerInfo &player, const Jupiter::ReadableString &message)
+void RenX_LoggingPlugin::RenX_OnHostPage(RenX::Server &server, const RenX::PlayerInfo &player, std::string_view message)
 {
 	logFuncType func;
 	if (RenX_LoggingPlugin::hostPagePublic)
@@ -1059,7 +1059,7 @@ void RenX_LoggingPlugin::RenX_OnHostPage(RenX::Server &server, const RenX::Playe
 	}
 }
 
-void RenX_LoggingPlugin::RenX_OnAdminMessage(RenX::Server &server, const RenX::PlayerInfo &player, const Jupiter::ReadableString &message)
+void RenX_LoggingPlugin::RenX_OnAdminMessage(RenX::Server &server, const RenX::PlayerInfo &player, std::string_view message)
 {
 	logFuncType func;
 	if (RenX_LoggingPlugin::adminMessagePublic)
@@ -1076,7 +1076,7 @@ void RenX_LoggingPlugin::RenX_OnAdminMessage(RenX::Server &server, const RenX::P
 	}
 }
 
-void RenX_LoggingPlugin::RenX_OnWarnMessage(RenX::Server &server, const RenX::PlayerInfo &player, const Jupiter::ReadableString &message)
+void RenX_LoggingPlugin::RenX_OnWarnMessage(RenX::Server &server, const RenX::PlayerInfo &player, std::string_view message)
 {
 	logFuncType func;
 	if (RenX_LoggingPlugin::adminMessagePublic)
@@ -1093,7 +1093,7 @@ void RenX_LoggingPlugin::RenX_OnWarnMessage(RenX::Server &server, const RenX::Pl
 	}
 }
 
-void RenX_LoggingPlugin::RenX_OnAdminPMessage(RenX::Server &server, const RenX::PlayerInfo &player, const RenX::PlayerInfo &target, const Jupiter::ReadableString &message)
+void RenX_LoggingPlugin::RenX_OnAdminPMessage(RenX::Server &server, const RenX::PlayerInfo &player, const RenX::PlayerInfo &target, std::string_view message)
 {
 	logFuncType func;
 	if (RenX_LoggingPlugin::adminPMessagePublic)
@@ -1110,7 +1110,7 @@ void RenX_LoggingPlugin::RenX_OnAdminPMessage(RenX::Server &server, const RenX::
 	}
 }
 
-void RenX_LoggingPlugin::RenX_OnWarnPMessage(RenX::Server &server, const RenX::PlayerInfo &player, const RenX::PlayerInfo &target, const Jupiter::ReadableString &message)
+void RenX_LoggingPlugin::RenX_OnWarnPMessage(RenX::Server &server, const RenX::PlayerInfo &player, const RenX::PlayerInfo &target, std::string_view message)
 {
 	logFuncType func;
 	if (RenX_LoggingPlugin::adminPMessagePublic)
@@ -1127,7 +1127,7 @@ void RenX_LoggingPlugin::RenX_OnWarnPMessage(RenX::Server &server, const RenX::P
 	}
 }
 
-void RenX_LoggingPlugin::RenX_OnHostAdminMessage(RenX::Server &server, const Jupiter::ReadableString &message)
+void RenX_LoggingPlugin::RenX_OnHostAdminMessage(RenX::Server &server, std::string_view message)
 {
 	logFuncType func;
 	if (RenX_LoggingPlugin::adminMessagePublic)
@@ -1146,7 +1146,7 @@ void RenX_LoggingPlugin::RenX_OnHostAdminMessage(RenX::Server &server, const Jup
 	}
 }
 
-void RenX_LoggingPlugin::RenX_OnHostAdminPMessage(RenX::Server &server, const RenX::PlayerInfo &player, const Jupiter::ReadableString &message)
+void RenX_LoggingPlugin::RenX_OnHostAdminPMessage(RenX::Server &server, const RenX::PlayerInfo &player, std::string_view message)
 {
 	logFuncType func;
 	if (RenX_LoggingPlugin::adminPMessagePublic)
@@ -1165,7 +1165,7 @@ void RenX_LoggingPlugin::RenX_OnHostAdminPMessage(RenX::Server &server, const Re
 	}
 }
 
-void RenX_LoggingPlugin::RenX_OnHostWarnMessage(RenX::Server &server, const Jupiter::ReadableString &message)
+void RenX_LoggingPlugin::RenX_OnHostWarnMessage(RenX::Server &server, std::string_view message)
 {
 	logFuncType func;
 	if (RenX_LoggingPlugin::adminMessagePublic)
@@ -1184,7 +1184,7 @@ void RenX_LoggingPlugin::RenX_OnHostWarnMessage(RenX::Server &server, const Jupi
 	}
 }
 
-void RenX_LoggingPlugin::RenX_OnHostWarnPMessage(RenX::Server &server, const RenX::PlayerInfo &player, const Jupiter::ReadableString &message)
+void RenX_LoggingPlugin::RenX_OnHostWarnPMessage(RenX::Server &server, const RenX::PlayerInfo &player, std::string_view message)
 {
 	logFuncType func;
 	if (RenX_LoggingPlugin::adminPMessagePublic)
@@ -1203,7 +1203,7 @@ void RenX_LoggingPlugin::RenX_OnHostWarnPMessage(RenX::Server &server, const Ren
 	}
 }
 
-void RenX_LoggingPlugin::RenX_OnOtherChat(RenX::Server &server, const Jupiter::ReadableString &raw)
+void RenX_LoggingPlugin::RenX_OnOtherChat(RenX::Server &server, std::string_view raw)
 {
 	logFuncType func;
 	if (RenX_LoggingPlugin::otherChatPublic)
@@ -1220,7 +1220,7 @@ void RenX_LoggingPlugin::RenX_OnOtherChat(RenX::Server &server, const Jupiter::R
 	}
 }
 
-void RenX_LoggingPlugin::RenX_OnDeploy(RenX::Server &server, const RenX::PlayerInfo &player, const Jupiter::ReadableString &object) {
+void RenX_LoggingPlugin::RenX_OnDeploy(RenX::Server &server, const RenX::PlayerInfo &player, std::string_view object) {
 	logFuncType func;
 	std::string msg;
 	if (std::string_view{object}.ends_with("Beacon")) {
@@ -1246,7 +1246,7 @@ void RenX_LoggingPlugin::RenX_OnDeploy(RenX::Server &server, const RenX::PlayerI
 	}
 }
 
-void RenX_LoggingPlugin::RenX_OnOverMine(RenX::Server &server, const RenX::PlayerInfo &player, const Jupiter::ReadableString &location)
+void RenX_LoggingPlugin::RenX_OnOverMine(RenX::Server &server, const RenX::PlayerInfo &player, std::string_view location)
 {
 	logFuncType func;
 	if (RenX_LoggingPlugin::overMinePublic)
@@ -1263,7 +1263,7 @@ void RenX_LoggingPlugin::RenX_OnOverMine(RenX::Server &server, const RenX::Playe
 	}
 }
 
-void RenX_LoggingPlugin::RenX_OnDisarm(RenX::Server &server, const RenX::PlayerInfo &player, const Jupiter::ReadableString &object, const RenX::PlayerInfo &victim) {
+void RenX_LoggingPlugin::RenX_OnDisarm(RenX::Server &server, const RenX::PlayerInfo &player, std::string_view object, const RenX::PlayerInfo &victim) {
 	logFuncType func;
 	std::string msg;
 
@@ -1290,7 +1290,7 @@ void RenX_LoggingPlugin::RenX_OnDisarm(RenX::Server &server, const RenX::PlayerI
 	}
 }
 
-void RenX_LoggingPlugin::RenX_OnDisarm(RenX::Server &server, const RenX::PlayerInfo &player, const Jupiter::ReadableString &object) {
+void RenX_LoggingPlugin::RenX_OnDisarm(RenX::Server &server, const RenX::PlayerInfo &player, std::string_view object) {
 	logFuncType func;
 	std::string msg;
 
@@ -1317,7 +1317,7 @@ void RenX_LoggingPlugin::RenX_OnDisarm(RenX::Server &server, const RenX::PlayerI
 	}
 }
 
-void RenX_LoggingPlugin::RenX_OnExplode(RenX::Server &server, const RenX::PlayerInfo &player, const Jupiter::ReadableString &object)
+void RenX_LoggingPlugin::RenX_OnExplode(RenX::Server &server, const RenX::PlayerInfo &player, std::string_view object)
 {
 	logFuncType func;
 	if (RenX_LoggingPlugin::explodePublic)
@@ -1335,7 +1335,7 @@ void RenX_LoggingPlugin::RenX_OnExplode(RenX::Server &server, const RenX::Player
 	}
 }
 
-void RenX_LoggingPlugin::RenX_OnExplode(RenX::Server &server, const Jupiter::ReadableString &object)
+void RenX_LoggingPlugin::RenX_OnExplode(RenX::Server &server, std::string_view object)
 {
 	logFuncType func;
 	if (RenX_LoggingPlugin::explodePublic)
@@ -1353,7 +1353,7 @@ void RenX_LoggingPlugin::RenX_OnExplode(RenX::Server &server, const Jupiter::Rea
 	}
 }
 
-void RenX_LoggingPlugin::RenX_OnSuicide(RenX::Server &server, const RenX::PlayerInfo &player, const Jupiter::ReadableString &damageType)
+void RenX_LoggingPlugin::RenX_OnSuicide(RenX::Server &server, const RenX::PlayerInfo &player, std::string_view damageType)
 {
 	logFuncType func;
 	if (RenX_LoggingPlugin::suicidePublic)
@@ -1370,7 +1370,7 @@ void RenX_LoggingPlugin::RenX_OnSuicide(RenX::Server &server, const RenX::Player
 	}
 }
 
-void RenX_LoggingPlugin::RenX_OnKill(RenX::Server &server, const RenX::PlayerInfo &player, const RenX::PlayerInfo &victim, const Jupiter::ReadableString &damageType)
+void RenX_LoggingPlugin::RenX_OnKill(RenX::Server &server, const RenX::PlayerInfo &player, const RenX::PlayerInfo &victim, std::string_view damageType)
 {
 	logFuncType func;
 	if (RenX_LoggingPlugin::killPublic)
@@ -1387,7 +1387,7 @@ void RenX_LoggingPlugin::RenX_OnKill(RenX::Server &server, const RenX::PlayerInf
 	}
 }
 
-void RenX_LoggingPlugin::RenX_OnKill(RenX::Server &server, const Jupiter::ReadableString &killer, const RenX::TeamType &killerTeam, const RenX::PlayerInfo &victim, const Jupiter::ReadableString &damageType)
+void RenX_LoggingPlugin::RenX_OnKill(RenX::Server &server, std::string_view killer, const RenX::TeamType &killerTeam, const RenX::PlayerInfo &victim, std::string_view damageType)
 {
 	logFuncType func;
 	if (RenX_LoggingPlugin::killPublic)
@@ -1408,7 +1408,7 @@ void RenX_LoggingPlugin::RenX_OnKill(RenX::Server &server, const Jupiter::Readab
 	}
 }
 
-void RenX_LoggingPlugin::RenX_OnDie(RenX::Server &server, const RenX::PlayerInfo &player, const Jupiter::ReadableString &damageType)
+void RenX_LoggingPlugin::RenX_OnDie(RenX::Server &server, const RenX::PlayerInfo &player, std::string_view damageType)
 {
 	logFuncType func;
 	if (RenX_LoggingPlugin::diePublic)
@@ -1425,7 +1425,7 @@ void RenX_LoggingPlugin::RenX_OnDie(RenX::Server &server, const RenX::PlayerInfo
 	}
 }
 
-void RenX_LoggingPlugin::RenX_OnDie(RenX::Server &server, const Jupiter::ReadableString &object, const RenX::TeamType &objectTeam, const Jupiter::ReadableString &damageType)
+void RenX_LoggingPlugin::RenX_OnDie(RenX::Server &server, std::string_view object, const RenX::TeamType &objectTeam, std::string_view damageType)
 {
 	logFuncType func;
 	if (RenX_LoggingPlugin::diePublic)
@@ -1446,7 +1446,7 @@ void RenX_LoggingPlugin::RenX_OnDie(RenX::Server &server, const Jupiter::Readabl
 	}
 }
 
-void RenX_LoggingPlugin::RenX_OnDestroy(RenX::Server &server, const RenX::PlayerInfo &player, const Jupiter::ReadableString &objectName, const RenX::TeamType &objectTeam, const Jupiter::ReadableString &damageType, RenX::ObjectType type)
+void RenX_LoggingPlugin::RenX_OnDestroy(RenX::Server &server, const RenX::PlayerInfo &player, std::string_view objectName, const RenX::TeamType &objectTeam, std::string_view damageType, RenX::ObjectType type)
 {
 	logFuncType func;
 	if (RenX_LoggingPlugin::destroyPublic)
@@ -1479,7 +1479,7 @@ void RenX_LoggingPlugin::RenX_OnDestroy(RenX::Server &server, const RenX::Player
 	}
 }
 
-void RenX_LoggingPlugin::RenX_OnCapture(RenX::Server &server, const RenX::PlayerInfo &player, const Jupiter::ReadableString &building, const RenX::TeamType &oldTeam)
+void RenX_LoggingPlugin::RenX_OnCapture(RenX::Server &server, const RenX::PlayerInfo &player, std::string_view building, const RenX::TeamType &oldTeam)
 {
 	logFuncType func;
 	if (RenX_LoggingPlugin::capturePublic)
@@ -1499,7 +1499,7 @@ void RenX_LoggingPlugin::RenX_OnCapture(RenX::Server &server, const RenX::Player
 	}
 }
 
-void RenX_LoggingPlugin::RenX_OnNeutralize(RenX::Server &server, const RenX::PlayerInfo &player, const Jupiter::ReadableString &building, const RenX::TeamType &oldTeam)
+void RenX_LoggingPlugin::RenX_OnNeutralize(RenX::Server &server, const RenX::PlayerInfo &player, std::string_view building, const RenX::TeamType &oldTeam)
 {
 	logFuncType func;
 	if (RenX_LoggingPlugin::neutralizePublic)
@@ -1519,7 +1519,7 @@ void RenX_LoggingPlugin::RenX_OnNeutralize(RenX::Server &server, const RenX::Pla
 	}
 }
 
-void RenX_LoggingPlugin::RenX_OnCharacterPurchase(RenX::Server &server, const RenX::PlayerInfo &player, const Jupiter::ReadableString &character)
+void RenX_LoggingPlugin::RenX_OnCharacterPurchase(RenX::Server &server, const RenX::PlayerInfo &player, std::string_view character)
 {
 	logFuncType func;
 	if (RenX_LoggingPlugin::characterPurchasePublic)
@@ -1536,7 +1536,7 @@ void RenX_LoggingPlugin::RenX_OnCharacterPurchase(RenX::Server &server, const Re
 	}
 }
 
-void RenX_LoggingPlugin::RenX_OnItemPurchase(RenX::Server &server, const RenX::PlayerInfo &player, const Jupiter::ReadableString &item)
+void RenX_LoggingPlugin::RenX_OnItemPurchase(RenX::Server &server, const RenX::PlayerInfo &player, std::string_view item)
 {
 	logFuncType func;
 	if (RenX_LoggingPlugin::itemPurchasePublic)
@@ -1553,7 +1553,7 @@ void RenX_LoggingPlugin::RenX_OnItemPurchase(RenX::Server &server, const RenX::P
 	}
 }
 
-void RenX_LoggingPlugin::RenX_OnWeaponPurchase(RenX::Server &server, const RenX::PlayerInfo &player, const Jupiter::ReadableString &weapon)
+void RenX_LoggingPlugin::RenX_OnWeaponPurchase(RenX::Server &server, const RenX::PlayerInfo &player, std::string_view weapon)
 {
 	logFuncType func;
 	if (RenX_LoggingPlugin::weaponPurchasePublic)
@@ -1586,7 +1586,7 @@ void RenX_LoggingPlugin::RenX_OnRefillPurchase(RenX::Server &server, const RenX:
 	}
 }
 
-void RenX_LoggingPlugin::RenX_OnVehiclePurchase(RenX::Server &server, const RenX::PlayerInfo &owner, const Jupiter::ReadableString &vehicle)
+void RenX_LoggingPlugin::RenX_OnVehiclePurchase(RenX::Server &server, const RenX::PlayerInfo &owner, std::string_view vehicle)
 {
 	logFuncType func;
 	if (RenX_LoggingPlugin::vehiclePurchasePublic)
@@ -1603,7 +1603,7 @@ void RenX_LoggingPlugin::RenX_OnVehiclePurchase(RenX::Server &server, const RenX
 	}
 }
 
-void RenX_LoggingPlugin::RenX_OnVehicleSpawn(RenX::Server &server, const RenX::TeamType &team, const Jupiter::ReadableString &vehicle)
+void RenX_LoggingPlugin::RenX_OnVehicleSpawn(RenX::Server &server, const RenX::TeamType &team, std::string_view vehicle)
 {
 	logFuncType func;
 	if (RenX_LoggingPlugin::vehicleSpawnPublic)
@@ -1627,7 +1627,7 @@ void RenX_LoggingPlugin::RenX_OnVehicleSpawn(RenX::Server &server, const RenX::T
 	}
 }
 
-void RenX_LoggingPlugin::RenX_OnSpawn(RenX::Server &server, const RenX::PlayerInfo &player, const Jupiter::ReadableString &character)
+void RenX_LoggingPlugin::RenX_OnSpawn(RenX::Server &server, const RenX::PlayerInfo &player, std::string_view character)
 {
 	logFuncType func;
 	if (RenX_LoggingPlugin::spawnPublic)
@@ -1660,7 +1660,7 @@ void RenX_LoggingPlugin::RenX_OnBotJoin(RenX::Server &server, const RenX::Player
 	}
 }
 
-void RenX_LoggingPlugin::RenX_OnVehicleCrate(RenX::Server &server, const RenX::PlayerInfo &player, const Jupiter::ReadableString &vehicle)
+void RenX_LoggingPlugin::RenX_OnVehicleCrate(RenX::Server &server, const RenX::PlayerInfo &player, std::string_view vehicle)
 {
 	logFuncType func;
 	if (RenX_LoggingPlugin::vehicleCratePublic)
@@ -1677,7 +1677,7 @@ void RenX_LoggingPlugin::RenX_OnVehicleCrate(RenX::Server &server, const RenX::P
 	}
 }
 
-void RenX_LoggingPlugin::RenX_OnTSVehicleCrate(RenX::Server &server, const RenX::PlayerInfo &player, const Jupiter::ReadableString &vehicle)
+void RenX_LoggingPlugin::RenX_OnTSVehicleCrate(RenX::Server &server, const RenX::PlayerInfo &player, std::string_view vehicle)
 {
 	logFuncType func;
 	if (RenX_LoggingPlugin::TSVehicleCratePublic)
@@ -1694,7 +1694,7 @@ void RenX_LoggingPlugin::RenX_OnTSVehicleCrate(RenX::Server &server, const RenX:
 	}
 }
 
-void RenX_LoggingPlugin::RenX_OnRAVehicleCrate(RenX::Server &server, const RenX::PlayerInfo &player, const Jupiter::ReadableString &vehicle)
+void RenX_LoggingPlugin::RenX_OnRAVehicleCrate(RenX::Server &server, const RenX::PlayerInfo &player, std::string_view vehicle)
 {
 	logFuncType func;
 	if (RenX_LoggingPlugin::RAVehicleCratePublic)
@@ -1744,7 +1744,7 @@ void RenX_LoggingPlugin::RenX_OnMoneyCrate(RenX::Server &server, const RenX::Pla
 	}
 }
 
-void RenX_LoggingPlugin::RenX_OnCharacterCrate(RenX::Server &server, const RenX::PlayerInfo &player, const Jupiter::ReadableString &character)
+void RenX_LoggingPlugin::RenX_OnCharacterCrate(RenX::Server &server, const RenX::PlayerInfo &player, std::string_view character)
 {
 	logFuncType func;
 	if (RenX_LoggingPlugin::characterCratePublic)
@@ -1761,7 +1761,7 @@ void RenX_LoggingPlugin::RenX_OnCharacterCrate(RenX::Server &server, const RenX:
 	}
 }
 
-void RenX_LoggingPlugin::RenX_OnSpyCrate(RenX::Server &server, const RenX::PlayerInfo &player, const Jupiter::ReadableString &character)
+void RenX_LoggingPlugin::RenX_OnSpyCrate(RenX::Server &server, const RenX::PlayerInfo &player, std::string_view character)
 {
 	logFuncType func;
 	if (RenX_LoggingPlugin::spyCratePublic)
@@ -1875,7 +1875,7 @@ void RenX_LoggingPlugin::RenX_OnUnspecifiedCrate(RenX::Server &server, const Ren
 	}
 }
 
-void RenX_LoggingPlugin::RenX_OnOtherCrate(RenX::Server &server, const RenX::PlayerInfo &player, const Jupiter::ReadableString &type)
+void RenX_LoggingPlugin::RenX_OnOtherCrate(RenX::Server &server, const RenX::PlayerInfo &player, std::string_view type)
 {
 	logFuncType func;
 	if (RenX_LoggingPlugin::otherCratePublic)
@@ -1892,7 +1892,7 @@ void RenX_LoggingPlugin::RenX_OnOtherCrate(RenX::Server &server, const RenX::Pla
 	}
 }
 
-void RenX_LoggingPlugin::RenX_OnSteal(RenX::Server &server, const RenX::PlayerInfo &player, const Jupiter::ReadableString &vehicle)
+void RenX_LoggingPlugin::RenX_OnSteal(RenX::Server &server, const RenX::PlayerInfo &player, std::string_view vehicle)
 {
 	logFuncType func;
 	if (RenX_LoggingPlugin::stealPublic)
@@ -1909,7 +1909,7 @@ void RenX_LoggingPlugin::RenX_OnSteal(RenX::Server &server, const RenX::PlayerIn
 	}
 }
 
-void RenX_LoggingPlugin::RenX_OnSteal(RenX::Server &server, const RenX::PlayerInfo &player, const Jupiter::ReadableString &vehicle, const RenX::PlayerInfo &victim)
+void RenX_LoggingPlugin::RenX_OnSteal(RenX::Server &server, const RenX::PlayerInfo &player, std::string_view vehicle, const RenX::PlayerInfo &victim)
 {
 	logFuncType func;
 	if (RenX_LoggingPlugin::stealPublic)
@@ -1943,7 +1943,7 @@ void RenX_LoggingPlugin::RenX_OnDonate(RenX::Server &server, const RenX::PlayerI
 	}
 }
 
-void RenX_LoggingPlugin::RenX_OnDestroy(RenX::Server &server, const Jupiter::ReadableString &killer, const RenX::TeamType &killerTeam, const Jupiter::ReadableString &objectName, const RenX::TeamType &objectTeam, const Jupiter::ReadableString &damageType, RenX::ObjectType type)
+void RenX_LoggingPlugin::RenX_OnDestroy(RenX::Server &server, std::string_view killer, const RenX::TeamType &killerTeam, std::string_view objectName, const RenX::TeamType &objectTeam, std::string_view damageType, RenX::ObjectType type)
 {
 	logFuncType func;
 	if (RenX_LoggingPlugin::destroyPublic)
@@ -2061,7 +2061,7 @@ void RenX_LoggingPlugin::RenX_OnGameOver(RenX::Server &server, RenX::WinType win
 	}
 }
 
-void RenX_LoggingPlugin::RenX_OnGame(RenX::Server &server, const Jupiter::ReadableString &raw)
+void RenX_LoggingPlugin::RenX_OnGame(RenX::Server &server, std::string_view raw)
 {
 	logFuncType func;
 	if (RenX_LoggingPlugin::gamePublic)
@@ -2078,7 +2078,7 @@ void RenX_LoggingPlugin::RenX_OnGame(RenX::Server &server, const Jupiter::Readab
 	}
 }
 
-void RenX_LoggingPlugin::RenX_OnExecute(RenX::Server &server, const Jupiter::ReadableString &user, const Jupiter::ReadableString &command) {
+void RenX_LoggingPlugin::RenX_OnExecute(RenX::Server &server, std::string_view user, std::string_view command) {
 	if (RenX_LoggingPlugin::muteOwnExecute == false || server.getUser() != user) {
 		logFuncType func;
 		if (RenX_LoggingPlugin::executePublic)
@@ -2102,7 +2102,7 @@ void RenX_LoggingPlugin::RenX_OnExecute(RenX::Server &server, const Jupiter::Rea
 	}
 }
 
-void RenX_LoggingPlugin::RenX_OnSubscribe(RenX::Server &server, const Jupiter::ReadableString &user)
+void RenX_LoggingPlugin::RenX_OnSubscribe(RenX::Server &server, std::string_view user)
 {
 	logFuncType func;
 	if (RenX_LoggingPlugin::subscribePublic)
@@ -2119,7 +2119,7 @@ void RenX_LoggingPlugin::RenX_OnSubscribe(RenX::Server &server, const Jupiter::R
 	}
 }
 
-void RenX_LoggingPlugin::RenX_OnRCON(RenX::Server &server, const Jupiter::ReadableString &raw)
+void RenX_LoggingPlugin::RenX_OnRCON(RenX::Server &server, std::string_view raw)
 {
 	logFuncType func;
 	if (RenX_LoggingPlugin::RCONPublic)
@@ -2184,7 +2184,7 @@ void RenX_LoggingPlugin::RenX_OnAdminLogout(RenX::Server &server, const RenX::Pl
 	}
 }
 
-void RenX_LoggingPlugin::RenX_OnAdmin(RenX::Server &server, const Jupiter::ReadableString &raw)
+void RenX_LoggingPlugin::RenX_OnAdmin(RenX::Server &server, std::string_view raw)
 {
 	logFuncType func;
 	if (RenX_LoggingPlugin::adminPublic)
@@ -2331,7 +2331,7 @@ void RenX_LoggingPlugin::RenX_OnVoteSurrender(RenX::Server &server, const RenX::
 	}
 }
 
-void RenX_LoggingPlugin::RenX_OnVoteSurvey(RenX::Server &server, const RenX::TeamType &team, const RenX::PlayerInfo &player, const Jupiter::ReadableString &text)
+void RenX_LoggingPlugin::RenX_OnVoteSurvey(RenX::Server &server, const RenX::TeamType &team, const RenX::PlayerInfo &player, std::string_view text)
 {
 	logFuncType func;
 	if (RenX_LoggingPlugin::voteCallPublic)
@@ -2351,7 +2351,7 @@ void RenX_LoggingPlugin::RenX_OnVoteSurvey(RenX::Server &server, const RenX::Tea
 	}
 }
 
-void RenX_LoggingPlugin::RenX_OnVoteOther(RenX::Server &server, const RenX::TeamType &team, const Jupiter::ReadableString &type, const RenX::PlayerInfo &player)
+void RenX_LoggingPlugin::RenX_OnVoteOther(RenX::Server &server, const RenX::TeamType &team, std::string_view type, const RenX::PlayerInfo &player)
 {
 	logFuncType func;
 	if (RenX_LoggingPlugin::voteCallPublic)
@@ -2371,7 +2371,7 @@ void RenX_LoggingPlugin::RenX_OnVoteOther(RenX::Server &server, const RenX::Team
 	}
 }
 
-void RenX_LoggingPlugin::RenX_OnVoteOver(RenX::Server &server, const RenX::TeamType &team, const Jupiter::ReadableString &type, bool success, int yesVotes, int noVotes)
+void RenX_LoggingPlugin::RenX_OnVoteOver(RenX::Server &server, const RenX::TeamType &team, std::string_view type, bool success, int yesVotes, int noVotes)
 {
 	logFuncType func;
 	if (RenX_LoggingPlugin::voteOverPublic)
@@ -2396,7 +2396,7 @@ void RenX_LoggingPlugin::RenX_OnVoteOver(RenX::Server &server, const RenX::TeamT
 	}
 }
 
-void RenX_LoggingPlugin::RenX_OnVoteCancel(RenX::Server &server, const RenX::TeamType &team, const Jupiter::ReadableString &type)
+void RenX_LoggingPlugin::RenX_OnVoteCancel(RenX::Server &server, const RenX::TeamType &team, std::string_view type)
 {
 	logFuncType func;
 	if (RenX_LoggingPlugin::voteCancelPublic)
@@ -2419,7 +2419,7 @@ void RenX_LoggingPlugin::RenX_OnVoteCancel(RenX::Server &server, const RenX::Tea
 	}
 }
 
-void RenX_LoggingPlugin::RenX_OnVote(RenX::Server &server, const Jupiter::ReadableString &raw)
+void RenX_LoggingPlugin::RenX_OnVote(RenX::Server &server, std::string_view raw)
 {
 	logFuncType func;
 	if (RenX_LoggingPlugin::votePublic)
@@ -2436,7 +2436,7 @@ void RenX_LoggingPlugin::RenX_OnVote(RenX::Server &server, const Jupiter::Readab
 	}
 }
 
-void RenX_LoggingPlugin::RenX_OnMapChange(RenX::Server &server, const Jupiter::ReadableString &map, bool seamless)
+void RenX_LoggingPlugin::RenX_OnMapChange(RenX::Server &server, std::string_view map, bool seamless)
 {
 	logFuncType func;
 	if (RenX_LoggingPlugin::mapChangePublic)
@@ -2453,7 +2453,7 @@ void RenX_LoggingPlugin::RenX_OnMapChange(RenX::Server &server, const Jupiter::R
 	}
 }
 
-void RenX_LoggingPlugin::RenX_OnMapLoad(RenX::Server &server, const Jupiter::ReadableString &map)
+void RenX_LoggingPlugin::RenX_OnMapLoad(RenX::Server &server, std::string_view map)
 {
 	logFuncType func;
 	if (RenX_LoggingPlugin::mapLoadPublic)
@@ -2470,7 +2470,7 @@ void RenX_LoggingPlugin::RenX_OnMapLoad(RenX::Server &server, const Jupiter::Rea
 	}
 }
 
-void RenX_LoggingPlugin::RenX_OnMapStart(RenX::Server &server, const Jupiter::ReadableString &map)
+void RenX_LoggingPlugin::RenX_OnMapStart(RenX::Server &server, std::string_view map)
 {
 	logFuncType func;
 	if (RenX_LoggingPlugin::mapStartPublic)
@@ -2487,7 +2487,7 @@ void RenX_LoggingPlugin::RenX_OnMapStart(RenX::Server &server, const Jupiter::Re
 	}
 }
 
-void RenX_LoggingPlugin::RenX_OnMap(RenX::Server &server, const Jupiter::ReadableString &raw)
+void RenX_LoggingPlugin::RenX_OnMap(RenX::Server &server, std::string_view raw)
 {
 	logFuncType func;
 	if (RenX_LoggingPlugin::mapPublic)
@@ -2520,7 +2520,7 @@ void RenX_LoggingPlugin::RenX_OnDemoRecord(RenX::Server &server, const RenX::Pla
 	}
 }
 
-void RenX_LoggingPlugin::RenX_OnDemoRecord(RenX::Server &server, const Jupiter::ReadableString &user)
+void RenX_LoggingPlugin::RenX_OnDemoRecord(RenX::Server &server, std::string_view user)
 {
 	logFuncType func;
 	if (RenX_LoggingPlugin::demoRecordPublic)
@@ -2553,7 +2553,7 @@ void RenX_LoggingPlugin::RenX_OnDemoRecordStop(RenX::Server &server)
 	}
 }
 
-void RenX_LoggingPlugin::RenX_OnDemo(RenX::Server &server, const Jupiter::ReadableString &raw)
+void RenX_LoggingPlugin::RenX_OnDemo(RenX::Server &server, std::string_view raw)
 {
 	logFuncType func;
 	if (RenX_LoggingPlugin::demoPublic)
@@ -2570,7 +2570,7 @@ void RenX_LoggingPlugin::RenX_OnDemo(RenX::Server &server, const Jupiter::Readab
 	}
 }
 
-void RenX_LoggingPlugin::RenX_OnLog(RenX::Server &server, const Jupiter::ReadableString &raw)
+void RenX_LoggingPlugin::RenX_OnLog(RenX::Server &server, std::string_view raw)
 {
 	logFuncType func;
 	if (RenX_LoggingPlugin::logPublic)
@@ -2587,7 +2587,7 @@ void RenX_LoggingPlugin::RenX_OnLog(RenX::Server &server, const Jupiter::Readabl
 	}
 }
 
-void RenX_LoggingPlugin::RenX_OnCommand(RenX::Server &server, const Jupiter::ReadableString &raw)
+void RenX_LoggingPlugin::RenX_OnCommand(RenX::Server &server, std::string_view raw)
 {
 	logFuncType func;
 	if (RenX_LoggingPlugin::commandPublic)
@@ -2604,7 +2604,7 @@ void RenX_LoggingPlugin::RenX_OnCommand(RenX::Server &server, const Jupiter::Rea
 	}
 }
 
-void RenX_LoggingPlugin::RenX_OnError(RenX::Server &server, const Jupiter::ReadableString &raw)
+void RenX_LoggingPlugin::RenX_OnError(RenX::Server &server, std::string_view raw)
 {
 	logFuncType func;
 	if (RenX_LoggingPlugin::errorPublic)
@@ -2621,7 +2621,7 @@ void RenX_LoggingPlugin::RenX_OnError(RenX::Server &server, const Jupiter::Reada
 	}
 }
 
-void RenX_LoggingPlugin::RenX_OnVersion(RenX::Server &server, const Jupiter::ReadableString &raw)
+void RenX_LoggingPlugin::RenX_OnVersion(RenX::Server &server, std::string_view raw)
 {
 	logFuncType func;
 	if (RenX_LoggingPlugin::versionPublic)
@@ -2638,7 +2638,7 @@ void RenX_LoggingPlugin::RenX_OnVersion(RenX::Server &server, const Jupiter::Rea
 	}
 }
 
-void RenX_LoggingPlugin::RenX_OnAuthorized(RenX::Server &server, const Jupiter::ReadableString &raw)
+void RenX_LoggingPlugin::RenX_OnAuthorized(RenX::Server &server, std::string_view raw)
 {
 	logFuncType func;
 	if (RenX_LoggingPlugin::authorizedPublic)
@@ -2655,7 +2655,7 @@ void RenX_LoggingPlugin::RenX_OnAuthorized(RenX::Server &server, const Jupiter::
 	}
 }
 
-void RenX_LoggingPlugin::RenX_OnOther(RenX::Server &server, char token, const Jupiter::ReadableString &raw)
+void RenX_LoggingPlugin::RenX_OnOther(RenX::Server &server, char token, std::string_view raw)
 {
 	logFuncType func;
 	if (RenX_LoggingPlugin::otherPublic)

@@ -29,7 +29,7 @@ bool RenX_MinPlayersPlugin::initialize()
 	return true;
 }
 
-void RenX_MinPlayersPlugin::RenX_OnMapStart(RenX::Server &server, const Jupiter::ReadableString &map)
+void RenX_MinPlayersPlugin::RenX_OnMapStart(RenX::Server &server, std::string_view map)
 {
 	if (server.players.size() < RenX_MinPlayersPlugin::player_threshold)
 		server.send(Jupiter::StringS::Format("addbots %d", RenX_MinPlayersPlugin::player_threshold - server.players.size()));
@@ -106,22 +106,22 @@ void RenX_MinPlayersPlugin::AnyDeath(RenX::Server &server, const RenX::PlayerInf
 	}
 }
 
-void RenX_MinPlayersPlugin::RenX_OnSuicide(RenX::Server &server, const RenX::PlayerInfo &player, const Jupiter::ReadableString &damageType)
+void RenX_MinPlayersPlugin::RenX_OnSuicide(RenX::Server &server, const RenX::PlayerInfo &player, std::string_view damageType)
 {
 	this->AnyDeath(server, player);
 }
 
-void RenX_MinPlayersPlugin::RenX_OnKill(RenX::Server &server, const RenX::PlayerInfo &player, const RenX::PlayerInfo &victim, const Jupiter::ReadableString &damageType)
+void RenX_MinPlayersPlugin::RenX_OnKill(RenX::Server &server, const RenX::PlayerInfo &player, const RenX::PlayerInfo &victim, std::string_view damageType)
 {
 	this->AnyDeath(server, player);
 }
 
-void RenX_MinPlayersPlugin::RenX_OnKill(RenX::Server &server, const Jupiter::ReadableString &killer, const RenX::TeamType &killerTeam, const RenX::PlayerInfo &victim, const Jupiter::ReadableString &damageType)
+void RenX_MinPlayersPlugin::RenX_OnKill(RenX::Server &server, std::string_view killer, const RenX::TeamType &killerTeam, const RenX::PlayerInfo &victim, std::string_view damageType)
 {
 	this->AnyDeath(server, victim);
 }
 
-void RenX_MinPlayersPlugin::RenX_OnDie(RenX::Server &server, const RenX::PlayerInfo &player, const Jupiter::ReadableString &damageType)
+void RenX_MinPlayersPlugin::RenX_OnDie(RenX::Server &server, const RenX::PlayerInfo &player, std::string_view damageType)
 {
 	this->AnyDeath(server, player);
 }

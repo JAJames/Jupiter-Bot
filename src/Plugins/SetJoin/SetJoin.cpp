@@ -41,7 +41,7 @@ void SetJoinIRCCommand::create()
 	this->addTrigger("setJoin"_jrs);
 }
 
-void SetJoinIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &channel, const Jupiter::ReadableString &nick, const Jupiter::ReadableString &parameters)
+void SetJoinIRCCommand::trigger(IRC_Bot *source, std::string_view channel, std::string_view nick, std::string_view parameters)
 {
 	if (!parameters.empty())
 	{
@@ -52,7 +52,7 @@ void SetJoinIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &
 	else source->sendMessage(channel, "Too few parameters! Syntax: setjoin <message>"_jrs);
 }
 
-const Jupiter::ReadableString &SetJoinIRCCommand::getHelp(const Jupiter::ReadableString &)
+std::string_view SetJoinIRCCommand::getHelp(std::string_view )
 {
 	static STRING_LITERAL_AS_NAMED_REFERENCE(defaultHelp, "Sets your join message. Syntax: setjoin <message>");
 	return defaultHelp;
@@ -68,9 +68,9 @@ void ViewJoinIRCCommand::create()
 	this->addTrigger("vJoin"_jrs);
 }
 
-void ViewJoinIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &channel, const Jupiter::ReadableString &nick, const Jupiter::ReadableString &parameters)
+void ViewJoinIRCCommand::trigger(IRC_Bot *source, std::string_view channel, std::string_view nick, std::string_view parameters)
 {
-	const Jupiter::ReadableString &target = parameters.empty() ? nick : parameters;
+	std::string_view target = parameters.empty() ? nick : parameters;
 	std::string_view setjoin = pluginInstance.setjoin_file[source->getConfigSection()].get(target);
 
 	if (setjoin.empty())
@@ -81,7 +81,7 @@ void ViewJoinIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString 
 			target.data(), setjoin.size(), setjoin.data()));
 }
 
-const Jupiter::ReadableString &ViewJoinIRCCommand::getHelp(const Jupiter::ReadableString &)
+std::string_view ViewJoinIRCCommand::getHelp(std::string_view )
 {
 	static STRING_LITERAL_AS_NAMED_REFERENCE(defaultHelp, "Views a user's join message. Syntax: viewjoin [user=you]");
 	return defaultHelp;
@@ -97,14 +97,14 @@ void DelJoinIRCCommand::create()
 	this->addTrigger("dJoin"_jrs);
 }
 
-void DelJoinIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &channel, const Jupiter::ReadableString &nick, const Jupiter::ReadableString &parameters)
+void DelJoinIRCCommand::trigger(IRC_Bot *source, std::string_view channel, std::string_view nick, std::string_view parameters)
 {
 	if (pluginInstance.setjoin_file[source->getConfigSection()].remove(nick))
 		source->sendNotice(nick, "Your setjoin has been deleted successfully."_jrs);
 	else source->sendNotice(nick, "No setjoin was found to delete."_jrs);
 }
 
-const Jupiter::ReadableString &DelJoinIRCCommand::getHelp(const Jupiter::ReadableString &)
+std::string_view DelJoinIRCCommand::getHelp(std::string_view )
 {
 	static STRING_LITERAL_AS_NAMED_REFERENCE(defaultHelp, "Deletes your join message. Syntax: deljoin");
 	return defaultHelp;

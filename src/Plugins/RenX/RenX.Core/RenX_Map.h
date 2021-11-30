@@ -43,8 +43,8 @@ namespace RenX
 		bool equals(const RenX::Map &map) const;
 
 		Map();
-		Map(const Jupiter::ReadableString &in_name);
-		Map(const Jupiter::ReadableString &in_name, uint64_t in_guid[2]);
+		Map(std::string_view in_name);
+		Map(std::string_view in_name, uint64_t in_guid[2]);
 	};
 }
 

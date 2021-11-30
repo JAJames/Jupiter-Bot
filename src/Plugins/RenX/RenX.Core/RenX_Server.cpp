@@ -103,11 +103,11 @@ int RenX::Server::think() {
 				m_lastActivity = std::chrono::steady_clock::now();
 				m_lastLine += tokens[0];
 				if (tokens.size() != 1) {
-					processLine(Jupiter::ReferenceString{m_lastLine});
+					processLine(m_lastLine);
 					m_lastLine = tokens[tokens.size() - 1];
 
 					for (size_t index = 1; index != tokens.size() - 1; ++index) {
-						processLine(Jupiter::ReferenceString{tokens[index]});
+						processLine(tokens[index]);
 					}
 				}
 			}
@@ -259,11 +259,11 @@ bool RenX::Server::isPure() const {
 	return m_pure;
 }
 
-int RenX::Server::send(const Jupiter::ReadableString &command) {
+int RenX::Server::send(std::string_view command) {
 	return sendSocket("c"s + RenX::escapifyRCON(command) + '\n');
 }
 
-int RenX::Server::sendSocket(const Jupiter::ReadableString &text) {
+int RenX::Server::sendSocket(std::string_view text) {
 	m_lastSendActivity = std::chrono::steady_clock::now();
 	return m_sock.send(text);
 }
@@ -290,7 +290,7 @@ int RenX::Server::sendMessage(const RenX::PlayerInfo &player, std::string_view m
 	return sendSocket("chostprivatesay pid"s + Jupiter::StringS::Format("%d ", player.id) + RenX::escapifyRCON(message) + '\n');
 }
 
-int RenX::Server::sendAdminMessage(const Jupiter::ReadableString &message) {
+int RenX::Server::sendAdminMessage(std::string_view message) {
 	return sendSocket("camsg "s + RenX::escapifyRCON(message) + '\n');
 }
 
@@ -302,7 +302,7 @@ int RenX::Server::sendWarnMessage(const RenX::PlayerInfo &player, std::string_vi
 	return sendSocket("cwarn pid"s + Jupiter::StringS::Format("%d ", player.id) + RenX::escapifyRCON(message) + '\n');
 }
 
-int RenX::Server::sendData(const Jupiter::ReadableString &data) {
+int RenX::Server::sendData(std::string_view data) {
 	return sendSocket(data);
 }
 
@@ -827,11 +827,11 @@ bool RenX::Server::setMap(std::string_view map) {
 	return send(Jupiter::StringS::Format("changemap %.*s", map.size(), map.data())) > 0;
 }
 
-bool RenX::Server::loadMutator(const Jupiter::ReadableString &mutator) {
+bool RenX::Server::loadMutator(std::string_view mutator) {
 	return send(Jupiter::StringS::Format("loadmutator %.*s", mutator.size(), mutator.data())) > 0;
 }
 
-bool RenX::Server::unloadMutator(const Jupiter::ReadableString &mutator) {
+bool RenX::Server::unloadMutator(std::string_view mutator) {
 	return send(Jupiter::StringS::Format("unloadmutator %.*s", mutator.size(), mutator.data())) > 0;
 }
 
@@ -926,7 +926,7 @@ bool RenX::Server::smodePlayer(const RenX::PlayerInfo &player) {
 	return send(Jupiter::StringS::Format("smode pid%d", player.id));
 }
 
-const Jupiter::ReadableString &RenX::Server::getPrefix() const {
+std::string_view RenX::Server::getPrefix() const {
 	static std::string parsed; // TODO: What the hell?
 	RenX::processTags(parsed = m_IRCPrefix, this);
 	return parsed;
@@ -951,7 +951,7 @@ void RenX::Server::setRanked(bool in_value) {
 	m_ranked = in_value;
 }
 
-const Jupiter::ReadableString &RenX::Server::getRules() const {
+std::string_view RenX::Server::getRules() const {
 	return m_rules;
 }
 
@@ -1035,7 +1035,7 @@ bool RenX::Server::isBotsEnabled() const {
 	return m_botsEnabled;
 }
 
-const Jupiter::ReadableString &RenX::Server::getPassword() const {
+std::string_view RenX::Server::getPassword() const {
 	return m_pass;
 }
 
@@ -1047,7 +1047,7 @@ bool RenX::Server::isDevBot() const {
 	return m_devBot;
 }
 
-const Jupiter::ReadableString &RenX::Server::getName() const {
+std::string_view RenX::Server::getName() const {
 	return m_serverName;
 }
 
@@ -1077,7 +1077,7 @@ RenX::GameCommand *RenX::Server::triggerCommand(std::string_view trigger, RenX::
 	for (const auto& command : m_commands) {
 		if (command->matches(trigger)) {
 			if (player.access >= command->getAccessLevel()) {
-				command->trigger(this, &player, Jupiter::ReferenceString{parameters});
+				command->trigger(this, &player, parameters);
 			}
 			else {
 				sendMessage(player, "Access Denied."_jrs);
@@ -1085,7 +1085,7 @@ RenX::GameCommand *RenX::Server::triggerCommand(std::string_view trigger, RenX::
 
 			// TODO: avoiding modifying behavior for now, but this probably doesn't need to be called on access denied
 			for (const auto& plugin : getCore()->getPlugins()) {
-				plugin->RenX_OnCommandTriggered(*this, Jupiter::ReferenceString{trigger}, player, Jupiter::ReferenceString{parameters}, *command);
+				plugin->RenX_OnCommandTriggered(*this, trigger, player, parameters, *command);
 			}
 
 			return command.get();
@@ -1160,7 +1160,7 @@ RenX::Server::uuid_func RenX::Server::getUUIDFunction() const {
 
 void RenX::Server::setUUID(RenX::PlayerInfo &player, std::string_view uuid) {
 	for (const auto& plugin : getCore()->getPlugins()) {
-		plugin->RenX_OnPlayerUUIDChange(*this, player, Jupiter::ReferenceString{uuid});
+		plugin->RenX_OnPlayerUUIDChange(*this, player, uuid);
 	}
 
 	player.uuid = uuid;
@@ -1183,7 +1183,7 @@ void RenX::Server::sendPubChan(const char *fmt, ...) const {
 	va_list args;
 	va_start(args, fmt);
 	Jupiter::StringL msg;
-	const Jupiter::ReadableString &serverPrefix = getPrefix();
+	std::string_view serverPrefix = getPrefix();
 	if (!serverPrefix.empty()) {
 		msg += serverPrefix;
 		msg += ' ';
@@ -1198,8 +1198,8 @@ void RenX::Server::sendPubChan(const char *fmt, ...) const {
 	}
 }
 
-void RenX::Server::sendPubChan(const Jupiter::ReadableString &msg) const {
-	const Jupiter::ReadableString &prefix = getPrefix();
+void RenX::Server::sendPubChan(std::string_view msg) const {
+	std::string_view prefix = getPrefix();
 	if (!prefix.empty()) {
 		Jupiter::String m(msg.size() + prefix.size() + 1);
 		m.set(prefix);
@@ -1221,7 +1221,7 @@ void RenX::Server::sendAdmChan(const char *fmt, ...) const {
 	va_list args;
 	va_start(args, fmt);
 	Jupiter::StringL msg;
-	const Jupiter::ReadableString &serverPrefix = getPrefix();
+	std::string_view serverPrefix = getPrefix();
 	if (!serverPrefix.empty()) {
 		msg += serverPrefix;
 		msg += ' ';
@@ -1236,8 +1236,8 @@ void RenX::Server::sendAdmChan(const char *fmt, ...) const {
 	}
 }
 
-void RenX::Server::sendAdmChan(const Jupiter::ReadableString &msg) const {
-	const Jupiter::ReadableString &prefix = getPrefix();
+void RenX::Server::sendAdmChan(std::string_view msg) const {
+	std::string_view prefix = getPrefix();
 	if (!prefix.empty()) {
 		Jupiter::String m(msg.size() + prefix.size() + 1);
 		m.set(prefix);
@@ -1260,7 +1260,7 @@ void RenX::Server::sendLogChan(const char *fmt, ...) const {
 	va_list args;
 	va_start(args, fmt);
 	Jupiter::StringL msg;
-	const Jupiter::ReadableString &serverPrefix = getPrefix();
+	std::string_view serverPrefix = getPrefix();
 	if (!serverPrefix.empty()) {
 		msg += serverPrefix;
 		msg += ' ';
@@ -1277,9 +1277,9 @@ void RenX::Server::sendLogChan(const char *fmt, ...) const {
 	}
 }
 
-void RenX::Server::sendLogChan(const Jupiter::ReadableString &msg) const {
+void RenX::Server::sendLogChan(std::string_view msg) const {
 	IRC_Bot *server;
-	const Jupiter::ReadableString &prefix = getPrefix();
+	std::string_view prefix = getPrefix();
 	if (!prefix.empty()) {
 		Jupiter::String m(msg.size() + prefix.size() + 1);
 		m.set(prefix);
@@ -1327,7 +1327,7 @@ void process_escape_sequences(std::string& out_string) {
 	out_string = temp;
 }
 
-void RenX::Server::processLine(const Jupiter::ReadableString &line) {
+void RenX::Server::processLine(std::string_view line) {
 	std::string_view in_line = line;
 	if (line.empty())
 		return;
@@ -1445,7 +1445,7 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line) {
 			m_firstAction = true;
 		}
 	};
-	auto parsePlayerData = [this](const Jupiter::ReadableString &data) {
+	auto parsePlayerData = [this](std::string_view data) {
 		parsed_player_token result;
 
 		auto player_tokens = jessilib::split_n_view(std::string_view{data}, ',', 2);
@@ -1473,7 +1473,7 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line) {
 
 		return result;
 	};
-	auto get_next_temp_playerinfo = [](const Jupiter::ReadableString &name, RenX::TeamType team, bool isBot) {
+	auto get_next_temp_playerinfo = [](std::string_view name, RenX::TeamType team, bool isBot) {
 		static RenX::PlayerInfo s_temp_players[4];
 		static size_t s_temp_player_index{ 0 };
 
@@ -1491,7 +1491,7 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line) {
 
 		return temp_player;
 	};
-	auto getPlayerOrAdd = [&](const Jupiter::ReadableString &name, int id, RenX::TeamType team, bool isBot, uint64_t steamid, const Jupiter::ReadableString &ip, const Jupiter::ReadableString &hwid)
+	auto getPlayerOrAdd = [&](std::string_view name, int id, RenX::TeamType team, bool isBot, uint64_t steamid, std::string_view ip, std::string_view hwid)
 	{
 		if (id == 0) {
 			if (name.empty()) {
@@ -1588,7 +1588,7 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line) {
 
 		return player;
 	};
-	auto parseGetPlayerOrAdd = [&parsePlayerData, &getPlayerOrAdd, this](const Jupiter::ReadableString &token)
+	auto parseGetPlayerOrAdd = [&parsePlayerData, &getPlayerOrAdd, this](std::string_view token)
 	{
 		auto parsed_token = parsePlayerData(token);
 		if (parsed_token.id == 0 && parsed_token.name.empty()) {
@@ -1675,7 +1675,7 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line) {
 					*/
 					auto table = tokens_as_command_table();
 
-					auto table_get = [&table](const Jupiter::ReadableString& in_key) -> std::string_view* {
+					auto table_get = [&table](std::string_view  in_key) -> std::string_view* {
 						auto value = table.find(in_key);
 						if (value != table.end()) {
 							return &value->second;
@@ -1684,7 +1684,7 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line) {
 						return nullptr;
 					};
 
-					auto table_get_ref = [&table](const Jupiter::ReadableString& in_key, const Jupiter::ReadableString& in_default_value) -> const Jupiter::ReadableString& {
+					auto table_get_ref = [&table](std::string_view  in_key, std::string_view  in_default_value) -> std::string_view  {
 						auto value = table.find(in_key);
 						if (value != table.end()) {
 							return value->second;
@@ -1844,7 +1844,7 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line) {
 					*/
 					auto table = tokens_as_command_table();
 
-					auto table_get = [&table](const Jupiter::ReadableString& in_key) -> std::string_view* {
+					auto table_get = [&table](std::string_view  in_key) -> std::string_view* {
 						auto value = table.find(in_key);
 						if (value != table.end()) {
 							return &value->second;
@@ -1853,7 +1853,7 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line) {
 						return nullptr;
 					};
 
-					auto table_get_ref = [&table](const Jupiter::ReadableString& in_key, const Jupiter::ReadableString& in_default_value) -> const Jupiter::ReadableString& {
+					auto table_get_ref = [&table](std::string_view  in_key, std::string_view  in_default_value) -> std::string_view  {
 						auto value = table.find(in_key);
 						if (value != table.end()) {
 							return value->second;
@@ -1962,7 +1962,7 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line) {
 					*/
 					auto table = tokens_as_command_table();
 
-					auto table_get = [&table](const Jupiter::ReadableString& in_key) -> std::string_view* {
+					auto table_get = [&table](std::string_view  in_key) -> std::string_view* {
 						auto value = table.find(in_key);
 						if (value != table.end()) {
 							return &value->second;
@@ -2026,7 +2026,7 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line) {
 			{
 				// Map | Guid
 				m_map.name = getToken(0);
-				const Jupiter::ReferenceString guid_token = getToken(1);
+				std::string_view guid_token = getToken(1);
 
 				if (guid_token.size() == 32U) {
 					m_map.guid[0] = Jupiter::asUnsignedLongLong(guid_token.substr(size_t{ 0 }, 16U), 16);
@@ -2042,7 +2042,7 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line) {
 					m_serverName = getToken(3);
 					m_map.name = getToken(5);
 
-					const Jupiter::ReferenceString guid_token = getToken(11);
+					std::string_view guid_token = getToken(11);
 					if (guid_token.size() == 32U)
 					{
 						m_map.guid[0] = Jupiter::asUnsignedLongLong(guid_token.substr(size_t{ 0 }, 16U), 16);
@@ -2071,7 +2071,7 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line) {
 					{
 						m_competitive = Jupiter::from_string<bool>(getToken(23));
 
-						const Jupiter::ReadableString &match_state_token = getToken(25);
+						std::string_view match_state_token = getToken(25);
 						if (jessilib::equalsi(match_state_token, "PendingMatch"_jrs))
 							m_match_state = 0;
 						else if (jessilib::equalsi(match_state_token, "MatchInProgress"_jrs))
@@ -2105,11 +2105,11 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line) {
 			}
 			else if (jessilib::equalsi(m_lastCommand, "rotation"sv)) {
 				// Map | Guid
-				const Jupiter::ReadableString &in_map = getToken(0);
+				std::string_view in_map = getToken(0);
 				if (hasMapInRotation(in_map) == false) {
 					this->maps.emplace_back(in_map);
 
-					const Jupiter::ReferenceString guid_token = getToken(1);
+					std::string_view guid_token = getToken(1);
 					if (guid_token.size() == 32U) {
 						this->maps.back().guid[0] = Jupiter::asUnsignedLongLong(guid_token.substr(size_t{ 0 }, 16U), 16);
 						this->maps.back().guid[1] = Jupiter::asUnsignedLongLong(guid_token.substr(16U), 16);
@@ -2544,7 +2544,7 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line) {
 
 								if (!parsed_token.isPlayer || parsed_token.id == 0) {
 									for (const auto& plugin : xPlugins) {
-										plugin->RenX_OnDestroy(*this, parsed_token.name, parsed_token.team, Jupiter::ReferenceString{objectName}, RenX::getEnemy(parsed_token.team), damageType, type);
+										plugin->RenX_OnDestroy(*this, parsed_token.name, parsed_token.team, objectName, RenX::getEnemy(parsed_token.team), damageType, type);
 									}
 								}
 								else {
@@ -2580,7 +2580,7 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line) {
 										break;
 									}
 									for (const auto& plugin : xPlugins) {
-										plugin->RenX_OnDestroy(*this, *player, Jupiter::ReferenceString{objectName}, RenX::getEnemy(player->team), damageType, type);
+										plugin->RenX_OnDestroy(*this, *player, objectName, RenX::getEnemy(player->team), damageType, type);
 									}
 								}
 							}
@@ -2892,7 +2892,7 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line) {
 					else if (subHeader == "Kick;"sv)
 					{
 						// Player | "for" | Reason
-						const Jupiter::ReadableString &reason = getToken(4);
+						std::string_view reason = getToken(4);
 						RenX::PlayerInfo *player = parseGetPlayerOrAdd(getToken(2));
 						for (const auto& plugin : xPlugins) {
 							plugin->RenX_OnKick(*this, *player, reason);
@@ -2998,7 +2998,7 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line) {
 							auto split_command_line = jessilib::word_split_once_view(command_line, ' ');
 
 							for (const auto& plugin : xPlugins) {
-								plugin->RenX_OnExecute(*this, Jupiter::ReferenceString{user}, command_line);
+								plugin->RenX_OnExecute(*this, user, command_line);
 							}
 
 							if (m_rconUser == user)
@@ -3301,7 +3301,7 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line) {
 								}
 								else if (voteType == "Survey"sv)
 								{
-									const Jupiter::ReadableString &text = getToken(7);
+									std::string_view text = getToken(7);
 									for (const auto& plugin : xPlugins) {
 										plugin->RenX_OnVoteSurvey(*this, team, *player, text);
 									}
@@ -3578,7 +3578,7 @@ void RenX::Server::processLine(const Jupiter::ReadableString &line) {
 					m_devBot = true;
 
 				for (const auto& plugin : xPlugins) {
-					plugin->RenX_OnAuthorized(*this, Jupiter::ReferenceString{m_rconUser});
+					plugin->RenX_OnAuthorized(*this, m_rconUser);
 				}
 			}
 			break;

@@ -31,7 +31,7 @@ HelpConsoleCommand::HelpConsoleCommand() {
 	this->addTrigger(STRING_LITERAL_AS_REFERENCE("help"));
 }
 
-void HelpConsoleCommand::trigger(const Jupiter::ReadableString &parameters) {
+void HelpConsoleCommand::trigger(std::string_view parameters) {
 	if (parameters.empty()) {
 		std::cout << "Supported commands:";
 		for (const auto& command : consoleCommands) {
@@ -50,10 +50,10 @@ void HelpConsoleCommand::trigger(const Jupiter::ReadableString &parameters) {
 		return;
 	}
 
-	std::cout << std::string_view{cmd->getHelp(Jupiter::ReferenceString{command_split.second})} << std::endl;
+	std::cout << std::string_view{cmd->getHelp(command_split.second)} << std::endl;
 }
 
-const Jupiter::ReadableString &HelpConsoleCommand::getHelp(const Jupiter::ReadableString &) {
+std::string_view HelpConsoleCommand::getHelp(std::string_view ) {
 	static STRING_LITERAL_AS_NAMED_REFERENCE(defaultHelp, "Lists commands, or sends command-specific help. Syntax: help [command]");
 	return defaultHelp;
 }
@@ -66,7 +66,7 @@ void HelpIRCCommand::create() {
 	this->addTrigger("help"_jrs);
 }
 
-void HelpIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &in_channel, const Jupiter::ReadableString &nick, const Jupiter::ReadableString &parameters) {
+void HelpIRCCommand::trigger(IRC_Bot *source, std::string_view in_channel, std::string_view nick, std::string_view parameters) {
 	Jupiter::IRC::Client::Channel *channel = source->getChannel(in_channel);
 	if (channel != nullptr)
 	{
@@ -95,14 +95,14 @@ void HelpIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &in_
 				else if (access < command_access)
 					source->sendNotice(nick, "Access Denied."_jrs);
 				else
-					source->sendNotice(nick, cmd->getHelp(Jupiter::ReferenceString{command_split.second}));
+					source->sendNotice(nick, cmd->getHelp(command_split.second));
 			}
 			else source->sendNotice(nick, "Error: Command not found."_jrs);
 		}
 	}
 }
 
-const Jupiter::ReadableString &HelpIRCCommand::getHelp(const Jupiter::ReadableString &) {
+std::string_view HelpIRCCommand::getHelp(std::string_view ) {
 	static STRING_LITERAL_AS_NAMED_REFERENCE(defaultHelp, "Syntax: help [command]");
 	return defaultHelp;
 }
@@ -120,13 +120,13 @@ VersionGenericCommand::VersionGenericCommand() {
 	this->addTrigger(STRING_LITERAL_AS_REFERENCE("clientinfo"));
 }
 
-Jupiter::GenericCommand::ResponseLine *VersionGenericCommand::trigger(const Jupiter::ReadableString &parameters) {
-	Jupiter::GenericCommand::ResponseLine *ret = new Jupiter::GenericCommand::ResponseLine("Version: "s + Jupiter::ReferenceString(Jupiter::version), GenericCommand::DisplayType::PublicSuccess);
-	ret->next = new Jupiter::GenericCommand::ResponseLine(Jupiter::ReferenceString(Jupiter::copyright), GenericCommand::DisplayType::PublicSuccess);
+Jupiter::GenericCommand::ResponseLine *VersionGenericCommand::trigger(std::string_view parameters) {
+	Jupiter::GenericCommand::ResponseLine *ret = new Jupiter::GenericCommand::ResponseLine("Version: "s + Jupiter::version, GenericCommand::DisplayType::PublicSuccess);
+	ret->next = new Jupiter::GenericCommand::ResponseLine(std::string_view{ Jupiter::copyright }, GenericCommand::DisplayType::PublicSuccess);
 	return ret;
 }
 
-const Jupiter::ReadableString &VersionGenericCommand::getHelp(const Jupiter::ReadableString &) {
+std::string_view VersionGenericCommand::getHelp(std::string_view ) {
 	static STRING_LITERAL_AS_NAMED_REFERENCE(defaultHelp, "Displays version and copyright information");
 	return defaultHelp;
 }
@@ -140,7 +140,7 @@ RehashGenericCommand::RehashGenericCommand() {
 	this->addTrigger(STRING_LITERAL_AS_REFERENCE("rehash"));
 }
 
-Jupiter::GenericCommand::ResponseLine *RehashGenericCommand::trigger(const Jupiter::ReadableString &parameters) {
+Jupiter::GenericCommand::ResponseLine *RehashGenericCommand::trigger(std::string_view parameters) {
 	size_t hash_errors = Jupiter::rehash();
 
 	if (hash_errors == 0)
@@ -149,7 +149,7 @@ Jupiter::GenericCommand::ResponseLine *RehashGenericCommand::trigger(const Jupit
 	return new Jupiter::GenericCommand::ResponseLine(Jupiter::StringS::Format("%u of %u objects failed to successfully rehash.", hash_errors, Jupiter::getRehashableCount()), GenericCommand::DisplayType::PublicError);
 }
 
-const Jupiter::ReadableString &RehashGenericCommand::getHelp(const Jupiter::ReadableString &) {
+std::string_view RehashGenericCommand::getHelp(std::string_view ) {
 	static STRING_LITERAL_AS_NAMED_REFERENCE(defaultHelp, "Rehashes configuration data from a file. Syntax: rehash [file]");
 	return defaultHelp;
 }

@@ -25,7 +25,7 @@ public: // Jupiter::Plugin
 public: // RenX::Plugin
 	void RenX_OnServerFullyConnected(RenX::Server &server) override;
 	void RenX_OnServerDisconnect(RenX::Server &server, RenX::DisconnectReason reason) override;
-	void RenX_OnRaw(RenX::Server &server, const Jupiter::ReadableString &raw) override;
+	void RenX_OnRaw(RenX::Server &server, std::string_view raw) override;
 
 private:
 	using fake_command_handler = std::function<bool(std::string_view in_command_line, RenX::Server& in_server, std::vector<std::string>& out_response)>;

@@ -91,7 +91,7 @@ int RenX_ExtraLoggingPlugin::think() {
 	return 0;
 }
 
-void RenX_ExtraLoggingPlugin::RenX_OnRaw(RenX::Server &server, const Jupiter::ReadableString &raw) {
+void RenX_ExtraLoggingPlugin::RenX_OnRaw(RenX::Server &server, std::string_view raw) {
 	if (RenX_ExtraLoggingPlugin::printToConsole) {
 		if (!RenX_ExtraLoggingPlugin::consolePrefix.empty()) {
 			std::string cPrefix = RenX_ExtraLoggingPlugin::consolePrefix;

@@ -49,7 +49,7 @@ public: // RenX::Plugin
 	void RenX_OnPlayerDelete(RenX::Server &server, const RenX::PlayerInfo &player) override;
 	void RenX_OnJoin(RenX::Server &server, const RenX::PlayerInfo &player) override;
 	void RenX_OnGameOver(RenX::Server &server, RenX::WinType winType, const RenX::TeamType &team, int gScore, int nScore) override;
-	void RenX_OnDestroy(RenX::Server &server, const RenX::PlayerInfo &player, const Jupiter::ReadableString &objectName, const RenX::TeamType &objectTeam, const Jupiter::ReadableString &damageType, RenX::ObjectType type) override;
+	void RenX_OnDestroy(RenX::Server &server, const RenX::PlayerInfo &player, std::string_view objectName, const RenX::TeamType &objectTeam, std::string_view damageType, RenX::ObjectType type) override;
 	~RenX_MedalsPlugin();
 
 public: // Jupiter::Plugin

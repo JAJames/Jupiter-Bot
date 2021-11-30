@@ -26,7 +26,7 @@
 class RenX_ExcessiveHeadshotsPlugin : public RenX::Plugin
 {
 public: // RenX::Plugin
-	void RenX_OnKill(RenX::Server &server, const RenX::PlayerInfo &player, const RenX::PlayerInfo &victim, const Jupiter::ReadableString &damageType) override;
+	void RenX_OnKill(RenX::Server &server, const RenX::PlayerInfo &player, const RenX::PlayerInfo &victim, std::string_view damageType) override;
 
 public: // Jupiter::Plugin
 	virtual bool initialize() override;

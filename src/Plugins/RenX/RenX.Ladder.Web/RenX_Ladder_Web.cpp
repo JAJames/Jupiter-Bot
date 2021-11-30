@@ -40,21 +40,21 @@ bool RenX_Ladder_WebPlugin::initialize() {
 	Jupiter::HTTP::Server &server = getHTTPServer();
 
 	std::unique_ptr<Jupiter::HTTP::Server::Content> content = std::make_unique<Jupiter::HTTP::Server::Content>(RenX_Ladder_WebPlugin::ladder_page_name, handle_ladder_page);
-	content->language = &Jupiter::HTTP::Content::Language::ENGLISH;
-	content->type = &Jupiter::HTTP::Content::Type::Text::HTML;
-	content->charset = &Jupiter::HTTP::Content::Type::Text::Charset::UTF8;
+	content->language = Jupiter::HTTP::Content::Language::ENGLISH;
+	content->type = Jupiter::HTTP::Content::Type::Text::HTML;
+	content->charset = Jupiter::HTTP::Content::Type::Text::Charset::UTF8;
 	server.hook(RenX_Ladder_WebPlugin::web_hostname, RenX_Ladder_WebPlugin::web_path, std::move(content));
 
 	content = std::make_unique<Jupiter::HTTP::Server::Content>(RenX_Ladder_WebPlugin::search_page_name, handle_search_page);
-	content->language = &Jupiter::HTTP::Content::Language::ENGLISH;
-	content->type = &Jupiter::HTTP::Content::Type::Text::HTML;
-	content->charset = &Jupiter::HTTP::Content::Type::Text::Charset::UTF8;
+	content->language = Jupiter::HTTP::Content::Language::ENGLISH;
+	content->type = Jupiter::HTTP::Content::Type::Text::HTML;
+	content->charset = Jupiter::HTTP::Content::Type::Text::Charset::UTF8;
 	server.hook(RenX_Ladder_WebPlugin::web_hostname, RenX_Ladder_WebPlugin::web_path, std::move(content));
 
 	content = std::make_unique<Jupiter::HTTP::Server::Content>(RenX_Ladder_WebPlugin::profile_page_name, handle_profile_page);
-	content->language = &Jupiter::HTTP::Content::Language::ENGLISH;
-	content->type = &Jupiter::HTTP::Content::Type::Text::HTML;
-	content->charset = &Jupiter::HTTP::Content::Type::Text::Charset::UTF8;
+	content->language = Jupiter::HTTP::Content::Language::ENGLISH;
+	content->type = Jupiter::HTTP::Content::Type::Text::HTML;
+	content->charset = Jupiter::HTTP::Content::Type::Text::Charset::UTF8;
 	server.hook(RenX_Ladder_WebPlugin::web_hostname, RenX_Ladder_WebPlugin::web_path, std::move(content));
 
 	return true;

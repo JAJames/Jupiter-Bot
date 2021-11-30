@@ -58,7 +58,7 @@ namespace RenX
 	* @param team Team to get IRC color code for
 	* @return A team's corresponding IRC color-code.
 	*/
-	RENX_API const Jupiter::ReadableString &getTeamColor(TeamType team);
+	RENX_API std::string_view getTeamColor(TeamType team);
 
 	/**
 	* @brief Fetches a team's name.
@@ -67,7 +67,7 @@ namespace RenX
 	* @param team Team to translate into a name.
 	* @return The team's corresponding name.
 	*/
-	RENX_API const Jupiter::ReadableString &getTeamName(TeamType team);
+	RENX_API std::string_view getTeamName(TeamType team);
 
 	/**
 	* @brief Fetches a team's full name.
@@ -76,7 +76,7 @@ namespace RenX
 	* @param team Team to translate into a name.
 	* @return The team's corresponding name.
 	*/
-	RENX_API const Jupiter::ReadableString &getFullTeamName(TeamType team);
+	RENX_API std::string_view getFullTeamName(TeamType team);
 
 	/**
 	* @brief Fetches a team's enemy.
@@ -93,7 +93,7 @@ namespace RenX
 	* @param preset Preset to simplify.
 	* @return Simplified form of preset.
 	*/
-	RENX_API const Jupiter::ReadableString &getCharacter(const Jupiter::ReadableString &preset);
+	RENX_API std::string_view getCharacter(std::string_view preset);
 
 	/**
 	* @brief Translates a preset's name into a real name.
@@ -110,7 +110,7 @@ namespace RenX
 	* @param winType WinType to translate.
 	* @return String containing the human-readable translation of the WinType.
 	*/
-	RENX_API const Jupiter::ReadableString &translateWinType(WinType winType);
+	RENX_API std::string_view translateWinType(WinType winType);
 
 	/**
 	* @brief Translates a WinType into a human-readable string.
@@ -119,7 +119,7 @@ namespace RenX
 	* @param winType WinType to translate.
 	* @return String containing the human-readable translation of the WinType.
 	*/
-	RENX_API const Jupiter::ReadableString &translateWinTypePlain(WinType winType);
+	RENX_API std::string_view translateWinTypePlain(WinType winType);
 
 	/**
 	* @brief Initializes translation definitions.

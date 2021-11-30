@@ -104,8 +104,8 @@ void RenX_MedalsPlugin::RenX_SanitizeTags(std::string& fmt) {
 
 void RenX_MedalsPlugin::RenX_ProcessTags(std::string& msg, const RenX::Server *server, const RenX::PlayerInfo *player, const RenX::PlayerInfo *, const RenX::BuildingInfo *) {
 	if (player != nullptr) {
-		const Jupiter::ReadableString &recs = RenX_MedalsPlugin::medalsFile.get(player->uuid, "Recs"_jrs);
-		const Jupiter::ReadableString &noobs = RenX_MedalsPlugin::medalsFile.get(player->uuid, "Noobs"_jrs);
+		std::string_view recs = RenX_MedalsPlugin::medalsFile.get(player->uuid, "Recs"_jrs);
+		std::string_view noobs = RenX_MedalsPlugin::medalsFile.get(player->uuid, "Noobs"_jrs);
 
 		RenX::replace_tag(msg, this->INTERNAL_RECS_TAG, recs);
 		RenX::replace_tag(msg, this->INTERNAL_NOOB_TAG, noobs);
@@ -230,7 +230,7 @@ void RenX_MedalsPlugin::RenX_OnGameOver(RenX::Server &server, RenX::WinType winT
 	RenX_MedalsPlugin::medalsFile.write(medalsFileName);
 }
 
-void RenX_MedalsPlugin::RenX_OnDestroy(RenX::Server &server, const RenX::PlayerInfo &player, const Jupiter::ReadableString &objectName, const RenX::TeamType &objectTeam, const Jupiter::ReadableString &damageType, RenX::ObjectType type)
+void RenX_MedalsPlugin::RenX_OnDestroy(RenX::Server &server, const RenX::PlayerInfo &player, std::string_view objectName, const RenX::TeamType &objectTeam, std::string_view damageType, RenX::ObjectType type)
 {
 	if (type == RenX::ObjectType::Building)
 	{
@@ -293,7 +293,7 @@ void RecsGameCommand::create()
 	this->addTrigger("n00bs"_jrs);
 }
 
-void RecsGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *player, const Jupiter::ReadableString &parameters)
+void RecsGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *player, std::string_view parameters)
 {
 	if (!parameters.empty())
 	{
@@ -325,7 +325,7 @@ void RecsGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *player, co
 		source->sendMessage(*player, Jupiter::StringS::Format("%.*s, you have %lu recs and %lu n00bs. Your worth: %d", player->name.size(), player->name.data(), getRecs(*player), getNoobs(*player), getWorth(*player)));
 }
 
-const Jupiter::ReadableString &RecsGameCommand::getHelp(const Jupiter::ReadableString &)
+std::string_view RecsGameCommand::getHelp(std::string_view )
 {
 	static STRING_LITERAL_AS_NAMED_REFERENCE(defaultHelp, "Gets a count of a player's recommendations and noobs. Syntax: recs [player]");
 	return defaultHelp;
@@ -341,7 +341,7 @@ void RecGameCommand::create()
 	this->addTrigger("recommend"_jrs);
 }
 
-void RecGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *player, const Jupiter::ReadableString &parameters) {
+void RecGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *player, std::string_view parameters) {
 	auto parameters_split = jessilib::word_split_once_view(std::string_view{parameters}, WHITESPACE_SV);
 	if (!parameters_split.first.empty()) {
 		RenX::PlayerInfo *target = source->getPlayerByPartName(parameters);
@@ -373,7 +373,7 @@ void RecGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *player, con
 	else RecsGameCommand_instance.trigger(source, player, parameters);
 }
 
-const Jupiter::ReadableString &RecGameCommand::getHelp(const Jupiter::ReadableString &)
+std::string_view RecGameCommand::getHelp(std::string_view )
 {
 	static STRING_LITERAL_AS_NAMED_REFERENCE(defaultHelp, "Recommends a player for their gameplay. Syntax: rec <player> [reason]");
 	return defaultHelp;
@@ -389,7 +389,7 @@ void NoobGameCommand::create()
 	this->addTrigger("n00b"_jrs);
 }
 
-void NoobGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *player, const Jupiter::ReadableString &parameters) {
+void NoobGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *player, std::string_view parameters) {
 	auto parameters_split = jessilib::word_split_once_view(std::string_view{parameters}, WHITESPACE_SV);
 	if (!parameters_split.first.empty()) {
 		RenX::PlayerInfo *target = source->getPlayerByPartName(parameters);
@@ -405,7 +405,7 @@ void NoobGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *player, co
 		else if (target->isBot) {
 			source->sendMessage(*player, "Error: Bots can not receive n00bs."_jrs);
 		}
-		else if (player->varData["RenX.Medals"_jrs].get("gn"_jrs) != nullptr && player->adminType.empty()) {
+		else if (!player->varData["RenX.Medals"_jrs].get("gn"_jrs).empty() && player->adminType.empty()) {
 			source->sendMessage(*player, "You can only give one noob per game."_jrs);
 		}
 		else {
@@ -417,7 +417,7 @@ void NoobGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *player, co
 	else RecsGameCommand_instance.trigger(source, player, parameters);
 }
 
-const Jupiter::ReadableString &NoobGameCommand::getHelp(const Jupiter::ReadableString &)
+std::string_view NoobGameCommand::getHelp(std::string_view )
 {
 	static STRING_LITERAL_AS_NAMED_REFERENCE(defaultHelp, "Tells people that a player is bad. Syntax: noob [player]");
 	return defaultHelp;

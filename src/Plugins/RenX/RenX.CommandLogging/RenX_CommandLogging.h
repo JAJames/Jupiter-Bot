@@ -20,11 +20,11 @@ public: // Jupiter::Plugin
 	~RenX_CommandLoggingPlugin();
 
 public: // RenX::Plugin
-	void RenX_OnCommandTriggered(RenX::Server& server, const Jupiter::ReadableString& trigger, RenX::PlayerInfo& player, const Jupiter::ReadableString& parameters, RenX::GameCommand& command) override;
+	void RenX_OnCommandTriggered(RenX::Server& server, std::string_view  trigger, RenX::PlayerInfo& player, std::string_view  parameters, RenX::GameCommand& command) override;
 
 public:
 	void PrepFile();
-	void WriteToLog(RenX::Server& server, const RenX::PlayerInfo& player, const Jupiter::ReadableString& message);
+	void WriteToLog(RenX::Server& server, const RenX::PlayerInfo& player, std::string_view  message);
 	std::string last_date;
 	std::fstream fs;
 	int min_access;

@@ -21,7 +21,7 @@
 
 using namespace Jupiter::literals;
 
-void RenX_AlwaysRecord::RenX_OnMapStart(RenX::Server &server, const Jupiter::ReadableString &)
+void RenX_AlwaysRecord::RenX_OnMapStart(RenX::Server &server, std::string_view )
 {
 	server.send("demorec"_jrs);
 }

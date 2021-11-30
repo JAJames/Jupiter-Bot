@@ -38,7 +38,7 @@ using namespace Jupiter::literals;
 using namespace jessilib::literals;
 using namespace std::literals;
 
-const Jupiter::ReferenceString RxCommandsSection = "RenX.Commands"_jrs;
+constexpr std::string_view RxCommandsSection = "RenX.Commands"sv;
 
 bool togglePhasing(RenX::Server *server, bool newState) {
 	server->varData[RxCommandsSection].set("phasing"sv, newState ? "true"s : "false"s);
@@ -62,15 +62,15 @@ std::string player_not_found_message(std::string_view name) {
 	return result;
 }
 
-void RenX_CommandsPlugin::RenX_OnSuicide(RenX::Server &server, const RenX::PlayerInfo &player, const Jupiter::ReadableString &) {
+void RenX_CommandsPlugin::RenX_OnSuicide(RenX::Server &server, const RenX::PlayerInfo &player, std::string_view ) {
 	onDie(server, player);
 }
 
-void RenX_CommandsPlugin::RenX_OnKill(RenX::Server &server, const RenX::PlayerInfo &, const RenX::PlayerInfo &victim, const Jupiter::ReadableString &) {
+void RenX_CommandsPlugin::RenX_OnKill(RenX::Server &server, const RenX::PlayerInfo &, const RenX::PlayerInfo &victim, std::string_view ) {
 	onDie(server, victim);
 }
 
-void RenX_CommandsPlugin::RenX_OnDie(RenX::Server &server, const RenX::PlayerInfo &player, const Jupiter::ReadableString &) {
+void RenX_CommandsPlugin::RenX_OnDie(RenX::Server &server, const RenX::PlayerInfo &player, std::string_view ) {
 	onDie(server, player);
 }
 
@@ -104,19 +104,19 @@ std::chrono::seconds RenX_CommandsPlugin::getMaxTBanTime() const {
 	return m_maxTempBanTime;
 }
 
-const Jupiter::ReadableString &RenX_CommandsPlugin::getPlayerInfoFormat() const {
+std::string_view RenX_CommandsPlugin::getPlayerInfoFormat() const {
 	return m_playerInfoFormat;
 }
 
-const Jupiter::ReadableString &RenX_CommandsPlugin::getAdminPlayerInfoFormat() const {
+std::string_view RenX_CommandsPlugin::getAdminPlayerInfoFormat() const {
 	return m_adminPlayerInfoFormat;
 }
 
-const Jupiter::ReadableString &RenX_CommandsPlugin::getBuildingInfoFormat() const {
+std::string_view RenX_CommandsPlugin::getBuildingInfoFormat() const {
 	return m_buildingInfoFormat;
 }
 
-const Jupiter::ReadableString &RenX_CommandsPlugin::getStaffTitle() const {
+std::string_view RenX_CommandsPlugin::getStaffTitle() const {
 	return m_staffTitle;
 }
 
@@ -132,7 +132,7 @@ RawRCONConsoleCommand::RawRCONConsoleCommand() {
 	this->addTrigger(STRING_LITERAL_AS_REFERENCE("rawrcon"));
 }
 
-void RawRCONConsoleCommand::trigger(const Jupiter::ReadableString &parameters) {
+void RawRCONConsoleCommand::trigger(std::string_view parameters) {
 	if (parameters.empty()) {
 		puts("Error: Too Few Parameters. Syntax: rrcon <input>");
 		return;
@@ -151,7 +151,7 @@ void RawRCONConsoleCommand::trigger(const Jupiter::ReadableString &parameters) {
 	}
 }
 
-const Jupiter::ReadableString &RawRCONConsoleCommand::getHelp(const Jupiter::ReadableString &) {
+std::string_view RawRCONConsoleCommand::getHelp(std::string_view ) {
 	static STRING_LITERAL_AS_NAMED_REFERENCE(defaultHelp, "Sends data over the Renegade X server's rcon connection. Syntax: rrcon <data>");
 	return defaultHelp;
 }
@@ -165,7 +165,7 @@ RCONConsoleCommand::RCONConsoleCommand() {
 	this->addTrigger(STRING_LITERAL_AS_REFERENCE("renx"));
 }
 
-void RCONConsoleCommand::trigger(const Jupiter::ReadableString &parameters) {
+void RCONConsoleCommand::trigger(std::string_view parameters) {
 	if (parameters.empty()) {
 		puts("Error: Too Few Parameters. Syntax: rcon <input>");
 	}
@@ -181,7 +181,7 @@ void RCONConsoleCommand::trigger(const Jupiter::ReadableString &parameters) {
 	}
 }
 
-const Jupiter::ReadableString &RCONConsoleCommand::getHelp(const Jupiter::ReadableString &) {
+std::string_view RCONConsoleCommand::getHelp(std::string_view ) {
 	static STRING_LITERAL_AS_NAMED_REFERENCE(defaultHelp, "Executes a command over the Renegade X server's rcon connection. Syntax: rcon <input>");
 	return defaultHelp;
 }
@@ -198,7 +198,7 @@ void MsgIRCCommand::create()
 	this->addTrigger(STRING_LITERAL_AS_REFERENCE("say"));
 }
 
-void MsgIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &channel, const Jupiter::ReadableString &nick, const Jupiter::ReadableString &parameters)
+void MsgIRCCommand::trigger(IRC_Bot *source, std::string_view channel, std::string_view nick, std::string_view parameters)
 {
 	if (!parameters.empty())
 	{
@@ -227,7 +227,7 @@ void MsgIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &chan
 	else source->sendNotice(nick, STRING_LITERAL_AS_REFERENCE("Error: Too Few Parameters. Syntax: Msg <Message>"));
 }
 
-const Jupiter::ReadableString &MsgIRCCommand::getHelp(const Jupiter::ReadableString &)
+std::string_view MsgIRCCommand::getHelp(std::string_view )
 {
 	static STRING_LITERAL_AS_NAMED_REFERENCE(defaultHelp, "Sends a message in - game.Syntax: Msg <Message>");
 	return defaultHelp;
@@ -246,7 +246,7 @@ void PMsgIRCCommand::create()
 	this->setAccessLevel(1);
 }
 
-void PMsgIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &channel, const Jupiter::ReadableString &nick, const Jupiter::ReadableString &parameters) {
+void PMsgIRCCommand::trigger(IRC_Bot *source, std::string_view channel, std::string_view nick, std::string_view parameters) {
 	auto command_split = jessilib::word_split_once_view(std::string_view{parameters}, WHITESPACE_SV);
 	if (!command_split.second.empty())
 	{
@@ -282,7 +282,7 @@ void PMsgIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &cha
 	else source->sendNotice(nick, STRING_LITERAL_AS_REFERENCE("Error: Too Few Parameters. Syntax: PMsg <Player> <Message>"));
 }
 
-const Jupiter::ReadableString &PMsgIRCCommand::getHelp(const Jupiter::ReadableString &)
+std::string_view PMsgIRCCommand::getHelp(std::string_view )
 {
 	static STRING_LITERAL_AS_NAMED_REFERENCE(defaultHelp, "Sends a message in - game.Syntax: PMsg <Player> <Message>");
 	return defaultHelp;
@@ -300,7 +300,7 @@ void HostMsgIRCCommand::create()
 	this->setAccessLevel(4);
 }
 
-void HostMsgIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &channel, const Jupiter::ReadableString &nick, const Jupiter::ReadableString &parameters)
+void HostMsgIRCCommand::trigger(IRC_Bot *source, std::string_view channel, std::string_view nick, std::string_view parameters)
 {
 	if (!parameters.empty())
 	{
@@ -319,7 +319,7 @@ void HostMsgIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &
 	else source->sendNotice(nick, STRING_LITERAL_AS_REFERENCE("Error: Too Few Parameters. Syntax: hmsg <Message>"));
 }
 
-const Jupiter::ReadableString &HostMsgIRCCommand::getHelp(const Jupiter::ReadableString &)
+std::string_view HostMsgIRCCommand::getHelp(std::string_view )
 {
 	static STRING_LITERAL_AS_NAMED_REFERENCE(defaultHelp, "Sends a message in-game. Syntax: hmsg <Message>");
 	return defaultHelp;
@@ -337,7 +337,7 @@ void AdminMsgIRCCommand::create()
 	this->setAccessLevel(4);
 }
 
-void AdminMsgIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &channel, const Jupiter::ReadableString &nick, const Jupiter::ReadableString &parameters)
+void AdminMsgIRCCommand::trigger(IRC_Bot *source, std::string_view channel, std::string_view nick, std::string_view parameters)
 {
 	if (!parameters.empty())
 	{
@@ -356,7 +356,7 @@ void AdminMsgIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString 
 	else source->sendNotice(nick, STRING_LITERAL_AS_REFERENCE("Error: Too Few Parameters. Syntax: amsg <Message>"));
 }
 
-const Jupiter::ReadableString &AdminMsgIRCCommand::getHelp(const Jupiter::ReadableString &)
+std::string_view AdminMsgIRCCommand::getHelp(std::string_view )
 {
 	static STRING_LITERAL_AS_NAMED_REFERENCE(defaultHelp, "Sends an admin message in-game. Syntax: amsg <Message>");
 	return defaultHelp;
@@ -374,7 +374,7 @@ void PAdminMsgIRCCommand::create()
 	this->setAccessLevel(4);
 }
 
-void PAdminMsgIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &channel, const Jupiter::ReadableString &nick, const Jupiter::ReadableString &parameters) {
+void PAdminMsgIRCCommand::trigger(IRC_Bot *source, std::string_view channel, std::string_view nick, std::string_view parameters) {
 	auto command_split = jessilib::word_split_once_view(std::string_view{parameters}, WHITESPACE_SV);
 	if (!command_split.second.empty()) {
 		int type = source->getChannel(channel)->getType();
@@ -405,7 +405,7 @@ void PAdminMsgIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString
 	else source->sendNotice(nick, STRING_LITERAL_AS_REFERENCE("Error: Too Few Parameters. Syntax: pamsg <Player> <Message>"));
 }
 
-const Jupiter::ReadableString &PAdminMsgIRCCommand::getHelp(const Jupiter::ReadableString &)
+std::string_view PAdminMsgIRCCommand::getHelp(std::string_view )
 {
 	static STRING_LITERAL_AS_NAMED_REFERENCE(defaultHelp, "Sends an admin message to a player in-game. Syntax: pamsg <Player> <Message>");
 	return defaultHelp;
@@ -424,19 +424,19 @@ void PlayersIRCCommand::create()
 
 const size_t STRING_LENGTH = 240;
 
-void PlayersIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &channel, const Jupiter::ReadableString &, const Jupiter::ReadableString &)
+void PlayersIRCCommand::trigger(IRC_Bot *source, std::string_view channel, std::string_view , std::string_view )
 {
 	int type = source->getChannel(channel)->getType();
 
 	// Team colors
-	const Jupiter::ReadableString &gTeamColor = RenX::getTeamColor(RenX::TeamType::GDI);
-	const Jupiter::ReadableString &nTeamColor = RenX::getTeamColor(RenX::TeamType::Nod);
-	const Jupiter::ReadableString &oTeamColor = RenX::getTeamColor(RenX::TeamType::Other);
+	std::string_view gTeamColor = RenX::getTeamColor(RenX::TeamType::GDI);
+	std::string_view nTeamColor = RenX::getTeamColor(RenX::TeamType::Nod);
+	std::string_view oTeamColor = RenX::getTeamColor(RenX::TeamType::Other);
 
 	// Team names
-	const Jupiter::ReadableString &gTeam = RenX::getTeamName(RenX::TeamType::GDI);
-	const Jupiter::ReadableString &nTeam = RenX::getTeamName(RenX::TeamType::Nod);
-	const Jupiter::ReadableString &oTeam = RenX::getTeamName(RenX::TeamType::Other);
+	std::string_view gTeam = RenX::getTeamName(RenX::TeamType::GDI);
+	std::string_view nTeam = RenX::getTeamName(RenX::TeamType::Nod);
+	std::string_view oTeam = RenX::getTeamName(RenX::TeamType::Other);
 
 	bool noServers = true;
 	for (unsigned int i = 0; i != RenX::getCore()->getServerCount(); i++)
@@ -587,7 +587,7 @@ void PlayersIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &
 		source->sendMessage(channel, STRING_LITERAL_AS_REFERENCE("Error: Channel not attached to any connected Renegade X servers."));
 }
 
-const Jupiter::ReadableString &PlayersIRCCommand::getHelp(const Jupiter::ReadableString &)
+std::string_view PlayersIRCCommand::getHelp(std::string_view )
 {
 	static STRING_LITERAL_AS_NAMED_REFERENCE(defaultHelp, "Lists the players currently in-game. Syntax: Players");
 	return defaultHelp;
@@ -602,19 +602,19 @@ void PlayerTableIRCCommand::create()
 	this->addTrigger(STRING_LITERAL_AS_REFERENCE("playertable"));
 }
 
-void PlayerTableIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &channel, const Jupiter::ReadableString &nick, const Jupiter::ReadableString &)
+void PlayerTableIRCCommand::trigger(IRC_Bot *source, std::string_view channel, std::string_view nick, std::string_view )
 {
 	int type = source->getChannel(channel)->getType();
 
 	// Team colors
-	const Jupiter::ReadableString &gTeamColor = RenX::getTeamColor(RenX::TeamType::GDI);
-	const Jupiter::ReadableString &nTeamColor = RenX::getTeamColor(RenX::TeamType::Nod);
-	const Jupiter::ReadableString &oTeamColor = RenX::getTeamColor(RenX::TeamType::Other);
+	std::string_view gTeamColor = RenX::getTeamColor(RenX::TeamType::GDI);
+	std::string_view nTeamColor = RenX::getTeamColor(RenX::TeamType::Nod);
+	std::string_view oTeamColor = RenX::getTeamColor(RenX::TeamType::Other);
 
 	// Team names
-	const Jupiter::ReadableString &gTeam = RenX::getTeamName(RenX::TeamType::GDI);
-	const Jupiter::ReadableString &nTeam = RenX::getTeamName(RenX::TeamType::Nod);
-	const Jupiter::ReadableString &oTeam = RenX::getTeamName(RenX::TeamType::Other);
+	std::string_view gTeam = RenX::getTeamName(RenX::TeamType::GDI);
+	std::string_view nTeam = RenX::getTeamName(RenX::TeamType::Nod);
+	std::string_view oTeam = RenX::getTeamName(RenX::TeamType::Other);
 
 	bool noServers = true;
 	for (unsigned int i = 0; i != RenX::getCore()->getServerCount(); i++)
@@ -684,7 +684,7 @@ void PlayerTableIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableStri
 				else
 					source->sendMessage(channel, Jupiter::StringS::Format(IRCUNDERLINE IRCCOLOR "03%*.*s | %*s | %*s | %*s", maxNickLen, NICK_COL_HEADER.size(), NICK_COL_HEADER.data(), idColLen, "ID", scoreColLen, "Score", creditColLen, "Credits"));
 
-				auto output_player = [server, type, source, &channel, maxNickLen, idColLen, scoreColLen, creditColLen](RenX::PlayerInfo *player, const Jupiter::ReadableString &color)
+				auto output_player = [server, type, source, &channel, maxNickLen, idColLen, scoreColLen, creditColLen](RenX::PlayerInfo *player, std::string_view color)
 				{
 					if (server->isAdminLogChanType(type))
 						source->sendMessage(channel, Jupiter::StringS::Format(IRCCOLOR "%.*s%*.*s" IRCCOLOR " " IRCCOLOR "03|" IRCCOLOR " %*d " IRCCOLOR "03|" IRCCOLOR " %*.0f " IRCCOLOR "03|" IRCCOLOR " %*.0f " IRCCOLOR "03|" IRCNORMAL " %.*s", color.size(),
@@ -710,7 +710,7 @@ void PlayerTableIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableStri
 		source->sendMessage(channel, STRING_LITERAL_AS_REFERENCE("Error: Channel not attached to any connected Renegade X servers."));
 }
 
-const Jupiter::ReadableString &PlayerTableIRCCommand::getHelp(const Jupiter::ReadableString &) {
+std::string_view PlayerTableIRCCommand::getHelp(std::string_view ) {
 	static STRING_LITERAL_AS_NAMED_REFERENCE(defaultHelp, "Generates a table of all the players in-game. Syntax: PT");
 	return defaultHelp;
 }
@@ -726,13 +726,13 @@ void PlayerInfoIRCCommand::create() {
 	this->addTrigger(STRING_LITERAL_AS_REFERENCE("pinfo"));
 }
 
-void PlayerInfoIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &channel, const Jupiter::ReadableString &nick, const Jupiter::ReadableString &parameters) {
+void PlayerInfoIRCCommand::trigger(IRC_Bot *source, std::string_view channel, std::string_view nick, std::string_view parameters) {
 	Jupiter::IRC::Client::Channel *chan = source->getChannel(channel);
 	if (chan != nullptr) {
 		int type = chan->getType();
 		std::string msg;
 		RenX::Server *server;
-		const Jupiter::ReadableString &player_info_format = source->getAccessLevel(channel, nick) > 1 ? pluginInstance.getAdminPlayerInfoFormat() : pluginInstance.getPlayerInfoFormat();
+		std::string_view player_info_format = source->getAccessLevel(channel, nick) > 1 ? pluginInstance.getAdminPlayerInfoFormat() : pluginInstance.getPlayerInfoFormat();
 		size_t index = 0;
 
 		if (parameters.empty()) { // List all players
@@ -768,7 +768,7 @@ void PlayerInfoIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableStrin
 	}
 }
 
-const Jupiter::ReadableString &PlayerInfoIRCCommand::getHelp(const Jupiter::ReadableString &) {
+std::string_view PlayerInfoIRCCommand::getHelp(std::string_view ) {
 	static STRING_LITERAL_AS_NAMED_REFERENCE(defaultHelp, "Gets information about a player. Syntax: PlayerInfo [Player]");
 	return defaultHelp;
 }
@@ -784,7 +784,7 @@ void BuildingInfoIRCCommand::create() {
 	this->addTrigger(STRING_LITERAL_AS_REFERENCE("building"));
 }
 
-void BuildingInfoIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &channel, const Jupiter::ReadableString &nick, const Jupiter::ReadableString &parameters) {
+void BuildingInfoIRCCommand::trigger(IRC_Bot *source, std::string_view channel, std::string_view nick, std::string_view parameters) {
 	Jupiter::IRC::Client::Channel *chan = source->getChannel(channel);
 	if (chan == nullptr) {
 		return;
@@ -846,7 +846,7 @@ void BuildingInfoIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableStr
 	}
 }
 
-const Jupiter::ReadableString &BuildingInfoIRCCommand::getHelp(const Jupiter::ReadableString &) {
+std::string_view BuildingInfoIRCCommand::getHelp(std::string_view ) {
 	static STRING_LITERAL_AS_NAMED_REFERENCE(defaultHelp, "Provides a list of buildings, and the status of each one. Syntax: BuildingInfo");
 	return defaultHelp;
 }
@@ -860,7 +860,7 @@ void MutatorsIRCCommand::create() {
 	this->addTrigger("mutator"_jrs);
 }
 
-void MutatorsIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &channel, const Jupiter::ReadableString &nick, const Jupiter::ReadableString &parameters)
+void MutatorsIRCCommand::trigger(IRC_Bot *source, std::string_view channel, std::string_view nick, std::string_view parameters)
 {
 	Jupiter::IRC::Client::Channel *chan = source->getChannel(channel);
 	if (chan != nullptr)
@@ -891,7 +891,7 @@ void MutatorsIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString 
 	}
 }
 
-const Jupiter::ReadableString &MutatorsIRCCommand::getHelp(const Jupiter::ReadableString &)
+std::string_view MutatorsIRCCommand::getHelp(std::string_view )
 {
 	static STRING_LITERAL_AS_NAMED_REFERENCE(defaultHelp, "Provides a list of mutators being used. Syntax: Mutators");
 	return defaultHelp;
@@ -909,7 +909,7 @@ void RotationIRCCommand::create()
 	this->addTrigger("rot"_jrs);
 }
 
-void RotationIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &channel, const Jupiter::ReadableString &nick, const Jupiter::ReadableString &parameters) {
+void RotationIRCCommand::trigger(IRC_Bot *source, std::string_view channel, std::string_view nick, std::string_view parameters) {
 	Jupiter::IRC::Client::Channel *chan = source->getChannel(channel);
 	if (chan != nullptr) {
 		int type = chan->getType();
@@ -941,7 +941,7 @@ void RotationIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString 
 	}
 }
 
-const Jupiter::ReadableString &RotationIRCCommand::getHelp(const Jupiter::ReadableString &) {
+std::string_view RotationIRCCommand::getHelp(std::string_view ) {
 	static STRING_LITERAL_AS_NAMED_REFERENCE(defaultHelp, "Provides a list of maps in the server rotation. Syntax: Rotation");
 	return defaultHelp;
 }
@@ -954,7 +954,7 @@ void MapIRCCommand::create() {
 	this->addTrigger("map"_jrs);
 }
 
-void MapIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &channel, const Jupiter::ReadableString &nick, const Jupiter::ReadableString &parameters) {
+void MapIRCCommand::trigger(IRC_Bot *source, std::string_view channel, std::string_view nick, std::string_view parameters) {
 	Jupiter::IRC::Client::Channel *chan = source->getChannel(channel);
 	if (chan != nullptr) {
 		int type = chan->getType();
@@ -972,7 +972,7 @@ void MapIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &chan
 	}
 }
 
-const Jupiter::ReadableString &MapIRCCommand::getHelp(const Jupiter::ReadableString &)
+std::string_view MapIRCCommand::getHelp(std::string_view )
 {
 	static STRING_LITERAL_AS_NAMED_REFERENCE(defaultHelp, "Fetches the current map. Syntax: Map");
 	return defaultHelp;
@@ -990,7 +990,7 @@ void GameInfoIRCCommand::create()
 	this->addTrigger("si"_jrs);
 }
 
-void GameInfoIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &channel, const Jupiter::ReadableString &nick, const Jupiter::ReadableString &parameters)
+void GameInfoIRCCommand::trigger(IRC_Bot *source, std::string_view channel, std::string_view nick, std::string_view parameters)
 {
 	Jupiter::IRC::Client::Channel *chan = source->getChannel(channel);
 	if (chan != nullptr)
@@ -1016,7 +1016,7 @@ void GameInfoIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString 
 	}
 }
 
-const Jupiter::ReadableString &GameInfoIRCCommand::getHelp(const Jupiter::ReadableString &)
+std::string_view GameInfoIRCCommand::getHelp(std::string_view )
 {
 	static STRING_LITERAL_AS_NAMED_REFERENCE(defaultHelp, "Returns information about the game in progress. Syntax: GameInfo");
 	return defaultHelp;
@@ -1032,7 +1032,7 @@ void SteamIRCCommand::create()
 	this->setAccessLevel(1);
 }
 
-void SteamIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &channel, const Jupiter::ReadableString &nick, const Jupiter::ReadableString &parameters)
+void SteamIRCCommand::trigger(IRC_Bot *source, std::string_view channel, std::string_view nick, std::string_view parameters)
 {
 	Jupiter::IRC::Client::Channel *chan = source->getChannel(channel);
 	if (chan != nullptr)
@@ -1048,7 +1048,7 @@ void SteamIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &ch
 				{
 					for (auto node = server->players.begin(); node != server->players.end(); ++node)
 					{
-						if (jessilib::findi(node->name, Jupiter::ReferenceString{parameters}) != std::string::npos)
+						if (jessilib::findi(node->name, parameters) != std::string::npos)
 						{
 							Jupiter::String playerName = RenX::getFormattedPlayerName(*node);
 							msg.format(IRCCOLOR "03[Steam] " IRCCOLOR "%.*s (ID: %d) ", playerName.size(),
@@ -1101,7 +1101,7 @@ void SteamIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &ch
 	}
 }
 
-const Jupiter::ReadableString &SteamIRCCommand::getHelp(const Jupiter::ReadableString &)
+std::string_view SteamIRCCommand::getHelp(std::string_view )
 {
 	static STRING_LITERAL_AS_NAMED_REFERENCE(defaultHelp, "Fetches steam usage information. Syntax: Steam [Player]");
 	return defaultHelp;
@@ -1119,7 +1119,7 @@ void KillDeathRatioIRCCommand::create()
 	this->addTrigger(STRING_LITERAL_AS_REFERENCE("killdeathraio"));
 }
 
-void KillDeathRatioIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &channel, const Jupiter::ReadableString &nick, const Jupiter::ReadableString &parameters)
+void KillDeathRatioIRCCommand::trigger(IRC_Bot *source, std::string_view channel, std::string_view nick, std::string_view parameters)
 {
 	if (!parameters.empty())
 	{
@@ -1135,7 +1135,7 @@ void KillDeathRatioIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableS
 				{
 					for (auto node = server->players.begin(); node != server->players.end(); ++node)
 					{
-						if (jessilib::findi(node->name, Jupiter::ReferenceString{parameters}) != std::string::npos)
+						if (jessilib::findi(node->name, parameters) != std::string::npos)
 						{
 							Jupiter::String playerName = RenX::getFormattedPlayerName(*node);
 							msg.format(IRCBOLD "%.*s" IRCBOLD IRCCOLOR ": Kills: %u - Deaths: %u - KDR: %.2f", playerName.size(),
@@ -1152,7 +1152,7 @@ void KillDeathRatioIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableS
 	else source->sendNotice(nick, STRING_LITERAL_AS_REFERENCE("Error: Too Few Parameters. Syntax: Kills <Player>"));
 }
 
-const Jupiter::ReadableString &KillDeathRatioIRCCommand::getHelp(const Jupiter::ReadableString &)
+std::string_view KillDeathRatioIRCCommand::getHelp(std::string_view )
 {
 	static STRING_LITERAL_AS_NAMED_REFERENCE(defaultHelp, "Gets a player's kills and deaths. Syntax: Kills <Player>");
 	return defaultHelp;
@@ -1170,7 +1170,7 @@ void ShowModsIRCCommand::create()
 
 extern ModsGameCommand ModsGameCommand_instance;
 
-void ShowModsIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &channel, const Jupiter::ReadableString &nick, const Jupiter::ReadableString &parameters)
+void ShowModsIRCCommand::trigger(IRC_Bot *source, std::string_view channel, std::string_view nick, std::string_view parameters)
 {
 	Jupiter::IRC::Client::Channel *chan = source->getChannel(channel);
 	if (chan != nullptr)
@@ -1191,7 +1191,7 @@ void ShowModsIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString 
 	}
 }
 
-const Jupiter::ReadableString &ShowModsIRCCommand::getHelp(const Jupiter::ReadableString &)
+std::string_view ShowModsIRCCommand::getHelp(std::string_view )
 {
 	static STRING_LITERAL_AS_NAMED_REFERENCE(defaultHelp, "Sends a message, displaying in-game staff. Syntax: showstaff");
 	return defaultHelp;
@@ -1207,7 +1207,7 @@ void ModsIRCCommand::create()
 	this->addTrigger(STRING_LITERAL_AS_REFERENCE("mods"));
 }
 
-void ModsIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &channel, const Jupiter::ReadableString &nick, const Jupiter::ReadableString &parameters) {
+void ModsIRCCommand::trigger(IRC_Bot *source, std::string_view channel, std::string_view nick, std::string_view parameters) {
 	if (jessilib::equalsi(parameters, "show"sv)) {
 		ShowModsIRCCommand_instance.trigger(source, channel, nick, parameters);
 	}
@@ -1216,7 +1216,7 @@ void ModsIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &cha
 		if (chan != nullptr) {
 			int type = chan->getType();
 			Jupiter::StringL msg;
-			const Jupiter::ReadableString &staff_word = pluginInstance.getStaffTitle();
+			std::string_view staff_word = pluginInstance.getStaffTitle();
 			for (unsigned int i = 0; i != RenX::getCore()->getServerCount(); i++) {
 				RenX::Server *server = RenX::getCore()->getServer(i);
 				if (server->isLogChanType(type)) {
@@ -1250,7 +1250,7 @@ void ModsIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &cha
 	}
 }
 
-const Jupiter::ReadableString &ModsIRCCommand::getHelp(const Jupiter::ReadableString &)
+std::string_view ModsIRCCommand::getHelp(std::string_view )
 {
 	static STRING_LITERAL_AS_NAMED_REFERENCE(defaultHelp, "Sends a message, displaying in-game staff. Syntax: staff [show]");
 	return defaultHelp;
@@ -1265,7 +1265,7 @@ void ShowRulesIRCCommand::create()
 	this->addTrigger(STRING_LITERAL_AS_REFERENCE("showrules"));
 }
 
-void ShowRulesIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &channel, const Jupiter::ReadableString &nick, const Jupiter::ReadableString &parameters)
+void ShowRulesIRCCommand::trigger(IRC_Bot *source, std::string_view channel, std::string_view nick, std::string_view parameters)
 {
 	Jupiter::IRC::Client::Channel *chan = source->getChannel(channel);
 	if (chan != nullptr)
@@ -1287,7 +1287,7 @@ void ShowRulesIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString
 	}
 }
 
-const Jupiter::ReadableString &ShowRulesIRCCommand::getHelp(const Jupiter::ReadableString &)
+std::string_view ShowRulesIRCCommand::getHelp(std::string_view )
 {
 	static STRING_LITERAL_AS_NAMED_REFERENCE(defaultHelp, "Sends a message, displaying the in-game rules. Syntax: showrules");
 	return defaultHelp;
@@ -1302,7 +1302,7 @@ void RulesIRCCommand::create()
 	this->addTrigger(STRING_LITERAL_AS_REFERENCE("rules"));
 }
 
-void RulesIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &channel, const Jupiter::ReadableString &nick, const Jupiter::ReadableString &parameters)
+void RulesIRCCommand::trigger(IRC_Bot *source, std::string_view channel, std::string_view nick, std::string_view parameters)
 {
 	if (jessilib::equalsi(parameters, "show"sv)) {
 		ShowRulesIRCCommand_instance.trigger(source, channel, nick, parameters);
@@ -1330,7 +1330,7 @@ void RulesIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &ch
 	}
 }
 
-const Jupiter::ReadableString &RulesIRCCommand::getHelp(const Jupiter::ReadableString &)
+std::string_view RulesIRCCommand::getHelp(std::string_view )
 {
 	static STRING_LITERAL_AS_NAMED_REFERENCE(defaultHelp, "Displays the in-game rules. Syntax: rules [show]");
 	return defaultHelp;
@@ -1346,7 +1346,7 @@ void ReconnectIRCCommand::create()
 	this->setAccessLevel(3);
 }
 
-void ReconnectIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &channel, const Jupiter::ReadableString &nick, const Jupiter::ReadableString &)
+void ReconnectIRCCommand::trigger(IRC_Bot *source, std::string_view channel, std::string_view nick, std::string_view )
 {
 	Jupiter::IRC::Client::Channel *chan = source->getChannel(channel);
 	if (chan != nullptr)
@@ -1372,7 +1372,7 @@ void ReconnectIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString
 	}
 }
 
-const Jupiter::ReadableString &ReconnectIRCCommand::getHelp(const Jupiter::ReadableString &)
+std::string_view ReconnectIRCCommand::getHelp(std::string_view )
 {
 	static STRING_LITERAL_AS_NAMED_REFERENCE(defaultHelp, "Resets the RCON connection. Syntax: Reconnect");
 	return defaultHelp;
@@ -1389,7 +1389,7 @@ void GameOverIRCCommand::create()
 	this->setAccessLevel(3);
 }
 
-void GameOverIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &channel, const Jupiter::ReadableString &nick, const Jupiter::ReadableString &parameters)
+void GameOverIRCCommand::trigger(IRC_Bot *source, std::string_view channel, std::string_view nick, std::string_view parameters)
 {
 	Jupiter::IRC::Client::Channel *chan = source->getChannel(channel);
 	if (chan != nullptr)
@@ -1437,7 +1437,7 @@ void GameOverIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString 
 	}
 }
 
-const Jupiter::ReadableString &GameOverIRCCommand::getHelp(const Jupiter::ReadableString &)
+std::string_view GameOverIRCCommand::getHelp(std::string_view )
 {
 	static STRING_LITERAL_AS_NAMED_REFERENCE(defaultHelp, "Forcefully ends the game in progress. Syntax: Gameover [NOW | STOP | [If] Empty | Seconds = 10]");
 	return defaultHelp;
@@ -1453,7 +1453,7 @@ void SetMapIRCCommand::create()
 	this->setAccessLevel(4);
 }
 
-void SetMapIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &channel, const Jupiter::ReadableString &nick, const Jupiter::ReadableString &parameters)
+void SetMapIRCCommand::trigger(IRC_Bot *source, std::string_view channel, std::string_view nick, std::string_view parameters)
 {
 	if (!parameters.empty())
 	{
@@ -1474,7 +1474,7 @@ void SetMapIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &c
 						source->sendMessage(channel, STRING_LITERAL_AS_REFERENCE("Error: Transmission error."));
 				}
 			}
-			if (map_name == nullptr)
+			if (map_name.empty())
 				source->sendMessage(channel, STRING_LITERAL_AS_REFERENCE("Error: Channel not attached to any connected Renegade X servers."));
 		}
 	}
@@ -1482,7 +1482,7 @@ void SetMapIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &c
 		source->sendNotice(nick, STRING_LITERAL_AS_REFERENCE("Error: Too few parameters. Syntax: setmap <map>"));
 }
 
-const Jupiter::ReadableString &SetMapIRCCommand::getHelp(const Jupiter::ReadableString &)
+std::string_view SetMapIRCCommand::getHelp(std::string_view )
 {
 	static STRING_LITERAL_AS_NAMED_REFERENCE(defaultHelp, "Ends the game immediately. Syntax: setmap <map>");
 	return defaultHelp;
@@ -1498,7 +1498,7 @@ void MuteIRCCommand::create()
 	this->setAccessLevel(2);
 }
 
-void MuteIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &channel, const Jupiter::ReadableString &nick, const Jupiter::ReadableString &parameters)
+void MuteIRCCommand::trigger(IRC_Bot *source, std::string_view channel, std::string_view nick, std::string_view parameters)
 {
 	if (!parameters.empty())
 	{
@@ -1531,7 +1531,7 @@ void MuteIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &cha
 	else source->sendNotice(nick, STRING_LITERAL_AS_REFERENCE("Error: Too Few Parameters. Syntax: mute <player>"));
 }
 
-const Jupiter::ReadableString &MuteIRCCommand::getHelp(const Jupiter::ReadableString &)
+std::string_view MuteIRCCommand::getHelp(std::string_view )
 {
 	static STRING_LITERAL_AS_NAMED_REFERENCE(defaultHelp, "Mutes a player. Syntax: mute <player>");
 	return defaultHelp;
@@ -1547,7 +1547,7 @@ void UnMuteIRCCommand::create()
 	this->setAccessLevel(2);
 }
 
-void UnMuteIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &channel, const Jupiter::ReadableString &nick, const Jupiter::ReadableString &parameters)
+void UnMuteIRCCommand::trigger(IRC_Bot *source, std::string_view channel, std::string_view nick, std::string_view parameters)
 {
 	if (!parameters.empty())
 	{
@@ -1580,7 +1580,7 @@ void UnMuteIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &c
 	else source->sendNotice(nick, STRING_LITERAL_AS_REFERENCE("Error: Too Few Parameters. Syntax: unmute <player>"));
 }
 
-const Jupiter::ReadableString &UnMuteIRCCommand::getHelp(const Jupiter::ReadableString &)
+std::string_view UnMuteIRCCommand::getHelp(std::string_view )
 {
 	static STRING_LITERAL_AS_NAMED_REFERENCE(defaultHelp, "Unmutes a player. Syntax: unmute <player>");
 	return defaultHelp;
@@ -1596,7 +1596,7 @@ void KillIRCCommand::create()
 	this->setAccessLevel(2);
 }
 
-void KillIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &channel, const Jupiter::ReadableString &nick, const Jupiter::ReadableString &parameters)
+void KillIRCCommand::trigger(IRC_Bot *source, std::string_view channel, std::string_view nick, std::string_view parameters)
 {
 	if (!parameters.empty())
 	{
@@ -1626,7 +1626,7 @@ void KillIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &cha
 	else source->sendNotice(nick, STRING_LITERAL_AS_REFERENCE("Error: Too Few Parameters. Syntax: kill <player>"));
 }
 
-const Jupiter::ReadableString &KillIRCCommand::getHelp(const Jupiter::ReadableString &)
+std::string_view KillIRCCommand::getHelp(std::string_view )
 {
 	static STRING_LITERAL_AS_NAMED_REFERENCE(defaultHelp, "Kills a player. Syntax: kill <player>");
 	return defaultHelp;
@@ -1642,7 +1642,7 @@ void DisarmIRCCommand::create()
 	this->setAccessLevel(2);
 }
 
-void DisarmIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &channel, const Jupiter::ReadableString &nick, const Jupiter::ReadableString &parameters)
+void DisarmIRCCommand::trigger(IRC_Bot *source, std::string_view channel, std::string_view nick, std::string_view parameters)
 {
 	if (!parameters.empty())
 	{
@@ -1677,7 +1677,7 @@ void DisarmIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &c
 	else source->sendNotice(nick, STRING_LITERAL_AS_REFERENCE("Error: Too Few Parameters. Syntax: disarm <player>"));
 }
 
-const Jupiter::ReadableString &DisarmIRCCommand::getHelp(const Jupiter::ReadableString &)
+std::string_view DisarmIRCCommand::getHelp(std::string_view )
 {
 	static STRING_LITERAL_AS_NAMED_REFERENCE(defaultHelp, "Disarms all of a player's deployed objects. Syntax: disarm <player>");
 	return defaultHelp;
@@ -1693,7 +1693,7 @@ void DisarmC4IRCCommand::create()
 	this->setAccessLevel(2);
 }
 
-void DisarmC4IRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &channel, const Jupiter::ReadableString &nick, const Jupiter::ReadableString &parameters)
+void DisarmC4IRCCommand::trigger(IRC_Bot *source, std::string_view channel, std::string_view nick, std::string_view parameters)
 {
 	if (!parameters.empty())
 	{
@@ -1728,7 +1728,7 @@ void DisarmC4IRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString 
 	else source->sendNotice(nick, STRING_LITERAL_AS_REFERENCE("Error: Too Few Parameters. Syntax: disarmC4 <player>"));
 }
 
-const Jupiter::ReadableString &DisarmC4IRCCommand::getHelp(const Jupiter::ReadableString &)
+std::string_view DisarmC4IRCCommand::getHelp(std::string_view )
 {
 	static STRING_LITERAL_AS_NAMED_REFERENCE(defaultHelp, "Disarms all of a player's deployed C4s. Syntax: disarmc4 <player>");
 	return defaultHelp;
@@ -1746,7 +1746,7 @@ void DisarmBeaconIRCCommand::create()
 	this->setAccessLevel(2);
 }
 
-void DisarmBeaconIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &channel, const Jupiter::ReadableString &nick, const Jupiter::ReadableString &parameters)
+void DisarmBeaconIRCCommand::trigger(IRC_Bot *source, std::string_view channel, std::string_view nick, std::string_view parameters)
 {
 	if (!parameters.empty())
 	{
@@ -1781,7 +1781,7 @@ void DisarmBeaconIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableStr
 	else source->sendNotice(nick, STRING_LITERAL_AS_REFERENCE("Error: Too Few Parameters. Syntax: disarmb <player>"));
 }
 
-const Jupiter::ReadableString &DisarmBeaconIRCCommand::getHelp(const Jupiter::ReadableString &)
+std::string_view DisarmBeaconIRCCommand::getHelp(std::string_view )
 {
 	static STRING_LITERAL_AS_NAMED_REFERENCE(defaultHelp, "Disarms all of a player's deployed beacons. Syntax: disarmb <player>");
 	return defaultHelp;
@@ -1797,7 +1797,7 @@ void MineBanIRCCommand::create()
 	this->setAccessLevel(2);
 }
 
-void MineBanIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &channel, const Jupiter::ReadableString &nick, const Jupiter::ReadableString &parameters)
+void MineBanIRCCommand::trigger(IRC_Bot *source, std::string_view channel, std::string_view nick, std::string_view parameters)
 {
 	if (!parameters.empty())
 	{
@@ -1830,7 +1830,7 @@ void MineBanIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &
 	else source->sendNotice(nick, STRING_LITERAL_AS_REFERENCE("Error: Too Few Parameters. Syntax: mineban <player>"));
 }
 
-const Jupiter::ReadableString &MineBanIRCCommand::getHelp(const Jupiter::ReadableString &)
+std::string_view MineBanIRCCommand::getHelp(std::string_view )
 {
 	static STRING_LITERAL_AS_NAMED_REFERENCE(defaultHelp, "Bans a player from mining for 1 game (or until they leave). Syntax: mineban <player>");
 	return defaultHelp;
@@ -1848,7 +1848,7 @@ void KickIRCCommand::create()
 	this->setAccessLevel(2);
 }
 
-void KickIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &channel, const Jupiter::ReadableString &nick, const Jupiter::ReadableString &parameters)
+void KickIRCCommand::trigger(IRC_Bot *source, std::string_view channel, std::string_view nick, std::string_view parameters)
 {
 	if (parameters.empty()) {
 		source->sendNotice(nick, STRING_LITERAL_AS_REFERENCE("Error: Too Few Parameters. Syntax: Kick <Player> [Reason]"));
@@ -1887,7 +1887,7 @@ void KickIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &cha
 	source->sendMessage(channel, Jupiter::StringS::Format("%u players kicked.", kicks));
 }
 
-const Jupiter::ReadableString &KickIRCCommand::getHelp(const Jupiter::ReadableString &) {
+std::string_view KickIRCCommand::getHelp(std::string_view ) {
 	static STRING_LITERAL_AS_NAMED_REFERENCE(defaultHelp, "Kicks a player from the game. Syntax: Kick <Player> [Reason]");
 	return defaultHelp;
 }
@@ -1908,7 +1908,7 @@ void BanSearchIRCCommand::create() {
 	this->setAccessLevel(2);
 }
 
-void BanSearchIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &channel, const Jupiter::ReadableString &nick, const Jupiter::ReadableString &parameters) {
+void BanSearchIRCCommand::trigger(IRC_Bot *source, std::string_view channel, std::string_view nick, std::string_view parameters) {
 	const auto& entries = RenX::banDatabase->getEntries();
 	if (!parameters.empty()) {
 		if (entries.size() == 0) {
@@ -2036,7 +2036,7 @@ void BanSearchIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString
 		source->sendNotice(nick, Jupiter::StringS::Format("There are a total of %u entries in the ban database.", entries.size()));
 }
 
-const Jupiter::ReadableString &BanSearchIRCCommand::getHelp(const Jupiter::ReadableString &)
+std::string_view BanSearchIRCCommand::getHelp(std::string_view )
 {
 	static STRING_LITERAL_AS_NAMED_REFERENCE(defaultHelp, "Searches the ban database for an entry. Syntax: bsearch [ip/rdns/steam/name/banner/active/any/all = any] <player ip/steam/name/banner>");
 	return defaultHelp;
@@ -2087,7 +2087,7 @@ void TempBanIRCCommand::create() {
 	this->setAccessLevel(3);
 }
 
-void TempBanIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &channel, const Jupiter::ReadableString &nick, const Jupiter::ReadableString &parameters) {
+void TempBanIRCCommand::trigger(IRC_Bot *source, std::string_view channel, std::string_view nick, std::string_view parameters) {
 	if (parameters.empty()) {
 		source->sendNotice(nick, STRING_LITERAL_AS_REFERENCE("Error: Too Few Parameters. Syntax: TempBan [Duration] <Player> [Reason]"));
 		return;
@@ -2136,7 +2136,7 @@ void TempBanIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &
 	source->sendMessage(channel, STRING_LITERAL_AS_REFERENCE("Player banned."));
 }
 
-const Jupiter::ReadableString &TempBanIRCCommand::getHelp(const Jupiter::ReadableString &) {
+std::string_view TempBanIRCCommand::getHelp(std::string_view ) {
 	static STRING_LITERAL_AS_NAMED_REFERENCE(defaultHelp, "Kicks and temporarily bans a player from the game. Syntax: TempBan [Duration] <Player> [Reason]");
 	return defaultHelp;
 }
@@ -2153,7 +2153,7 @@ void TempChatBanIRCCommand::create() {
 	this->setAccessLevel(3);
 }
 
-void TempChatBanIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &channel, const Jupiter::ReadableString &nick, const Jupiter::ReadableString &parameters) {
+void TempChatBanIRCCommand::trigger(IRC_Bot *source, std::string_view channel, std::string_view nick, std::string_view parameters) {
 	if (parameters.empty()) {
 		source->sendNotice(nick, STRING_LITERAL_AS_REFERENCE("Error: Too Few Parameters. Syntax: TempChatBan [Duration] <Player> [Reason]"));
 		return;
@@ -2202,7 +2202,7 @@ void TempChatBanIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableStri
 	source->sendMessage(channel, STRING_LITERAL_AS_REFERENCE("Player chat banned."));
 }
 
-const Jupiter::ReadableString &TempChatBanIRCCommand::getHelp(const Jupiter::ReadableString &) {
+std::string_view TempChatBanIRCCommand::getHelp(std::string_view ) {
 	static STRING_LITERAL_AS_NAMED_REFERENCE(defaultHelp, "Mutes and temporarily chat bans a player from the game. Syntax: TempChatBan [Duration] <Player> [Reason]");
 	return defaultHelp;
 }
@@ -2218,7 +2218,7 @@ void KickBanIRCCommand::create() {
 	this->setAccessLevel(4);
 }
 
-void KickBanIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &channel, const Jupiter::ReadableString &nick, const Jupiter::ReadableString &parameters) {
+void KickBanIRCCommand::trigger(IRC_Bot *source, std::string_view channel, std::string_view nick, std::string_view parameters) {
 	if (!parameters.empty()) {
 		Jupiter::IRC::Client::Channel *chan = source->getChannel(channel);
 		if (chan != nullptr) {
@@ -2260,7 +2260,7 @@ void KickBanIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &
 	else source->sendNotice(nick, STRING_LITERAL_AS_REFERENCE("Error: Too Few Parameters. Syntax: KickBan <Player> [Reason]"));
 }
 
-const Jupiter::ReadableString &KickBanIRCCommand::getHelp(const Jupiter::ReadableString &)
+std::string_view KickBanIRCCommand::getHelp(std::string_view )
 {
 	static STRING_LITERAL_AS_NAMED_REFERENCE(defaultHelp, "Kicks and bans a player from the game. Syntax: KickBan <Player> [Reason]");
 	return defaultHelp;
@@ -2277,7 +2277,7 @@ void AddBanIRCCommand::create()
 	this->setAccessLevel(4);
 }
 
-void AddBanIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &channel, const Jupiter::ReadableString &nick, const Jupiter::ReadableString &parameters) {
+void AddBanIRCCommand::trigger(IRC_Bot *source, std::string_view channel, std::string_view nick, std::string_view parameters) {
 	if (!parameters.empty()) {
 		Jupiter::IRC::Client::Channel *chan = source->getChannel(channel);
 		if (chan != nullptr) {
@@ -2441,7 +2441,7 @@ void AddBanIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &c
 	else source->sendNotice(nick, STRING_LITERAL_AS_REFERENCE("Error: Too Few Parameters. Syntax: AddBan <Key> <Value> [...]"));
 }
 
-const Jupiter::ReadableString &AddBanIRCCommand::getHelp(const Jupiter::ReadableString &parameters)
+std::string_view AddBanIRCCommand::getHelp(std::string_view parameters)
 {
 	static STRING_LITERAL_AS_NAMED_REFERENCE(defaultHelp, "Adds a ban entry to the ban list. Use \"help addban keys\" for a list of input keys. Syntax: AddBan <Key> <Value> [<Key> <Value> ...]");
 	static STRING_LITERAL_AS_NAMED_REFERENCE(keyHelp, "Valueless keys (flags): Game, Chat, Bot, Vote, Mine, Ladder, Alert; Value-paired keys: Name, IP, Steam, RDNS, Duration, Reason (MUST BE LAST)");
@@ -2463,7 +2463,7 @@ void UnBanIRCCommand::create()
 	this->setAccessLevel(4);
 }
 
-void UnBanIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &channel, const Jupiter::ReadableString &nick, const Jupiter::ReadableString &parameters)
+void UnBanIRCCommand::trigger(IRC_Bot *source, std::string_view channel, std::string_view nick, std::string_view parameters)
 {
 	if (!parameters.empty())
 	{
@@ -2481,7 +2481,7 @@ void UnBanIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &ch
 	else source->sendNotice(nick, STRING_LITERAL_AS_REFERENCE("Error: Too Few Parameters. Syntax: unban <Ban ID>"));
 }
 
-const Jupiter::ReadableString &UnBanIRCCommand::getHelp(const Jupiter::ReadableString &)
+std::string_view UnBanIRCCommand::getHelp(std::string_view )
 {
 	static STRING_LITERAL_AS_NAMED_REFERENCE(defaultHelp, "Deactivates a ban. Syntax: unban <Ban ID>");
 	return defaultHelp;
@@ -2503,7 +2503,7 @@ void ExemptionSearchIRCCommand::create() {
 	this->setAccessLevel(2);
 }
 
-void ExemptionSearchIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &channel, const Jupiter::ReadableString &nick, const Jupiter::ReadableString &parameters) {
+void ExemptionSearchIRCCommand::trigger(IRC_Bot *source, std::string_view channel, std::string_view nick, std::string_view parameters) {
 	const auto& entries = RenX::exemptionDatabase->getEntries();
 	if (!parameters.empty())
 	{
@@ -2592,7 +2592,7 @@ void ExemptionSearchIRCCommand::trigger(IRC_Bot *source, const Jupiter::Readable
 		source->sendNotice(nick, Jupiter::StringS::Format("There are a total of %u entries in the exemption database.", entries.size()));
 }
 
-const Jupiter::ReadableString &ExemptionSearchIRCCommand::getHelp(const Jupiter::ReadableString &) {
+std::string_view ExemptionSearchIRCCommand::getHelp(std::string_view ) {
 	static STRING_LITERAL_AS_NAMED_REFERENCE(defaultHelp, "Searches the exemption database for an entry. Syntax: esearch [ip/steam/setter/active/any/all = any] <player ip/steam/setter>");
 	return defaultHelp;
 }
@@ -2607,7 +2607,7 @@ void BanExemptIRCCommand::create() {
 	this->setAccessLevel(4);
 }
 
-void BanExemptIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &channel, const Jupiter::ReadableString &nick, const Jupiter::ReadableString &parameters) {
+void BanExemptIRCCommand::trigger(IRC_Bot *source, std::string_view channel, std::string_view nick, std::string_view parameters) {
 	auto command_split = jessilib::word_split_once_view(std::string_view{parameters}, WHITESPACE_SV);
 	std::string_view target_name = command_split.first;
 	if (target_name.empty()) {
@@ -2654,7 +2654,7 @@ void BanExemptIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString
 	}
 }
 
-const Jupiter::ReadableString &BanExemptIRCCommand::getHelp(const Jupiter::ReadableString &)
+std::string_view BanExemptIRCCommand::getHelp(std::string_view )
 {
 	static STRING_LITERAL_AS_NAMED_REFERENCE(defaultHelp, "Exempts a player from bans using their SteamID, or their IP address if they have none. Syntax: BanExempt <Player> [Reason]");
 	return defaultHelp;
@@ -2670,7 +2670,7 @@ void KickExemptIRCCommand::create() {
 	this->setAccessLevel(4);
 }
 
-void KickExemptIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &channel, const Jupiter::ReadableString &nick, const Jupiter::ReadableString &parameters) {
+void KickExemptIRCCommand::trigger(IRC_Bot *source, std::string_view channel, std::string_view nick, std::string_view parameters) {
 	auto command_split = jessilib::word_split_once_view(std::string_view{parameters}, WHITESPACE_SV);
 	std::string_view target_name = command_split.first;
 	if (target_name.empty()) {
@@ -2715,7 +2715,7 @@ void KickExemptIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableStrin
 	}
 }
 
-const Jupiter::ReadableString &KickExemptIRCCommand::getHelp(const Jupiter::ReadableString &) {
+std::string_view KickExemptIRCCommand::getHelp(std::string_view ) {
 	static STRING_LITERAL_AS_NAMED_REFERENCE(defaultHelp, "Exempts a player from kicks and bans using their SteamID, or their IP address if they have none. Syntax: KickExempt <Player> [Reason]");
 	return defaultHelp;
 }
@@ -2734,7 +2734,7 @@ void AddExemptionIRCCommand::create()
 	this->setAccessLevel(4);
 }
 
-void AddExemptionIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &channel, const Jupiter::ReadableString &nick, const Jupiter::ReadableString &parameters) {
+void AddExemptionIRCCommand::trigger(IRC_Bot *source, std::string_view channel, std::string_view nick, std::string_view parameters) {
 	if (!parameters.empty()) {
 		Jupiter::IRC::Client::Channel *chan = source->getChannel(channel);
 		if (chan != nullptr) {
@@ -2843,7 +2843,7 @@ void AddExemptionIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableStr
 	else source->sendNotice(nick, STRING_LITERAL_AS_REFERENCE("Error: Too Few Parameters. Syntax: AddExemption <Key> <Value> [...]"));
 }
 
-const Jupiter::ReadableString &AddExemptionIRCCommand::getHelp(const Jupiter::ReadableString &parameters)
+std::string_view AddExemptionIRCCommand::getHelp(std::string_view parameters)
 {
 	static STRING_LITERAL_AS_NAMED_REFERENCE(defaultHelp, "Adds an exemption entry to the exemption list. Use \"help addexemption keys\" for a list of input keys. Syntax: AddExemption <Key> <Value> [<Key> <Value> ...]");
 	static STRING_LITERAL_AS_NAMED_REFERENCE(keyHelp, "Valueless keys (flags): Ban, Kick; Value-paired keys: IP, Steam, Duration");
@@ -2865,7 +2865,7 @@ void UnExemptIRCCommand::create()
 	this->setAccessLevel(4);
 }
 
-void UnExemptIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &channel, const Jupiter::ReadableString &nick, const Jupiter::ReadableString &parameters)
+void UnExemptIRCCommand::trigger(IRC_Bot *source, std::string_view channel, std::string_view nick, std::string_view parameters)
 {
 	if (!parameters.empty())
 	{
@@ -2883,7 +2883,7 @@ void UnExemptIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString 
 	else source->sendNotice(nick, STRING_LITERAL_AS_REFERENCE("Error: Too Few Parameters. Syntax: unexempt <Exemption ID>"));
 }
 
-const Jupiter::ReadableString &UnExemptIRCCommand::getHelp(const Jupiter::ReadableString &)
+std::string_view UnExemptIRCCommand::getHelp(std::string_view )
 {
 	static STRING_LITERAL_AS_NAMED_REFERENCE(defaultHelp, "Deactivates an exemption. Syntax: unexempt <Exemption ID>");
 	return defaultHelp;
@@ -2899,7 +2899,7 @@ void AddBotsIRCCommand::create() {
 	this->setAccessLevel(2);
 }
 
-void AddBotsIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &channel, const Jupiter::ReadableString &nick, const Jupiter::ReadableString &parameters) {
+void AddBotsIRCCommand::trigger(IRC_Bot *source, std::string_view channel, std::string_view nick, std::string_view parameters) {
 	Jupiter::IRC::Client::Channel *chan = source->getChannel(channel);
 	if (chan == nullptr) {
 		return;
@@ -2950,7 +2950,7 @@ void AddBotsIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &
 	}
 }
 
-const Jupiter::ReadableString &AddBotsIRCCommand::getHelp(const Jupiter::ReadableString &) {
+std::string_view AddBotsIRCCommand::getHelp(std::string_view ) {
 	static STRING_LITERAL_AS_NAMED_REFERENCE(defaultHelp, "Adds bots to the game. Syntax: AddBots [Amount=1] [Team]");
 	return defaultHelp;
 }
@@ -2965,7 +2965,7 @@ void KillBotsIRCCommand::create() {
 	this->setAccessLevel(2);
 }
 
-void KillBotsIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &channel, const Jupiter::ReadableString &nick, const Jupiter::ReadableString &parameters) {
+void KillBotsIRCCommand::trigger(IRC_Bot *source, std::string_view channel, std::string_view nick, std::string_view parameters) {
 	Jupiter::IRC::Client::Channel *chan = source->getChannel(channel);
 	if (chan == nullptr) {
 		return;
@@ -2983,7 +2983,7 @@ void KillBotsIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString 
 	}
 }
 
-const Jupiter::ReadableString &KillBotsIRCCommand::getHelp(const Jupiter::ReadableString &) {
+std::string_view KillBotsIRCCommand::getHelp(std::string_view ) {
 	static STRING_LITERAL_AS_NAMED_REFERENCE(defaultHelp, "Removes all bots from the game. Syntax: KillBots");
 	return defaultHelp;
 }
@@ -2998,7 +2998,7 @@ void PhaseBotsIRCCommand::create() {
 	this->setAccessLevel(2);
 }
 
-void PhaseBotsIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &channel, const Jupiter::ReadableString &nick, const Jupiter::ReadableString &parameters) {
+void PhaseBotsIRCCommand::trigger(IRC_Bot *source, std::string_view channel, std::string_view nick, std::string_view parameters) {
 	Jupiter::IRC::Client::Channel *chan = source->getChannel(channel);
 	if (chan == nullptr) {
 		return;
@@ -3031,7 +3031,7 @@ void PhaseBotsIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString
 	}
 }
 
-const Jupiter::ReadableString &PhaseBotsIRCCommand::getHelp(const Jupiter::ReadableString &) {
+std::string_view PhaseBotsIRCCommand::getHelp(std::string_view ) {
 	static STRING_LITERAL_AS_NAMED_REFERENCE(defaultHelp, "Toggles the phasing of bots from the game by kicking them after death. Syntax: PhaseBots [on/off]");
 	return defaultHelp;
 }
@@ -3046,7 +3046,7 @@ void RCONIRCCommand::create() {
 	this->setAccessLevel(5);
 }
 
-void RCONIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &channel, const Jupiter::ReadableString &nick, const Jupiter::ReadableString &parameters) {
+void RCONIRCCommand::trigger(IRC_Bot *source, std::string_view channel, std::string_view nick, std::string_view parameters) {
 	if (parameters.empty()) {
 		source->sendNotice(nick, STRING_LITERAL_AS_REFERENCE("Error: Too Few Parameters. Syntax: rcon <input>"));
 		return;
@@ -3066,7 +3066,7 @@ void RCONIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &cha
 	}
 }
 
-const Jupiter::ReadableString &RCONIRCCommand::getHelp(const Jupiter::ReadableString &) {
+std::string_view RCONIRCCommand::getHelp(std::string_view ) {
 	static STRING_LITERAL_AS_NAMED_REFERENCE(defaultHelp, "Sends data to the Renegade X server's rcon. Syntax: rcon <input>");
 	return defaultHelp;
 }
@@ -3084,7 +3084,7 @@ void RefundIRCCommand::create() {
 	this->setAccessLevel(3);
 }
 
-void RefundIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &channel, const Jupiter::ReadableString &nick, const Jupiter::ReadableString &parameters) {
+void RefundIRCCommand::trigger(IRC_Bot *source, std::string_view channel, std::string_view nick, std::string_view parameters) {
 	std::vector<std::string_view> split_parameters = jessilib::word_split_view(std::string_view{parameters}, WHITESPACE_SV);
 	if (split_parameters.size() >= 2) {
 		Jupiter::IRC::Client::Channel *chan = source->getChannel(channel);
@@ -3121,7 +3121,7 @@ void RefundIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &c
 	}
 }
 
-const Jupiter::ReadableString &RefundIRCCommand::getHelp(const Jupiter::ReadableString &) {
+std::string_view RefundIRCCommand::getHelp(std::string_view ) {
 	static STRING_LITERAL_AS_NAMED_REFERENCE(defaultHelp, "Refunds a player's credits. Syntax: refund <player> <amount>");
 	return defaultHelp;
 }
@@ -3139,7 +3139,7 @@ void TeamChangeIRCCommand::create() {
 	this->setAccessLevel(3);
 }
 
-void TeamChangeIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &channel, const Jupiter::ReadableString &nick, const Jupiter::ReadableString &parameters) {
+void TeamChangeIRCCommand::trigger(IRC_Bot *source, std::string_view channel, std::string_view nick, std::string_view parameters) {
 	if (!parameters.empty()) {
 		Jupiter::IRC::Client::Channel *chan = source->getChannel(channel);
 		if (chan != nullptr) {
@@ -3166,7 +3166,7 @@ void TeamChangeIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableStrin
 	else source->sendNotice(nick, STRING_LITERAL_AS_REFERENCE("Error: Too Few Parameters. Syntax: team <player>"));
 }
 
-const Jupiter::ReadableString &TeamChangeIRCCommand::getHelp(const Jupiter::ReadableString &)
+std::string_view TeamChangeIRCCommand::getHelp(std::string_view )
 {
 	static STRING_LITERAL_AS_NAMED_REFERENCE(defaultHelp, "Changes a player's team. Syntax: team <player>");
 	return defaultHelp;
@@ -3186,7 +3186,7 @@ void TeamChange2IRCCommand::create()
 	this->setAccessLevel(3);
 }
 
-void TeamChange2IRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &channel, const Jupiter::ReadableString &nick, const Jupiter::ReadableString &parameters) {
+void TeamChange2IRCCommand::trigger(IRC_Bot *source, std::string_view channel, std::string_view nick, std::string_view parameters) {
 	if (!parameters.empty()) {
 		Jupiter::IRC::Client::Channel *chan = source->getChannel(channel);
 		if (chan != nullptr) {
@@ -3213,7 +3213,7 @@ void TeamChange2IRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableStri
 	else source->sendNotice(nick, STRING_LITERAL_AS_REFERENCE("Error: Too Few Parameters. Syntax: team2 <player>"));
 }
 
-const Jupiter::ReadableString &TeamChange2IRCCommand::getHelp(const Jupiter::ReadableString &)
+std::string_view TeamChange2IRCCommand::getHelp(std::string_view )
 {
 	static STRING_LITERAL_AS_NAMED_REFERENCE(defaultHelp, "Changes a player's team, without resetting their credits. Syntax: team2 <player>");
 	return defaultHelp;
@@ -3229,7 +3229,7 @@ void NModeIRCCommand::create()
 	this->setAccessLevel(2);
 }
 
-void NModeIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &channel, const Jupiter::ReadableString &nick, const Jupiter::ReadableString &parameters)
+void NModeIRCCommand::trigger(IRC_Bot *source, std::string_view channel, std::string_view nick, std::string_view parameters)
 {
 	if (parameters.empty()) {
 		source->sendNotice(nick, STRING_LITERAL_AS_REFERENCE("Error: Too Few Parameters. Syntax: nmode <Player>"));
@@ -3262,7 +3262,7 @@ void NModeIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &ch
 	source->sendMessage(channel, Jupiter::StringS::Format("%u players nmoded.", nmodes));
 }
 
-const Jupiter::ReadableString &NModeIRCCommand::getHelp(const Jupiter::ReadableString &) {
+std::string_view NModeIRCCommand::getHelp(std::string_view ) {
 	static STRING_LITERAL_AS_NAMED_REFERENCE(defaultHelp, "Resets a player's mode from spectator to normal. Syntax: nmode <player>");
 	return defaultHelp;
 }
@@ -3276,7 +3276,7 @@ void SModeIRCCommand::create() {
 	this->setAccessLevel(2);
 }
 
-void SModeIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &channel, const Jupiter::ReadableString &nick, const Jupiter::ReadableString &parameters) {
+void SModeIRCCommand::trigger(IRC_Bot *source, std::string_view channel, std::string_view nick, std::string_view parameters) {
 	if (parameters.empty()) {
 		source->sendNotice(nick, STRING_LITERAL_AS_REFERENCE("Error: Too Few Parameters. Syntax: smode <Player>"));
 		return;
@@ -3307,7 +3307,7 @@ void SModeIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &ch
 	source->sendMessage(channel, Jupiter::StringS::Format("%u players smoded.", smodes));
 }
 
-const Jupiter::ReadableString &SModeIRCCommand::getHelp(const Jupiter::ReadableString &) {
+std::string_view SModeIRCCommand::getHelp(std::string_view ) {
 	static STRING_LITERAL_AS_NAMED_REFERENCE(defaultHelp, "Resets a player's mode from spectator to normal. Syntax: smode <player>");
 	return defaultHelp;
 }
@@ -3323,7 +3323,7 @@ void CancelVoteIRCCommand::create() {
 	this->setAccessLevel(2);
 }
 
-void CancelVoteIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &channel, const Jupiter::ReadableString &nick, const Jupiter::ReadableString &parameters) {
+void CancelVoteIRCCommand::trigger(IRC_Bot *source, std::string_view channel, std::string_view nick, std::string_view parameters) {
 	Jupiter::IRC::Client::Channel *chan = source->getChannel(channel);
 	if (chan == nullptr) {
 		return;
@@ -3378,7 +3378,7 @@ void CancelVoteIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableStrin
 	}
 }
 
-const Jupiter::ReadableString &CancelVoteIRCCommand::getHelp(const Jupiter::ReadableString &) {
+std::string_view CancelVoteIRCCommand::getHelp(std::string_view ) {
 	static STRING_LITERAL_AS_NAMED_REFERENCE(defaultHelp, "Cancels active votes. Syntax: cancelvote [all|public|gdi|nod|blackhand]");
 	return defaultHelp;
 }
@@ -3393,7 +3393,7 @@ void HelpGameCommand::create() {
 	this->addTrigger(STRING_LITERAL_AS_REFERENCE("help"));
 }
 
-void HelpGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *player, const Jupiter::ReadableString &parameters) {
+void HelpGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *player, std::string_view parameters) {
 	RenX::GameCommand *cmd;
 	unsigned int cmdCount = 0;
 	auto getAccessCommands = [&](int accessLevel) {
@@ -3435,7 +3435,7 @@ void HelpGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *player, co
 		cmd = source->getCommand(split_parameters.first);
 		if (cmd != nullptr) {
 			if (player->access >= cmd->getAccessLevel()) {
-				source->sendMessage(*player, cmd->getHelp(Jupiter::ReferenceString{split_parameters.second}));
+				source->sendMessage(*player, cmd->getHelp(split_parameters.second));
 			}
 			else {
 				source->sendMessage(*player, STRING_LITERAL_AS_REFERENCE("Access Denied."));
@@ -3447,7 +3447,7 @@ void HelpGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *player, co
 	}
 }
 
-const Jupiter::ReadableString &HelpGameCommand::getHelp(const Jupiter::ReadableString &) {
+std::string_view HelpGameCommand::getHelp(std::string_view ) {
 	static STRING_LITERAL_AS_NAMED_REFERENCE(defaultHelp, "Lists commands, or sends command-specific help. Syntax: help [command]");
 	return defaultHelp;
 }
@@ -3462,9 +3462,9 @@ void ModsGameCommand::create() {
 	this->addTrigger(STRING_LITERAL_AS_REFERENCE("showmods"));
 }
 
-void ModsGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *, const Jupiter::ReadableString &) {
+void ModsGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *, std::string_view ) {
 	Jupiter::StringL msg;
-	const Jupiter::ReadableString &staff_word = pluginInstance.getStaffTitle();
+	std::string_view staff_word = pluginInstance.getStaffTitle();
 	for (auto node = source->players.begin(); node != source->players.end(); ++node) {
 		if (node->isBot == false && (!node->adminType.empty() || (node->access != 0 && (!node->gamePrefix.empty() || !node->formatNamePrefix.empty())))) {
 			if (msg.empty())
@@ -3486,7 +3486,7 @@ void ModsGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *, const Ju
 	source->sendMessage(msg);
 }
 
-const Jupiter::ReadableString &ModsGameCommand::getHelp(const Jupiter::ReadableString &) {
+std::string_view ModsGameCommand::getHelp(std::string_view ) {
 	static STRING_LITERAL_AS_NAMED_REFERENCE(defaultHelp, "Displays in-game staff. Syntax: staff");
 	return defaultHelp;
 }
@@ -3502,11 +3502,11 @@ void RulesGameCommand::create() {
 	this->addTrigger(STRING_LITERAL_AS_REFERENCE("showrule"));
 }
 
-void RulesGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *player, const Jupiter::ReadableString &parameters) {
+void RulesGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *player, std::string_view parameters) {
 	source->sendMessage(Jupiter::StringS::Format("Rules: %.*s", source->getRules().size(), source->getRules().data()));
 }
 
-const Jupiter::ReadableString &RulesGameCommand::getHelp(const Jupiter::ReadableString &) {
+std::string_view RulesGameCommand::getHelp(std::string_view ) {
 	static STRING_LITERAL_AS_NAMED_REFERENCE(defaultHelp, "Displays the rules for this server. Syntax: rules");
 	return defaultHelp;
 }
@@ -3521,13 +3521,13 @@ void ModRequestGameCommand::create() {
 	this->addTrigger("mod"_jrs);
 }
 
-void ModRequestGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *player, const Jupiter::ReadableString &parameters) {
+void ModRequestGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *player, std::string_view parameters) {
 	if (parameters.empty()) {
 		source->sendMessage(*player, "Please specify a reason for requesting moderator assistance."_jrs);
 		return;
 	}
 
-	const Jupiter::ReadableString &staff_word = pluginInstance.getStaffTitle();
+	std::string_view staff_word = pluginInstance.getStaffTitle();
 	Jupiter::String fmtName = RenX::getFormattedPlayerName(*player);
 	Jupiter::StringL user_message = Jupiter::StringL::Format(IRCCOLOR "12[%.*s Request] " IRCCOLOR IRCBOLD "%.*s" IRCBOLD IRCCOLOR "07 has requested assistance in-game for \"%.*s\"; please look in ", staff_word.size(),
 		staff_word.data(), fmtName.size(), fmtName.data(), parameters.size(),
@@ -3578,7 +3578,7 @@ void ModRequestGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *play
 		staff_word.data()));
 }
 
-const Jupiter::ReadableString &ModRequestGameCommand::getHelp(const Jupiter::ReadableString &) {
+std::string_view ModRequestGameCommand::getHelp(std::string_view ) {
 	static STRING_LITERAL_AS_NAMED_REFERENCE(defaultHelp, "Notifies staff on IRC that assistance is required. Syntax: modRequest <reason>");
 	return defaultHelp;
 }
@@ -3595,7 +3595,7 @@ void AdminMessageGameCommand::create() {
 	this->setAccessLevel(1);
 }
 
-void AdminMessageGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *player, const Jupiter::ReadableString &parameters) {
+void AdminMessageGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *player, std::string_view parameters) {
 	if (!parameters.empty()) {
 		Jupiter::StringS msg = player->gamePrefix + player->name + ": "_jrs + parameters;
 		source->sendAdminMessage(msg);
@@ -3605,7 +3605,7 @@ void AdminMessageGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *pl
 	}
 }
 
-const Jupiter::ReadableString &AdminMessageGameCommand::getHelp(const Jupiter::ReadableString &) {
+std::string_view AdminMessageGameCommand::getHelp(std::string_view ) {
 	static STRING_LITERAL_AS_NAMED_REFERENCE(defaultHelp, "Sends an admin message in-game. Syntax: amsg <message>");
 	return defaultHelp;
 }
@@ -3622,7 +3622,7 @@ void PAdminMessageGameCommand::create() {
 	this->setAccessLevel(1);
 }
 
-void PAdminMessageGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *player, const Jupiter::ReadableString &parameters) {
+void PAdminMessageGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *player, std::string_view parameters) {
 	auto split_parameters = jessilib::word_split_once_view(std::string_view{parameters}, WHITESPACE_SV);
 	if (!split_parameters.second.empty()) {
 		RenX::PlayerInfo *target = source->getPlayerByPartName(split_parameters.first);
@@ -3645,7 +3645,7 @@ void PAdminMessageGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *p
 	}
 }
 
-const Jupiter::ReadableString &PAdminMessageGameCommand::getHelp(const Jupiter::ReadableString &) {
+std::string_view PAdminMessageGameCommand::getHelp(std::string_view ) {
 	static STRING_LITERAL_AS_NAMED_REFERENCE(defaultHelp, "Sends an admin message to a player in-game. Syntax: pamsg <player> <message>");
 	return defaultHelp;
 }
@@ -3659,7 +3659,7 @@ void KillGameCommand::create() {
 	this->setAccessLevel(1);
 }
 
-void KillGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *player, const Jupiter::ReadableString &parameters) {
+void KillGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *player, std::string_view parameters) {
 	if (!parameters.empty()) {
 		RenX::PlayerInfo *target = source->getPlayerByPartName(parameters);
 		if (target == nullptr) {
@@ -3677,7 +3677,7 @@ void KillGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *player, co
 		source->sendMessage(*player, "Error: Too few parameters. Syntax: kill <player>"_jrs);
 }
 
-const Jupiter::ReadableString &KillGameCommand::getHelp(const Jupiter::ReadableString &) {
+std::string_view KillGameCommand::getHelp(std::string_view ) {
 	static STRING_LITERAL_AS_NAMED_REFERENCE(defaultHelp, "Kills a player in the game. Syntax: kill <player>");
 	return defaultHelp;
 }
@@ -3691,7 +3691,7 @@ void DisarmGameCommand::create() {
 	this->setAccessLevel(1);
 }
 
-void DisarmGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *player, const Jupiter::ReadableString &parameters) {
+void DisarmGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *player, std::string_view parameters) {
 	if (!parameters.empty()) {
 		RenX::PlayerInfo *target = source->getPlayerByPartName(parameters);
 		if (target == nullptr)
@@ -3707,7 +3707,7 @@ void DisarmGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *player, 
 		source->sendMessage(*player, "Error: Too few parameters. Syntax: disarm <player>"_jrs);
 }
 
-const Jupiter::ReadableString &DisarmGameCommand::getHelp(const Jupiter::ReadableString &) {
+std::string_view DisarmGameCommand::getHelp(std::string_view ) {
 	static STRING_LITERAL_AS_NAMED_REFERENCE(defaultHelp, "Disarms all of a player's deployed objects in the game. Syntax: disarm <player>");
 	return defaultHelp;
 }
@@ -3721,7 +3721,7 @@ void DisarmC4GameCommand::create() {
 	this->setAccessLevel(1);
 }
 
-void DisarmC4GameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *player, const Jupiter::ReadableString &parameters) {
+void DisarmC4GameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *player, std::string_view parameters) {
 	if (!parameters.empty()) {
 		RenX::PlayerInfo *target = source->getPlayerByPartName(parameters);
 		if (target == nullptr)
@@ -3737,7 +3737,7 @@ void DisarmC4GameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *player
 		source->sendMessage(*player, "Error: Too few parameters. Syntax: disarmc4 <player>"_jrs);
 }
 
-const Jupiter::ReadableString &DisarmC4GameCommand::getHelp(const Jupiter::ReadableString &) {
+std::string_view DisarmC4GameCommand::getHelp(std::string_view ) {
 	static STRING_LITERAL_AS_NAMED_REFERENCE(defaultHelp, "Disarms all of a player's deployed mines in the game. Syntax: disarmc4 <player>");
 	return defaultHelp;
 }
@@ -3753,7 +3753,7 @@ void DisarmBeaconGameCommand::create() {
 	this->setAccessLevel(1);
 }
 
-void DisarmBeaconGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *player, const Jupiter::ReadableString &parameters) {
+void DisarmBeaconGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *player, std::string_view parameters) {
 	if (!parameters.empty()) {
 		RenX::PlayerInfo *target = source->getPlayerByPartName(parameters);
 		if (target == nullptr)
@@ -3769,7 +3769,7 @@ void DisarmBeaconGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *pl
 		source->sendMessage(*player, "Error: Too few parameters. Syntax: disarmb <player>"_jrs);
 }
 
-const Jupiter::ReadableString &DisarmBeaconGameCommand::getHelp(const Jupiter::ReadableString &) {
+std::string_view DisarmBeaconGameCommand::getHelp(std::string_view ) {
 	static STRING_LITERAL_AS_NAMED_REFERENCE(defaultHelp, "Disarms all of a player's deployed beacons in the game. Syntax: disarmb <player>");
 	return defaultHelp;
 }
@@ -3783,7 +3783,7 @@ void MineBanGameCommand::create() {
 	this->setAccessLevel(1);
 }
 
-void MineBanGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *player, const Jupiter::ReadableString &parameters) {
+void MineBanGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *player, std::string_view parameters) {
 	if (!parameters.empty())
 	{
 		RenX::PlayerInfo *target = source->getPlayerByPartName(parameters);
@@ -3801,7 +3801,7 @@ void MineBanGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *player,
 		source->sendMessage(*player, "Error: Too few parameters. Syntax: mineban <player>"_jrs);
 }
 
-const Jupiter::ReadableString &MineBanGameCommand::getHelp(const Jupiter::ReadableString &) {
+std::string_view MineBanGameCommand::getHelp(std::string_view ) {
 	static STRING_LITERAL_AS_NAMED_REFERENCE(defaultHelp, "Bans a player from mining for 1 game (or until they leave). Syntax: mineban <player>");
 	return defaultHelp;
 }
@@ -3817,7 +3817,7 @@ void KickGameCommand::create() {
 	this->setAccessLevel(1);
 }
 
-void KickGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *player, const Jupiter::ReadableString &parameters) {
+void KickGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *player, std::string_view parameters) {
 	auto split_parameters = jessilib::word_split_once_view(std::string_view{parameters}, WHITESPACE_SV);
 	if (!split_parameters.first.empty()) {
 		std::string_view reason = split_parameters.second;
@@ -3845,7 +3845,7 @@ void KickGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *player, co
 		source->sendMessage(*player, "Error: Too few parameters. Syntax: kick <player> [Reason]"_jrs);
 }
 
-const Jupiter::ReadableString &KickGameCommand::getHelp(const Jupiter::ReadableString &) {
+std::string_view KickGameCommand::getHelp(std::string_view ) {
 	static STRING_LITERAL_AS_NAMED_REFERENCE(defaultHelp, "Kicks a player from the game. Syntax: kick <player> [Reason]");
 	return defaultHelp;
 }
@@ -3859,7 +3859,7 @@ void MuteGameCommand::create() {
 	this->setAccessLevel(1);
 }
 
-void MuteGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *player, const Jupiter::ReadableString &parameters) {
+void MuteGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *player, std::string_view parameters) {
 	auto split_parameters = jessilib::word_split_once_view(std::string_view{parameters}, WHITESPACE_SV);
 	if (!split_parameters.first.empty()) {
 		std::string_view reason = split_parameters.second;
@@ -3884,7 +3884,7 @@ void MuteGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *player, co
 		source->sendMessage(*player, "Error: Too few parameters. Syntax: mute <player> [Reason]"_jrs);
 }
 
-const Jupiter::ReadableString &MuteGameCommand::getHelp(const Jupiter::ReadableString &) {
+std::string_view MuteGameCommand::getHelp(std::string_view ) {
 	static STRING_LITERAL_AS_NAMED_REFERENCE(defaultHelp, "Mutes a player from chat. Syntax: mute <player> [Reason]");
 	return defaultHelp;
 }
@@ -3900,7 +3900,7 @@ void TempBanGameCommand::create() {
 	this->setAccessLevel(1);
 }
 
-void TempBanGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *player, const Jupiter::ReadableString &parameters) {
+void TempBanGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *player, std::string_view parameters) {
 	auto split_parameters = jessilib::word_split_once_view(std::string_view{parameters}, WHITESPACE_SV);
 	if (!split_parameters.first.empty()) {
 		std::string_view name = split_parameters.first;
@@ -3941,7 +3941,7 @@ void TempBanGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *player,
 		source->sendMessage(*player, "Error: Too few parameters. Syntax: tban [Duration] <player> [Reason]"_jrs);
 }
 
-const Jupiter::ReadableString &TempBanGameCommand::getHelp(const Jupiter::ReadableString &) {
+std::string_view TempBanGameCommand::getHelp(std::string_view ) {
 	static STRING_LITERAL_AS_NAMED_REFERENCE(defaultHelp, "Kicks and temporarily bans a player from the game. Syntax: tban [Duration] <player> [Reason]");
 	return defaultHelp;
 }
@@ -3958,7 +3958,7 @@ void TempChatBanGameCommand::create() {
 	this->setAccessLevel(1);
 }
 
-void TempChatBanGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *player, const Jupiter::ReadableString &parameters) {
+void TempChatBanGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *player, std::string_view parameters) {
 	auto split_parameters = jessilib::word_split_once_view(std::string_view{parameters}, WHITESPACE_SV);
 	if (!split_parameters.first.empty()) {
 		std::string_view name = split_parameters.first;
@@ -3999,7 +3999,7 @@ void TempChatBanGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *pla
 		source->sendMessage(*player, "Error: Too few parameters. Syntax: tchatban [Duration] <player> [Reason]"_jrs);
 }
 
-const Jupiter::ReadableString &TempChatBanGameCommand::getHelp(const Jupiter::ReadableString &) {
+std::string_view TempChatBanGameCommand::getHelp(std::string_view ) {
 	static STRING_LITERAL_AS_NAMED_REFERENCE(defaultHelp, "Mutes and temporarily chat bans a player from the game. Syntax: tchatban [Duration] <player> [Reason]");
 	return defaultHelp;
 }
@@ -4016,7 +4016,7 @@ void KickBanGameCommand::create() {
 	this->setAccessLevel(2);
 }
 
-void KickBanGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *player, const Jupiter::ReadableString &parameters) {
+void KickBanGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *player, std::string_view parameters) {
 	auto split_parameters = jessilib::word_split_once_view(std::string_view{parameters}, WHITESPACE_SV);
 	if (!split_parameters.first.empty()) {
 		std::string_view reason = split_parameters.second;
@@ -4044,7 +4044,7 @@ void KickBanGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *player,
 	}
 }
 
-const Jupiter::ReadableString &KickBanGameCommand::getHelp(const Jupiter::ReadableString &) {
+std::string_view KickBanGameCommand::getHelp(std::string_view ) {
 	static STRING_LITERAL_AS_NAMED_REFERENCE(defaultHelp, "Kicks and bans a player from the game. Syntax: ban <player> [reason]");
 	return defaultHelp;
 }
@@ -4061,7 +4061,7 @@ void AddBotsGameCommand::create() {
 	this->setAccessLevel(1);
 }
 
-void AddBotsGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *player, const Jupiter::ReadableString &parameters) {
+void AddBotsGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *player, std::string_view parameters) {
 	std::vector<std::string_view> split_parameters = jessilib::word_split_view(std::string_view{parameters}, WHITESPACE_SV);
 	RenX::TeamType team = RenX::TeamType::None;
 	if (split_parameters.size() >= 2) {
@@ -4098,7 +4098,7 @@ void AddBotsGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *player,
 	source->sendMessage(*player, Jupiter::StringS::Format("%u bots have been added to the server.", amount));
 }
 
-const Jupiter::ReadableString &AddBotsGameCommand::getHelp(const Jupiter::ReadableString &) {
+std::string_view AddBotsGameCommand::getHelp(std::string_view ) {
 	static STRING_LITERAL_AS_NAMED_REFERENCE(defaultHelp, "Adds bots to the game. Syntax: addbots [amount=1] [team]");
 	return defaultHelp;
 }
@@ -4115,12 +4115,12 @@ void KillBotsGameCommand::create() {
 	this->setAccessLevel(2);
 }
 
-void KillBotsGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *player, const Jupiter::ReadableString &parameters) {
+void KillBotsGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *player, std::string_view parameters) {
 	source->send(STRING_LITERAL_AS_REFERENCE("killbots"));
 	source->sendMessage(*player, STRING_LITERAL_AS_REFERENCE("All bots have been removed from the server."));
 }
 
-const Jupiter::ReadableString &KillBotsGameCommand::getHelp(const Jupiter::ReadableString &) {
+std::string_view KillBotsGameCommand::getHelp(std::string_view ) {
 	static STRING_LITERAL_AS_NAMED_REFERENCE(defaultHelp, "Removes all bots from the game. Syntax: killbots");
 	return defaultHelp;
 }
@@ -4135,7 +4135,7 @@ void PhaseBotsGameCommand::create() {
 	this->setAccessLevel(1);
 }
 
-void PhaseBotsGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *player, const Jupiter::ReadableString &parameters) {
+void PhaseBotsGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *player, std::string_view parameters) {
 	if (parameters.empty())
 	{
 		if (togglePhasing(source))
@@ -4154,7 +4154,7 @@ void PhaseBotsGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *playe
 	}
 }
 
-const Jupiter::ReadableString &PhaseBotsGameCommand::getHelp(const Jupiter::ReadableString &) {
+std::string_view PhaseBotsGameCommand::getHelp(std::string_view ) {
 	static STRING_LITERAL_AS_NAMED_REFERENCE(defaultHelp, "Removes all bots from the game. Syntax: phasebots");
 	return defaultHelp;
 }
@@ -4168,7 +4168,7 @@ void NModeGameCommand::create() {
 	this->setAccessLevel(1);
 }
 
-void NModeGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *player, const Jupiter::ReadableString &parameters) {
+void NModeGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *player, std::string_view parameters) {
 	if (parameters.empty()) {
 		source->sendMessage(*player, "Error: Too few parameters. Syntax: nmode <player-name>"_jrs);
 		return;
@@ -4188,7 +4188,7 @@ void NModeGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *player, c
 	source->sendMessage(*player, "Player's mode has been reset."_jrs);
 }
 
-const Jupiter::ReadableString &NModeGameCommand::getHelp(const Jupiter::ReadableString &) {
+std::string_view NModeGameCommand::getHelp(std::string_view ) {
 	static STRING_LITERAL_AS_NAMED_REFERENCE(defaultHelp, "Resets a player's mode from spectator to normal. Syntax: nmode <player-name>");
 	return defaultHelp;
 }
@@ -4202,7 +4202,7 @@ void SModeGameCommand::create() {
 	this->setAccessLevel(1);
 }
 
-void SModeGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *player, const Jupiter::ReadableString &parameters) {
+void SModeGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *player, std::string_view parameters) {
 	if (parameters.empty()) {
 		source->sendMessage(*player, "Error: Too few parameters. Syntax: smode <player-name>"_jrs);
 		return;
@@ -4222,7 +4222,7 @@ void SModeGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *player, c
 	source->sendMessage(*player, "Player's mode has been reset."_jrs);
 }
 
-const Jupiter::ReadableString &SModeGameCommand::getHelp(const Jupiter::ReadableString &) {
+std::string_view SModeGameCommand::getHelp(std::string_view ) {
 	static STRING_LITERAL_AS_NAMED_REFERENCE(defaultHelp, "Resets a player's mode from spectator to normal. Syntax: smode <player-name>");
 	return defaultHelp;
 }
@@ -4238,7 +4238,7 @@ void CancelVoteGameCommand::create() {
 	this->setAccessLevel(1);
 }
 
-void CancelVoteGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *player, const Jupiter::ReadableString &parameters) {
+void CancelVoteGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *player, std::string_view parameters) {
 	bool cancel_all = false;
 	RenX::TeamType target = RenX::TeamType::None;
 
@@ -4272,7 +4272,7 @@ void CancelVoteGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *play
 	}
 }
 
-const Jupiter::ReadableString &CancelVoteGameCommand::getHelp(const Jupiter::ReadableString &) {
+std::string_view CancelVoteGameCommand::getHelp(std::string_view ) {
 	static STRING_LITERAL_AS_NAMED_REFERENCE(defaultHelp, "Cancels active votes. Syntax: cancelvote [all|public|gdi|nod|blackhand]");
 	return defaultHelp;
 }

@@ -151,7 +151,7 @@ void reinitialize_plugins() {
 
 				ConsoleCommand* command = getConsoleCommand(command_name);
 				if (command != nullptr) {
-					command->trigger(Jupiter::ReferenceString{input_split.second});
+					command->trigger(input_split.second);
 				}
 				else {
 					printf("Error: Command \"%.*s\" not found." ENDL, static_cast<int>(command_name.size()), command_name.data());

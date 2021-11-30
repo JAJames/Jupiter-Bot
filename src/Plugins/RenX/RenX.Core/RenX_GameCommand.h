@@ -73,7 +73,7 @@ namespace RenX
 		* @param player Player who executed the command.
 		* @param parameters Parameters following the command.
 		*/
-		virtual void trigger(RenX::Server *source, RenX::PlayerInfo *player, const Jupiter::ReadableString &parameters) = 0;
+		virtual void trigger(RenX::Server *source, RenX::PlayerInfo *player, std::string_view parameters) = 0;
 
 		/**
 		* @brief Called when the command is intially created. Define triggers and access levels here.
@@ -124,8 +124,8 @@ namespace RenX
 	class RENX_API BasicGameCommand : public RenX::GameCommand
 	{
 	public:
-		void trigger(RenX::Server *source, RenX::PlayerInfo *player, const Jupiter::ReadableString &parameters);
-		const Jupiter::ReadableString &getHelp(const Jupiter::ReadableString &parameters) override;
+		void trigger(RenX::Server *source, RenX::PlayerInfo *player, std::string_view parameters);
+		std::string_view getHelp(std::string_view parameters) override;
 		BasicGameCommand *copy();
 		void create();
 		BasicGameCommand();
@@ -142,8 +142,8 @@ namespace RenX
 /** Defines the core of a game command's declaration. This should be included in every game command. */
 #define BASE_GAME_COMMAND(CLASS) \
 	public: \
-	void trigger(RenX::Server *source, RenX::PlayerInfo *player, const Jupiter::ReadableString &parameters); \
-	const Jupiter::ReadableString &getHelp(const Jupiter::ReadableString &parameters) override; \
+	void trigger(RenX::Server *source, RenX::PlayerInfo *player, std::string_view parameters); \
+	std::string_view getHelp(std::string_view parameters) override; \
 	CLASS *copy(); \
 	void create(); \
 	CLASS() { this->create(); RenX::getCore()->addCommand(this); }

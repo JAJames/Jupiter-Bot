@@ -34,7 +34,7 @@ PluginGenericCommand::PluginGenericCommand() {
 	this->addTrigger(STRING_LITERAL_AS_REFERENCE("modules"));
 }
 
-Jupiter::GenericCommand::ResponseLine *PluginGenericCommand::trigger(const Jupiter::ReadableString &parameters) {
+Jupiter::GenericCommand::ResponseLine *PluginGenericCommand::trigger(std::string_view parameters) {
 	auto parameters_view = static_cast<std::string_view>(parameters);
 	Jupiter::GenericCommand::ResponseLine *result = new Jupiter::GenericCommand::ResponseLine();
 	if (parameters_view.empty() || jessilib::starts_withi(parameters_view, "list"sv)) {
@@ -112,7 +112,7 @@ Jupiter::GenericCommand::ResponseLine *PluginGenericCommand::trigger(const Jupit
 	return result->set("Error: Invalid Syntax. Syntax: plugin {[list], <load> <plugin>, <unload> <plugin>, <reload> [all|plugin]}"_jrs, GenericCommand::DisplayType::PrivateError);
 }
 
-const Jupiter::ReadableString &PluginGenericCommand::getHelp(const Jupiter::ReadableString &parameters) {
+std::string_view PluginGenericCommand::getHelp(std::string_view parameters) {
 	static STRING_LITERAL_AS_NAMED_REFERENCE(loadHelp, "Loads a plugin by file name. Do not include a file extension. Syntax: plugin load <plugin>");
 	static STRING_LITERAL_AS_NAMED_REFERENCE(unloadHelp, "Unloads a plugin by name. Syntax: plugin unload <plugin>");
 	static STRING_LITERAL_AS_NAMED_REFERENCE(listHelp, "Lists all of the plugins currently loaded. Syntax: plugin [list]");

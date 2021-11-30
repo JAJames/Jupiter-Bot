@@ -180,7 +180,7 @@ void IRC_Bot::OnChat(std::string_view in_channel, std::string_view nick, std::st
 						this->sendNotice(nick, "Access Denied."_jrs);
 					}
 					else {
-						cmd->trigger(this, Jupiter::ReferenceString{in_channel}, Jupiter::ReferenceString{nick}, Jupiter::ReferenceString{message_split.second});
+						cmd->trigger(this, in_channel, nick, message_split.second);
 					}
 
 					IRCCommand::active_server = IRCCommand::selected_server;

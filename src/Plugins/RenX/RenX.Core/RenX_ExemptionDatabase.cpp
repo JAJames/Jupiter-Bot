@@ -98,11 +98,11 @@ void RenX::ExemptionDatabase::write(RenX::ExemptionDatabase::Entry *entry, FILE 
 	fgetpos(file, std::addressof(m_eof));
 }
 
-void RenX::ExemptionDatabase::add(RenX::Server &, const RenX::PlayerInfo &player, const Jupiter::ReadableString &setter, std::chrono::seconds length, uint8_t flags) {
+void RenX::ExemptionDatabase::add(RenX::Server &, const RenX::PlayerInfo &player, std::string_view setter, std::chrono::seconds length, uint8_t flags) {
 	add(player.ip32, 32U, player.steamid, setter, length, flags);
 }
 
-void RenX::ExemptionDatabase::add(uint32_t ip, uint8_t prefix_length, uint64_t steamid, const Jupiter::ReadableString &setter, std::chrono::seconds length, uint8_t flags) {
+void RenX::ExemptionDatabase::add(uint32_t ip, uint8_t prefix_length, uint64_t steamid, std::string_view setter, std::chrono::seconds length, uint8_t flags) {
 	std::unique_ptr<Entry> entry = std::make_unique<Entry>();
 	entry->set_active();
 	entry->flags |= flags;

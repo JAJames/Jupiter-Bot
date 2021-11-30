@@ -61,7 +61,7 @@ RenX_CommandLoggingPlugin::~RenX_CommandLoggingPlugin()
 	}
 }
 
-void RenX_CommandLoggingPlugin::RenX_OnCommandTriggered(RenX::Server& server, const Jupiter::ReadableString& trigger, RenX::PlayerInfo& player, const Jupiter::ReadableString& parameters, RenX::GameCommand& command)
+void RenX_CommandLoggingPlugin::RenX_OnCommandTriggered(RenX::Server& server, std::string_view  trigger, RenX::PlayerInfo& player, std::string_view  parameters, RenX::GameCommand& command)
 {
 	if (player.access < min_access || command.getAccessLevel() < min_cmd_access) {
 		return;
@@ -70,12 +70,12 @@ void RenX_CommandLoggingPlugin::RenX_OnCommandTriggered(RenX::Server& server, co
 	WriteToLog(server, player, static_cast<std::string>(trigger) + " " + parameters);
 }
 
-std::ostream& operator<<(std::ostream& in_stream, const Jupiter::ReadableString& in_string) {
+std::ostream& operator<<(std::ostream& in_stream, std::string_view  in_string) {
 	in_stream.write(in_string.data(), in_string.size());
 	return in_stream;
 }
 
-void RenX_CommandLoggingPlugin::WriteToLog(RenX::Server& server, const RenX::PlayerInfo& player, const Jupiter::ReadableString& message)
+void RenX_CommandLoggingPlugin::WriteToLog(RenX::Server& server, const RenX::PlayerInfo& player, std::string_view  message)
 {
 	// Check if new file needs to be opened
 	PrepFile();

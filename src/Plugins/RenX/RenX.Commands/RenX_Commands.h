@@ -28,9 +28,9 @@
 class RenX_CommandsPlugin : public RenX::Plugin
 {
 public: // RenX::Plugin
-	void RenX_OnSuicide(RenX::Server &server, const RenX::PlayerInfo &player, const Jupiter::ReadableString &damageType) override;
-	void RenX_OnKill(RenX::Server &server, const RenX::PlayerInfo &player, const RenX::PlayerInfo &victim, const Jupiter::ReadableString &damageType) override;
-	void RenX_OnDie(RenX::Server &server, const RenX::PlayerInfo &player, const Jupiter::ReadableString &damageType) override;
+	void RenX_OnSuicide(RenX::Server &server, const RenX::PlayerInfo &player, std::string_view damageType) override;
+	void RenX_OnKill(RenX::Server &server, const RenX::PlayerInfo &player, const RenX::PlayerInfo &victim, std::string_view damageType) override;
+	void RenX_OnDie(RenX::Server &server, const RenX::PlayerInfo &player, std::string_view damageType) override;
 
 public: // Jupiter::Plugin
 	virtual bool initialize() override;
@@ -39,10 +39,10 @@ public: // Jupiter::Plugin
 public:
 	std::chrono::seconds getDefaultTBanTime() const;
 	std::chrono::seconds getMaxTBanTime() const;
-	const Jupiter::ReadableString &getPlayerInfoFormat() const;
-	const Jupiter::ReadableString &getAdminPlayerInfoFormat() const;
-	const Jupiter::ReadableString &getBuildingInfoFormat() const;
-	const Jupiter::ReadableString &getStaffTitle() const;
+	std::string_view getPlayerInfoFormat() const;
+	std::string_view getAdminPlayerInfoFormat() const;
+	std::string_view getBuildingInfoFormat() const;
+	std::string_view getStaffTitle() const;
 
 private:
 	std::chrono::seconds m_defaultTempBanTime;

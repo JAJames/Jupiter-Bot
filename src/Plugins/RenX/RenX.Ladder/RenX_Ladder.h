@@ -38,7 +38,7 @@ public:
 	virtual bool initialize() override;
 	void RenX_OnServerFullyConnected(RenX::Server &server) override;
 	void RenX_OnGameOver(RenX::Server &server, RenX::WinType winType, const RenX::TeamType &team, int gScore, int nScore) override;
-	void RenX_OnCommand(RenX::Server &server, const Jupiter::ReadableString &) override;
+	void RenX_OnCommand(RenX::Server &server, std::string_view ) override;
 
 	size_t getMaxLadderCommandPartNameOutput() const;
 

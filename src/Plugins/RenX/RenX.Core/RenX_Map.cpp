@@ -24,12 +24,12 @@ RenX::Map::Map()
 	RenX::Map::Map::guid[1] = 0ULL;
 }
 
-RenX::Map::Map(const Jupiter::ReadableString &in_name) : Map()
+RenX::Map::Map(std::string_view in_name) : Map()
 {
 	name = in_name;
 }
 
-RenX::Map::Map(const Jupiter::ReadableString &in_name, uint64_t in_guid[2]) : Map(in_name)
+RenX::Map::Map(std::string_view in_name, uint64_t in_guid[2]) : Map(in_name)
 {
 	RenX::Map::Map::guid[0] = in_guid[0];
 	RenX::Map::Map::guid[1] = in_guid[1];

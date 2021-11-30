@@ -23,12 +23,12 @@ void ExampleIRCCommand::create()
 	this->addTrigger("example"_jrs);
 }
 
-void ExampleIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &channel, const Jupiter::ReadableString &nick, const Jupiter::ReadableString &parameters)
+void ExampleIRCCommand::trigger(IRC_Bot *source, std::string_view channel, std::string_view nick, std::string_view parameters)
 {
 	source->sendMessage(channel, "This is an example command!"_jrs);
 }
 
-const Jupiter::ReadableString &ExampleIRCCommand::getHelp(const Jupiter::ReadableString &)
+std::string_view ExampleIRCCommand::getHelp(std::string_view )
 {
 	static auto helpmsg = "This is just an example command. It takes no parameters!"_jrs;
 	return helpmsg;

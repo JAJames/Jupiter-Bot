@@ -48,7 +48,7 @@ void WarnIRCCommand::create() {
 	this->setAccessLevel(2);
 }
 
-void WarnIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &channel, const Jupiter::ReadableString &nick, const Jupiter::ReadableString &parameters) {
+void WarnIRCCommand::trigger(IRC_Bot *source, std::string_view channel, std::string_view nick, std::string_view parameters) {
 	auto parameters_split = jessilib::word_split_once_view(std::string_view{parameters}, WHITESPACE_SV);
 	if (parameters_split.second.empty()) {
 		source->sendNotice(nick, "Error: Too Few Parameters. Syntax: Warn <Player> <Reason>"_jrs);
@@ -98,7 +98,7 @@ void WarnIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &cha
 	}
 }
 
-const Jupiter::ReadableString &WarnIRCCommand::getHelp(const Jupiter::ReadableString &) {
+std::string_view WarnIRCCommand::getHelp(std::string_view ) {
 	static STRING_LITERAL_AS_NAMED_REFERENCE(defaultHelp, "Warns a player. Syntax: Warn <Player> <Reason>");
 	return defaultHelp;
 }
@@ -114,9 +114,8 @@ void PardonIRCCommand::create() {
 	this->setAccessLevel(2);
 }
 
-void PardonIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &channel, const Jupiter::ReadableString &nick, const Jupiter::ReadableString &parameters) {
+void PardonIRCCommand::trigger(IRC_Bot *source, std::string_view channel, std::string_view nick, std::string_view parameters) {
 	if (parameters.empty()) {
-		// TODO: this doesn't make sense
 		this->trigger(source, channel, nick, nick);
 		return;
 	}
@@ -146,7 +145,7 @@ void PardonIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &c
 	}
 }
 
-const Jupiter::ReadableString &PardonIRCCommand::getHelp(const Jupiter::ReadableString &) {
+std::string_view PardonIRCCommand::getHelp(std::string_view ) {
 	static STRING_LITERAL_AS_NAMED_REFERENCE(defaultHelp, "Resets a player's warnings. Syntax: Pardon <Player>");
 	return defaultHelp;
 }
@@ -161,7 +160,7 @@ void WarnGameCommand::create() {
 	this->setAccessLevel(1);
 }
 
-void WarnGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *player, const Jupiter::ReadableString &parameters) {
+void WarnGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *player, std::string_view parameters) {
 	auto parameters_split = jessilib::word_split_once_view(std::string_view{parameters}, WHITESPACE_SV);
 	if (!parameters_split.second.empty()) {
 		std::string_view name = parameters_split.first;
@@ -194,7 +193,7 @@ void WarnGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *player, co
 		source->sendMessage(*player, "Error: Too few parameters. Syntax: Warn <Player> <Reason>"_jrs);
 }
 
-const Jupiter::ReadableString &WarnGameCommand::getHelp(const Jupiter::ReadableString &) {
+std::string_view WarnGameCommand::getHelp(std::string_view ) {
 	static STRING_LITERAL_AS_NAMED_REFERENCE(defaultHelp, "Warns a player. Syntax: Warn <Player> <Reason>");
 	return defaultHelp;
 }
@@ -210,7 +209,7 @@ void PardonGameCommand::create() {
 	this->setAccessLevel(1);
 }
 
-void PardonGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *player, const Jupiter::ReadableString &parameters) {
+void PardonGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *player, std::string_view parameters) {
 	if (!parameters.empty()) {
 		RenX::PlayerInfo *target = source->getPlayerByPartName(parameters);
 		if (target != nullptr) {
@@ -220,11 +219,11 @@ void PardonGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *player, 
 		}
 	}
 	else {
-		this->trigger(source, player, Jupiter::ReferenceString{player->name});
+		this->trigger(source, player, player->name);
 	}
 }
 
-const Jupiter::ReadableString &PardonGameCommand::getHelp(const Jupiter::ReadableString &) {
+std::string_view PardonGameCommand::getHelp(std::string_view ) {
 	static STRING_LITERAL_AS_NAMED_REFERENCE(defaultHelp, "Resets a player's warnings. Syntax: Pardon <Player>");
 	return defaultHelp;
 }

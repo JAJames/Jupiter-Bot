@@ -29,7 +29,7 @@ RenX_ListenPlugin::~RenX_ListenPlugin() {
 
 bool RenX_ListenPlugin::initialize() {
 	uint16_t port = this->config.get<uint16_t>("Port"_jrs, 21337);
-	const Jupiter::ReadableString &address = this->config.get("Address"_jrs, "0.0.0.0"_jrs);
+	std::string_view address = this->config.get("Address"_jrs, "0.0.0.0"_jrs);
 	RenX_ListenPlugin::serverSection = this->config.get("ServerSection"_jrs, this->getName());
 
 	return RenX_ListenPlugin::socket.bind(static_cast<std::string>(address).c_str(), port, true) && RenX_ListenPlugin::socket.setBlocking(false);
@@ -52,7 +52,7 @@ int RenX_ListenPlugin::OnRehash() {
 	RenX::Plugin::OnRehash();
 
 	uint16_t port = this->config.get<uint16_t>("Port"_jrs, 21337);
-	const Jupiter::ReadableString &address = this->config.get("Address"_jrs, "0.0.0.0"_jrs);
+	std::string_view address = this->config.get("Address"_jrs, "0.0.0.0"_jrs);
 	RenX_ListenPlugin::serverSection = this->config.get("ServerSection"_jrs, this->getName());
 
 	if (port != RenX_ListenPlugin::socket.getBoundPort() || address != RenX_ListenPlugin::socket.getBoundHostname()) {

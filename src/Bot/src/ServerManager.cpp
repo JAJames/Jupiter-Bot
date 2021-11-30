@@ -58,7 +58,7 @@ size_t ServerManager::removeCommand(IRCCommand *command) {
 	return result;
 }
 
-size_t ServerManager::removeCommand(const Jupiter::ReadableString &command) {
+size_t ServerManager::removeCommand(std::string_view command) {
 	size_t result = 0;
 	for (const auto& server : m_servers) {
 		if (server->freeCommand(command)) {

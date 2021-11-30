@@ -34,7 +34,7 @@ struct TagsImp : RenX::Tags
 	void processTags(std::string& msg, const RenX::Server *server, const RenX::PlayerInfo *player, const RenX::PlayerInfo *victim, const RenX::BuildingInfo *building);
 	void processTags(std::string& msg, const RenX::LadderDatabase::Entry &entry);
 	void sanitizeTags(std::string& fmt);
-	const Jupiter::ReadableString &getUniqueInternalTag();
+	std::string_view getUniqueInternalTag();
 private:
 	Jupiter::StringS uniqueTag;
 	uint32_t tagItr;
@@ -53,7 +53,7 @@ bool TagsImp::initialize()
 	this->uniqueTag = "\0\0\0\0\0\0"_jrs;
 
 	Jupiter::Config &config = RenX::getCore()->getConfig();
-	const Jupiter::ReadableString &configSection = config.get("TagDefinitions"_jrs, "Tags"_jrs);
+	std::string_view configSection = config.get("TagDefinitions"_jrs, "Tags"_jrs);
 
 	TagsImp::bar_width = config[configSection].get<int>("BarWidth"_jrs, 19);
 
@@ -872,7 +872,7 @@ void TagsImp::sanitizeTags(std::string& fmt)
 	}
 }
 
-const Jupiter::ReadableString &TagsImp::getUniqueInternalTag()
+std::string_view TagsImp::getUniqueInternalTag()
 {
 	this->uniqueTag.set(1, reinterpret_cast<const char *>(&this->tagItr), sizeof(TagsImp::tagItr));
 	++TagsImp::tagItr;
@@ -895,7 +895,7 @@ void RenX::replace_tag(std::string& fmt, std::string_view tag, std::string_view 
 
 /** Forward functions */
 
-const Jupiter::ReadableString &RenX::getUniqueInternalTag()
+std::string_view RenX::getUniqueInternalTag()
 {
 	return _tags.getUniqueInternalTag();
 }

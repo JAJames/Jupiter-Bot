@@ -224,7 +224,7 @@ namespace RenX
 		* @param commmand Command to send.
 		* @return The number of bytes sent on success, less than or equal to zero otherwise.
 		*/
-		int send(const Jupiter::ReadableString &command);
+		int send(std::string_view command);
 
 		/**
 		 * @brief Sends text over the socket
@@ -232,7 +232,7 @@ namespace RenX
 		 * @param text Text to send
 		 * @return The number of bytes sent on success, less than or equal to zero otherwise.
 		 */
-		 int sendSocket(const Jupiter::ReadableString &text);
+		 int sendSocket(std::string_view text);
 
 		/**
 		* @brief Sends an in-game message to the server.
@@ -257,7 +257,7 @@ namespace RenX
 		* @param message Message to send in-game.
 		* @return The number of bytes sent on success, less than or equal to zero otherwise.
 		*/
-		int sendAdminMessage(const Jupiter::ReadableString &message);
+		int sendAdminMessage(std::string_view message);
 
 		/**
 		* @brief Sends an in-game admin message to a player in the server.
@@ -283,7 +283,7 @@ namespace RenX
 		* @param data String of data to send.
 		* @return The number of bytes sent on success, less than or equal to zero otherwise.
 		*/
-		int sendData(const Jupiter::ReadableString &data);
+		int sendData(std::string_view data);
 
 		/**
 		* @brief Fetches a player's data, based on their name.
@@ -537,14 +537,14 @@ namespace RenX
 		*
 		* @return True on success, false otherwise.
 		*/
-		bool loadMutator(const Jupiter::ReadableString &mutator);
+		bool loadMutator(std::string_view mutator);
 
 		/**
 		* @brief Forces the current game to end.
 		*
 		* @return True on success, false otherwise.
 		*/
-		bool unloadMutator(const Jupiter::ReadableString &mutator);
+		bool unloadMutator(std::string_view mutator);
 
 		/**
 		* @brief Forcefully ends the current vote.
@@ -718,7 +718,7 @@ namespace RenX
 		*
 		* @return The server's logging prefix.
 		*/
-		const Jupiter::ReadableString &getPrefix() const;
+		std::string_view getPrefix() const;
 
 		/**
 		* @brief Sets a server's IRC logging prefix.
@@ -748,7 +748,7 @@ namespace RenX
 		*
 		* @return String containing the rules of the server.
 		*/
-		const Jupiter::ReadableString &getRules() const;
+		std::string_view getRules() const;
 
 		/**
 		* @brief Fetches the hostname of a server.
@@ -820,7 +820,7 @@ namespace RenX
 		*
 		* @return String containing the password of the server.
 		*/
-		const Jupiter::ReadableString &getPassword() const;
+		std::string_view getPassword() const;
 
 		/**
 		* @brief Fetches this connection's RCON user name.
@@ -841,7 +841,7 @@ namespace RenX
 		*
 		* @return String containing the server name.
 		*/
-		const Jupiter::ReadableString &getName() const;
+		std::string_view getName() const;
 
 		/**
 		* @brief Fetches the current map.
@@ -959,7 +959,7 @@ namespace RenX
 		* @param fmt String containing the format specifiers indicating what message to send.
 		*/
 		void sendPubChan(const char *fmt, ...) const;
-		void sendPubChan(const Jupiter::ReadableString &msg) const;
+		void sendPubChan(std::string_view msg) const;
 
 		/**
 		* @brief Formats and sends a message to a server's corresponding adminstrative channels.
@@ -967,7 +967,7 @@ namespace RenX
 		* @param fmt String containing the format specifiers indicating what message to send.
 		*/
 		void sendAdmChan(const char *fmt, ...) const;
-		void sendAdmChan(const Jupiter::ReadableString &msg) const;
+		void sendAdmChan(std::string_view msg) const;
 
 		/**
 		* @brief Formats and sends a message to a server's corresponding channels.
@@ -975,14 +975,14 @@ namespace RenX
 		* @param fmt String containing the format specifiers indicating what message to send.
 		*/
 		void sendLogChan(const char *fmt, ...) const;
-		void sendLogChan(const Jupiter::ReadableString &msg) const;
+		void sendLogChan(std::string_view msg) const;
 
 		/**
 		* @brief Processes a line of RCON input data. Input data SHOULD NOT include a new-line ('\n') terminator.
 		*
 		* @param line Line to process
 		*/
-		void processLine(const Jupiter::ReadableString &line);
+		void processLine(std::string_view line);
 
 		/**
 		* @brief Disconnects from a server's RCON interface.

@@ -66,7 +66,7 @@ bool RenX::Core::initialize() {
 RenX::Core::~Core() {
 }
 
-size_t RenX::Core::send(int type, const Jupiter::ReadableString &msg) {
+size_t RenX::Core::send(int type, std::string_view msg) {
 	size_t result = 0;
 
 	for (auto& server : m_servers) {

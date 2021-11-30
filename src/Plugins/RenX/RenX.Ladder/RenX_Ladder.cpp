@@ -63,7 +63,7 @@ void RenX_LadderPlugin::RenX_OnGameOver(RenX::Server &server, RenX::WinType winT
 	}
 }
 
-void RenX_LadderPlugin::RenX_OnCommand(RenX::Server &server, const Jupiter::ReadableString &) {
+void RenX_LadderPlugin::RenX_OnCommand(RenX::Server &server, std::string_view ) {
 	if (jessilib::equalsi(server.getCurrentRCONCommand(), "clientvarlist"sv)) {
 		if (server.varData[this->name].get("w"_jrs, "0"_jrs) == "1"sv) {
 			server.varData[this->name].set("w"sv, "0"s);
@@ -98,7 +98,7 @@ LadderGenericCommand::LadderGenericCommand() {
 	this->addTrigger("rank"_jrs);
 }
 
-Jupiter::GenericCommand::ResponseLine *LadderGenericCommand::trigger(const Jupiter::ReadableString &parameters) {
+Jupiter::GenericCommand::ResponseLine *LadderGenericCommand::trigger(std::string_view parameters) {
 	if (parameters.empty()) {
 		return new Jupiter::GenericCommand::ResponseLine("Error: Too few parameters. Syntax: ladder <name | rank>"_jrs, GenericCommand::DisplayType::PrivateError);
 	}
@@ -140,7 +140,7 @@ Jupiter::GenericCommand::ResponseLine *LadderGenericCommand::trigger(const Jupit
 	return response_head;
 }
 
-const Jupiter::ReadableString &LadderGenericCommand::getHelp(const Jupiter::ReadableString &) {
+std::string_view LadderGenericCommand::getHelp(std::string_view ) {
 	static STRING_LITERAL_AS_NAMED_REFERENCE(defaultHelp, "Fetches ladder information about a player. Syntax: ladder <name | rank>");
 	return defaultHelp;
 }
@@ -155,7 +155,7 @@ void LadderGameCommand::create() {
 	this->addTrigger("rank"_jrs);
 }
 
-void LadderGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *player, const Jupiter::ReadableString &parameters) {
+void LadderGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *player, std::string_view parameters) {
 	if (parameters.empty()) {
 		if (player->steamid != 0) {
 			if (RenX::default_ladder_database != nullptr) {
@@ -184,7 +184,7 @@ void LadderGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *player, 
 	}
 }
 
-const Jupiter::ReadableString &LadderGameCommand::getHelp(const Jupiter::ReadableString &) {
+std::string_view LadderGameCommand::getHelp(std::string_view ) {
 	static STRING_LITERAL_AS_NAMED_REFERENCE(defaultHelp, "Displays ladder information about yourself, or another player. Syntax: ladder [name / rank]");
 	return defaultHelp;
 }

@@ -279,7 +279,7 @@ std::string to_hex(T in_integer) {
 	return result;
 }
 
-void RenX_RelayPlugin::RenX_OnRaw(RenX::Server &server, const Jupiter::ReadableString &line) {
+void RenX_RelayPlugin::RenX_OnRaw(RenX::Server &server, std::string_view line) {
 	// Not parsing any escape sequences, so data gets sent upstream exactly as it's received here. Copy tokens where needed to process escape sequences.
 	auto tokens = jessilib::split(std::string_view{line}, RenX::DelimC);
 
@@ -627,8 +627,7 @@ int RenX_RelayPlugin::send_downstream(RenX::Server& in_server, std::string_view 
 		}
 	}
 
-	// TODO: add a string_view constructor for ReferenceString, also add sendData(string_view) variant
-	return in_server.sendData(Jupiter::ReferenceString{ in_message.data(), in_message.size() });
+	return in_server.sendData(in_message);
 }
 
 void RenX_RelayPlugin::upstream_connected(RenX::Server& in_server, upstream_server_info& in_server_info) {

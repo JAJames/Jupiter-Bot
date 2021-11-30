@@ -381,7 +381,7 @@ RenX::TeamType RenX::getTeam(std::string_view team) {
 	return RenX::TeamType::Other;
 }
 
-const Jupiter::ReadableString &RenX::getTeamColor(TeamType team)
+std::string_view RenX::getTeamColor(TeamType team)
 {
 	switch (team)
 	{
@@ -394,7 +394,7 @@ const Jupiter::ReadableString &RenX::getTeamColor(TeamType team)
 	}
 }
 
-const Jupiter::ReadableString &RenX::getTeamName(TeamType team)
+std::string_view RenX::getTeamName(TeamType team)
 {
 	switch (team)
 	{
@@ -407,7 +407,7 @@ const Jupiter::ReadableString &RenX::getTeamName(TeamType team)
 	}
 }
 
-const Jupiter::ReadableString &RenX::getFullTeamName(TeamType team)
+std::string_view RenX::getFullTeamName(TeamType team)
 {
 	switch (team)
 	{
@@ -433,7 +433,7 @@ RenX::TeamType RenX::getEnemy(TeamType team)
 	}
 }
 
-const Jupiter::ReadableString &RenX::getCharacter(const Jupiter::ReadableString &chr)
+std::string_view RenX::getCharacter(std::string_view chr)
 {
 	static Jupiter::ReferenceString object;
 
@@ -448,7 +448,7 @@ const Jupiter::ReadableString &RenX::getCharacter(const Jupiter::ReadableString 
 	return object;
 }
 
-const Jupiter::ReferenceString &translateCharacter(Jupiter::ReferenceString &object)
+std::string_view translateCharacter(std::string_view object)
 {
 	if (object.find(STRING_LITERAL_AS_REFERENCE("GDI_")) == 0)
 	{
@@ -497,7 +497,7 @@ std::string_view RenX::translateName(std::string_view obj)
 	if (obj.empty())
 		return ""_jrs;
 
-	Jupiter::ReferenceString iniTranslation = RenX::getCore()->getConfig()["Name"_jrs].get(Jupiter::ReferenceString{obj});
+	Jupiter::ReferenceString iniTranslation = RenX::getCore()->getConfig()["Name"_jrs].get(obj);
 	if (!iniTranslation.empty())
 		return iniTranslation;
 
@@ -790,7 +790,7 @@ std::string_view RenX::translateName(std::string_view obj)
 	return translateCharacter(object);
 }
 
-const Jupiter::ReadableString &RenX::translateWinType(RenX::WinType winType)
+std::string_view RenX::translateWinType(RenX::WinType winType)
 {
 	switch (winType)
 	{
@@ -812,7 +812,7 @@ const Jupiter::ReadableString &RenX::translateWinType(RenX::WinType winType)
 	}
 }
 
-const Jupiter::ReadableString &RenX::translateWinTypePlain(RenX::WinType winType)
+std::string_view RenX::translateWinTypePlain(RenX::WinType winType)
 {
 	switch (winType)
 	{

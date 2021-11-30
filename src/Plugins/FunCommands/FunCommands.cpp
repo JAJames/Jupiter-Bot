@@ -36,7 +36,7 @@ void EightBallIRCCommand::create()
 	this->addTrigger("eightBall"_jrs);
 }
 
-void EightBallIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString &channel, const Jupiter::ReadableString &nick, const Jupiter::ReadableString &parameters)
+void EightBallIRCCommand::trigger(IRC_Bot *source, std::string_view channel, std::string_view nick, std::string_view parameters)
 {
 	Jupiter::StringS msg;
 	switch (rand() % 31)
@@ -144,7 +144,7 @@ void EightBallIRCCommand::trigger(IRC_Bot *source, const Jupiter::ReadableString
 	source->sendMessage(channel, msg);
 }
 
-const Jupiter::ReadableString &EightBallIRCCommand::getHelp(const Jupiter::ReadableString &)
+std::string_view EightBallIRCCommand::getHelp(std::string_view )
 {
 	static STRING_LITERAL_AS_NAMED_REFERENCE(defaultHelp, "Accurately answers your question 60% of the time, EVERY time. Syntax: 8ball [question]");
 	return defaultHelp;
@@ -159,7 +159,7 @@ ResolveGenericCommand::ResolveGenericCommand()
 	this->addTrigger("resolve"_jrs);
 }
 
-Jupiter::GenericCommand::ResponseLine *ResolveGenericCommand::trigger(const Jupiter::ReadableString &parameters) {
+Jupiter::GenericCommand::ResponseLine *ResolveGenericCommand::trigger(std::string_view parameters) {
 	auto command_split = jessilib::word_split_once_view(std::string_view{parameters}, WHITESPACE_SV);
 	if (command_split.second.empty()) {
 		return new Jupiter::GenericCommand::ResponseLine("Error: Too few parameters. Syntax: resolve <hostname|ip> <address>"_jrs, GenericCommand::DisplayType::PrivateError);
@@ -184,7 +184,7 @@ Jupiter::GenericCommand::ResponseLine *ResolveGenericCommand::trigger(const Jupi
 	return new Jupiter::GenericCommand::ResponseLine("Error: Invalid type. You can only resolve hostnames and IP addresses."_jrs, GenericCommand::DisplayType::PrivateError);
 }
 
-const Jupiter::ReadableString &ResolveGenericCommand::getHelp(const Jupiter::ReadableString &parameters)
+std::string_view ResolveGenericCommand::getHelp(std::string_view parameters)
 {
 	static STRING_LITERAL_AS_NAMED_REFERENCE(defaultHelp, "Resolves an IP address or hostname. Syntax: resolve <hostname|ip> <address>");
 	static STRING_LITERAL_AS_NAMED_REFERENCE(hostHelp, "Resolves a hostname to an IP address. Syntax: resolve hostname <address>");
