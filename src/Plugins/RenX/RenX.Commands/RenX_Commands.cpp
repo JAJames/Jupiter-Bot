@@ -1990,7 +1990,7 @@ void BanSearchIRCCommand::trigger(IRC_Bot *source, std::string_view channel, std
 						types = " NULL;"_jrs;
 					else
 					{
-						types.erase();
+						types.clear();
 						if (entry->is_rdns_ban())
 							types += " rdns"_jrs;
 						if (entry->is_type_game())
@@ -2566,7 +2566,7 @@ void ExemptionSearchIRCCommand::trigger(IRC_Bot *source, std::string_view channe
 						types = " NULL;"_jrs;
 					else
 					{
-						types.erase();
+						types.clear();
 						if (entry->is_type_kick())
 							types += " kick"_jrs;
 						if (entry->is_type_ban())

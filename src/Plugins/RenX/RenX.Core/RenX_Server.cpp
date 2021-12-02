@@ -20,6 +20,7 @@
 #include "jessilib/split.hpp"
 #include "jessilib/word_split.hpp"
 #include "jessilib/unicode.hpp"
+#include "jessilib/unicode_sequence.hpp"
 #include "Jupiter/String.hpp"
 #include "ServerManager.h"
 #include "IRC_Bot.h"
@@ -1307,7 +1308,6 @@ void RenX::PlayerInfo::resolve_rdns(std::string in_ip, std::shared_ptr<std::stri
 void RenX::PlayerInfo::start_resolve_rdns() {
 	rdns_pending = true;
 
-	std::string player_ip = ip;
 	auto rdns_string = std::make_shared<std::string>();
 	m_rdns_ptr = rdns_string;
 	std::thread(resolve_rdns, ip, std::move(rdns_string)).detach();
@@ -1321,11 +1321,9 @@ struct parsed_player_token {
 	bool isPlayer{}; // i.e: they appear on the player list; not "ai"
 };
 
-// TODO: replace me!
+// TODO: consider a simplified & more specific parser for RCON escape sequences
 void process_escape_sequences(std::string& out_string) {
-	Jupiter::StringS temp = out_string;
-	temp.processEscapeSequences();
-	out_string = temp;
+	jessilib::apply_cpp_escape_sequences(out_string);
 }
 
 void RenX::Server::processLine(std::string_view line) {
@@ -1338,8 +1336,9 @@ void RenX::Server::processLine(std::string_view line) {
 	std::vector<Jupiter::StringS> tokens;
 
 	for (auto& token : tokens_view) {
-		tokens.push_back(Jupiter::StringS{std::string(token)}); // TODO: remove this extraneous copy
-		tokens.back().processEscapeSequences();
+		std::string parsed_token = std::string(token);
+		process_escape_sequences(parsed_token);
+		tokens.push_back(std::move(parsed_token));
 	}
 
 	// Safety checker for getting a token at an index
@@ -3155,7 +3154,7 @@ void RenX::Server::processLine(std::string_view line) {
 							plugin->RenX_OnAdminLogout(*this, *player);
 						}
 
-						player->adminType.erase();
+						player->adminType.clear();
 					}
 					else if (subHeader == "Granted;"sv)
 					{

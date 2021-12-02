@@ -87,8 +87,8 @@ void RenX_Ladder_WebPlugin::init() {
 	RenX::sanitizeTags(RenX_Ladder_WebPlugin::entry_profile_previous);
 	RenX::sanitizeTags(RenX_Ladder_WebPlugin::entry_profile_next);
 
-	RenX_Ladder_WebPlugin::header.erase();
-	RenX_Ladder_WebPlugin::footer.erase();
+	RenX_Ladder_WebPlugin::header.clear();
+	RenX_Ladder_WebPlugin::footer.clear();
 	RenX_Ladder_WebPlugin::entry_profile.erase();
 	RenX_Ladder_WebPlugin::ladder_table_header.erase();
 	RenX_Ladder_WebPlugin::ladder_table_footer.erase();

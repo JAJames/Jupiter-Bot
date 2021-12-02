@@ -473,7 +473,7 @@ void RenX_ServerListPlugin::addServerToServerList(RenX::Server &server) {
 	}
 	m_server_list_json += server_json_block;
 	m_server_list_json += ']';
-	server_json_block.erase();
+	server_json_block.clear();
 
 	// Also update metadata so it reflects the now added server
 	updateMetadata();
