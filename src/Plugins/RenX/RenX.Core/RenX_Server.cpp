@@ -1614,14 +1614,14 @@ void RenX::Server::processLine(std::string_view line) {
 	if (!tokens[0].empty())
 	{
 		char header = tokens[0][0];
-		tokens[0].shiftRight(1);
+		std::string_view main_header{ tokens[0].data() + 1, tokens[0].size() - 1 };
 		switch (header)
 		{
 		case 'r':
 			if (jessilib::equalsi(m_lastCommand, "clientlist"sv))
 			{
 				// ID | IP | Steam ID | Admin Status | Team | Name
-				if (!tokens[0].empty())
+				if (!main_header.empty())
 				{
 					bool isBot = false;
 					int id;
@@ -1630,15 +1630,13 @@ void RenX::Server::processLine(std::string_view line) {
 					Jupiter::ReferenceString steamToken = getToken(2);
 					Jupiter::ReferenceString adminToken = getToken(3);
 					Jupiter::ReferenceString teamToken = getToken(4);
-					if (tokens[0][0] == 'b')
+					if (main_header[0] == 'b')
 					{
 						isBot = true;
-						tokens[0].shiftRight(1);
-						id = Jupiter::from_string<int>(tokens[0]);
-						tokens[0].shiftLeft(1);
+						id = Jupiter::from_string<int>(main_header.substr(1));
 					}
 					else
-						id = Jupiter::from_string<int>(tokens[0]);
+						id = Jupiter::from_string<int>(main_header);
 
 					if (steamToken != "-----NO-STEAM-----")
 						steamid = Jupiter::from_string<uint64_t>(steamToken);
@@ -1817,7 +1815,7 @@ void RenX::Server::processLine(std::string_view line) {
 					consume_tokens_as_command_list_format();
 				}
 				else {
-					parseGetPlayerOrAdd(tokens[0]);
+					parseGetPlayerOrAdd(main_header);
 				}
 			}
 			else if (jessilib::equalsi(m_lastCommand, "botvarlist"sv)) {
@@ -2014,7 +2012,7 @@ void RenX::Server::processLine(std::string_view line) {
 			else if (jessilib::equalsi(m_lastCommand, "map"sv))
 			{
 				// Map | Guid
-				m_map.name = getToken(0);
+				m_map.name = main_header;
 				std::string_view guid_token = getToken(1);
 
 				if (guid_token.size() == 32U) {
@@ -2094,7 +2092,7 @@ void RenX::Server::processLine(std::string_view line) {
 			}
 			else if (jessilib::equalsi(m_lastCommand, "rotation"sv)) {
 				// Map | Guid
-				std::string_view in_map = getToken(0);
+				std::string_view in_map = main_header;
 				if (hasMapInRotation(in_map) == false) {
 					this->maps.emplace_back(in_map);
 
@@ -2106,7 +2104,7 @@ void RenX::Server::processLine(std::string_view line) {
 				}
 			}
 			else if (jessilib::equalsi(m_lastCommand, "changename"sv)) {
-				RenX::PlayerInfo *player = parseGetPlayerOrAdd(getToken(0));
+				RenX::PlayerInfo *player = parseGetPlayerOrAdd(main_header);
 				Jupiter::StringS newName = getToken(2);
 				for (const auto& plugin : xPlugins) {
 					plugin->RenX_OnNameChange(*this, *player, newName);
@@ -2117,7 +2115,7 @@ void RenX::Server::processLine(std::string_view line) {
 		case 'l':
 			if (m_rconVersion >= 3) {
 				Jupiter::ReferenceString subHeader = getToken(1);
-				if (tokens[0] == "GAME"sv) {
+				if (main_header == "GAME"sv) {
 					if (subHeader == "Deployed;"sv) {
 						// Object (Beacon/Mine) | Player
 						// Object (Beacon/Mine) | Player | "on" | Surface
@@ -2643,7 +2641,7 @@ void RenX::Server::processLine(std::string_view line) {
 						}
 					}
 				}
-				else if (tokens[0] == "CHAT"sv)
+				else if (main_header == "CHAT"sv)
 				{
 					if (subHeader == "Say;"sv)
 					{
@@ -2772,7 +2770,7 @@ void RenX::Server::processLine(std::string_view line) {
 						}
 					}
 				}
-				else if (tokens[0] == "PLAYER"sv)
+				else if (main_header == "PLAYER"sv)
 				{
 					if (subHeader == "Enter;"sv)
 					{
@@ -2974,7 +2972,7 @@ void RenX::Server::processLine(std::string_view line) {
 						}
 					}
 				}
-				else if (tokens[0] == "RCON"sv)
+				else if (main_header == "RCON"sv)
 				{
 					if (subHeader == "Command;"sv)
 					{
@@ -3111,7 +3109,7 @@ void RenX::Server::processLine(std::string_view line) {
 						}
 					}
 				}
-				else if (tokens[0] == "ADMIN"sv)
+				else if (main_header == "ADMIN"sv)
 				{
 					if (subHeader == "Rcon;"sv)
 					{
@@ -3162,7 +3160,7 @@ void RenX::Server::processLine(std::string_view line) {
 						}
 					}
 				}
-				else if (tokens[0] == "VOTE"sv)
+				else if (main_header == "VOTE"sv)
 				{
 					if (subHeader == "Called;"sv)
 					{
@@ -3376,7 +3374,7 @@ void RenX::Server::processLine(std::string_view line) {
 						}
 					}
 				}
-				else if (tokens[0] == "MAP"sv)
+				else if (main_header == "MAP"sv)
 				{
 					if (subHeader == "Changing;"sv)
 					{
@@ -3430,7 +3428,7 @@ void RenX::Server::processLine(std::string_view line) {
 						}
 					}
 				}
-				else if (tokens[0] == "DEMO"sv)
+				else if (main_header == "DEMO"sv)
 				{
 					if (subHeader == "Record;"sv)
 					{
@@ -3468,7 +3466,7 @@ void RenX::Server::processLine(std::string_view line) {
 						}
 					}
 				}
-				/*else if (tokens[0] == "ERROR;"sv) // Decided to disable this entirely, since it's unreachable anyways.
+				/*else if (main_header == "ERROR;"sv) // Decided to disable this entirely, since it's unreachable anyways.
 				{
 					// Should be under RCON.
 					// "Could not open TCP Port" Port "- Rcon Disabled"

@@ -275,12 +275,14 @@ Jupiter::GenericCommand::ResponseLine *DebugInfoGenericCommand::trigger(std::str
 
 		for (auto& user_pair : channel.getUsers()) {
 			Jupiter::IRC::Client::User *user = user_pair.second->getUser();
-			line->next = new Jupiter::GenericCommand::ResponseLine(string_printf("User %.*s!%.*s@%.*s (prefix: %c) of channel %.*s (of %u shared)",
+			line->next = new Jupiter::GenericCommand::ResponseLine(string_printf("User %.*s!%.*s@%.*s (prefix: %c; prefixes: %.*s) of channel %.*s (of %u shared)",
 				user->getNickname().size(), user->getNickname().data(),
 				user->getUsername().size(), user->getUsername().data(),
 				user->getHostname().size(), user->getHostname().data(),
-				channel.getUserPrefix(*user_pair.second) ? channel.getUserPrefix(*user_pair.second) : ' ', channel.getName().size(),
-				channel.getName().data(), user->getChannelCount()), GenericCommand::DisplayType::PublicSuccess);
+				channel.getUserPrefix(*user_pair.second) ? channel.getUserPrefix(*user_pair.second) : ' ',
+				user_pair.second->getPrefixes().size(), user_pair.second->getPrefixes().data(),
+				channel.getName().size(), channel.getName().data(),
+				user->getChannelCount()), GenericCommand::DisplayType::PublicSuccess);
 			line = line->next;
 		};
 	};
