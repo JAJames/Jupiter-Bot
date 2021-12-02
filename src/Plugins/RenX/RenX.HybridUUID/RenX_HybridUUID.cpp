@@ -29,7 +29,7 @@ using namespace std::literals;
 Jupiter::StringS calc_uuid(RenX::PlayerInfo &player)
 {
 	if (player.steamid != 0U)
-		return Jupiter::StringS::Format("S%.16llX", player.steamid);
+		return string_printf("S%.16llX", player.steamid);
 	return "N"s + player.name;
 }
 

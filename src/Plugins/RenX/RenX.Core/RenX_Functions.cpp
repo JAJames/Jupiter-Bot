@@ -875,7 +875,7 @@ Jupiter::String RenX::getFormattedPlayerName(const RenX::PlayerInfo &player)
 
 Jupiter::StringS RenX::formatGUID(const RenX::Map &map)
 {
-	return Jupiter::StringS::Format("%.16llX%.16llX", map.guid[0], map.guid[1]);
+	return string_printf("%.16llX%.16llX", map.guid[0], map.guid[1]);
 }
 
 std::chrono::milliseconds RenX::getServerTime(const RenX::PlayerInfo &player)
@@ -886,7 +886,7 @@ std::chrono::milliseconds RenX::getServerTime(const RenX::PlayerInfo &player)
 Jupiter::StringS RenX::default_uuid_func(RenX::PlayerInfo &player)
 {
 	if (player.steamid != 0U)
-		return Jupiter::StringS::Format("0x%.16llX", player.steamid);
+		return string_printf("0x%.16llX", player.steamid);
 
 	return Jupiter::StringS();
 }

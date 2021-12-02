@@ -448,18 +448,14 @@ void PlayersIRCCommand::trigger(IRC_Bot *source, std::string_view channel, std::
 			{
 				if (server->players.size() == 0)
 				{
-					source->sendMessage(channel, Jupiter::StringS::Format("ERROR: NO PLAYERS BUT BOT_COUNT = %u.", server->getBotCount()));
+					source->sendMessage(channel, string_printf("ERROR: NO PLAYERS BUT BOT_COUNT = %u.", server->getBotCount()));
 					continue;
 				}
 
 				// End string containers
-				std::list<Jupiter::String *> gStrings;
-				std::list<Jupiter::String *> nStrings;
-				std::list<Jupiter::String *> oStrings;
-
-				Jupiter::StringL *gCurrent = nullptr;
-				Jupiter::StringL *nCurrent = nullptr;
-				Jupiter::StringL *oCurrent = nullptr;
+				std::list<std::string> gStrings;
+				std::list<std::string> nStrings;
+				std::list<std::string> oStrings;
 
 				// Team player counters
 				unsigned int gTotal = 0;
@@ -471,110 +467,99 @@ void PlayersIRCCommand::trigger(IRC_Bot *source, std::string_view channel, std::
 				unsigned int nBots = 0;
 				unsigned int oBots = 0;
 
-				for (auto node = server->players.begin(); node != server->players.end(); ++node)
-				{
+				for (auto node = server->players.begin(); node != server->players.end(); ++node) {
 					Jupiter::String name = RenX::getFormattedPlayerName(*node);
 					if (name.size() > STRING_LENGTH - 32) continue; // Name will be too long to send.
 
-					switch (node->team)
-					{
+					switch (node->team) {
 					case RenX::TeamType::Nod:
-						if (nCurrent == nullptr || nCurrent->size() + name.size() > STRING_LENGTH)
-						{
-							nCurrent = new Jupiter::StringL(STRING_LENGTH);
-							nCurrent->format(IRCCOLOR "%.*s[%.*s]: " IRCBOLD "%.*s" IRCBOLD, nTeamColor.size(),
-								nTeamColor.data(), nTeam.size(),
-								nTeam.data(), name.size(), name.data());
-							nStrings.push_back(nCurrent);
+						if (nStrings.empty() || nStrings.back().size() + name.size() > STRING_LENGTH) {
+							nStrings.push_back(string_printf(IRCCOLOR "%.*s[%.*s]: " IRCBOLD "%.*s" IRCBOLD,
+								nTeamColor.size(), nTeamColor.data(),
+								nTeam.size(), nTeam.data(),
+								name.size(), name.data()));
 						}
-						else nCurrent->aformat(IRCCOLOR ", " IRCBOLD "%.*s" IRCBOLD, name.size(), name.data());
-						nTotal++;
-						if (node->isBot)
-							nBots++;
+						else {
+							nStrings.back() += string_printf(IRCCOLOR ", " IRCBOLD "%.*s" IRCBOLD, name.size(), name.data());
+						}
+
+						++nTotal;
+						if (node->isBot) {
+							++nBots;
+						}
 						break;
 					case RenX::TeamType::GDI:
-						if (gCurrent == nullptr || gCurrent->size() + name.size() > STRING_LENGTH)
+						if (gStrings.empty() || gStrings.back().size() + name.size() > STRING_LENGTH)
 						{
-							gCurrent = new Jupiter::StringL(STRING_LENGTH);
-							gCurrent->format(IRCCOLOR "%.*s[%.*s]: " IRCBOLD "%.*s" IRCBOLD, gTeamColor.size(),
-								gTeamColor.data(), gTeam.size(),
-								gTeam.data(), name.size(), name.data());
-							gStrings.push_back(gCurrent);
+							gStrings.push_back(string_printf(IRCCOLOR "%.*s[%.*s]: " IRCBOLD "%.*s" IRCBOLD,
+								gTeamColor.size(), gTeamColor.data(),
+								gTeam.size(), gTeam.data(),
+								name.size(), name.data()));
 						}
-						else gCurrent->aformat(IRCCOLOR ", " IRCBOLD "%.*s" IRCBOLD, name.size(), name.data());
-						gTotal++;
-						if (node->isBot)
-							gBots++;
+						else {
+							gStrings.back() += string_printf(IRCCOLOR ", " IRCBOLD "%.*s" IRCBOLD, name.size(), name.data());
+						}
+
+						++gTotal;
+						if (node->isBot) {
+							++gBots;
+						}
 						break;
 					default:
-						if (oCurrent == nullptr || oCurrent->size() + name.size() > STRING_LENGTH)
-						{
-							oCurrent = new Jupiter::StringL(STRING_LENGTH);
-							oCurrent->format(IRCCOLOR "%.*s[%.*s]: " IRCBOLD "%.*s" IRCBOLD, oTeamColor.size(),
-								oTeamColor.data(), oTeam.size(),
-								oTeam.data(), name.size(), name.data());
-							oStrings.push_back(oCurrent);
+						if (oStrings.empty() || oStrings.back().size() + name.size() > STRING_LENGTH) {
+							oStrings.push_back(string_printf(IRCCOLOR "%.*s[%.*s]: " IRCBOLD "%.*s" IRCBOLD,
+								oTeamColor.size(), oTeamColor.data(),
+								oTeam.size(), oTeam.data(),
+								name.size(), name.data()));
 						}
-						else oCurrent->aformat(IRCCOLOR ", " IRCBOLD "%.*s" IRCBOLD, name.size(), name.data());
-						oTotal++;
-						if (node->isBot)
-							oBots++;
+						else {
+							oStrings.back() += string_printf(IRCCOLOR ", " IRCBOLD "%.*s" IRCBOLD, name.size(), name.data());
+						}
+
+						++oTotal;
+						if (node->isBot) {
+							++oBots;
+						}
 						break;
 					}
 				}
-				Jupiter::StringL *outString;
-				while (gStrings.size() != 0)
-				{
-					outString = gStrings.front();
-					source->sendMessage(channel, *outString);
-
-					delete outString;
+				while (gStrings.size() != 0) {
+					source->sendMessage(channel, gStrings.front());
 					gStrings.pop_front();
 				}
-				while (nStrings.size() != 0)
-				{
-					outString = nStrings.front();
-					source->sendMessage(channel, *outString);
-
-					delete outString;
+				while (nStrings.size() != 0) {
+					source->sendMessage(channel, nStrings.front());
 					nStrings.pop_front();
 				}
-				while (oStrings.size() != 0)
-				{
-					outString = oStrings.front();
-					source->sendMessage(channel, *outString);
-
-					delete outString;
+				while (oStrings.size() != 0) {
+					source->sendMessage(channel, oStrings.front());
 					oStrings.pop_front();
 				}
 
-				Jupiter::StringL out;
-				out.format(IRCCOLOR "03Total Players" IRCCOLOR ": %u", server->players.size());
-				if (gBots + nBots + oBots > 0)
-					out.aformat(" (%u bots)", gBots + nBots + oBots);
-				if (gTotal > 0)
-				{
-					out.aformat(IRCCOLOR "02 | " IRCCOLOR "%.*s%.*s" IRCCOLOR ": %u", gTeamColor.size(),
+				std::string out = string_printf(IRCCOLOR "03Total Players" IRCCOLOR ": %u", server->players.size());
+				if (gBots + nBots + oBots > 0) {
+					out += string_printf(" (%u bots)", gBots + nBots + oBots);
+				}
+				if (gTotal > 0) {
+					out += string_printf(IRCCOLOR "02 | " IRCCOLOR "%.*s%.*s" IRCCOLOR ": %u", gTeamColor.size(),
 						gTeamColor.data(), gTeam.size(),
 						gTeam.data(), gTotal);
 					if (gBots > 0)
-						out.aformat(" (%u bots)", gBots);
+						out += string_printf(" (%u bots)", gBots);
 				}
-				if (nTotal > 0)
-				{
-					out.aformat(IRCCOLOR "02 | " IRCCOLOR "%.*s%.*s" IRCCOLOR ": %u", nTeamColor.size(),
+				if (nTotal > 0) {
+					out += string_printf(IRCCOLOR "02 | " IRCCOLOR "%.*s%.*s" IRCCOLOR ": %u", nTeamColor.size(),
 						nTeamColor.data(), nTeam.size(),
 						nTeam.data(), nTotal);
 					if (nBots > 0)
-						out.aformat(" (%u bots)", nBots);
+						out += string_printf(" (%u bots)", nBots);
 				}
-				if (oTotal > 0)
-				{
-					out.aformat(IRCCOLOR "02 | " IRCCOLOR "%.*s%.*s" IRCCOLOR ": %u", oTeamColor.size(),
+				if (oTotal > 0) {
+					out += string_printf(IRCCOLOR "02 | " IRCCOLOR "%.*s%.*s" IRCCOLOR ": %u", oTeamColor.size(),
 						oTeamColor.data(), oTeam.size(),
 						oTeam.data(), oTotal);
 					if (oBots > 0)
-						out.aformat(" (%u bots)", oBots);
+						out += string_printf(" (%u bots)", oBots);
 				}
 				source->sendMessage(channel, out);
 			}
@@ -679,17 +664,17 @@ void PlayerTableIRCCommand::trigger(IRC_Bot *source, std::string_view channel, s
 					++creditColLen;
 
 				if (server->isAdminLogChanType(type))
-					source->sendMessage(channel, Jupiter::StringS::Format(IRCUNDERLINE IRCCOLOR "03%*.*s | %*s | %*s | %*s | IP Address", maxNickLen, NICK_COL_HEADER.size(), NICK_COL_HEADER.data(), idColLen, "ID", scoreColLen, "Score", creditColLen, "Credits"));
+					source->sendMessage(channel, string_printf(IRCUNDERLINE IRCCOLOR "03%*.*s | %*s | %*s | %*s | IP Address", maxNickLen, NICK_COL_HEADER.size(), NICK_COL_HEADER.data(), idColLen, "ID", scoreColLen, "Score", creditColLen, "Credits"));
 				else
-					source->sendMessage(channel, Jupiter::StringS::Format(IRCUNDERLINE IRCCOLOR "03%*.*s | %*s | %*s | %*s", maxNickLen, NICK_COL_HEADER.size(), NICK_COL_HEADER.data(), idColLen, "ID", scoreColLen, "Score", creditColLen, "Credits"));
+					source->sendMessage(channel, string_printf(IRCUNDERLINE IRCCOLOR "03%*.*s | %*s | %*s | %*s", maxNickLen, NICK_COL_HEADER.size(), NICK_COL_HEADER.data(), idColLen, "ID", scoreColLen, "Score", creditColLen, "Credits"));
 
 				auto output_player = [server, type, source, &channel, maxNickLen, idColLen, scoreColLen, creditColLen](RenX::PlayerInfo *player, std::string_view color)
 				{
 					if (server->isAdminLogChanType(type))
-						source->sendMessage(channel, Jupiter::StringS::Format(IRCCOLOR "%.*s%*.*s" IRCCOLOR " " IRCCOLOR "03|" IRCCOLOR " %*d " IRCCOLOR "03|" IRCCOLOR " %*.0f " IRCCOLOR "03|" IRCCOLOR " %*.0f " IRCCOLOR "03|" IRCNORMAL " %.*s", color.size(),
+						source->sendMessage(channel, string_printf(IRCCOLOR "%.*s%*.*s" IRCCOLOR " " IRCCOLOR "03|" IRCCOLOR " %*d " IRCCOLOR "03|" IRCCOLOR " %*.0f " IRCCOLOR "03|" IRCCOLOR " %*.0f " IRCCOLOR "03|" IRCNORMAL " %.*s", color.size(),
 							color.data(), maxNickLen, player->name.size(), player->name.data(), idColLen, player->id, scoreColLen, player->score, creditColLen, player->credits, player->ip.size(), player->ip.data()));
 					else
-						source->sendMessage(channel, Jupiter::StringS::Format(IRCCOLOR "%.*s%*.*s" IRCCOLOR " " IRCCOLOR "03|" IRCCOLOR " %*d " IRCCOLOR "03|" IRCCOLOR " %*.0f " IRCCOLOR "03|" IRCCOLOR " %*.0f", color.size(),
+						source->sendMessage(channel, string_printf(IRCCOLOR "%.*s%*.*s" IRCCOLOR " " IRCCOLOR "03|" IRCCOLOR " %*d " IRCCOLOR "03|" IRCCOLOR " %*.0f " IRCCOLOR "03|" IRCCOLOR " %*.0f", color.size(),
 							color.data(), maxNickLen, player->name.size(), player->name.data(), idColLen, player->id, scoreColLen, player->score, creditColLen, player->credits));
 				};
 
@@ -1004,10 +989,10 @@ void GameInfoIRCCommand::trigger(IRC_Bot *source, std::string_view channel, std:
 				match = true;
 				const RenX::Map &map = server->getMap();
 				std::chrono::seconds time = std::chrono::duration_cast<std::chrono::seconds>(server->getGameTime());
-				source->sendMessage(channel, Jupiter::StringS::Format(IRCCOLOR "03[GameInfo] " IRCCOLOR "%.*s", server->getGameVersion().size(), server->getGameVersion().data()));
+				source->sendMessage(channel, string_printf(IRCCOLOR "03[GameInfo] " IRCCOLOR "%.*s", server->getGameVersion().size(), server->getGameVersion().data()));
 				source->sendMessage(channel, IRCCOLOR "03[GameInfo] " IRCCOLOR "10Map" IRCCOLOR ": "s + map.name + "; " IRCCOLOR "10GUID" IRCCOLOR ": "_jrs + RenX::formatGUID(map));
-				source->sendMessage(channel, Jupiter::StringS::Format(IRCCOLOR "03[GameInfo] " IRCCOLOR "10Elapsed time" IRCCOLOR ": %.2lld:%.2lld:%.2lld", time.count() / 3600, (time.count() % 3600) / 60, time.count() % 60));
-				source->sendMessage(channel, Jupiter::StringS::Format(IRCCOLOR "03[GameInfo] " IRCCOLOR "There are " IRCCOLOR "10%d" IRCCOLOR " players online.", server->players.size()));
+				source->sendMessage(channel, string_printf(IRCCOLOR "03[GameInfo] " IRCCOLOR "10Elapsed time" IRCCOLOR ": %.2lld:%.2lld:%.2lld", time.count() / 3600, (time.count() % 3600) / 60, time.count() % 60));
+				source->sendMessage(channel, string_printf(IRCCOLOR "03[GameInfo] " IRCCOLOR "There are " IRCCOLOR "10%d" IRCCOLOR " players online.", server->players.size()));
 			}
 		}
 		if (match == false)
@@ -1031,32 +1016,24 @@ void SteamIRCCommand::create()
 	this->setAccessLevel(1);
 }
 
-void SteamIRCCommand::trigger(IRC_Bot *source, std::string_view channel, std::string_view nick, std::string_view parameters)
-{
+void SteamIRCCommand::trigger(IRC_Bot *source, std::string_view channel, std::string_view nick, std::string_view parameters) {
 	Jupiter::IRC::Client::Channel *chan = source->getChannel(channel);
-	if (chan != nullptr)
-	{
+	if (chan != nullptr) {
 		int type = chan->getType();
-		if (!parameters.empty())
-		{
-			Jupiter::StringL msg;
-			for (unsigned int i = 0; i != RenX::getCore()->getServerCount(); i++)
-			{
+		if (!parameters.empty()) {
+			std::string msg;
+			for (unsigned int i = 0; i != RenX::getCore()->getServerCount(); i++) {
 				RenX::Server *server = RenX::getCore()->getServer(i);
-				if (server->isLogChanType(type))
-				{
-					for (auto node = server->players.begin(); node != server->players.end(); ++node)
-					{
-						if (jessilib::findi(node->name, parameters) != std::string::npos)
-						{
+				if (server->isLogChanType(type)) {
+					for (auto node = server->players.begin(); node != server->players.end(); ++node) {
+						if (jessilib::findi(node->name, parameters) != std::string::npos) {
 							Jupiter::String playerName = RenX::getFormattedPlayerName(*node);
-							msg.format(IRCCOLOR "03[Steam] " IRCCOLOR "%.*s (ID: %d) ", playerName.size(),
+							msg = string_printf(IRCCOLOR "03[Steam] " IRCCOLOR "%.*s (ID: %d) ", playerName.size(),
 								playerName.data(), node->id);
-							if (node->steamid != 0)
-							{
+							if (node->steamid != 0) {
 								msg += "is using steam ID " IRCBOLD;
 								msg += server->formatSteamID(*node);
-								msg.aformat(IRCBOLD "; Steam Profile: " IRCBOLD "https://steamcommunity.com/profiles/%llu" IRCBOLD, node->steamid);
+								msg += string_printf(IRCBOLD "; Steam Profile: " IRCBOLD "https://steamcommunity.com/profiles/%llu" IRCBOLD, node->steamid);
 							}
 							else
 								msg += "is not using steam.";
@@ -1091,7 +1068,7 @@ void SteamIRCCommand::trigger(IRC_Bot *source, std::string_view channel, std::st
 					}
 
 					if (realPlayers != 0)
-						source->sendMessage(channel, Jupiter::StringS::Format("%.2f%% (%u/%u) of players are using Steam.", ((double)total * 100) / ((double)realPlayers), total, realPlayers));
+						source->sendMessage(channel, string_printf("%.2f%% (%u/%u) of players are using Steam.", ((double)total * 100) / ((double)realPlayers), total, realPlayers));
 					else
 						source->sendMessage(channel, STRING_LITERAL_AS_REFERENCE("No players are in-game."));
 				}
@@ -1118,26 +1095,19 @@ void KillDeathRatioIRCCommand::create()
 	this->addTrigger(STRING_LITERAL_AS_REFERENCE("killdeathraio"));
 }
 
-void KillDeathRatioIRCCommand::trigger(IRC_Bot *source, std::string_view channel, std::string_view nick, std::string_view parameters)
-{
-	if (!parameters.empty())
-	{
+void KillDeathRatioIRCCommand::trigger(IRC_Bot *source, std::string_view channel, std::string_view nick, std::string_view parameters) {
+	if (!parameters.empty()) {
 		Jupiter::IRC::Client::Channel *chan = source->getChannel(channel);
-		if (chan != nullptr)
-		{
+		if (chan != nullptr) {
 			int type = chan->getType();
 			Jupiter::StringL msg;
-			for (unsigned int i = 0; i != RenX::getCore()->getServerCount(); i++)
-			{
+			for (unsigned int i = 0; i != RenX::getCore()->getServerCount(); i++) {
 				RenX::Server *server = RenX::getCore()->getServer(i);
-				if (server->isLogChanType(type) && server->players.size() != 0)
-				{
-					for (auto node = server->players.begin(); node != server->players.end(); ++node)
-					{
-						if (jessilib::findi(node->name, parameters) != std::string::npos)
-						{
+				if (server->isLogChanType(type) && server->players.size() != 0) {
+					for (auto node = server->players.begin(); node != server->players.end(); ++node) {
+						if (jessilib::findi(node->name, parameters) != std::string::npos) {
 							Jupiter::String playerName = RenX::getFormattedPlayerName(*node);
-							msg.format(IRCBOLD "%.*s" IRCBOLD IRCCOLOR ": Kills: %u - Deaths: %u - KDR: %.2f", playerName.size(),
+							msg = string_printf(IRCBOLD "%.*s" IRCBOLD IRCCOLOR ": Kills: %u - Deaths: %u - KDR: %.2f", playerName.size(),
 								playerName.data(), node->kills, node->deaths, static_cast<double>(node->kills) / (node->deaths == 0 ? 1.0f : static_cast<double>(node->deaths)));
 							source->sendMessage(channel, msg);
 						}
@@ -1345,25 +1315,20 @@ void ReconnectIRCCommand::create()
 	this->setAccessLevel(3);
 }
 
-void ReconnectIRCCommand::trigger(IRC_Bot *source, std::string_view channel, std::string_view nick, std::string_view )
-{
+void ReconnectIRCCommand::trigger(IRC_Bot *source, std::string_view channel, std::string_view nick, std::string_view ) {
 	Jupiter::IRC::Client::Channel *chan = source->getChannel(channel);
-	if (chan != nullptr)
-	{
+	if (chan != nullptr) {
 		int type = chan->getType();
 		Jupiter::StringS msg;
-		for (unsigned int i = 0; i != RenX::getCore()->getServerCount(); i++)
-		{
+		for (unsigned int i = 0; i != RenX::getCore()->getServerCount(); i++) {
 			RenX::Server *server = RenX::getCore()->getServer(i);
-			if (server->isLogChanType(type))
-			{
+			if (server->isLogChanType(type)) {
 				if (server->reconnect(RenX::DisconnectReason::Triggered)) msg.set("Connection established");
-				else msg.format("[RenX] ERROR: Failed to connect to %.*s on port %u." ENDL, server->getHostname().size(), server->getHostname().c_str(), server->getPort());
+				else msg = string_printf("[RenX] ERROR: Failed to connect to %.*s on port %u." ENDL, server->getHostname().size(), server->getHostname().c_str(), server->getPort());
 				source->sendMessage(channel, msg);
 			}
 		}
-		if (msg.empty())
-		{
+		if (msg.empty()) {
 			// We didn't connect anywhere!!
 			msg.set("ERROR: No servers found to connect to.");
 			source->sendMessage(channel, msg);
@@ -1426,7 +1391,7 @@ void GameOverIRCCommand::trigger(IRC_Bot *source, std::string_view channel, std:
 					else
 						delay = std::chrono::seconds(Jupiter::from_string<long long>(parameters));
 
-					server->sendMessage(Jupiter::StringS::Format("Notice: This server will gameover in %lld seconds.", static_cast<long long>(delay.count())));
+					server->sendMessage(string_printf("Notice: This server will gameover in %lld seconds.", static_cast<long long>(delay.count())));
 					server->gameover(delay);
 				}
 			}
@@ -1883,7 +1848,7 @@ void KickIRCCommand::trigger(IRC_Bot *source, std::string_view channel, std::str
 			}
 		}
 	}
-	source->sendMessage(channel, Jupiter::StringS::Format("%u players kicked.", kicks));
+	source->sendMessage(channel, string_printf("%u players kicked.", kicks));
 }
 
 std::string_view KickIRCCommand::getHelp(std::string_view ) {
@@ -2010,7 +1975,7 @@ void BanSearchIRCCommand::trigger(IRC_Bot *source, std::string_view channel, std
 						types += ";"_jrs;
 					}
 
-					out.format("ID: %lu (" IRCCOLOR "%sactive" IRCCOLOR "); Added: %s; Expires: %s; IP: %.*s/%u; HWID: %.*s; Steam: %llu; Types:%.*s Name: %.*s; Banner: %.*s",
+					out = string_printf("ID: %lu (" IRCCOLOR "%sactive" IRCCOLOR "); Added: %s; Expires: %s; IP: %.*s/%u; HWID: %.*s; Steam: %llu; Types:%.*s Name: %.*s; Banner: %.*s",
 						i, entry->is_active() ? "12" : "04in", dateStr, expireStr, ip_str.size(), ip_str.data(), entry->prefix_length, entry->hwid.size(), entry->hwid.data(), entry->steamid,
 						types.size(), types.data(), entry->name.size(), entry->name.data(), entry->banner.size(), entry->banner.data());
 
@@ -2032,7 +1997,7 @@ void BanSearchIRCCommand::trigger(IRC_Bot *source, std::string_view channel, std
 		}
 	}
 	else
-		source->sendNotice(nick, Jupiter::StringS::Format("There are a total of %u entries in the ban database.", entries.size()));
+		source->sendNotice(nick, string_printf("There are a total of %u entries in the ban database.", entries.size()));
 }
 
 std::string_view BanSearchIRCCommand::getHelp(std::string_view )
@@ -2249,7 +2214,7 @@ void KickBanIRCCommand::trigger(IRC_Bot *source, std::string_view channel, std::
 					source->sendMessage(channel, player_not_found_message(name));
 				}
 				else {
-					source->sendMessage(channel, Jupiter::StringS::Format("%u players kicked.", kicks));
+					source->sendMessage(channel, string_printf("%u players kicked.", kicks));
 					RenX::getCore()->banCheck();
 				}
 			}
@@ -2433,7 +2398,7 @@ void AddBanIRCCommand::trigger(IRC_Bot *source, std::string_view channel, std::s
 
 				RenX::banDatabase->add(name, ip, prefix_length, steamid, hwid, rdns, banner, reason, duration, flags);
 				RenX::getCore()->banCheck();
-				source->sendMessage(channel, Jupiter::StringS::Format("Ban added to the database with ID #%u", RenX::banDatabase->getEntries().size() - 1));
+				source->sendMessage(channel, string_printf("Ban added to the database with ID #%u", RenX::banDatabase->getEntries().size() - 1));
 			}
 		}
 	}
@@ -2576,7 +2541,7 @@ void ExemptionSearchIRCCommand::trigger(IRC_Bot *source, std::string_view channe
 						types += ";"_jrs;
 					}
 
-					out.format("ID: %lu (%sactive); Date: %s; IP: %.*s/%u; Steam: %llu; Types:%.*s Setter: %.*s",
+					out = string_printf("ID: %lu (%sactive); Date: %s; IP: %.*s/%u; Steam: %llu; Types:%.*s Setter: %.*s",
 						i, entry->is_active() ? "" : "in", timeStr, ip_str.size(), ip_str.data(), entry->prefix_length, entry->steamid,
 						types.size(), types.data(), entry->setter.size(), entry->setter.data());
 
@@ -2588,7 +2553,7 @@ void ExemptionSearchIRCCommand::trigger(IRC_Bot *source, std::string_view channe
 		}
 	}
 	else
-		source->sendNotice(nick, Jupiter::StringS::Format("There are a total of %u entries in the exemption database.", entries.size()));
+		source->sendNotice(nick, string_printf("There are a total of %u entries in the exemption database.", entries.size()));
 }
 
 std::string_view ExemptionSearchIRCCommand::getHelp(std::string_view ) {
@@ -2649,7 +2614,7 @@ void BanExemptIRCCommand::trigger(IRC_Bot *source, std::string_view channel, std
 		source->sendMessage(channel, player_not_found_message(target_name));
 	}
 	else {
-		source->sendMessage(channel, Jupiter::StringS::Format("%u players added.", exemptions));
+		source->sendMessage(channel, string_printf("%u players added.", exemptions));
 	}
 }
 
@@ -2710,7 +2675,7 @@ void KickExemptIRCCommand::trigger(IRC_Bot *source, std::string_view channel, st
 		source->sendMessage(channel, player_not_found_message(target_name));
 	}
 	else {
-		source->sendMessage(channel, Jupiter::StringS::Format("%u players added.", exemptions));
+		source->sendMessage(channel, string_printf("%u players added.", exemptions));
 	}
 }
 
@@ -2834,7 +2799,7 @@ void AddExemptionIRCCommand::trigger(IRC_Bot *source, std::string_view channel, 
 				else
 				{
 					RenX::exemptionDatabase->add(ip, prefix_length, steamid, setter, duration, flags);
-					source->sendMessage(channel, Jupiter::StringS::Format("Exemption added to the database with ID #%u", RenX::exemptionDatabase->getEntries().size() - 1));
+					source->sendMessage(channel, string_printf("Exemption added to the database with ID #%u", RenX::exemptionDatabase->getEntries().size() - 1));
 				}
 			}
 		}
@@ -2920,7 +2885,7 @@ void AddBotsIRCCommand::trigger(IRC_Bot *source, std::string_view channel, std::
 		}
 	}
 
-	Jupiter::StringL cmd;
+	std::string cmd;
 	RenX::TeamType team = RenX::TeamType::None;
 	if (split_parameters.size() >= 2) {
 		team = RenX::getTeam(split_parameters[1]);
@@ -2940,12 +2905,13 @@ void AddBotsIRCCommand::trigger(IRC_Bot *source, std::string_view channel, std::
 	}
 
 	for (const auto& server : servers) {
+		size_t base_length = cmd.size();
 		if (server != nullptr) {
-			size_t extra = cmd.aformat("%u", amount);
+			cmd += string_printf("%u", amount);
 			server->send(cmd);
-			cmd -= extra;
+			cmd.erase(base_length);
 		}
-		server->sendMessage(Jupiter::StringS::Format("%u bots have been added to the server.", amount));
+		server->sendMessage(string_printf("%u bots have been added to the server.", amount));
 	}
 }
 
@@ -3058,7 +3024,7 @@ void RCONIRCCommand::trigger(IRC_Bot *source, std::string_view channel, std::str
 
 	size_t server_count = RenX::getCore()->send(chan->getType(), parameters);
 	if (server_count > 0) {
-		source->sendMessage(channel, Jupiter::StringS::Format("Command sent to %u servers.", server_count));
+		source->sendMessage(channel, string_printf("Command sent to %u servers.", server_count));
 	}
 	else {
 		source->sendMessage(channel, STRING_LITERAL_AS_REFERENCE("Error: Channel not attached to any connected Renegade X servers."));
@@ -3099,9 +3065,9 @@ void RefundIRCCommand::trigger(IRC_Bot *source, std::string_view channel, std::s
 					player = server->getPlayerByPartName(playerName);
 					if (player != nullptr) {
 						if (server->giveCredits(*player, credits)) {
-							msg.format("You have been refunded %.0f credits by %.*s.", credits, nick.size(), nick.data());
+							msg = string_printf("You have been refunded %.0f credits by %.*s.", credits, nick.size(), nick.data());
 							server->sendMessage(*player, msg);
-							msg.format("%.*s has been refunded %.0f credits.", player->name.size(), player->name.data(), credits);
+							msg = string_printf("%.*s has been refunded %.0f credits.", player->name.size(), player->name.data(), credits);
 						}
 						else {
 							msg.set("Error: Server does not support refunds.");
@@ -3258,7 +3224,7 @@ void NModeIRCCommand::trigger(IRC_Bot *source, std::string_view channel, std::st
 		}
 	}
 
-	source->sendMessage(channel, Jupiter::StringS::Format("%u players nmoded.", nmodes));
+	source->sendMessage(channel, string_printf("%u players nmoded.", nmodes));
 }
 
 std::string_view NModeIRCCommand::getHelp(std::string_view ) {
@@ -3303,7 +3269,7 @@ void SModeIRCCommand::trigger(IRC_Bot *source, std::string_view channel, std::st
 			}
 		}
 	}
-	source->sendMessage(channel, Jupiter::StringS::Format("%u players smoded.", smodes));
+	source->sendMessage(channel, string_printf("%u players smoded.", smodes));
 }
 
 std::string_view SModeIRCCommand::getHelp(std::string_view ) {
@@ -3479,7 +3445,7 @@ void ModsGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *, std::str
 		msg += "No "s + staff_word + "s are in-game"_jrs;
 		RenX::GameCommand *cmd = source->getCommand(STRING_LITERAL_AS_REFERENCE("modrequest"));
 		if (cmd != nullptr)
-			msg.aformat("; please use \"%.*s%.*s\" if you require assistance.", source->getCommandPrefix().size(), source->getCommandPrefix().data(), cmd->getTrigger().size(), cmd->getTrigger().data());
+			msg += string_printf("; please use \"%.*s%.*s\" if you require assistance.", source->getCommandPrefix().size(), source->getCommandPrefix().data(), cmd->getTrigger().size(), cmd->getTrigger().data());
 		else msg += '.';
 	}
 	source->sendMessage(msg);
@@ -3502,7 +3468,7 @@ void RulesGameCommand::create() {
 }
 
 void RulesGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *player, std::string_view parameters) {
-	source->sendMessage(Jupiter::StringS::Format("Rules: %.*s", source->getRules().size(), source->getRules().data()));
+	source->sendMessage(string_printf("Rules: %.*s", source->getRules().size(), source->getRules().data()));
 }
 
 std::string_view RulesGameCommand::getHelp(std::string_view ) {
@@ -3528,10 +3494,10 @@ void ModRequestGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *play
 
 	std::string_view staff_word = pluginInstance.getStaffTitle();
 	Jupiter::String fmtName = RenX::getFormattedPlayerName(*player);
-	Jupiter::StringL user_message = Jupiter::StringL::Format(IRCCOLOR "12[%.*s Request] " IRCCOLOR IRCBOLD "%.*s" IRCBOLD IRCCOLOR "07 has requested assistance in-game for \"%.*s\"; please look in ", staff_word.size(),
+	Jupiter::StringL user_message = string_printf(IRCCOLOR "12[%.*s Request] " IRCCOLOR IRCBOLD "%.*s" IRCBOLD IRCCOLOR "07 has requested assistance in-game for \"%.*s\"; please look in ", staff_word.size(),
 		staff_word.data(), fmtName.size(), fmtName.data(), parameters.size(),
 		parameters.data());
-	Jupiter::StringS channel_message = Jupiter::StringS::Format(IRCCOLOR "12[%.*s Request] " IRCCOLOR IRCBOLD "%.*s" IRCBOLD IRCCOLOR "07 has requested assistance in-game! Reason: %.*s" IRCCOLOR, staff_word.size(),
+	Jupiter::StringS channel_message = string_printf(IRCCOLOR "12[%.*s Request] " IRCCOLOR IRCBOLD "%.*s" IRCBOLD IRCCOLOR "07 has requested assistance in-game! Reason: %.*s" IRCCOLOR, staff_word.size(),
 		staff_word.data(), fmtName.size(), fmtName.data(), parameters.size(),
 		parameters.data());
 
@@ -3573,7 +3539,7 @@ void ModRequestGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *play
 	}
 
 	// Inform the user of the result
-	source->sendMessage(*player, Jupiter::StringS::Format("A total of %u %.*ss have been notified of your assistance request.", total_user_alerts, staff_word.size(),
+	source->sendMessage(*player, string_printf("A total of %u %.*ss have been notified of your assistance request.", total_user_alerts, staff_word.size(),
 		staff_word.data()));
 }
 
@@ -4091,10 +4057,10 @@ void AddBotsGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *player,
 		amount = Jupiter::asUnsignedInt(split_parameters.front());
 	}
 
-	cmd += Jupiter::StringS::Format("%u", amount);
+	cmd += string_printf("%u", amount);
 
 	source->send(cmd);
-	source->sendMessage(*player, Jupiter::StringS::Format("%u bots have been added to the server.", amount));
+	source->sendMessage(*player, string_printf("%u bots have been added to the server.", amount));
 }
 
 std::string_view AddBotsGameCommand::getHelp(std::string_view ) {

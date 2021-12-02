@@ -217,13 +217,13 @@ Jupiter::String generate_page_buttons(RenX::LadderDatabase *db) {
 	while (entry_index < entry_count) {
 		// Add page
 		result += R"html(<span class="leaderboard-page"><a href="?start=)html"_jrs;
-		result += Jupiter::StringS::Format("%u", entry_index);
+		result += string_printf("%u", entry_index);
 		if (db != RenX::default_ladder_database) {
 			result += "&database="_jrs;
 			result += db->getName();
 		}
 		result += R"html(">)html"_jrs;
-		result += Jupiter::StringS::Format("%u", page_index);
+		result += string_printf("%u", page_index);
 		result += R"html(</a></span>)html"_jrs;
 
 		// Increment indexes
@@ -403,7 +403,7 @@ std::string* RenX_Ladder_WebPlugin::generate_profile_page(RenX::LadderDatabase *
 		{
 			profile_data = RenX_Ladder_WebPlugin::entry_profile_previous;
 			RenX::replace_tag(profile_data, RenX::tags->INTERNAL_OBJECT_TAG, db->getName());
-			RenX::replace_tag(profile_data, RenX::tags->INTERNAL_WEAPON_TAG, Jupiter::StringS::Format("%llu", entry->prev->steam_id));
+			RenX::replace_tag(profile_data, RenX::tags->INTERNAL_WEAPON_TAG, string_printf("%llu", entry->prev->steam_id));
 			RenX::processTags(profile_data, *entry->prev);
 			result->append(profile_data);
 		}
@@ -411,7 +411,7 @@ std::string* RenX_Ladder_WebPlugin::generate_profile_page(RenX::LadderDatabase *
 		{
 			profile_data = RenX_Ladder_WebPlugin::entry_profile_next;
 			RenX::replace_tag(profile_data, RenX::tags->INTERNAL_OBJECT_TAG, db->getName());
-			RenX::replace_tag(profile_data, RenX::tags->INTERNAL_VICTIM_STEAM_TAG, Jupiter::StringS::Format("%llu", entry->next->steam_id));
+			RenX::replace_tag(profile_data, RenX::tags->INTERNAL_VICTIM_STEAM_TAG, string_printf("%llu", entry->next->steam_id));
 			RenX::processTags(profile_data, *entry->next);
 			result->append(profile_data);
 		}

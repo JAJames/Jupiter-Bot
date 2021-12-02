@@ -109,7 +109,7 @@ void RenX_MedalsPlugin::RenX_ProcessTags(std::string& msg, const RenX::Server *s
 
 		RenX::replace_tag(msg, this->INTERNAL_RECS_TAG, recs);
 		RenX::replace_tag(msg, this->INTERNAL_NOOB_TAG, noobs);
-		RenX::replace_tag(msg, this->INTERNAL_WORTH_TAG, Jupiter::StringS::Format("%d", Jupiter::from_string<int>(recs) - Jupiter::from_string<int>(noobs)));
+		RenX::replace_tag(msg, this->INTERNAL_WORTH_TAG, string_printf("%d", Jupiter::from_string<int>(recs) - Jupiter::from_string<int>(noobs)));
 	}
 }
 
@@ -139,7 +139,7 @@ void RenX_MedalsPlugin::RenX_OnJoin(RenX::Server &server, const RenX::PlayerInfo
 			size_t table_size = section->getTable().size();
 
 			if (table_size != 0) {
-				std::string_view msg = section->get(Jupiter::StringS::Format("%u", (rand() % table_size) + 1));
+				std::string_view msg = section->get(string_printf("%u", (rand() % table_size) + 1));
 
 				if (!msg.empty()) {
 					std::string tagged_msg = static_cast<std::string>(msg);
@@ -237,7 +237,7 @@ void RenX_MedalsPlugin::RenX_OnDestroy(RenX::Server &server, const RenX::PlayerI
 		addRec(player);
 
 		std::string_view translated = RenX::translateName(objectName);
-		server.sendMessage(Jupiter::StringS::Format("%.*s has been recommended for destroying the %.*s!", player.name.size(), player.name.data(), translated.size(), translated.data()));
+		server.sendMessage(string_printf("%.*s has been recommended for destroying the %.*s!", player.name.size(), player.name.data(), translated.size(), translated.data()));
 	}
 }
 
@@ -307,7 +307,7 @@ void RecsGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *player, st
 			{
 				unsigned int recs = section->get<unsigned int>("Recs"_jrs);
 				unsigned int noobs = section->get<unsigned int>("Noobs"_jrs);
-				source->sendMessage(*player, Jupiter::StringS::Format("[Archive] %.*s has %u and %u n00bs. Their worth: %d", section->getName().size(), section->getName().c_str(), recs, noobs, recs - noobs));
+				source->sendMessage(*player, string_printf("[Archive] %.*s has %u and %u n00bs. Their worth: %d", section->getName().size(), section->getName().c_str(), recs, noobs, recs - noobs));
 			}
 		}
 		else if (target->uuid.empty())
@@ -317,12 +317,12 @@ void RecsGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *player, st
 		else if (target == player)
 			RecsGameCommand::trigger(source, player, ""_jrs);
 		else
-			source->sendMessage(*player, Jupiter::StringS::Format("%.*s has %lu and %lu n00bs. Their worth: %d", target->name.size(), target->name.data(), getRecs(*target), getNoobs(*target), getWorth(*target)));
+			source->sendMessage(*player, string_printf("%.*s has %lu and %lu n00bs. Their worth: %d", target->name.size(), target->name.data(), getRecs(*target), getNoobs(*target), getWorth(*target)));
 	}
 	else if (player->uuid.empty())
 		source->sendMessage(*player, "Error: You are not using steam."_jrs);
 	else
-		source->sendMessage(*player, Jupiter::StringS::Format("%.*s, you have %lu recs and %lu n00bs. Your worth: %d", player->name.size(), player->name.data(), getRecs(*player), getNoobs(*player), getWorth(*player)));
+		source->sendMessage(*player, string_printf("%.*s, you have %lu recs and %lu n00bs. Your worth: %d", player->name.size(), player->name.data(), getRecs(*player), getNoobs(*player), getWorth(*player)));
 }
 
 std::string_view RecsGameCommand::getHelp(std::string_view )
@@ -366,7 +366,7 @@ void RecGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *player, std
 		}
 		else {
 			addRec(*target);
-			source->sendMessage(Jupiter::StringS::Format("%.*s has recommended %.*s!", player->name.size(), player->name.data(), target->name.size(), target->name.data()));
+			source->sendMessage(string_printf("%.*s has recommended %.*s!", player->name.size(), player->name.data(), target->name.size(), target->name.data()));
 			player->varData["RenX.Medals"_jrs].set("gr"_jrs, "1"s);
 		}
 	}
@@ -410,7 +410,7 @@ void NoobGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *player, st
 		}
 		else {
 			addNoob(*target);
-			source->sendMessage(Jupiter::StringS::Format("%.*s has noob'd %.*s!", player->name.size(), player->name.data(), target->name.size(), target->name.data()));
+			source->sendMessage(string_printf("%.*s has noob'd %.*s!", player->name.size(), player->name.data(), target->name.size(), target->name.data()));
 			player->varData["RenX.Medals"_jrs].set("gn"_jrs, "1"s);
 		}
 	}
@@ -427,13 +427,13 @@ GAME_COMMAND_INIT(NoobGameCommand)
 
 void addRec(const RenX::PlayerInfo &player, int amount) {
 	if (!jessilib::starts_withi(player.uuid, "Player"sv) && !player.isBot) {
-		player.varData[pluginInstance.getName()].set("Recs"_jrs, static_cast<std::string>(Jupiter::StringS::Format("%u", getRecs(player) + amount)));
+		player.varData[pluginInstance.getName()].set("Recs"_jrs, static_cast<std::string>(string_printf("%u", getRecs(player) + amount)));
 	}
 }
 
 void addNoob(const RenX::PlayerInfo &player, int amount) {
 	if (!jessilib::starts_withi(player.uuid, "Player"sv) && !player.isBot) {
-		player.varData[pluginInstance.getName()].set("Noobs"_jrs,static_cast<std::string>(Jupiter::StringS::Format("%u", getNoobs(player) + amount)));
+		player.varData[pluginInstance.getName()].set("Noobs"_jrs,static_cast<std::string>(string_printf("%u", getNoobs(player) + amount)));
 	}
 }
 

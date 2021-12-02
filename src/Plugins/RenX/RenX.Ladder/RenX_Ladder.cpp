@@ -85,7 +85,7 @@ RenX_LadderPlugin pluginInstance;
 /** Ladder Commands */
 
 Jupiter::StringS FormatLadderResponse(RenX::LadderDatabase::Entry *entry, size_t rank) {
-	return Jupiter::StringS::Format("#%" PRIuPTR ": \"%.*s\" - Score: %" PRIu64 " - Kills: %" PRIu32 " - Deaths: %" PRIu32 " - KDR: %.2f - SPM: %.2f",
+	return string_printf("#%" PRIuPTR ": \"%.*s\" - Score: %" PRIu64 " - Kills: %" PRIu32 " - Deaths: %" PRIu32 " - KDR: %.2f - SPM: %.2f",
 		rank, entry->most_recent_name.size(), entry->most_recent_name.data(), entry->total_score, entry->total_kills, entry->total_deaths,
 		static_cast<double>(entry->total_kills) / (entry->total_deaths == 0 ? 1 : static_cast<double>(entry->total_deaths)),
 		static_cast<double>(entry->total_score) / (entry->total_game_time == 0 ? 1.0 : static_cast<double>(entry->total_game_time)) * 60.0);

@@ -78,20 +78,20 @@ void WarnIRCCommand::trigger(IRC_Bot *source, std::string_view channel, std::str
 				if (warns > pluginInstance.m_maxWarns) {
 					switch (pluginInstance.m_warnAction) {
 					case -1:
-						server->kickPlayer(*player, Jupiter::StringS::Format("Warning limit reached (%d warnings)", warns));
-						source->sendNotice(nick, Jupiter::StringS::Format("%.*s has been kicked from the server for exceeding the warning limit (%d warnings).", player->name.size(), player->name.data(), warns));
+						server->kickPlayer(*player, string_printf("Warning limit reached (%d warnings)", warns));
+						source->sendNotice(nick, string_printf("%.*s has been kicked from the server for exceeding the warning limit (%d warnings).", player->name.size(), player->name.data(), warns));
 						break;
 					default:
-						server->banPlayer(*player, "Jupiter Bot/RenX.Warn"_jrs, Jupiter::StringS::Format("Warning limit reached (%d warnings)", warns), std::chrono::seconds(pluginInstance.m_warnAction));
-						source->sendNotice(nick, Jupiter::StringS::Format("%.*s has been banned from the server for exceeding the warning limit (%d warnings).", player->name.size(), player->name.data(), reason.size(), reason.data(), warns));
+						server->banPlayer(*player, "Jupiter Bot/RenX.Warn"_jrs, string_printf("Warning limit reached (%d warnings)", warns), std::chrono::seconds(pluginInstance.m_warnAction));
+						source->sendNotice(nick, string_printf("%.*s has been banned from the server for exceeding the warning limit (%d warnings).", player->name.size(), player->name.data(), reason.size(), reason.data(), warns));
 						break;
 					}
 				}
 				else {
 					player->varData[pluginInstance.getName()].set(WARNS_KEY, std::to_string(warns));
-					server->sendWarnMessage(*player, Jupiter::StringS::Format("You have been warned by %.*s@IRC for: %.*s. You have %d warnings.", nick.size(),
+					server->sendWarnMessage(*player, string_printf("You have been warned by %.*s@IRC for: %.*s. You have %d warnings.", nick.size(),
 						nick.data(), reason.size(), reason.data(), warns));
-					source->sendNotice(nick, Jupiter::StringS::Format("%.*s has been warned; they now have %d warnings.", player->name.size(), player->name.data(), warns));
+					source->sendNotice(nick, string_printf("%.*s has been warned; they now have %d warnings.", player->name.size(), player->name.data(), warns));
 				}
 			}
 		}
@@ -137,9 +137,9 @@ void PardonIRCCommand::trigger(IRC_Bot *source, std::string_view channel, std::s
 			player = server->getPlayerByPartName(parameters);
 			if (player != nullptr) {
 				player->varData[pluginInstance.getName()].remove(WARNS_KEY);
-				server->sendMessage(*player, Jupiter::StringS::Format("You have been pardoned by %.*s@IRC; your warnings have been reset.", nick.size(),
+				server->sendMessage(*player, string_printf("You have been pardoned by %.*s@IRC; your warnings have been reset.", nick.size(),
 					nick.data()));
-				source->sendNotice(nick, Jupiter::StringS::Format("%.*s has been pardoned; their warnings have been reset.", player->name.size(), player->name.data()));
+				source->sendNotice(nick, string_printf("%.*s has been pardoned; their warnings have been reset.", player->name.size(), player->name.data()));
 			}
 		}
 	}
@@ -173,19 +173,19 @@ void WarnGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *player, st
 				switch (pluginInstance.m_warnAction)
 				{
 				case -1:
-					source->kickPlayer(*target, Jupiter::StringS::Format("Warning limit reached (%d warnings)", warns));
-					source->sendMessage(*player, Jupiter::StringS::Format("%.*s has been kicked from the server for exceeding the warning limit (%d warnings).", target->name.size(), target->name.data(), warns));
+					source->kickPlayer(*target, string_printf("Warning limit reached (%d warnings)", warns));
+					source->sendMessage(*player, string_printf("%.*s has been kicked from the server for exceeding the warning limit (%d warnings).", target->name.size(), target->name.data(), warns));
 					break;
 				default:
-					source->banPlayer(*target, "Jupiter Bot/RenX.Warn"_jrs, Jupiter::StringS::Format("Warning limit reached (%d warnings)", warns), std::chrono::seconds(pluginInstance.m_warnAction));
-					source->sendMessage(*player, Jupiter::StringS::Format("%.*s has been banned from the server for exceeding the warning limit (%d warnings).", target->name.size(), target->name.data(), warns));
+					source->banPlayer(*target, "Jupiter Bot/RenX.Warn"_jrs, string_printf("Warning limit reached (%d warnings)", warns), std::chrono::seconds(pluginInstance.m_warnAction));
+					source->sendMessage(*player, string_printf("%.*s has been banned from the server for exceeding the warning limit (%d warnings).", target->name.size(), target->name.data(), warns));
 					break;
 				}
 			}
 			else {
 				target->varData[pluginInstance.getName()].set(WARNS_KEY, std::to_string(warns));
-				source->sendWarnMessage(*target, Jupiter::StringS::Format("You have been warned by %.*s for: %.*s. You have %d warnings.", player->name.size(), player->name.data(), reason.size(), reason.data(), warns));
-				source->sendMessage(*player, Jupiter::StringS::Format("%.*s has been warned; they now have %d warnings.", target->name.size(), target->name.data(), warns));
+				source->sendWarnMessage(*target, string_printf("You have been warned by %.*s for: %.*s. You have %d warnings.", player->name.size(), player->name.data(), reason.size(), reason.data(), warns));
+				source->sendMessage(*player, string_printf("%.*s has been warned; they now have %d warnings.", target->name.size(), target->name.data(), warns));
 			}
 		}
 	}
@@ -214,8 +214,8 @@ void PardonGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *player, 
 		RenX::PlayerInfo *target = source->getPlayerByPartName(parameters);
 		if (target != nullptr) {
 			target->varData[pluginInstance.getName()].remove(WARNS_KEY);
-			source->sendMessage(*target, Jupiter::StringS::Format("You have been pardoned by %.*s@IRC; your warnings have been reset.", player->name.size(), player->name.data()));
-			source->sendMessage(*player, Jupiter::StringS::Format("%.*s has been pardoned; their warnings have been reset.", target->name.size(), target->name.data()));
+			source->sendMessage(*target, string_printf("You have been pardoned by %.*s@IRC; your warnings have been reset.", player->name.size(), player->name.data()));
+			source->sendMessage(*player, string_printf("%.*s has been pardoned; their warnings have been reset.", target->name.size(), target->name.data()));
 		}
 	}
 	else {

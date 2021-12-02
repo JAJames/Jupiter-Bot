@@ -46,11 +46,11 @@ int RenX_ExtraLoggingPlugin::OnRehash()
 }
 
 bool RenX_ExtraLoggingPlugin::initialize() {
-	RenX_ExtraLoggingPlugin::filePrefix = this->config.get("FilePrefix"_jrs, Jupiter::StringS::Format("[%.*s] %.*s", RenX::tags->timeTag.size(),
+	RenX_ExtraLoggingPlugin::filePrefix = this->config.get("FilePrefix"_jrs, string_printf("[%.*s] %.*s", RenX::tags->timeTag.size(),
 		RenX::tags->timeTag.data(), RenX::tags->serverPrefixTag.size(),
 		RenX::tags->serverPrefixTag.data()));
 	RenX_ExtraLoggingPlugin::consolePrefix = this->config.get("ConsolePrefix"_jrs, RenX_ExtraLoggingPlugin::filePrefix);
-	RenX_ExtraLoggingPlugin::newDayFmt = this->config.get("NewDayFormat"_jrs, Jupiter::StringS::Format("Time: %.*s %.*s", RenX::tags->timeTag.size(),
+	RenX_ExtraLoggingPlugin::newDayFmt = this->config.get("NewDayFormat"_jrs, string_printf("Time: %.*s %.*s", RenX::tags->timeTag.size(),
 		RenX::tags->timeTag.data(), RenX::tags->dateTag.size(),
 		RenX::tags->dateTag.data()));
 	RenX_ExtraLoggingPlugin::printToConsole = this->config.get<bool>("PrintToConsole"_jrs, true);

@@ -38,7 +38,7 @@ Jupiter::GenericCommand::ResponseLine *PluginGenericCommand::trigger(std::string
 	auto parameters_view = static_cast<std::string_view>(parameters);
 	Jupiter::GenericCommand::ResponseLine *result = new Jupiter::GenericCommand::ResponseLine();
 	if (parameters_view.empty() || jessilib::starts_withi(parameters_view, "list"sv)) {
-		Jupiter::GenericCommand::ResponseLine *line = result->set(Jupiter::String::Format("There are %u plugins loaded:", Jupiter::plugins.size()), GenericCommand::DisplayType::PublicSuccess);
+		Jupiter::GenericCommand::ResponseLine *line = result->set(string_printf("There are %u plugins loaded:", Jupiter::plugins.size()), GenericCommand::DisplayType::PublicSuccess);
 		for (auto& plugin : Jupiter::plugins) {
 			line->next = new Jupiter::GenericCommand::ResponseLine(plugin->getName(), GenericCommand::DisplayType::PublicSuccess);
 			line = line->next;

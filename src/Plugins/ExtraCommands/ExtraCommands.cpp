@@ -264,21 +264,22 @@ Jupiter::GenericCommand::ResponseLine *DebugInfoGenericCommand::trigger(std::str
 	Jupiter::GenericCommand::ResponseLine *ret = new Jupiter::GenericCommand::ResponseLine("Prefixes: "s += server->getPrefixes(), GenericCommand::DisplayType::PublicSuccess);
 	Jupiter::GenericCommand::ResponseLine *line = new Jupiter::GenericCommand::ResponseLine("Prefix Modes: "s += server->getPrefixModes(), GenericCommand::DisplayType::PublicSuccess);
 	ret->next = line;
-	line->next = new Jupiter::GenericCommand::ResponseLine(Jupiter::StringS::Format("Outputting data for %u channels...", server->getChannelCount()), GenericCommand::DisplayType::PublicSuccess);
+	line->next = new Jupiter::GenericCommand::ResponseLine(string_printf("Outputting data for %u channels...", server->getChannelCount()), GenericCommand::DisplayType::PublicSuccess);
 	line = line->next;
 
 	for (auto& channel_pair : server->getChannels()) {
 		auto& channel = channel_pair.second;
-		line->next = new Jupiter::GenericCommand::ResponseLine(Jupiter::StringS::Format("Channel %.*s - Type: %d", channel.getName().size(),
+		line->next = new Jupiter::GenericCommand::ResponseLine(string_printf("Channel %.*s - Type: %d", channel.getName().size(),
 			channel.getName().data(), channel.getType()), GenericCommand::DisplayType::PublicSuccess);
 		line = line->next;
 
 		for (auto& user_pair : channel.getUsers()) {
 			Jupiter::IRC::Client::User *user = user_pair.second->getUser();
-			line->next = new Jupiter::GenericCommand::ResponseLine(Jupiter::StringS::Format("User %.*s!%.*s@%.*s (prefix: %c) of channel %.*s (of %u shared)", user->getNickname().size(),
-				user->getNickname().data(), user->getUsername().size(),
-				user->getUsername().data(), user->getHostname().size(),
-				user->getHostname().data(), channel.getUserPrefix(*user_pair.second) ? channel.getUserPrefix(*user_pair.second) : ' ', channel.getName().size(),
+			line->next = new Jupiter::GenericCommand::ResponseLine(string_printf("User %.*s!%.*s@%.*s (prefix: %c) of channel %.*s (of %u shared)",
+				user->getNickname().size(), user->getNickname().data(),
+				user->getUsername().size(), user->getUsername().data(),
+				user->getHostname().size(), user->getHostname().data(),
+				channel.getUserPrefix(*user_pair.second) ? channel.getUserPrefix(*user_pair.second) : ' ', channel.getName().size(),
 				channel.getName().data(), user->getChannelCount()), GenericCommand::DisplayType::PublicSuccess);
 			line = line->next;
 		};

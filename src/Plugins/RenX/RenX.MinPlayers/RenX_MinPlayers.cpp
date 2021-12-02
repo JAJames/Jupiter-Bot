@@ -32,7 +32,7 @@ bool RenX_MinPlayersPlugin::initialize()
 void RenX_MinPlayersPlugin::RenX_OnMapStart(RenX::Server &server, std::string_view map)
 {
 	if (server.players.size() < RenX_MinPlayersPlugin::player_threshold)
-		server.send(Jupiter::StringS::Format("addbots %d", RenX_MinPlayersPlugin::player_threshold - server.players.size()));
+		server.send(string_printf("addbots %d", RenX_MinPlayersPlugin::player_threshold - server.players.size()));
 }
 
 void RenX_MinPlayersPlugin::RenX_OnJoin(RenX::Server &server, const RenX::PlayerInfo &player)

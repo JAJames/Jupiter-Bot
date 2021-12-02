@@ -72,10 +72,10 @@ void EightBallIRCCommand::trigger(IRC_Bot *source, std::string_view channel, std
 		msg.set("Good thing I bend that way!"_jrs);
 		break;
 	case 10:
-		msg.format("Hai %.*s ;)", nick.size(), nick.data());
+		msg = "Hai "s + nick + "!";
 		break;
 	case 11:
-		msg.format("Let's ban %.*s!", nick.size(), nick.data());
+		msg = "Let's ban "s + nick + "!";
 		break;
 	case 12:
 		msg.set("Fuck your lineage."_jrs);

@@ -36,10 +36,10 @@ constexpr std::string_view server_list_game_header = "<html><body>"sv;
 constexpr std::string_view server_list_game_footer = "\n</body></html>"sv;
 
 // TODO: can probably replace with some of the jessilib stuff
-Jupiter::String jsonify(std::string_view in_str) {
+std::string jsonify(std::string_view in_str) {
 	const unsigned char *ptr = reinterpret_cast<const unsigned char *>(in_str.data());
 	const unsigned char *end_ptr = ptr + in_str.size();
-	Jupiter::String result(in_str.size());
+	std::string result;
 
 	while (ptr < end_ptr) {
 		if (*ptr == '\\') { // backslash
@@ -51,7 +51,18 @@ Jupiter::String jsonify(std::string_view in_str) {
 			result += '\"';
 		}
 		else if (*ptr < 0x20) { // control characters
-			result.aformat("\\u%04x", *ptr);
+			char buffer[2]; // control codes are only ever going to be at most 2 characters
+			if (std::to_chars(buffer, buffer + sizeof(buffer), *ptr, 16).ec == std::errc{}) {
+				result += "\\u00"sv;
+				if (*ptr > 0xF) {
+					result += buffer[0];
+					result += buffer[1];
+				}
+				else {
+					result += '0';
+					result += buffer[0];
+				}
+			};
 		}
 		else if ((*ptr & 0x80) != 0) { // UTF-8 sequence; copy to bypass above processing
 			result += *ptr;
@@ -167,12 +178,10 @@ constexpr const char *json_bool_as_cstring(bool in) {
 }
 
 std::string RenX_ServerListPlugin::server_as_json(const RenX::Server &server) {
-	Jupiter::String server_json_block(128); // TODO: use std::string
 	ListServerInfo serverInfo = getListServerInfo(server);
 
 	if (serverInfo.hostname.empty()) {
-		server_json_block = "null";
-		return static_cast<std::string>(server_json_block);
+		return "null"s;
 	}
 
 	Jupiter::String server_name = jsonify(server.getName());
@@ -203,7 +212,7 @@ std::string RenX_ServerListPlugin::server_as_json(const RenX::Server &server) {
 	}
 
 	// Build block
-	server_json_block.format(R"json({"Name":"%.*s",%.*s"Current Map":"%.*s","Bots":%u,"Players":%u,"Game Version":"%.*s",%.*s"Variables":{"Mine Limit":%d,"bSteamRequired":%s,"bPrivateMessageTeamOnly":%s,"bPassworded":%s,"bAllowPrivateMessaging":%s,"bRanked":%s,"Game Type":%d,"Player Limit":%d,"Vehicle Limit":%d,"bAutoBalanceTeams":%s,"Team Mode":%d,"bSpawnCrates":%s,"CrateRespawnAfterPickup":%f,"Time Limit":%d},"Port":%u,"IP":"%.*s")json",
+	std::string server_json_block = string_printf(R"json({"Name":"%.*s",%.*s"Current Map":"%.*s","Bots":%u,"Players":%u,"Game Version":"%.*s",%.*s"Variables":{"Mine Limit":%d,"bSteamRequired":%s,"bPrivateMessageTeamOnly":%s,"bPassworded":%s,"bAllowPrivateMessaging":%s,"bRanked":%s,"Game Type":%d,"Player Limit":%d,"Vehicle Limit":%d,"bAutoBalanceTeams":%s,"Team Mode":%d,"bSpawnCrates":%s,"CrateRespawnAfterPickup":%f,"Time Limit":%d},"Port":%u,"IP":"%.*s")json",
 		server_name.size(), server_name.data(),
 		server_prefix.size(), server_prefix.data(),
 		server_map.size(), server_map.data(),
@@ -230,7 +239,7 @@ std::string RenX_ServerListPlugin::server_as_json(const RenX::Server &server) {
 
 	server_json_block += '}';
 
-	return static_cast<std::string>(server_json_block);
+	return server_json_block;
 }
 
 std::string RenX_ServerListPlugin::server_as_server_details_json(const RenX::Server& server) {
@@ -316,7 +325,6 @@ std::string RenX_ServerListPlugin::server_as_server_details_json(const RenX::Ser
 }
 
 std::string RenX_ServerListPlugin::server_as_long_json(const RenX::Server &server) {
-	Jupiter::String server_json_block(128); // TODO: use std::string
 	ListServerInfo serverInfo = getListServerInfo(server);
 
 	Jupiter::String server_name = jsonify(server.getName());
@@ -345,7 +353,7 @@ std::string RenX_ServerListPlugin::server_as_long_json(const RenX::Server &serve
 		server_attributes += "\n\t\t],";
 	}
 
-	server_json_block.format(R"json({
+	std::string server_json_block = string_printf(R"json({
 		"Name": "%.*s",
 		"NamePrefix": "%.*s",
 		"Current Map": "%.*s",
@@ -527,10 +535,10 @@ void RenX_ServerListPlugin::updateMetadata() {
 	}
 
 	// TODO: not rely on StringS
-	m_metadata_json = Jupiter::StringS::Format(R"json({"player_count":%zu,"server_count":%u})json",
+	m_metadata_json = string_printf(R"json({"player_count":%zu,"server_count":%u})json",
 		player_count, server_count);
 
-	m_metadata_prometheus = Jupiter::StringS::Format("player_count %zu\nserver_count %u\n",
+	m_metadata_prometheus = string_printf("player_count %zu\nserver_count %u\n",
 		player_count, server_count);
 }
 
@@ -585,7 +593,7 @@ RenX_ServerListPlugin::ListServerInfo RenX_ServerListPlugin::getListServerInfo(c
 		populate_with_section(section);
 
 		// Try overwriting based on Port subsection
-		populate_with_section(section->getSection(Jupiter::StringS::Format("%u", server.getPort())));
+		populate_with_section(section->getSection(string_printf("%u", server.getPort())));
 	}
 
 	return result;

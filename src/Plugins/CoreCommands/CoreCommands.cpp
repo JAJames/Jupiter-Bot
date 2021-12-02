@@ -77,7 +77,7 @@ void HelpIRCCommand::trigger(IRC_Bot *source, std::string_view in_channel, std::
 				if (cmds.size() != 0) {
 					Jupiter::StringL triggers = source->getTriggers(cmds);
 					if (triggers.size() >= 0) {
-						source->sendNotice(nick, Jupiter::StringS::Format("Access level %d commands: %.*s", i, triggers.size(),
+						source->sendNotice(nick, string_printf("Access level %d commands: %.*s", i, triggers.size(),
 							triggers.data()));
 					}
 				}
@@ -144,9 +144,9 @@ Jupiter::GenericCommand::ResponseLine *RehashGenericCommand::trigger(std::string
 	size_t hash_errors = Jupiter::rehash();
 
 	if (hash_errors == 0)
-		return new Jupiter::GenericCommand::ResponseLine(Jupiter::StringS::Format("All %u objects were successfully rehashed.", Jupiter::getRehashableCount()), GenericCommand::DisplayType::PublicSuccess);
+		return new Jupiter::GenericCommand::ResponseLine(string_printf("All %u objects were successfully rehashed.", Jupiter::getRehashableCount()), GenericCommand::DisplayType::PublicSuccess);
 
-	return new Jupiter::GenericCommand::ResponseLine(Jupiter::StringS::Format("%u of %u objects failed to successfully rehash.", hash_errors, Jupiter::getRehashableCount()), GenericCommand::DisplayType::PublicError);
+	return new Jupiter::GenericCommand::ResponseLine(string_printf("%u of %u objects failed to successfully rehash.", hash_errors, Jupiter::getRehashableCount()), GenericCommand::DisplayType::PublicError);
 }
 
 std::string_view RehashGenericCommand::getHelp(std::string_view ) {

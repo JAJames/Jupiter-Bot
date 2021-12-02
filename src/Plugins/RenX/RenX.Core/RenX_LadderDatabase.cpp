@@ -593,7 +593,7 @@ void RenX::LadderDatabase::updateLadder(RenX::Server &server, const RenX::TeamTy
 
 		if (m_output_times)
 		{
-			Jupiter::StringS str = Jupiter::StringS::Format("Ladder: %zu entries sorted in %f seconds; Database written in %f seconds." ENDL,
+			Jupiter::StringS str = string_printf("Ladder: %zu entries sorted in %f seconds; Database written in %f seconds." ENDL,
 				getEntries(),
 				static_cast<double>(sort_duration.count()) * (static_cast<double>(std::chrono::steady_clock::duration::period::num) / static_cast<double>(std::chrono::steady_clock::duration::period::den) * static_cast<double>(std::chrono::seconds::duration::period::den / std::chrono::seconds::duration::period::num)),
 				static_cast<double>(write_duration.count()) * (static_cast<double>(std::chrono::steady_clock::duration::period::num) / static_cast<double>(std::chrono::steady_clock::duration::period::den) * static_cast<double>(std::chrono::seconds::duration::period::den / std::chrono::seconds::duration::period::num)));

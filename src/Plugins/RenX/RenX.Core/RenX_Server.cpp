@@ -275,7 +275,7 @@ int RenX::Server::sendMessage(std::string_view message) {
 		if (this->players.size() != 0) {
 			for (auto node = this->players.begin(); node != this->players.end(); ++node) {
 				if (node->isBot == false) {
-					result += sendSocket(Jupiter::StringS::Format("chostprivatesay pid%d %.*s\n", node->id, msg.size(),
+					result += sendSocket(string_printf("chostprivatesay pid%d %.*s\n", node->id, msg.size(),
 						msg.data()));
 				}
 			}
@@ -287,7 +287,7 @@ int RenX::Server::sendMessage(std::string_view message) {
 }
 
 int RenX::Server::sendMessage(const RenX::PlayerInfo &player, std::string_view message) {
-	return sendSocket("chostprivatesay pid"s + Jupiter::StringS::Format("%d ", player.id) + RenX::escapifyRCON(message) + '\n');
+	return sendSocket("chostprivatesay pid"s + string_printf("%d ", player.id) + RenX::escapifyRCON(message) + '\n');
 }
 
 int RenX::Server::sendAdminMessage(std::string_view message) {
@@ -295,11 +295,11 @@ int RenX::Server::sendAdminMessage(std::string_view message) {
 }
 
 int RenX::Server::sendAdminMessage(const RenX::PlayerInfo &player, std::string_view message) {
-	return sendSocket("cpamsg pid"s + Jupiter::StringS::Format("%d ", player.id) + RenX::escapifyRCON(message) + '\n');
+	return sendSocket("cpamsg pid"s + string_printf("%d ", player.id) + RenX::escapifyRCON(message) + '\n');
 }
 
 int RenX::Server::sendWarnMessage(const RenX::PlayerInfo &player, std::string_view message) {
-	return sendSocket("cwarn pid"s + Jupiter::StringS::Format("%d ", player.id) + RenX::escapifyRCON(message) + '\n');
+	return sendSocket("cwarn pid"s + string_printf("%d ", player.id) + RenX::escapifyRCON(message) + '\n');
 }
 
 int RenX::Server::sendData(std::string_view data) {
@@ -454,20 +454,20 @@ Jupiter::StringS RenX::Server::formatSteamID(uint64_t id) const {
 	{
 	default:
 	case 16:
-		return Jupiter::StringS::Format("0x%.16llX", id);
+		return string_printf("0x%.16llX", id);
 	case 10:
-		return Jupiter::StringS::Format("%llu", id);
+		return string_printf("%llu", id);
 	case 8:
-		return Jupiter::StringS::Format("0%llo", id);
+		return string_printf("0%llo", id);
 	case -2:
 		id -= 0x0110000100000000ULL;
 		if (id % 2 == 1)
-			return Jupiter::StringS::Format("STEAM_1:1:%llu", id / 2ULL);
+			return string_printf("STEAM_1:1:%llu", id / 2ULL);
 		else
-			return Jupiter::StringS::Format("STEAM_1:0:%llu", id / 2ULL);
+			return string_printf("STEAM_1:0:%llu", id / 2ULL);
 	case -3:
 		id -= 0x0110000100000000ULL;
-		return Jupiter::StringS::Format("[U:1:%llu]", id);
+		return string_printf("[U:1:%llu]", id);
 	}
 }
 
@@ -475,9 +475,9 @@ void RenX::Server::kickPlayer(int id, std::string_view in_reason) {
 	std::string reason = RenX::escapifyRCON(in_reason);
 
 	if (reason.empty())
-		sendSocket(Jupiter::StringS::Format("ckick pid%d\n", id));
+		sendSocket(string_printf("ckick pid%d\n", id));
 	else
-		sendSocket(Jupiter::StringS::Format("ckick pid%d %.*s\n", id, reason.size(), reason.data()));
+		sendSocket(string_printf("ckick pid%d %.*s\n", id, reason.size(), reason.data()));
 }
 
 void RenX::Server::kickPlayer(const RenX::PlayerInfo &player, std::string_view reason) {
@@ -490,11 +490,11 @@ void RenX::Server::forceKickPlayer(int id, std::string_view in_reason) {
 	std::string reason = RenX::escapifyRCON(in_reason);
 
 	if (reason.empty()) {
-		sendSocket(Jupiter::StringS::Format("cfkick pid%d You were kicked from the server.\n", id));
+		sendSocket(string_printf("cfkick pid%d You were kicked from the server.\n", id));
 		return;
 	}
 
-	sendSocket(Jupiter::StringS::Format("cfkick pid%d %.*s\n", id, reason.size(), reason.data()));
+	sendSocket(string_printf("cfkick pid%d %.*s\n", id, reason.size(), reason.data()));
 }
 
 void RenX::Server::forceKickPlayer(const RenX::PlayerInfo &player, std::string_view reason) {
@@ -582,11 +582,11 @@ void RenX::Server::banCheck(RenX::PlayerInfo &player) {
 		time_t current_time = std::chrono::system_clock::to_time_t(last_to_expire[0]->timestamp + last_to_expire[0]->length);
 		strftime(timeStr, sizeof(timeStr), "%b %d %Y at %H:%M:%S", localtime(&current_time));
 		if (last_to_expire[0]->length == std::chrono::seconds::zero()) {
-			forceKickPlayer(player, Jupiter::StringS::Format("You were permanently banned from %.*s on %s for: %.*s", m_ban_from_str.size(),
+			forceKickPlayer(player, string_printf("You were permanently banned from %.*s on %s for: %.*s", m_ban_from_str.size(),
 				m_ban_from_str.data(), timeStr, last_to_expire[0]->reason.size(), last_to_expire[0]->reason.data()));
 		}
 		else {
-			forceKickPlayer(player, Jupiter::StringS::Format("You are banned from %.*s until %s for: %.*s", m_ban_from_str.size(),
+			forceKickPlayer(player, string_printf("You are banned from %.*s until %s for: %.*s", m_ban_from_str.size(),
 				m_ban_from_str.data(), timeStr, last_to_expire[0]->reason.size(), last_to_expire[0]->reason.data()));
 		}
 
@@ -598,10 +598,10 @@ void RenX::Server::banCheck(RenX::PlayerInfo &player) {
 			strftime(timeStr, sizeof(timeStr), "%b %d %Y at %H:%M:%S", localtime(&current_time));
 			mute(player);
 			if (last_to_expire[1]->length == std::chrono::seconds::zero())
-				sendMessage(player, Jupiter::StringS::Format("You were permanently muted from %.*s on %s for: %.*s", m_ban_from_str.size(),
+				sendMessage(player, string_printf("You were permanently muted from %.*s on %s for: %.*s", m_ban_from_str.size(),
 					m_ban_from_str.data(), timeStr, last_to_expire[1]->reason.size(), last_to_expire[1]->reason.data()));
 			else
-				sendMessage(player, Jupiter::StringS::Format("You are muted from %.*s until %s for: %.*s", m_ban_from_str.size(),
+				sendMessage(player, string_printf("You are muted from %.*s until %s for: %.*s", m_ban_from_str.size(),
 					m_ban_from_str.data(), timeStr, last_to_expire[1]->reason.size(), last_to_expire[1]->reason.data()));
 
 			player.ban_flags |= RenX::BanDatabase::Entry::FLAG_TYPE_BOT; // implies FLAG_TYPE_BOT
@@ -610,20 +610,20 @@ void RenX::Server::banCheck(RenX::PlayerInfo &player) {
 			time_t current_time = std::chrono::system_clock::to_time_t(last_to_expire[2]->timestamp + last_to_expire[2]->length);
 			strftime(timeStr, sizeof(timeStr), "%b %d %Y at %H:%M:%S", localtime(&current_time));
 			if (last_to_expire[2]->length == std::chrono::seconds::zero())
-				sendMessage(player, Jupiter::StringS::Format("You were permanently bot-muted from %.*s on %s for: %.*s", m_ban_from_str.size(),
+				sendMessage(player, string_printf("You were permanently bot-muted from %.*s on %s for: %.*s", m_ban_from_str.size(),
 					m_ban_from_str.data(), timeStr, last_to_expire[2]->reason.size(), last_to_expire[2]->reason.data()));
 			else
-				sendMessage(player, Jupiter::StringS::Format("You are bot-muted from %.*s until %s for: %.*s", m_ban_from_str.size(),
+				sendMessage(player, string_printf("You are bot-muted from %.*s until %s for: %.*s", m_ban_from_str.size(),
 					m_ban_from_str.data(), timeStr, last_to_expire[2]->reason.size(), last_to_expire[2]->reason.data()));
 		}
 		if (last_to_expire[3] != nullptr) { // Vote ban
 			time_t current_time = std::chrono::system_clock::to_time_t(last_to_expire[3]->timestamp + last_to_expire[3]->length);
 			strftime(timeStr, sizeof(timeStr), "%b %d %Y at %H:%M:%S", localtime(&current_time));
 			if (last_to_expire[3]->length == std::chrono::seconds::zero())
-				sendMessage(player, Jupiter::StringS::Format("You were permanently vote-muted from %.*s on %s for: %.*s", m_ban_from_str.size(),
+				sendMessage(player, string_printf("You were permanently vote-muted from %.*s on %s for: %.*s", m_ban_from_str.size(),
 					m_ban_from_str.data(), timeStr, last_to_expire[3]->reason.size(), last_to_expire[3]->reason.data()));
 			else
-				sendMessage(player, Jupiter::StringS::Format("You are vote-muted from %.*s until %s for: %.*s", m_ban_from_str.size(),
+				sendMessage(player, string_printf("You are vote-muted from %.*s until %s for: %.*s", m_ban_from_str.size(),
 					m_ban_from_str.data(), timeStr, last_to_expire[3]->reason.size(), last_to_expire[3]->reason.data()));
 		}
 		if (last_to_expire[4] != nullptr) { // Mine ban
@@ -631,28 +631,28 @@ void RenX::Server::banCheck(RenX::PlayerInfo &player) {
 			mineBan(player);
 			strftime(timeStr, sizeof(timeStr), "%b %d %Y at %H:%M:%S", localtime(&current_time));
 			if (last_to_expire[4]->length == std::chrono::seconds::zero())
-				sendMessage(player, Jupiter::StringS::Format("You were permanently mine-banned from %.*s on %s for: %.*s", m_ban_from_str.size(),
+				sendMessage(player, string_printf("You were permanently mine-banned from %.*s on %s for: %.*s", m_ban_from_str.size(),
 					m_ban_from_str.data(), timeStr, last_to_expire[4]->reason.size(), last_to_expire[4]->reason.data()));
 			else
-				sendMessage(player, Jupiter::StringS::Format("You are mine-banned from %.*s until %s for: %.*s", m_ban_from_str.size(),
+				sendMessage(player, string_printf("You are mine-banned from %.*s until %s for: %.*s", m_ban_from_str.size(),
 					m_ban_from_str.data(), timeStr, last_to_expire[4]->reason.size(), last_to_expire[4]->reason.data()));
 		}
 		if (last_to_expire[5] != nullptr) { // Ladder ban
 			time_t current_time = std::chrono::system_clock::to_time_t(last_to_expire[5]->timestamp + last_to_expire[5]->length);
 			strftime(timeStr, sizeof(timeStr), "%b %d %Y at %H:%M:%S", localtime(&current_time));
 			if (last_to_expire[5]->length == std::chrono::seconds::zero())
-				sendMessage(player, Jupiter::StringS::Format("You were permanently ladder-banned from %.*s on %s for: %.*s", m_ban_from_str.size(),
+				sendMessage(player, string_printf("You were permanently ladder-banned from %.*s on %s for: %.*s", m_ban_from_str.size(),
 					m_ban_from_str.data(), timeStr, last_to_expire[5]->reason.size(), last_to_expire[5]->reason.data()));
 			else
-				sendMessage(player, Jupiter::StringS::Format("You are ladder-banned from %.*s until %s for: %.*s", m_ban_from_str.size(),
+				sendMessage(player, string_printf("You are ladder-banned from %.*s until %s for: %.*s", m_ban_from_str.size(),
 					m_ban_from_str.data(), timeStr, last_to_expire[5]->reason.size(), last_to_expire[5]->reason.data()));
 		}
 		if (last_to_expire[6] != nullptr) { // Alert
 			IRC_Bot *server;
 			Jupiter::String fmtName = RenX::getFormattedPlayerName(player);
-			Jupiter::StringL user_message = Jupiter::StringL::Format(IRCCOLOR "04[Alert] " IRCCOLOR IRCBOLD "%.*s" IRCBOLD IRCCOLOR " is marked for monitoring by %.*s for: \"%.*s\". Please keep an eye on them in ", fmtName.size(),
+			std::string user_message = string_printf(IRCCOLOR "04[Alert] " IRCCOLOR IRCBOLD "%.*s" IRCBOLD IRCCOLOR " is marked for monitoring by %.*s for: \"%.*s\". Please keep an eye on them in ", fmtName.size(),
 				fmtName.data(), last_to_expire[6]->banner.size(), last_to_expire[6]->banner.data(), last_to_expire[6]->reason.size(), last_to_expire[6]->reason.data());
-			Jupiter::StringS channel_message = Jupiter::StringS::Format(IRCCOLOR "04[Alert] " IRCCOLOR IRCBOLD "%.*s" IRCBOLD IRCCOLOR " is marked for monitoring by %.*s for: \"%.*s\"." IRCCOLOR, fmtName.size(),
+			std::string channel_message = string_printf(IRCCOLOR "04[Alert] " IRCCOLOR IRCBOLD "%.*s" IRCBOLD IRCCOLOR " is marked for monitoring by %.*s for: \"%.*s\"." IRCCOLOR, fmtName.size(),
 				fmtName.data(), last_to_expire[6]->banner.size(), last_to_expire[6]->banner.data(), last_to_expire[6]->reason.size(), last_to_expire[6]->reason.data());
 
 			for (size_t server_index = 0; server_index < serverManager->size(); ++server_index) {
@@ -661,12 +661,13 @@ void RenX::Server::banCheck(RenX::PlayerInfo &player) {
 					if (isAdminLogChanType(channel.second.getType())) {
 						server->sendMessage(channel.second.getName(), channel_message);
 
+						size_t base_length = user_message.size();
 						user_message += channel.second.getName();
 						for (auto& user : channel.second.getUsers()) {
 							if (channel.second.getUserPrefix(*user.second) != 0 && user.second->getNickname() != server->getNickname())
 								server->sendMessage(user.second->getUser()->getNickname(), user_message);
 						}
-						user_message -= channel.second.getName().size();
+						user_message.erase(base_length);
 					}
 				}
 			}
@@ -677,7 +678,7 @@ void RenX::Server::banCheck(RenX::PlayerInfo &player) {
 void RenX::Server::banPlayer(int id, std::string_view banner, std::string_view reason) {
 	if (m_rconBan) {
 		Jupiter::String out_reason = RenX::escapifyRCON(reason);
-		sendSocket(Jupiter::StringS::Format("ckickban pid%d %.*s\n", id, out_reason.size(), out_reason.data()));
+		sendSocket(string_printf("ckickban pid%d %.*s\n", id, out_reason.size(), out_reason.data()));
 	}
 	else {
 		RenX::PlayerInfo *player = getPlayer(id);
@@ -696,25 +697,25 @@ void RenX::Server::banPlayer(const RenX::PlayerInfo &player, std::string_view ba
 		if (length == std::chrono::seconds::zero()) {
 			if (m_rconBan) {
 				Jupiter::String out_reason = RenX::escapifyRCON(reason);
-				sendSocket(Jupiter::StringS::Format("ckickban pid%d %.*s\n", player.id, out_reason.size(),
+				sendSocket(string_printf("ckickban pid%d %.*s\n", player.id, out_reason.size(),
 					out_reason.data()));
 			}
 			else if (!banner.empty()) {
-				forceKickPlayer(player, Jupiter::StringS::Format("You are permanently banned from %.*s by %.*s for: %.*s", m_ban_from_str.size(),
+				forceKickPlayer(player, string_printf("You are permanently banned from %.*s by %.*s for: %.*s", m_ban_from_str.size(),
 					m_ban_from_str.data(), banner.size(), banner.data(), reason.size(), reason.data()));
 			}
 			else {
-				forceKickPlayer(player, Jupiter::StringS::Format("You are permanently banned from %.*s for: %.*s", m_ban_from_str.size(),
+				forceKickPlayer(player, string_printf("You are permanently banned from %.*s for: %.*s", m_ban_from_str.size(),
 					m_ban_from_str.data(), reason.size(), reason.data()));
 			}
 		}
 		else if (!banner.empty()) {
 			// TODO: make the time formatting not complete nonsense
-			forceKickPlayer(player, Jupiter::StringS::Format("You are banned from %.*s by %.*s for the next %lld days, %.2d:%.2d:%.2d for: %.*s", m_ban_from_str.size(),
+			forceKickPlayer(player, string_printf("You are banned from %.*s by %.*s for the next %lld days, %.2d:%.2d:%.2d for: %.*s", m_ban_from_str.size(),
 				m_ban_from_str.data(), banner.size(), banner.data(), static_cast<long long>(length.count() / 86400), static_cast<int>(length.count() % 3600), static_cast<int>((length.count() % 3600) / 60), static_cast<int>(length.count() % 60), reason.size(), reason.data()));
 		}
 		else {
-			forceKickPlayer(player, Jupiter::StringS::Format("You are banned from %.*s for the next %lld days, %.2d:%.2d:%.2d for: %.*s", m_ban_from_str.size(),
+			forceKickPlayer(player, string_printf("You are banned from %.*s for the next %lld days, %.2d:%.2d:%.2d for: %.*s", m_ban_from_str.size(),
 				m_ban_from_str.data(), static_cast<long long>(length.count() / 86400), static_cast<int>(length.count() % 3600), static_cast<int>((length.count() % 3600) / 60), static_cast<int>(length.count() % 60), reason.size(), reason.data()));
 		}
 	}
@@ -823,15 +824,15 @@ void RenX::Server::gameoverWhenEmpty() {
 }
 
 bool RenX::Server::setMap(std::string_view map) {
-	return send(Jupiter::StringS::Format("changemap %.*s", map.size(), map.data())) > 0;
+	return send(string_printf("changemap %.*s", map.size(), map.data())) > 0;
 }
 
 bool RenX::Server::loadMutator(std::string_view mutator) {
-	return send(Jupiter::StringS::Format("loadmutator %.*s", mutator.size(), mutator.data())) > 0;
+	return send(string_printf("loadmutator %.*s", mutator.size(), mutator.data())) > 0;
 }
 
 bool RenX::Server::unloadMutator(std::string_view mutator) {
-	return send(Jupiter::StringS::Format("unloadmutator %.*s", mutator.size(), mutator.data())) > 0;
+	return send(string_printf("unloadmutator %.*s", mutator.size(), mutator.data())) > 0;
 }
 
 bool RenX::Server::cancelVote(const RenX::TeamType team) {
@@ -854,15 +855,15 @@ bool RenX::Server::recordDemo() {
 }
 
 bool RenX::Server::mute(const RenX::PlayerInfo &player) {
-	return send(Jupiter::StringS::Format("textmute pid%u", player.id)) > 0;
+	return send(string_printf("textmute pid%u", player.id)) > 0;
 }
 
 bool RenX::Server::unmute(const RenX::PlayerInfo &player) {
-	return send(Jupiter::StringS::Format("textunmute pid%u", player.id)) > 0;
+	return send(string_printf("textunmute pid%u", player.id)) > 0;
 }
 
 bool RenX::Server::giveCredits(int id, double credits) {
-	return m_competitive == false && send(Jupiter::StringS::Format("givecredits pid%d %f", id, credits)) > 0;
+	return m_competitive == false && send(string_printf("givecredits pid%d %f", id, credits)) > 0;
 }
 
 bool RenX::Server::giveCredits(RenX::PlayerInfo &player, double credits) {
@@ -870,7 +871,7 @@ bool RenX::Server::giveCredits(RenX::PlayerInfo &player, double credits) {
 }
 
 bool RenX::Server::kill(int id) {
-	return m_competitive == false && send(Jupiter::StringS::Format("kill pid%d", id)) > 0;
+	return m_competitive == false && send(string_printf("kill pid%d", id)) > 0;
 }
 
 bool RenX::Server::kill(RenX::PlayerInfo &player) {
@@ -878,7 +879,7 @@ bool RenX::Server::kill(RenX::PlayerInfo &player) {
 }
 
 bool RenX::Server::disarm(int id) {
-	return m_competitive == false && send(Jupiter::StringS::Format("disarm pid%d", id)) > 0;
+	return m_competitive == false && send(string_printf("disarm pid%d", id)) > 0;
 }
 
 bool RenX::Server::disarm(RenX::PlayerInfo &player) {
@@ -886,7 +887,7 @@ bool RenX::Server::disarm(RenX::PlayerInfo &player) {
 }
 
 bool RenX::Server::disarmC4(int id) {
-	return m_competitive == false && send(Jupiter::StringS::Format("disarmc4 pid%d", id)) > 0;
+	return m_competitive == false && send(string_printf("disarmc4 pid%d", id)) > 0;
 }
 
 bool RenX::Server::disarmC4(RenX::PlayerInfo &player) {
@@ -894,7 +895,7 @@ bool RenX::Server::disarmC4(RenX::PlayerInfo &player) {
 }
 
 bool RenX::Server::disarmBeacon(int id) {
-	return m_competitive == false && send(Jupiter::StringS::Format("disarmb pid%d", id)) > 0;
+	return m_competitive == false && send(string_printf("disarmb pid%d", id)) > 0;
 }
 
 bool RenX::Server::disarmBeacon(RenX::PlayerInfo &player) {
@@ -902,7 +903,7 @@ bool RenX::Server::disarmBeacon(RenX::PlayerInfo &player) {
 }
 
 bool RenX::Server::mineBan(int id) {
-	return send(Jupiter::StringS::Format("mineban pid%d", id)) > 0;
+	return send(string_printf("mineban pid%d", id)) > 0;
 }
 
 bool RenX::Server::mineBan(RenX::PlayerInfo &player) {
@@ -910,7 +911,7 @@ bool RenX::Server::mineBan(RenX::PlayerInfo &player) {
 }
 
 bool RenX::Server::changeTeam(int id, bool resetCredits) {
-	return send(Jupiter::StringS::Format(resetCredits ? "team pid%d" : "team2 pid%d", id)) > 0;
+	return send(string_printf(resetCredits ? "team pid%d" : "team2 pid%d", id)) > 0;
 }
 
 bool RenX::Server::changeTeam(RenX::PlayerInfo &player, bool resetCredits) {
@@ -918,11 +919,11 @@ bool RenX::Server::changeTeam(RenX::PlayerInfo &player, bool resetCredits) {
 }
 
 bool RenX::Server::nmodePlayer(const RenX::PlayerInfo &player) {
-	return send(Jupiter::StringS::Format("nmode pid%d", player.id));
+	return send(string_printf("nmode pid%d", player.id));
 }
 
 bool RenX::Server::smodePlayer(const RenX::PlayerInfo &player) {
-	return send(Jupiter::StringS::Format("smode pid%d", player.id));
+	return send(string_printf("smode pid%d", player.id));
 }
 
 std::string_view RenX::Server::getPrefix() const {
@@ -1181,19 +1182,15 @@ bool RenX::Server::resolvesRDNS() {
 void RenX::Server::sendPubChan(const char *fmt, ...) const {
 	va_list args;
 	va_start(args, fmt);
-	Jupiter::StringL msg;
-	std::string_view serverPrefix = getPrefix();
-	if (!serverPrefix.empty()) {
-		msg += serverPrefix;
-		msg += ' ';
-		msg.avformat(fmt, args);
+
+	std::string message{ getPrefix() };
+	if (!message.empty()) {
+		message += ' ';
 	}
-	else {
-		msg.vformat(fmt, args);
-	}
-	va_end(args);
+	message += vstring_printf(fmt, args);
+
 	for (size_t i = 0; i != serverManager->size(); i++) {
-		serverManager->getServer(i)->messageChannels(m_logChanType, msg);
+		serverManager->getServer(i)->messageChannels(m_logChanType, message);
 	}
 }
 
@@ -1219,19 +1216,15 @@ void RenX::Server::sendPubChan(std::string_view msg) const {
 void RenX::Server::sendAdmChan(const char *fmt, ...) const {
 	va_list args;
 	va_start(args, fmt);
-	Jupiter::StringL msg;
-	std::string_view serverPrefix = getPrefix();
-	if (!serverPrefix.empty()) {
-		msg += serverPrefix;
-		msg += ' ';
-		msg.avformat(fmt, args);
+
+	std::string message{ getPrefix() };
+	if (!message.empty()) {
+		message += ' ';
 	}
-	else {
-		msg.vformat(fmt, args);
-	}
-	va_end(args);
+	message += vstring_printf(fmt, args);
+
 	for (size_t i = 0; i != serverManager->size(); i++) {
-		serverManager->getServer(i)->messageChannels(m_adminLogChanType, msg);
+		serverManager->getServer(i)->messageChannels(m_adminLogChanType, message);
 	}
 }
 
@@ -1255,24 +1248,20 @@ void RenX::Server::sendAdmChan(std::string_view msg) const {
 }
 
 void RenX::Server::sendLogChan(const char *fmt, ...) const {
-	IRC_Bot *server;
 	va_list args;
 	va_start(args, fmt);
-	Jupiter::StringL msg;
-	std::string_view serverPrefix = getPrefix();
-	if (!serverPrefix.empty()) {
-		msg += serverPrefix;
-		msg += ' ';
-		msg.avformat(fmt, args);
+
+	std::string message{ getPrefix() };
+	if (!message.empty()) {
+		message += ' ';
 	}
-	else {
-		msg.vformat(fmt, args);
-	}
-	va_end(args);
+	message += vstring_printf(fmt, args);
+
+	IRC_Bot* server;
 	for (size_t i = 0; i != serverManager->size(); i++) {
 		server = serverManager->getServer(i);
-		server->messageChannels(m_logChanType, msg);
-		server->messageChannels(m_adminLogChanType, msg);
+		server->messageChannels(m_logChanType, message);
+		server->messageChannels(m_adminLogChanType, message);
 	}
 }
 
@@ -2820,7 +2809,7 @@ void RenX::Server::processLine(std::string_view line) {
 									{
 										player->global_rank = itr->rank;
 										if (m_rconVersion >= 4)
-											sendData(Jupiter::StringS::Format("dset_rank %d %d\n", player->id, player->global_rank));
+											sendData(string_printf("dset_rank %d %d\n", player->id, player->global_rank));
 									}
 									break;
 								}
@@ -2923,7 +2912,7 @@ void RenX::Server::processLine(std::string_view line) {
 							if (m_devBot && player->global_rank != 0U)
 							{
 								if (m_rconVersion >= 4)
-									sendData(Jupiter::StringS::Format("dset_rank %d %d\n", player->id, player->global_rank));
+									sendData(string_printf("dset_rank %d %d\n", player->id, player->global_rank));
 							}
 
 							for (const auto& plugin : xPlugins) {
@@ -3208,7 +3197,7 @@ void RenX::Server::processLine(std::string_view line) {
 							RenX::PlayerInfo *player = parseGetPlayerOrAdd(getToken(tokens.size() - 1));
 
 							if ((player->ban_flags & RenX::BanDatabase::Entry::FLAG_TYPE_VOTE) != 0)
-								sendData(Jupiter::StringS::Format("ccancelvote %.*s\n", teamToken.size(), teamToken.data()));
+								sendData(string_printf("ccancelvote %.*s\n", teamToken.size(), teamToken.data()));
 
 							for (const auto& plugin : xPlugins) {
 								plugin->RenX_OnVoteOther(*this, team, voteType, *player);
@@ -3219,7 +3208,7 @@ void RenX::Server::processLine(std::string_view line) {
 							RenX::PlayerInfo *player = parseGetPlayerOrAdd(getToken(5));
 
 							if ((player->ban_flags & RenX::BanDatabase::Entry::FLAG_TYPE_VOTE) != 0)
-								sendData(Jupiter::StringS::Format("ccancelvote %.*s\n", teamToken.size(), teamToken.data()));
+								sendData(string_printf("ccancelvote %.*s\n", teamToken.size(), teamToken.data()));
 
 							// PARSE PARAMETERS HERE
 
@@ -3613,7 +3602,7 @@ bool RenX::Server::connect() {
 	if (m_sock.connect(m_hostname.c_str(), m_port, m_clientHostname.empty() ? nullptr : m_clientHostname.c_str()))
 	{
 		m_sock.setBlocking(false);
-		sendSocket(Jupiter::StringS::Format("a%.*s\n", m_pass.size(), m_pass.data()));
+		sendSocket(string_printf("a%.*s\n", m_pass.size(), m_pass.data()));
 		m_connected = true;
 		m_attempts = 0;
 		return true;
@@ -3684,7 +3673,7 @@ std::string_view RenX::Server::getRCONUsername() const {
 RenX::Server::Server(Jupiter::Socket &&socket, std::string_view configurationSection) : Server(configurationSection) {
 	m_sock = std::move(socket);
 	m_hostname = m_sock.getRemoteHostname();
-	sendSocket(Jupiter::StringS::Format("a%.*s\n", m_pass.size(), m_pass.data()));
+	sendSocket(string_printf("a%.*s\n", m_pass.size(), m_pass.data()));
 	m_connected = true;
 }
 

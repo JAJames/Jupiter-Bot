@@ -450,7 +450,7 @@ void TagsImp::processTags(std::string& msg, const RenX::Server *server, const Re
 	PROCESS_TAG(this->INTERNAL_TIME_TAG, std::string_view(getTimeFormat(this->timeFmt.c_str())));
 	if (server != nullptr)
 	{
-		PROCESS_TAG(this->INTERNAL_RCON_VERSION_TAG, Jupiter::StringS::Format("%u", server->getVersion()));
+		PROCESS_TAG(this->INTERNAL_RCON_VERSION_TAG, string_printf("%u", server->getVersion()));
 		PROCESS_TAG(this->INTERNAL_GAME_VERSION_TAG, server->getGameVersion());
 		PROCESS_TAG(this->INTERNAL_RULES_TAG, server->getRules());
 		PROCESS_TAG(this->INTERNAL_USER_TAG, server->getUser());
@@ -458,9 +458,9 @@ void TagsImp::processTags(std::string& msg, const RenX::Server *server, const Re
 		PROCESS_TAG(this->INTERNAL_MAP_TAG, server->getMap().name);
 		PROCESS_TAG(this->INTERNAL_MAP_GUID_TAG, RenX::formatGUID(server->getMap()));
 		PROCESS_TAG(this->INTERNAL_SERVER_HOSTNAME_TAG, server->getHostname());
-		PROCESS_TAG(this->INTERNAL_SERVER_PORT_TAG, Jupiter::StringS::Format("%u", server->getPort()));
+		PROCESS_TAG(this->INTERNAL_SERVER_PORT_TAG, string_printf("%u", server->getPort()));
 		PROCESS_TAG(this->INTERNAL_SOCKET_HOSTNAME_TAG, server->getSocketHostname());
-		PROCESS_TAG(this->INTERNAL_SOCKET_PORT_TAG, Jupiter::StringS::Format("%u", server->getSocketPort()));
+		PROCESS_TAG(this->INTERNAL_SOCKET_PORT_TAG, string_printf("%u", server->getSocketPort()));
 		PROCESS_TAG(this->INTERNAL_SERVER_PREFIX_TAG, server->getPrefix());
 		if (player != nullptr)
 		{
@@ -484,7 +484,7 @@ void TagsImp::processTags(std::string& msg, const RenX::Server *server, const Re
 			PROCESS_TAG(this->INTERNAL_RDNS_TAG, player->get_rdns());
 		}
 		PROCESS_TAG(this->INTERNAL_UUID_TAG, player->uuid);
-		PROCESS_TAG(this->INTERNAL_ID_TAG, Jupiter::StringS::Format("%d", player->id));
+		PROCESS_TAG(this->INTERNAL_ID_TAG, string_printf("%d", player->id));
 		PROCESS_TAG(this->INTERNAL_CHARACTER_TAG, RenX::translateName(player->character));
 		PROCESS_TAG(this->INTERNAL_VEHICLE_TAG, RenX::translateName(player->vehicle));
 		PROCESS_TAG(this->INTERNAL_ADMIN_TAG, player->adminType);
@@ -493,27 +493,27 @@ void TagsImp::processTags(std::string& msg, const RenX::Server *server, const Re
 		PROCESS_TAG(this->INTERNAL_TEAM_COLOR_TAG, RenX::getTeamColor(player->team));
 		PROCESS_TAG(this->INTERNAL_TEAM_SHORT_TAG, RenX::getTeamName(player->team));
 		PROCESS_TAG(this->INTERNAL_TEAM_LONG_TAG, RenX::getFullTeamName(player->team));
-		PROCESS_TAG(this->INTERNAL_PING_TAG, Jupiter::StringS::Format("%hu", player->ping));
-		PROCESS_TAG(this->INTERNAL_SCORE_TAG, Jupiter::StringS::Format("%.0f", player->score));
-		PROCESS_TAG(this->INTERNAL_SCORE_PER_MINUTE_TAG, Jupiter::StringS::Format("%.2f", get_ratio(static_cast<double>(player->score), static_cast<double>((std::chrono::steady_clock::now() - player->joinTime).count()) / 60.0)));
-		PROCESS_TAG(this->INTERNAL_CREDITS_TAG, Jupiter::StringS::Format("%.0f", player->credits));
-		PROCESS_TAG(this->INTERNAL_KILLS_TAG, Jupiter::StringS::Format("%u", player->kills));
-		PROCESS_TAG(this->INTERNAL_DEATHS_TAG, Jupiter::StringS::Format("%u", player->deaths));
-		PROCESS_TAG(this->INTERNAL_KDR_TAG, Jupiter::StringS::Format("%.2f", get_ratio(static_cast<double>(player->kills), static_cast<double>(player->deaths))));
-		PROCESS_TAG(this->INTERNAL_SUICIDES_TAG, Jupiter::StringS::Format("%u", player->suicides));
-		PROCESS_TAG(this->INTERNAL_HEADSHOTS_TAG, Jupiter::StringS::Format("%u", player->headshots));
-		PROCESS_TAG(this->INTERNAL_HEADSHOT_KILL_RATIO_TAG, Jupiter::StringS::Format("%.2f", get_ratio(player->headshots, player->kills)));
-		PROCESS_TAG(this->INTERNAL_VEHICLE_KILLS_TAG, Jupiter::StringS::Format("%u", player->vehicleKills));
-		PROCESS_TAG(this->INTERNAL_BUILDING_KILLS_TAG, Jupiter::StringS::Format("%u", player->buildingKills));
-		PROCESS_TAG(this->INTERNAL_DEFENCE_KILLS_TAG, Jupiter::StringS::Format("%u", player->defenceKills));
-		PROCESS_TAG(this->INTERNAL_WINS_TAG, Jupiter::StringS::Format("%u", player->wins));
-		PROCESS_TAG(this->INTERNAL_LOSSES_TAG, Jupiter::StringS::Format("%u", player->loses));
-		PROCESS_TAG(this->INTERNAL_BEACON_PLACEMENTS_TAG, Jupiter::StringS::Format("%u", player->beaconPlacements));
-		PROCESS_TAG(this->INTERNAL_BEACON_DISARMS_TAG, Jupiter::StringS::Format("%u", player->beaconDisarms));
-		PROCESS_TAG(this->INTERNAL_CAPTURES_TAG, Jupiter::StringS::Format("%u", player->captures));
-		PROCESS_TAG(this->INTERNAL_STEALS_TAG, Jupiter::StringS::Format("%u", player->steals));
-		PROCESS_TAG(this->INTERNAL_STOLEN_TAG, Jupiter::StringS::Format("%u", player->stolen));
-		PROCESS_TAG(this->INTERNAL_ACCESS_TAG, Jupiter::StringS::Format("%d", player->access));
+		PROCESS_TAG(this->INTERNAL_PING_TAG, string_printf("%hu", player->ping));
+		PROCESS_TAG(this->INTERNAL_SCORE_TAG, string_printf("%.0f", player->score));
+		PROCESS_TAG(this->INTERNAL_SCORE_PER_MINUTE_TAG, string_printf("%.2f", get_ratio(static_cast<double>(player->score), static_cast<double>((std::chrono::steady_clock::now() - player->joinTime).count()) / 60.0)));
+		PROCESS_TAG(this->INTERNAL_CREDITS_TAG, string_printf("%.0f", player->credits));
+		PROCESS_TAG(this->INTERNAL_KILLS_TAG, string_printf("%u", player->kills));
+		PROCESS_TAG(this->INTERNAL_DEATHS_TAG, string_printf("%u", player->deaths));
+		PROCESS_TAG(this->INTERNAL_KDR_TAG, string_printf("%.2f", get_ratio(static_cast<double>(player->kills), static_cast<double>(player->deaths))));
+		PROCESS_TAG(this->INTERNAL_SUICIDES_TAG, string_printf("%u", player->suicides));
+		PROCESS_TAG(this->INTERNAL_HEADSHOTS_TAG, string_printf("%u", player->headshots));
+		PROCESS_TAG(this->INTERNAL_HEADSHOT_KILL_RATIO_TAG, string_printf("%.2f", get_ratio(player->headshots, player->kills)));
+		PROCESS_TAG(this->INTERNAL_VEHICLE_KILLS_TAG, string_printf("%u", player->vehicleKills));
+		PROCESS_TAG(this->INTERNAL_BUILDING_KILLS_TAG, string_printf("%u", player->buildingKills));
+		PROCESS_TAG(this->INTERNAL_DEFENCE_KILLS_TAG, string_printf("%u", player->defenceKills));
+		PROCESS_TAG(this->INTERNAL_WINS_TAG, string_printf("%u", player->wins));
+		PROCESS_TAG(this->INTERNAL_LOSSES_TAG, string_printf("%u", player->loses));
+		PROCESS_TAG(this->INTERNAL_BEACON_PLACEMENTS_TAG, string_printf("%u", player->beaconPlacements));
+		PROCESS_TAG(this->INTERNAL_BEACON_DISARMS_TAG, string_printf("%u", player->beaconDisarms));
+		PROCESS_TAG(this->INTERNAL_CAPTURES_TAG, string_printf("%u", player->captures));
+		PROCESS_TAG(this->INTERNAL_STEALS_TAG, string_printf("%u", player->steals));
+		PROCESS_TAG(this->INTERNAL_STOLEN_TAG, string_printf("%u", player->stolen));
+		PROCESS_TAG(this->INTERNAL_ACCESS_TAG, string_printf("%d", player->access));
 	}
 	if (victim != nullptr)
 	{
@@ -528,7 +528,7 @@ void TagsImp::processTags(std::string& msg, const RenX::Server *server, const Re
 			PROCESS_TAG(this->INTERNAL_VICTIM_RDNS_TAG, victim->get_rdns());
 		}
 		PROCESS_TAG(this->INTERNAL_VICTIM_UUID_TAG, victim->uuid);
-		PROCESS_TAG(this->INTERNAL_VICTIM_ID_TAG, Jupiter::StringS::Format("%d", victim->id));
+		PROCESS_TAG(this->INTERNAL_VICTIM_ID_TAG, string_printf("%d", victim->id));
 		PROCESS_TAG(this->INTERNAL_VICTIM_CHARACTER_TAG, RenX::translateName(victim->character));
 		PROCESS_TAG(this->INTERNAL_VICTIM_VEHICLE_TAG, RenX::translateName(victim->vehicle));
 		PROCESS_TAG(this->INTERNAL_VICTIM_ADMIN_TAG, victim->adminType);
@@ -537,41 +537,41 @@ void TagsImp::processTags(std::string& msg, const RenX::Server *server, const Re
 		PROCESS_TAG(this->INTERNAL_VICTIM_TEAM_COLOR_TAG, RenX::getTeamColor(victim->team));
 		PROCESS_TAG(this->INTERNAL_VICTIM_TEAM_SHORT_TAG, RenX::getTeamName(victim->team));
 		PROCESS_TAG(this->INTERNAL_VICTIM_TEAM_LONG_TAG, RenX::getFullTeamName(victim->team));
-		PROCESS_TAG(this->INTERNAL_VICTIM_PING_TAG, Jupiter::StringS::Format("%hu", victim->ping));
-		PROCESS_TAG(this->INTERNAL_VICTIM_SCORE_TAG, Jupiter::StringS::Format("%.0f", victim->score));
-		PROCESS_TAG(this->INTERNAL_VICTIM_SCORE_PER_MINUTE_TAG, Jupiter::StringS::Format("%.2f", get_ratio(static_cast<double>(victim->score), static_cast<double>((std::chrono::steady_clock::now() - victim->joinTime).count()) / 60.0)));
-		PROCESS_TAG(this->INTERNAL_VICTIM_CREDITS_TAG, Jupiter::StringS::Format("%.0f", victim->credits));
-		PROCESS_TAG(this->INTERNAL_VICTIM_KILLS_TAG, Jupiter::StringS::Format("%u", victim->kills));
-		PROCESS_TAG(this->INTERNAL_VICTIM_DEATHS_TAG, Jupiter::StringS::Format("%u", victim->deaths));
-		PROCESS_TAG(this->INTERNAL_VICTIM_KDR_TAG, Jupiter::StringS::Format("%.2f", get_ratio(static_cast<double>(victim->kills), static_cast<double>(victim->deaths))));
-		PROCESS_TAG(this->INTERNAL_VICTIM_SUICIDES_TAG, Jupiter::StringS::Format("%u", victim->suicides));
-		PROCESS_TAG(this->INTERNAL_VICTIM_HEADSHOTS_TAG, Jupiter::StringS::Format("%u", victim->headshots));
-		PROCESS_TAG(this->INTERNAL_VICTIM_HEADSHOT_KILL_RATIO_TAG, Jupiter::StringS::Format("%.2f", get_ratio(victim->headshots, victim->kills)));
-		PROCESS_TAG(this->INTERNAL_VICTIM_VEHICLE_KILLS_TAG, Jupiter::StringS::Format("%u", victim->vehicleKills));
-		PROCESS_TAG(this->INTERNAL_VICTIM_BUILDING_KILLS_TAG, Jupiter::StringS::Format("%u", victim->buildingKills));
-		PROCESS_TAG(this->INTERNAL_VICTIM_DEFENCE_KILLS_TAG, Jupiter::StringS::Format("%u", victim->defenceKills));
-		PROCESS_TAG(this->INTERNAL_VICTIM_WINS_TAG, Jupiter::StringS::Format("%u", victim->wins));
-		PROCESS_TAG(this->INTERNAL_VICTIM_LOSSES_TAG, Jupiter::StringS::Format("%u", victim->loses));
-		PROCESS_TAG(this->INTERNAL_VICTIM_BEACON_PLACEMENTS_TAG, Jupiter::StringS::Format("%u", victim->beaconPlacements));
-		PROCESS_TAG(this->INTERNAL_VICTIM_BEACON_DISARMS_TAG, Jupiter::StringS::Format("%u", victim->beaconDisarms));
-		PROCESS_TAG(this->INTERNAL_VICTIM_CAPTURES_TAG, Jupiter::StringS::Format("%u", victim->captures));
-		PROCESS_TAG(this->INTERNAL_VICTIM_STEALS_TAG, Jupiter::StringS::Format("%u", victim->steals));
-		PROCESS_TAG(this->INTERNAL_VICTIM_STOLEN_TAG, Jupiter::StringS::Format("%u", victim->stolen));
-		PROCESS_TAG(this->INTERNAL_VICTIM_ACCESS_TAG, Jupiter::StringS::Format("%d", victim->access));
+		PROCESS_TAG(this->INTERNAL_VICTIM_PING_TAG, string_printf("%hu", victim->ping));
+		PROCESS_TAG(this->INTERNAL_VICTIM_SCORE_TAG, string_printf("%.0f", victim->score));
+		PROCESS_TAG(this->INTERNAL_VICTIM_SCORE_PER_MINUTE_TAG, string_printf("%.2f", get_ratio(static_cast<double>(victim->score), static_cast<double>((std::chrono::steady_clock::now() - victim->joinTime).count()) / 60.0)));
+		PROCESS_TAG(this->INTERNAL_VICTIM_CREDITS_TAG, string_printf("%.0f", victim->credits));
+		PROCESS_TAG(this->INTERNAL_VICTIM_KILLS_TAG, string_printf("%u", victim->kills));
+		PROCESS_TAG(this->INTERNAL_VICTIM_DEATHS_TAG, string_printf("%u", victim->deaths));
+		PROCESS_TAG(this->INTERNAL_VICTIM_KDR_TAG, string_printf("%.2f", get_ratio(static_cast<double>(victim->kills), static_cast<double>(victim->deaths))));
+		PROCESS_TAG(this->INTERNAL_VICTIM_SUICIDES_TAG, string_printf("%u", victim->suicides));
+		PROCESS_TAG(this->INTERNAL_VICTIM_HEADSHOTS_TAG, string_printf("%u", victim->headshots));
+		PROCESS_TAG(this->INTERNAL_VICTIM_HEADSHOT_KILL_RATIO_TAG, string_printf("%.2f", get_ratio(victim->headshots, victim->kills)));
+		PROCESS_TAG(this->INTERNAL_VICTIM_VEHICLE_KILLS_TAG, string_printf("%u", victim->vehicleKills));
+		PROCESS_TAG(this->INTERNAL_VICTIM_BUILDING_KILLS_TAG, string_printf("%u", victim->buildingKills));
+		PROCESS_TAG(this->INTERNAL_VICTIM_DEFENCE_KILLS_TAG, string_printf("%u", victim->defenceKills));
+		PROCESS_TAG(this->INTERNAL_VICTIM_WINS_TAG, string_printf("%u", victim->wins));
+		PROCESS_TAG(this->INTERNAL_VICTIM_LOSSES_TAG, string_printf("%u", victim->loses));
+		PROCESS_TAG(this->INTERNAL_VICTIM_BEACON_PLACEMENTS_TAG, string_printf("%u", victim->beaconPlacements));
+		PROCESS_TAG(this->INTERNAL_VICTIM_BEACON_DISARMS_TAG, string_printf("%u", victim->beaconDisarms));
+		PROCESS_TAG(this->INTERNAL_VICTIM_CAPTURES_TAG, string_printf("%u", victim->captures));
+		PROCESS_TAG(this->INTERNAL_VICTIM_STEALS_TAG, string_printf("%u", victim->steals));
+		PROCESS_TAG(this->INTERNAL_VICTIM_STOLEN_TAG, string_printf("%u", victim->stolen));
+		PROCESS_TAG(this->INTERNAL_VICTIM_ACCESS_TAG, string_printf("%d", victim->access));
 	}
 	if (building != nullptr)
 	{
 		PROCESS_TAG(this->INTERNAL_BUILDING_NAME_TAG, RenX::translateName(building->name));
 		PROCESS_TAG(this->INTERNAL_BUILDING_RAW_NAME_TAG, building->name);
-		PROCESS_TAG(this->INTERNAL_BUILDING_HEALTH_TAG, Jupiter::StringS::Format("%d", building->health));
-		PROCESS_TAG(this->INTERNAL_BUILDING_MAX_HEALTH_TAG, Jupiter::StringS::Format("%d", building->max_health));
-		PROCESS_TAG(this->INTERNAL_BUILDING_HEALTH_PERCENTAGE_TAG, Jupiter::StringS::Format("%.0f", (building->health / building->max_health) * 100.0));
-		PROCESS_TAG(this->INTERNAL_BUILDING_ARMOR_TAG, Jupiter::StringS::Format("%d", building->armor));
-		PROCESS_TAG(this->INTERNAL_BUILDING_MAX_ARMOR_TAG, Jupiter::StringS::Format("%d", building->max_armor));
-		PROCESS_TAG(this->INTERNAL_BUILDING_ARMOR_PERCENTAGE_TAG, Jupiter::StringS::Format("%.0f", (static_cast<double>(building->armor) / static_cast<double>(building->max_armor)) * 100.0));
-		PROCESS_TAG(this->INTERNAL_BUILDING_DURABILITY_TAG, Jupiter::StringS::Format("%d", building->health + building->armor));
-		PROCESS_TAG(this->INTERNAL_BUILDING_MAX_DURABILITY_TAG, Jupiter::StringS::Format("%d", building->max_health + building->max_armor));
-		PROCESS_TAG(this->INTERNAL_BUILDING_DURABILITY_PERCENTAGE_TAG, Jupiter::StringS::Format("%.0f", (static_cast<double>(building->health + building->armor) / static_cast<double>(building->max_health + building->max_armor)) * 100.0));
+		PROCESS_TAG(this->INTERNAL_BUILDING_HEALTH_TAG, string_printf("%d", building->health));
+		PROCESS_TAG(this->INTERNAL_BUILDING_MAX_HEALTH_TAG, string_printf("%d", building->max_health));
+		PROCESS_TAG(this->INTERNAL_BUILDING_HEALTH_PERCENTAGE_TAG, string_printf("%.0f", (building->health / building->max_health) * 100.0));
+		PROCESS_TAG(this->INTERNAL_BUILDING_ARMOR_TAG, string_printf("%d", building->armor));
+		PROCESS_TAG(this->INTERNAL_BUILDING_MAX_ARMOR_TAG, string_printf("%d", building->max_armor));
+		PROCESS_TAG(this->INTERNAL_BUILDING_ARMOR_PERCENTAGE_TAG, string_printf("%.0f", (static_cast<double>(building->armor) / static_cast<double>(building->max_armor)) * 100.0));
+		PROCESS_TAG(this->INTERNAL_BUILDING_DURABILITY_TAG, string_printf("%d", building->health + building->armor));
+		PROCESS_TAG(this->INTERNAL_BUILDING_MAX_DURABILITY_TAG, string_printf("%d", building->max_health + building->max_armor));
+		PROCESS_TAG(this->INTERNAL_BUILDING_DURABILITY_PERCENTAGE_TAG, string_printf("%.0f", (static_cast<double>(building->health + building->armor) / static_cast<double>(building->max_health + building->max_armor)) * 100.0));
 		PROCESS_TAG(this->INTERNAL_BUILDING_TEAM_COLOR_TAG, RenX::getTeamColor(building->team));
 		PROCESS_TAG(this->INTERNAL_BUILDING_TEAM_SHORT_TAG, RenX::getTeamName(building->team));
 		PROCESS_TAG(this->INTERNAL_BUILDING_TEAM_LONG_TAG, RenX::getFullTeamName(building->team));
@@ -588,93 +588,93 @@ void TagsImp::processTags(std::string& msg, const RenX::LadderDatabase::Entry &e
 	uint32_t total_tied_games = entry.total_wins - entry.total_gdi_wins - entry.total_nod_wins;
 
 	PROCESS_TAG(this->INTERNAL_NAME_TAG, entry.most_recent_name);
-	PROCESS_TAG(this->INTERNAL_STEAM_TAG, Jupiter::StringS::Format("%llu", entry.steam_id));
-	PROCESS_TAG(this->INTERNAL_RANK_TAG, Jupiter::StringS::Format("%u", entry.rank));
-	PROCESS_TAG(this->INTERNAL_LAST_GAME_TAG, Jupiter::StringS::Format("XX Xuary 20XX at 00:00:00")); // TODO: format this!
+	PROCESS_TAG(this->INTERNAL_STEAM_TAG, string_printf("%llu", entry.steam_id));
+	PROCESS_TAG(this->INTERNAL_RANK_TAG, string_printf("%u", entry.rank));
+	PROCESS_TAG(this->INTERNAL_LAST_GAME_TAG, string_printf("XX Xuary 20XX at 00:00:00")); // TODO: format this!
 
 	/** Totals */
-	PROCESS_TAG(this->INTERNAL_SCORE_TAG, Jupiter::StringS::Format("%llu", entry.total_score));
-	PROCESS_TAG(this->INTERNAL_KILLS_TAG, Jupiter::StringS::Format("%u", entry.total_kills));
-	PROCESS_TAG(this->INTERNAL_DEATHS_TAG, Jupiter::StringS::Format("%u", entry.total_deaths));
-	PROCESS_TAG(this->INTERNAL_KDR_TAG, Jupiter::StringS::Format("%.2f", get_ratio(static_cast<double>(entry.total_kills), static_cast<double>(entry.total_deaths))));
-	PROCESS_TAG(this->INTERNAL_SCORE_PER_MINUTE_TAG, Jupiter::StringS::Format("%.2f", get_ratio(static_cast<double>(entry.total_score), static_cast<double>(entry.total_game_time) / 60.0)));
-	PROCESS_TAG(this->INTERNAL_HEADSHOTS_TAG, Jupiter::StringS::Format("%u", entry.total_headshot_kills));
-	PROCESS_TAG(this->INTERNAL_HEADSHOT_KILL_RATIO_TAG, Jupiter::StringS::Format("%.2f", get_ratio(entry.total_headshot_kills, entry.total_kills)));
-	PROCESS_TAG(this->INTERNAL_VEHICLE_KILLS_TAG, Jupiter::StringS::Format("%u", entry.total_vehicle_kills));
-	PROCESS_TAG(this->INTERNAL_BUILDING_KILLS_TAG, Jupiter::StringS::Format("%u", entry.total_building_kills));
-	PROCESS_TAG(this->INTERNAL_DEFENCE_KILLS_TAG, Jupiter::StringS::Format("%u", entry.total_defence_kills));
-	PROCESS_TAG(this->INTERNAL_CAPTURES_TAG, Jupiter::StringS::Format("%u", entry.total_captures));
-	PROCESS_TAG(this->INTERNAL_GAME_TIME_TAG, Jupiter::StringS::Format("%u", entry.total_game_time));
-	PROCESS_TAG(this->INTERNAL_GAMES_TAG, Jupiter::StringS::Format("%u", entry.total_games));
-	PROCESS_TAG(this->INTERNAL_WINS_TAG, Jupiter::StringS::Format("%u", entry.total_wins));
-	PROCESS_TAG(this->INTERNAL_TIES_TAG, Jupiter::StringS::Format("%u", total_tied_games));
-	PROCESS_TAG(this->INTERNAL_LOSSES_TAG, Jupiter::StringS::Format("%u", entry.total_games - total_tied_games - entry.total_wins));
-	PROCESS_TAG(this->INTERNAL_WIN_LOSS_RATIO_TAG, Jupiter::StringS::Format("%.2f", get_ratio(static_cast<double>(entry.total_wins), static_cast<double>(entry.total_games - entry.total_wins))));
-	PROCESS_TAG(this->INTERNAL_BEACON_PLACEMENTS_TAG, Jupiter::StringS::Format("%u", entry.total_beacon_placements));
-	PROCESS_TAG(this->INTERNAL_BEACON_DISARMS_TAG, Jupiter::StringS::Format("%u", entry.total_beacon_disarms));
-	PROCESS_TAG(this->INTERNAL_PROXY_PLACEMENTS_TAG, Jupiter::StringS::Format("%u", entry.total_proxy_placements));
-	PROCESS_TAG(this->INTERNAL_PROXY_DISARMS_TAG, Jupiter::StringS::Format("%u", entry.total_proxy_disarms));
+	PROCESS_TAG(this->INTERNAL_SCORE_TAG, string_printf("%llu", entry.total_score));
+	PROCESS_TAG(this->INTERNAL_KILLS_TAG, string_printf("%u", entry.total_kills));
+	PROCESS_TAG(this->INTERNAL_DEATHS_TAG, string_printf("%u", entry.total_deaths));
+	PROCESS_TAG(this->INTERNAL_KDR_TAG, string_printf("%.2f", get_ratio(static_cast<double>(entry.total_kills), static_cast<double>(entry.total_deaths))));
+	PROCESS_TAG(this->INTERNAL_SCORE_PER_MINUTE_TAG, string_printf("%.2f", get_ratio(static_cast<double>(entry.total_score), static_cast<double>(entry.total_game_time) / 60.0)));
+	PROCESS_TAG(this->INTERNAL_HEADSHOTS_TAG, string_printf("%u", entry.total_headshot_kills));
+	PROCESS_TAG(this->INTERNAL_HEADSHOT_KILL_RATIO_TAG, string_printf("%.2f", get_ratio(entry.total_headshot_kills, entry.total_kills)));
+	PROCESS_TAG(this->INTERNAL_VEHICLE_KILLS_TAG, string_printf("%u", entry.total_vehicle_kills));
+	PROCESS_TAG(this->INTERNAL_BUILDING_KILLS_TAG, string_printf("%u", entry.total_building_kills));
+	PROCESS_TAG(this->INTERNAL_DEFENCE_KILLS_TAG, string_printf("%u", entry.total_defence_kills));
+	PROCESS_TAG(this->INTERNAL_CAPTURES_TAG, string_printf("%u", entry.total_captures));
+	PROCESS_TAG(this->INTERNAL_GAME_TIME_TAG, string_printf("%u", entry.total_game_time));
+	PROCESS_TAG(this->INTERNAL_GAMES_TAG, string_printf("%u", entry.total_games));
+	PROCESS_TAG(this->INTERNAL_WINS_TAG, string_printf("%u", entry.total_wins));
+	PROCESS_TAG(this->INTERNAL_TIES_TAG, string_printf("%u", total_tied_games));
+	PROCESS_TAG(this->INTERNAL_LOSSES_TAG, string_printf("%u", entry.total_games - total_tied_games - entry.total_wins));
+	PROCESS_TAG(this->INTERNAL_WIN_LOSS_RATIO_TAG, string_printf("%.2f", get_ratio(static_cast<double>(entry.total_wins), static_cast<double>(entry.total_games - entry.total_wins))));
+	PROCESS_TAG(this->INTERNAL_BEACON_PLACEMENTS_TAG, string_printf("%u", entry.total_beacon_placements));
+	PROCESS_TAG(this->INTERNAL_BEACON_DISARMS_TAG, string_printf("%u", entry.total_beacon_disarms));
+	PROCESS_TAG(this->INTERNAL_PROXY_PLACEMENTS_TAG, string_printf("%u", entry.total_proxy_placements));
+	PROCESS_TAG(this->INTERNAL_PROXY_DISARMS_TAG, string_printf("%u", entry.total_proxy_disarms));
 
 	/** GDI Totals */
-	PROCESS_TAG(this->INTERNAL_GDI_GAMES_TAG, Jupiter::StringS::Format("%u", entry.total_gdi_games));
-	PROCESS_TAG(this->INTERNAL_GDI_WINS_TAG, Jupiter::StringS::Format("%u", entry.total_gdi_wins));
-	PROCESS_TAG(this->INTERNAL_GDI_TIES_TAG, Jupiter::StringS::Format("%u", entry.total_gdi_ties));
-	PROCESS_TAG(this->INTERNAL_GDI_LOSSES_TAG, Jupiter::StringS::Format("%u", entry.total_gdi_games - entry.total_gdi_wins - entry.total_gdi_ties));
-	PROCESS_TAG(this->INTERNAL_GDI_WIN_LOSS_RATIO_TAG, Jupiter::StringS::Format("%.2f", get_ratio(static_cast<double>(entry.total_gdi_wins), static_cast<double>(entry.total_gdi_games - entry.total_gdi_wins - entry.total_gdi_ties))));
-	PROCESS_TAG(this->INTERNAL_GDI_SCORE_TAG, Jupiter::StringS::Format("%llu", entry.total_gdi_score));
-	PROCESS_TAG(this->INTERNAL_GDI_SPM_TAG, Jupiter::StringS::Format("%.2f", get_ratio(static_cast<double>(entry.total_gdi_score), static_cast<double>(entry.total_gdi_game_time) / 60.0)));
-	PROCESS_TAG(this->INTERNAL_GDI_GAME_TIME_TAG, Jupiter::StringS::Format("%u", entry.total_gdi_game_time));
-	PROCESS_TAG(this->INTERNAL_GDI_TIES_TAG, Jupiter::StringS::Format("%u", entry.total_gdi_ties));
-	PROCESS_TAG(this->INTERNAL_GDI_BEACON_PLACEMENTS_TAG, Jupiter::StringS::Format("%u", entry.total_gdi_beacon_placements));
-	PROCESS_TAG(this->INTERNAL_GDI_BEACON_DISARMS_TAG, Jupiter::StringS::Format("%u", entry.total_gdi_beacon_disarms));
-	PROCESS_TAG(this->INTERNAL_GDI_PROXY_PLACEMENTS_TAG, Jupiter::StringS::Format("%u", entry.total_gdi_proxy_placements));
-	PROCESS_TAG(this->INTERNAL_GDI_PROXY_DISARMS_TAG, Jupiter::StringS::Format("%u", entry.total_gdi_proxy_disarms));
-	PROCESS_TAG(this->INTERNAL_GDI_KILLS_TAG, Jupiter::StringS::Format("%u", entry.total_gdi_kills));
-	PROCESS_TAG(this->INTERNAL_GDI_DEATHS_TAG, Jupiter::StringS::Format("%u", entry.total_gdi_deaths));
-	PROCESS_TAG(this->INTERNAL_GDI_VEHICLE_KILLS_TAG, Jupiter::StringS::Format("%u", entry.total_gdi_vehicle_kills));
-	PROCESS_TAG(this->INTERNAL_GDI_DEFENCE_KILLS_TAG, Jupiter::StringS::Format("%u", entry.total_gdi_defence_kills));
-	PROCESS_TAG(this->INTERNAL_GDI_BUILDING_KILLS_TAG, Jupiter::StringS::Format("%u", entry.total_gdi_building_kills));
-	PROCESS_TAG(this->INTERNAL_GDI_KDR_TAG, Jupiter::StringS::Format("%.2f", get_ratio(static_cast<double>(entry.total_gdi_kills), static_cast<double>(entry.total_gdi_deaths))));
-	PROCESS_TAG(this->INTERNAL_GDI_HEADSHOTS_TAG, Jupiter::StringS::Format("%u", entry.total_gdi_headshots));
-	PROCESS_TAG(this->INTERNAL_GDI_HEADSHOT_KILL_RATIO_TAG, Jupiter::StringS::Format("%.2f", get_ratio(static_cast<double>(entry.total_gdi_headshots), static_cast<double>(entry.total_gdi_kills))));
+	PROCESS_TAG(this->INTERNAL_GDI_GAMES_TAG, string_printf("%u", entry.total_gdi_games));
+	PROCESS_TAG(this->INTERNAL_GDI_WINS_TAG, string_printf("%u", entry.total_gdi_wins));
+	PROCESS_TAG(this->INTERNAL_GDI_TIES_TAG, string_printf("%u", entry.total_gdi_ties));
+	PROCESS_TAG(this->INTERNAL_GDI_LOSSES_TAG, string_printf("%u", entry.total_gdi_games - entry.total_gdi_wins - entry.total_gdi_ties));
+	PROCESS_TAG(this->INTERNAL_GDI_WIN_LOSS_RATIO_TAG, string_printf("%.2f", get_ratio(static_cast<double>(entry.total_gdi_wins), static_cast<double>(entry.total_gdi_games - entry.total_gdi_wins - entry.total_gdi_ties))));
+	PROCESS_TAG(this->INTERNAL_GDI_SCORE_TAG, string_printf("%llu", entry.total_gdi_score));
+	PROCESS_TAG(this->INTERNAL_GDI_SPM_TAG, string_printf("%.2f", get_ratio(static_cast<double>(entry.total_gdi_score), static_cast<double>(entry.total_gdi_game_time) / 60.0)));
+	PROCESS_TAG(this->INTERNAL_GDI_GAME_TIME_TAG, string_printf("%u", entry.total_gdi_game_time));
+	PROCESS_TAG(this->INTERNAL_GDI_TIES_TAG, string_printf("%u", entry.total_gdi_ties));
+	PROCESS_TAG(this->INTERNAL_GDI_BEACON_PLACEMENTS_TAG, string_printf("%u", entry.total_gdi_beacon_placements));
+	PROCESS_TAG(this->INTERNAL_GDI_BEACON_DISARMS_TAG, string_printf("%u", entry.total_gdi_beacon_disarms));
+	PROCESS_TAG(this->INTERNAL_GDI_PROXY_PLACEMENTS_TAG, string_printf("%u", entry.total_gdi_proxy_placements));
+	PROCESS_TAG(this->INTERNAL_GDI_PROXY_DISARMS_TAG, string_printf("%u", entry.total_gdi_proxy_disarms));
+	PROCESS_TAG(this->INTERNAL_GDI_KILLS_TAG, string_printf("%u", entry.total_gdi_kills));
+	PROCESS_TAG(this->INTERNAL_GDI_DEATHS_TAG, string_printf("%u", entry.total_gdi_deaths));
+	PROCESS_TAG(this->INTERNAL_GDI_VEHICLE_KILLS_TAG, string_printf("%u", entry.total_gdi_vehicle_kills));
+	PROCESS_TAG(this->INTERNAL_GDI_DEFENCE_KILLS_TAG, string_printf("%u", entry.total_gdi_defence_kills));
+	PROCESS_TAG(this->INTERNAL_GDI_BUILDING_KILLS_TAG, string_printf("%u", entry.total_gdi_building_kills));
+	PROCESS_TAG(this->INTERNAL_GDI_KDR_TAG, string_printf("%.2f", get_ratio(static_cast<double>(entry.total_gdi_kills), static_cast<double>(entry.total_gdi_deaths))));
+	PROCESS_TAG(this->INTERNAL_GDI_HEADSHOTS_TAG, string_printf("%u", entry.total_gdi_headshots));
+	PROCESS_TAG(this->INTERNAL_GDI_HEADSHOT_KILL_RATIO_TAG, string_printf("%.2f", get_ratio(static_cast<double>(entry.total_gdi_headshots), static_cast<double>(entry.total_gdi_kills))));
 
 	/** Nod Totals */
-	PROCESS_TAG(this->INTERNAL_NOD_GAMES_TAG, Jupiter::StringS::Format("%u", entry.total_nod_games));
-	PROCESS_TAG(this->INTERNAL_NOD_WINS_TAG, Jupiter::StringS::Format("%u", entry.total_nod_wins));
-	PROCESS_TAG(this->INTERNAL_NOD_TIES_TAG, Jupiter::StringS::Format("%u", entry.total_nod_ties));
-	PROCESS_TAG(this->INTERNAL_NOD_LOSSES_TAG, Jupiter::StringS::Format("%u", entry.total_nod_games - entry.total_nod_wins - entry.total_nod_ties));
-	PROCESS_TAG(this->INTERNAL_NOD_WIN_LOSS_RATIO_TAG, Jupiter::StringS::Format("%.2f", get_ratio(static_cast<double>(entry.total_nod_wins), static_cast<double>(entry.total_nod_games - entry.total_nod_wins - entry.total_nod_ties))));
-	PROCESS_TAG(this->INTERNAL_NOD_SCORE_TAG, Jupiter::StringS::Format("%llu", entry.total_nod_score));
-	PROCESS_TAG(this->INTERNAL_NOD_SPM_TAG, Jupiter::StringS::Format("%.2f", get_ratio(static_cast<double>(entry.total_nod_score), static_cast<double>(entry.total_nod_game_time) / 60.0)));
-	PROCESS_TAG(this->INTERNAL_NOD_GAME_TIME_TAG, Jupiter::StringS::Format("%u", entry.total_nod_game_time));
-	PROCESS_TAG(this->INTERNAL_NOD_TIES_TAG, Jupiter::StringS::Format("%u", entry.total_nod_ties));
-	PROCESS_TAG(this->INTERNAL_NOD_BEACON_PLACEMENTS_TAG, Jupiter::StringS::Format("%u", entry.total_nod_beacon_placements));
-	PROCESS_TAG(this->INTERNAL_NOD_BEACON_DISARMS_TAG, Jupiter::StringS::Format("%u", entry.total_nod_beacon_disarms));
-	PROCESS_TAG(this->INTERNAL_NOD_PROXY_PLACEMENTS_TAG, Jupiter::StringS::Format("%u", entry.total_nod_proxy_placements));
-	PROCESS_TAG(this->INTERNAL_NOD_PROXY_DISARMS_TAG, Jupiter::StringS::Format("%u", entry.total_nod_proxy_disarms));
-	PROCESS_TAG(this->INTERNAL_NOD_KILLS_TAG, Jupiter::StringS::Format("%u", entry.total_nod_kills));
-	PROCESS_TAG(this->INTERNAL_NOD_DEATHS_TAG, Jupiter::StringS::Format("%u", entry.total_nod_deaths));
-	PROCESS_TAG(this->INTERNAL_NOD_VEHICLE_KILLS_TAG, Jupiter::StringS::Format("%u", entry.total_nod_vehicle_kills));
-	PROCESS_TAG(this->INTERNAL_NOD_DEFENCE_KILLS_TAG, Jupiter::StringS::Format("%u", entry.total_nod_defence_kills));
-	PROCESS_TAG(this->INTERNAL_NOD_BUILDING_KILLS_TAG, Jupiter::StringS::Format("%u", entry.total_nod_building_kills));
-	PROCESS_TAG(this->INTERNAL_NOD_KDR_TAG, Jupiter::StringS::Format("%.2f", get_ratio(static_cast<double>(entry.total_nod_kills), static_cast<double>(entry.total_nod_deaths))));
-	PROCESS_TAG(this->INTERNAL_NOD_HEADSHOTS_TAG, Jupiter::StringS::Format("%u", entry.total_nod_headshots));
-	PROCESS_TAG(this->INTERNAL_NOD_HEADSHOT_KILL_RATIO_TAG, Jupiter::StringS::Format("%.2f", get_ratio(static_cast<double>(entry.total_nod_headshots), static_cast<double>(entry.total_nod_kills))));
+	PROCESS_TAG(this->INTERNAL_NOD_GAMES_TAG, string_printf("%u", entry.total_nod_games));
+	PROCESS_TAG(this->INTERNAL_NOD_WINS_TAG, string_printf("%u", entry.total_nod_wins));
+	PROCESS_TAG(this->INTERNAL_NOD_TIES_TAG, string_printf("%u", entry.total_nod_ties));
+	PROCESS_TAG(this->INTERNAL_NOD_LOSSES_TAG, string_printf("%u", entry.total_nod_games - entry.total_nod_wins - entry.total_nod_ties));
+	PROCESS_TAG(this->INTERNAL_NOD_WIN_LOSS_RATIO_TAG, string_printf("%.2f", get_ratio(static_cast<double>(entry.total_nod_wins), static_cast<double>(entry.total_nod_games - entry.total_nod_wins - entry.total_nod_ties))));
+	PROCESS_TAG(this->INTERNAL_NOD_SCORE_TAG, string_printf("%llu", entry.total_nod_score));
+	PROCESS_TAG(this->INTERNAL_NOD_SPM_TAG, string_printf("%.2f", get_ratio(static_cast<double>(entry.total_nod_score), static_cast<double>(entry.total_nod_game_time) / 60.0)));
+	PROCESS_TAG(this->INTERNAL_NOD_GAME_TIME_TAG, string_printf("%u", entry.total_nod_game_time));
+	PROCESS_TAG(this->INTERNAL_NOD_TIES_TAG, string_printf("%u", entry.total_nod_ties));
+	PROCESS_TAG(this->INTERNAL_NOD_BEACON_PLACEMENTS_TAG, string_printf("%u", entry.total_nod_beacon_placements));
+	PROCESS_TAG(this->INTERNAL_NOD_BEACON_DISARMS_TAG, string_printf("%u", entry.total_nod_beacon_disarms));
+	PROCESS_TAG(this->INTERNAL_NOD_PROXY_PLACEMENTS_TAG, string_printf("%u", entry.total_nod_proxy_placements));
+	PROCESS_TAG(this->INTERNAL_NOD_PROXY_DISARMS_TAG, string_printf("%u", entry.total_nod_proxy_disarms));
+	PROCESS_TAG(this->INTERNAL_NOD_KILLS_TAG, string_printf("%u", entry.total_nod_kills));
+	PROCESS_TAG(this->INTERNAL_NOD_DEATHS_TAG, string_printf("%u", entry.total_nod_deaths));
+	PROCESS_TAG(this->INTERNAL_NOD_VEHICLE_KILLS_TAG, string_printf("%u", entry.total_nod_vehicle_kills));
+	PROCESS_TAG(this->INTERNAL_NOD_DEFENCE_KILLS_TAG, string_printf("%u", entry.total_nod_defence_kills));
+	PROCESS_TAG(this->INTERNAL_NOD_BUILDING_KILLS_TAG, string_printf("%u", entry.total_nod_building_kills));
+	PROCESS_TAG(this->INTERNAL_NOD_KDR_TAG, string_printf("%.2f", get_ratio(static_cast<double>(entry.total_nod_kills), static_cast<double>(entry.total_nod_deaths))));
+	PROCESS_TAG(this->INTERNAL_NOD_HEADSHOTS_TAG, string_printf("%u", entry.total_nod_headshots));
+	PROCESS_TAG(this->INTERNAL_NOD_HEADSHOT_KILL_RATIO_TAG, string_printf("%.2f", get_ratio(static_cast<double>(entry.total_nod_headshots), static_cast<double>(entry.total_nod_kills))));
 
 	/** Tops */
-	PROCESS_TAG(this->INTERNAL_VICTIM_SCORE_TAG, Jupiter::StringS::Format("%u", entry.top_score));
-	PROCESS_TAG(this->INTERNAL_VICTIM_KILLS_TAG, Jupiter::StringS::Format("%u", entry.top_kills));
-	PROCESS_TAG(this->INTERNAL_VICTIM_DEATHS_TAG, Jupiter::StringS::Format("%u", entry.most_deaths));
-	PROCESS_TAG(this->INTERNAL_VICTIM_HEADSHOTS_TAG, Jupiter::StringS::Format("%u", entry.top_headshot_kills));
-	PROCESS_TAG(this->INTERNAL_VICTIM_VEHICLE_KILLS_TAG, Jupiter::StringS::Format("%u", entry.top_vehicle_kills));
-	PROCESS_TAG(this->INTERNAL_VICTIM_BUILDING_KILLS_TAG, Jupiter::StringS::Format("%u", entry.top_building_kills));
-	PROCESS_TAG(this->INTERNAL_VICTIM_DEFENCE_KILLS_TAG, Jupiter::StringS::Format("%u", entry.top_defence_kills));
-	PROCESS_TAG(this->INTERNAL_VICTIM_CAPTURES_TAG, Jupiter::StringS::Format("%u", entry.top_captures));
-	PROCESS_TAG(this->INTERNAL_VICTIM_GAME_TIME_TAG, Jupiter::StringS::Format("%u", entry.top_game_time));
-	PROCESS_TAG(this->INTERNAL_VICTIM_BEACON_PLACEMENTS_TAG, Jupiter::StringS::Format("%u", entry.top_beacon_placements));
-	PROCESS_TAG(this->INTERNAL_VICTIM_BEACON_DISARMS_TAG, Jupiter::StringS::Format("%u", entry.top_beacon_disarms));
-	PROCESS_TAG(this->INTERNAL_VICTIM_PROXY_PLACEMENTS_TAG, Jupiter::StringS::Format("%u", entry.top_proxy_placements));
-	PROCESS_TAG(this->INTERNAL_VICTIM_PROXY_DISARMS_TAG, Jupiter::StringS::Format("%u", entry.top_proxy_disarms));
+	PROCESS_TAG(this->INTERNAL_VICTIM_SCORE_TAG, string_printf("%u", entry.top_score));
+	PROCESS_TAG(this->INTERNAL_VICTIM_KILLS_TAG, string_printf("%u", entry.top_kills));
+	PROCESS_TAG(this->INTERNAL_VICTIM_DEATHS_TAG, string_printf("%u", entry.most_deaths));
+	PROCESS_TAG(this->INTERNAL_VICTIM_HEADSHOTS_TAG, string_printf("%u", entry.top_headshot_kills));
+	PROCESS_TAG(this->INTERNAL_VICTIM_VEHICLE_KILLS_TAG, string_printf("%u", entry.top_vehicle_kills));
+	PROCESS_TAG(this->INTERNAL_VICTIM_BUILDING_KILLS_TAG, string_printf("%u", entry.top_building_kills));
+	PROCESS_TAG(this->INTERNAL_VICTIM_DEFENCE_KILLS_TAG, string_printf("%u", entry.top_defence_kills));
+	PROCESS_TAG(this->INTERNAL_VICTIM_CAPTURES_TAG, string_printf("%u", entry.top_captures));
+	PROCESS_TAG(this->INTERNAL_VICTIM_GAME_TIME_TAG, string_printf("%u", entry.top_game_time));
+	PROCESS_TAG(this->INTERNAL_VICTIM_BEACON_PLACEMENTS_TAG, string_printf("%u", entry.top_beacon_placements));
+	PROCESS_TAG(this->INTERNAL_VICTIM_BEACON_DISARMS_TAG, string_printf("%u", entry.top_beacon_disarms));
+	PROCESS_TAG(this->INTERNAL_VICTIM_PROXY_PLACEMENTS_TAG, string_printf("%u", entry.top_proxy_placements));
+	PROCESS_TAG(this->INTERNAL_VICTIM_PROXY_DISARMS_TAG, string_printf("%u", entry.top_proxy_disarms));
 }
 
 void TagsImp::sanitizeTags(std::string& fmt)

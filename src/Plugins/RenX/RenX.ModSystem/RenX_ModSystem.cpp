@@ -188,13 +188,13 @@ int RenX_ModSystemPlugin::auth(RenX::Server &server, const RenX::PlayerInfo &pla
 				player.access = section->get<int>("Access"_jrs, group->access);
 				if (player.access != 0)
 				{
-					server.sendMessage(player, Jupiter::StringS::Format("You are now authenticated with access level %d; group: %.*s.", player.access, group->name.size(), group->name.data()));
+					server.sendMessage(player, string_printf("You are now authenticated with access level %d; group: %.*s.", player.access, group->name.size(), group->name.data()));
 					if (server.isDevBot() && player.access > 1)
 					{
 						if (server.getVersion() >= 4)
-							server.sendData(Jupiter::StringS::Format("dset_dev %d\n", player.id));
+							server.sendData(string_printf("dset_dev %d\n", player.id));
 						else
-							server.sendData(Jupiter::StringS::Format("d%d\n", player.id));
+							server.sendData(string_printf("d%d\n", player.id));
 					}
 				}
 				Jupiter::String playerName = RenX::getFormattedPlayerName(player);
@@ -247,12 +247,12 @@ void RenX_ModSystemPlugin::tempAuth(RenX::Server &server, const RenX::PlayerInfo
 	player.access = group->access;
 
 	if (notify)
-		server.sendMessage(player, Jupiter::StringS::Format("You have been authorized into group \"%.*s\", with access level %u.", group->name.size(), group->name.data(), player.access));
+		server.sendMessage(player, string_printf("You have been authorized into group \"%.*s\", with access level %u.", group->name.size(), group->name.data(), player.access));
 }
 
 bool RenX_ModSystemPlugin::set(RenX::PlayerInfo &player, ModGroup &group) {
 	bool r = this->config[player.uuid].set("Group"_jrs, group.name);
-	this->config[player.uuid].set("SteamID"_jrs, static_cast<std::string>(Jupiter::StringS::Format("%llu", player.steamid)));
+	this->config[player.uuid].set("SteamID"_jrs, static_cast<std::string>(string_printf("%llu", player.steamid)));
 	this->config[player.uuid].set("LastIP"_jrs, static_cast<std::string>(player.ip));
 	this->config[player.uuid].set("Name"_jrs, player.name);
 	this->config.write();
@@ -358,7 +358,7 @@ void RenX_ModSystemPlugin::RenX_OnPlayerDelete(RenX::Server &server, const RenX:
 	if (RenX_ModSystemPlugin::groups.size() != 0 && !player.isBot && !player.uuid.empty()) {
 		Jupiter::Config *section = this->config.getSection(player.uuid);
 		if (section != nullptr) {
-			section->set("SteamID"_jrs, static_cast<std::string>(Jupiter::StringS::Format("%llu", player.steamid)));
+			section->set("SteamID"_jrs, static_cast<std::string>(string_printf("%llu", player.steamid)));
 			section->set("LastIP"_jrs, static_cast<std::string>(player.ip));
 			section->set("Name"_jrs, player.name);
 		}
@@ -367,7 +367,7 @@ void RenX_ModSystemPlugin::RenX_OnPlayerDelete(RenX::Server &server, const RenX:
 
 void RenX_ModSystemPlugin::RenX_OnIDChange(RenX::Server &server, const RenX::PlayerInfo &player, int oldID) {
 	if (player.access != 0 && server.isDevBot()) {
-		server.sendData(Jupiter::StringS::Format("d%d\n", player.id));
+		server.sendData(string_printf("d%d\n", player.id));
 	}
 }
 
@@ -686,9 +686,9 @@ void AddIRCCommand::trigger(IRC_Bot *source, std::string_view channel, std::stri
 					else {
 						pluginInstance.resetAccess(*player);
 						if (pluginInstance.set(*player, *group))
-							source->sendNotice(nick, Jupiter::StringS::Format("%.*s has been added to group \"%.*s\"", player->name.size(), player->name.data(), group->name.size(), group->name.data()));
+							source->sendNotice(nick, string_printf("%.*s has been added to group \"%.*s\"", player->name.size(), player->name.data(), group->name.size(), group->name.data()));
 						else
-							source->sendNotice(nick, Jupiter::StringS::Format("%.*s has been moved to group \"%.*s\"", player->name.size(), player->name.data(), group->name.size(), group->name.data()));
+							source->sendNotice(nick, string_printf("%.*s has been moved to group \"%.*s\"", player->name.size(), player->name.data(), group->name.size(), group->name.data()));
 						pluginInstance.auth(*server, *player, false, true);
 					}
 				}
@@ -853,22 +853,19 @@ IRC_COMMAND_INIT(ForceAuthIRCCommand)
 
 // ModList IRC Command
 
-void ModListIRCCommand::create()
-{
+void ModListIRCCommand::create() {
 	this->addTrigger("modlist"_jrs);
 	this->addTrigger("mlist"_jrs);
 }
 
-void ModListIRCCommand::trigger(IRC_Bot *source, std::string_view channel, std::string_view nick, std::string_view parameters)
-{
+void ModListIRCCommand::trigger(IRC_Bot *source, std::string_view channel, std::string_view nick, std::string_view parameters) {
 	Jupiter::String msg;
 	size_t msgBaseSize;
 	bool haveMods = false;
-	for (auto node = pluginInstance.groups.begin(); node != pluginInstance.groups.end(); ++node)
-	{
+	for (auto node = pluginInstance.groups.begin(); node != pluginInstance.groups.end(); ++node) {
 		msg = node->prefix;
 		msg += node->name;
-		msg.aformat(IRCNORMAL " (Access: %d): ", node->access);
+		msg += string_printf(IRCNORMAL " (Access: %d): ", node->access);
 		msgBaseSize = msg.size();
 
 		for (auto& section : pluginInstance.getConfig().getSections()) {
@@ -878,8 +875,7 @@ void ModListIRCCommand::trigger(IRC_Bot *source, std::string_view channel, std::
 			}
 		}
 
-		if (msg.size() != msgBaseSize)
-		{
+		if (msg.size() != msgBaseSize) {
 			msg.truncate(2);
 			source->sendMessage(channel, msg);
 			haveMods = true;
@@ -889,8 +885,7 @@ void ModListIRCCommand::trigger(IRC_Bot *source, std::string_view channel, std::
 		source->sendMessage(channel, "There are no configured moderators."_jrs);
 }
 
-std::string_view ModListIRCCommand::getHelp(std::string_view )
-{
+std::string_view ModListIRCCommand::getHelp(std::string_view ) {
 	static STRING_LITERAL_AS_NAMED_REFERENCE(defaultHelp, "Displays the moderator list. Syntax: modlist");
 	return defaultHelp;
 }
