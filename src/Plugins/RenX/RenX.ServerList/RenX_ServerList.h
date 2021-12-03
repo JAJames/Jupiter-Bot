@@ -20,16 +20,15 @@
 #define _RENX_SERVERLIST_H_HEADER
 
 #include "Jupiter/Plugin.h"
-#include "Jupiter/Reference_String.h"
 #include "RenX_Plugin.h"
 
 class RenX_ServerListPlugin : public RenX::Plugin
 {
 public: // RenX_ServerListPlugin
 	struct ListServerInfo {
-		Jupiter::ReferenceString hostname;
+		std::string_view hostname;
 		unsigned short port;
-		Jupiter::ReferenceString namePrefix;
+		std::string_view namePrefix;
 		std::vector<std::string_view> attributes;
 	};
 

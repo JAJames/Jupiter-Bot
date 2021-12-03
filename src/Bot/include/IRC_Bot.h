@@ -24,10 +24,10 @@
  * @brief Provides extendable bot-like interfacing with the IRC client.
  */
 
+#include <vector>
 #include "Jupiter_Bot.h"
 #include "Jupiter/IRC_Client.h"
 #include "Jupiter/Rehash.h"
-#include "Jupiter/String.hpp"
 
 /** Forward Declaration */
 class IRCCommand;

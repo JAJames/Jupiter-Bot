@@ -18,19 +18,19 @@
 
 #include <cstring>
 #include "jessilib/word_split.hpp"
+#include "jessilib/unicode.hpp"
 #include "Jupiter/Functions.h"
 #include "ExtraCommands.h"
 #include "IRC_Bot.h"
 
-using namespace Jupiter::literals;
 using namespace std::literals;
 
 // Select Command
 
 SelectGenericCommand::SelectGenericCommand()
 {
-	this->addTrigger("select"_jrs);
-	this->addTrigger("ircselect"_jrs);
+	this->addTrigger("select"sv);
+	this->addTrigger("ircselect"sv);
 }
 
 Jupiter::GenericCommand::ResponseLine *SelectGenericCommand::trigger(std::string_view parameters)
@@ -38,7 +38,7 @@ Jupiter::GenericCommand::ResponseLine *SelectGenericCommand::trigger(std::string
 	if (parameters.empty())
 	{
 		if (IRCCommand::selected_server == nullptr)
-			return new Jupiter::GenericCommand::ResponseLine("No IRC server is currently selected."_jrs, GenericCommand::DisplayType::PublicSuccess);
+			return new Jupiter::GenericCommand::ResponseLine("No IRC server is currently selected."sv, GenericCommand::DisplayType::PublicSuccess);
 		return new Jupiter::GenericCommand::ResponseLine(std::string{IRCCommand::selected_server->getConfigSection()} + " is currently selected."s, GenericCommand::DisplayType::PublicSuccess);
 	}
 	if (IRCCommand::active_server == IRCCommand::selected_server)
@@ -46,17 +46,15 @@ Jupiter::GenericCommand::ResponseLine *SelectGenericCommand::trigger(std::string
 
 	IRCCommand::selected_server = serverManager->getServer(parameters);
 	if (IRCCommand::selected_server == nullptr)
-		return new Jupiter::GenericCommand::ResponseLine("Error: IRC server \""s + parameters + "\" not found. No IRC server is currently selected."_jrs, GenericCommand::DisplayType::PublicError);
+		return new Jupiter::GenericCommand::ResponseLine(jessilib::join<std::string>("Error: IRC server \""sv, parameters, "\" not found. No IRC server is currently selected."sv), GenericCommand::DisplayType::PublicError);
 
 	if (IRCCommand::active_server == nullptr)
 		IRCCommand::active_server = IRCCommand::selected_server;
 	return new Jupiter::GenericCommand::ResponseLine(std::string{IRCCommand::selected_server->getConfigSection()} + " is now selected."s, GenericCommand::DisplayType::PublicSuccess);
 }
 
-std::string_view SelectGenericCommand::getHelp(std::string_view )
-{
-	static Jupiter::ReferenceString defaultHelp = "Selects an IRC server if specified, responds with the currently selected server otherwise. Syntax: select [server]"_jrs;
-	return defaultHelp;
+std::string_view SelectGenericCommand::getHelp(std::string_view ) {
+	return "Selects an IRC server if specified, responds with the currently selected server otherwise. Syntax: select [server]"sv;
 }
 
 GENERIC_COMMAND_INIT(SelectGenericCommand)
@@ -66,18 +64,18 @@ GENERIC_COMMAND_AS_CONSOLE_COMMAND(SelectGenericCommand)
 
 DeselectGenericCommand::DeselectGenericCommand()
 {
-	this->addTrigger("deselect"_jrs);
-	this->addTrigger("ircdeselect"_jrs);
-	this->addTrigger("dselect"_jrs);
-	this->addTrigger("ircdselect"_jrs);
-	this->addTrigger("unselect"_jrs);
-	this->addTrigger("ircunselect"_jrs);
+	this->addTrigger("deselect"sv);
+	this->addTrigger("ircdeselect"sv);
+	this->addTrigger("dselect"sv);
+	this->addTrigger("ircdselect"sv);
+	this->addTrigger("unselect"sv);
+	this->addTrigger("ircunselect"sv);
 }
 
 Jupiter::GenericCommand::ResponseLine *DeselectGenericCommand::trigger(std::string_view parameters)
 {
 	if (IRCCommand::selected_server == nullptr)
-		return new Jupiter::GenericCommand::ResponseLine("No IRC server is currently selected."_jrs, GenericCommand::DisplayType::PublicSuccess);
+		return new Jupiter::GenericCommand::ResponseLine("No IRC server is currently selected."sv, GenericCommand::DisplayType::PublicSuccess);
 
 	Jupiter::GenericCommand::ResponseLine *ret = new Jupiter::GenericCommand::ResponseLine(std::string{IRCCommand::selected_server->getConfigSection()} + " has been deselected."s, GenericCommand::DisplayType::PublicSuccess);
 	IRCCommand::selected_server = nullptr;
@@ -85,10 +83,8 @@ Jupiter::GenericCommand::ResponseLine *DeselectGenericCommand::trigger(std::stri
 	return ret;
 }
 
-std::string_view DeselectGenericCommand::getHelp(std::string_view )
-{
-	static Jupiter::ReferenceString defaultHelp = "Deselects the currently selected IRC server. Syntax: deselect"_jrs;
-	return defaultHelp;
+std::string_view DeselectGenericCommand::getHelp(std::string_view ) {
+	return "Deselects the currently selected IRC server. Syntax: deselect"sv;
 }
 
 GENERIC_COMMAND_INIT(DeselectGenericCommand)
@@ -98,8 +94,8 @@ GENERIC_COMMAND_AS_CONSOLE_COMMAND(DeselectGenericCommand)
 
 RawGenericCommand::RawGenericCommand()
 {
-	this->addTrigger("raw"_jrs);
-	this->addTrigger("sendraw"_jrs);
+	this->addTrigger("raw"sv);
+	this->addTrigger("sendraw"sv);
 }
 
 Jupiter::GenericCommand::ResponseLine *RawGenericCommand::trigger(std::string_view parameters)
@@ -110,18 +106,18 @@ Jupiter::GenericCommand::ResponseLine *RawGenericCommand::trigger(std::string_vi
 	else if (IRCCommand::active_server != nullptr)
 		server = IRCCommand::active_server;
 	else
-		return new Jupiter::GenericCommand::ResponseLine("Error: No IRC server is currently selected."_jrs, GenericCommand::DisplayType::PublicError);
+		return new Jupiter::GenericCommand::ResponseLine("Error: No IRC server is currently selected."sv, GenericCommand::DisplayType::PublicError);
 
 	if (parameters.empty())
-		return new Jupiter::GenericCommand::ResponseLine("Error: Too few parameters. Syntax: raw <message>"_jrs, GenericCommand::DisplayType::PrivateError);
+		return new Jupiter::GenericCommand::ResponseLine("Error: Too few parameters. Syntax: raw <message>"sv, GenericCommand::DisplayType::PrivateError);
 
 	server->send(parameters);
-	return new Jupiter::GenericCommand::ResponseLine("Data has been successfully sent to server."_jrs, GenericCommand::DisplayType::PublicSuccess);
+	return new Jupiter::GenericCommand::ResponseLine("Data has been successfully sent to server."sv, GenericCommand::DisplayType::PublicSuccess);
 }
 
 std::string_view RawGenericCommand::getHelp(std::string_view )
 {
-	static STRING_LITERAL_AS_NAMED_REFERENCE(defaultHelp, "Sends a line of data to the selected IRC server. Syntax: raw <message>");
+	static constexpr std::string_view defaultHelp = "Sends a line of data to the selected IRC server. Syntax: raw <message>"sv;
 	return defaultHelp;
 }
 
@@ -132,9 +128,9 @@ GENERIC_COMMAND_AS_CONSOLE_COMMAND(RawGenericCommand)
 
 IRCMessageGenericCommand::IRCMessageGenericCommand()
 {
-	this->addTrigger("ircmsg"_jrs);
-	this->addTrigger("ircmessage"_jrs);
-	this->addTrigger("privmsg"_jrs);
+	this->addTrigger("ircmsg"sv);
+	this->addTrigger("ircmessage"sv);
+	this->addTrigger("privmsg"sv);
 }
 
 Jupiter::GenericCommand::ResponseLine *IRCMessageGenericCommand::trigger(std::string_view parameters)
@@ -145,19 +141,19 @@ Jupiter::GenericCommand::ResponseLine *IRCMessageGenericCommand::trigger(std::st
 	else if (IRCCommand::active_server != nullptr)
 		server = IRCCommand::active_server;
 	else
-		return new Jupiter::GenericCommand::ResponseLine("Error: No IRC server is currently selected."_jrs, GenericCommand::DisplayType::PublicError);
+		return new Jupiter::GenericCommand::ResponseLine("Error: No IRC server is currently selected."sv, GenericCommand::DisplayType::PublicError);
 
 	auto parameters_split = jessilib::word_split_once_view(std::string_view{parameters}, WHITESPACE_SV);
 	if (parameters_split.second.empty())
-		return new Jupiter::GenericCommand::ResponseLine("Error: Too few parameters. Syntax: ircmsg <destination> <message>"_jrs, GenericCommand::DisplayType::PrivateError);
+		return new Jupiter::GenericCommand::ResponseLine("Error: Too few parameters. Syntax: ircmsg <destination> <message>"sv, GenericCommand::DisplayType::PrivateError);
 
 	server->sendMessage(parameters_split.first, parameters_split.second);
-	return new Jupiter::GenericCommand::ResponseLine("Message successfully sent."_jrs, GenericCommand::DisplayType::PublicSuccess);
+	return new Jupiter::GenericCommand::ResponseLine("Message successfully sent."sv, GenericCommand::DisplayType::PublicSuccess);
 }
 
 std::string_view IRCMessageGenericCommand::getHelp(std::string_view )
 {
-	static STRING_LITERAL_AS_NAMED_REFERENCE(defaultHelp, "Sends a message to an IRC user or channel on the selected IRC server. Syntax: ircmsg <destination> <message>");
+	static constexpr std::string_view defaultHelp = "Sends a message to an IRC user or channel on the selected IRC server. Syntax: ircmsg <destination> <message>"sv;
 	return defaultHelp;
 }
 
@@ -168,7 +164,7 @@ GENERIC_COMMAND_AS_CONSOLE_COMMAND(IRCMessageGenericCommand)
 
 JoinGenericCommand::JoinGenericCommand()
 {
-	this->addTrigger("Join"_jrs);
+	this->addTrigger("Join"sv);
 }
 
 Jupiter::GenericCommand::ResponseLine *JoinGenericCommand::trigger(std::string_view parameters)
@@ -179,10 +175,10 @@ Jupiter::GenericCommand::ResponseLine *JoinGenericCommand::trigger(std::string_v
 	else if (IRCCommand::active_server != nullptr)
 		server = IRCCommand::active_server;
 	else
-		return new Jupiter::GenericCommand::ResponseLine("Error: No IRC server is currently selected."_jrs, GenericCommand::DisplayType::PublicError);
+		return new Jupiter::GenericCommand::ResponseLine("Error: No IRC server is currently selected."sv, GenericCommand::DisplayType::PublicError);
 
 	if (parameters.empty())
-		return new Jupiter::GenericCommand::ResponseLine("Error: Too Few Parameters. Syntax: join <channel> [password]"_jrs, GenericCommand::DisplayType::PublicError);
+		return new Jupiter::GenericCommand::ResponseLine("Error: Too Few Parameters. Syntax: join <channel> [password]"sv, GenericCommand::DisplayType::PublicError);
 
 	auto parameters_split = jessilib::word_split_once_view(std::string_view{parameters}, WHITESPACE_SV);
 	if (parameters_split.second.empty()) {
@@ -192,12 +188,12 @@ Jupiter::GenericCommand::ResponseLine *JoinGenericCommand::trigger(std::string_v
 		server->joinChannel(parameters_split.first, parameters_split.second);
 	}
 
-	return new Jupiter::GenericCommand::ResponseLine("Request to join channel has been sent."_jrs, GenericCommand::DisplayType::PublicSuccess);
+	return new Jupiter::GenericCommand::ResponseLine("Request to join channel has been sent."sv, GenericCommand::DisplayType::PublicSuccess);
 }
 
 std::string_view JoinGenericCommand::getHelp(std::string_view )
 {
-	static STRING_LITERAL_AS_NAMED_REFERENCE(defaultHelp, "Joins a channel. Syntax: join <channel> [password]");
+	static constexpr std::string_view defaultHelp = "Joins a channel. Syntax: join <channel> [password]"sv;
 	return defaultHelp;
 }
 
@@ -208,7 +204,7 @@ GENERIC_COMMAND_AS_CONSOLE_COMMAND(JoinGenericCommand)
 
 PartGenericCommand::PartGenericCommand()
 {
-	this->addTrigger("Part"_jrs);
+	this->addTrigger("Part"sv);
 }
 
 Jupiter::GenericCommand::ResponseLine *PartGenericCommand::trigger(std::string_view parameters)
@@ -219,10 +215,10 @@ Jupiter::GenericCommand::ResponseLine *PartGenericCommand::trigger(std::string_v
 	else if (IRCCommand::active_server != nullptr)
 		server = IRCCommand::active_server;
 	else
-		return new Jupiter::GenericCommand::ResponseLine("Error: No IRC server is currently selected."_jrs, GenericCommand::DisplayType::PublicError);
+		return new Jupiter::GenericCommand::ResponseLine("Error: No IRC server is currently selected."sv, GenericCommand::DisplayType::PublicError);
 
 	if (parameters.empty())
-		return new Jupiter::GenericCommand::ResponseLine("Error: Too few parameters. Syntax: part <channel> [message]"_jrs, GenericCommand::DisplayType::PublicError);
+		return new Jupiter::GenericCommand::ResponseLine("Error: Too few parameters. Syntax: part <channel> [message]"sv, GenericCommand::DisplayType::PublicError);
 
 	auto parameters_split = jessilib::word_split_once_view(std::string_view{parameters}, WHITESPACE_SV);
 	if (parameters_split.second.empty()) {
@@ -232,12 +228,12 @@ Jupiter::GenericCommand::ResponseLine *PartGenericCommand::trigger(std::string_v
 		server->partChannel(parameters_split.first, parameters_split.second);
 	}
 
-	return new Jupiter::GenericCommand::ResponseLine("Part command successfuly sent."_jrs, GenericCommand::DisplayType::PublicSuccess);
+	return new Jupiter::GenericCommand::ResponseLine("Part command successfuly sent."sv, GenericCommand::DisplayType::PublicSuccess);
 }
 
 std::string_view PartGenericCommand::getHelp(std::string_view )
 {
-	static STRING_LITERAL_AS_NAMED_REFERENCE(defaultHelp, "Parts from a channel. Syntax: part <channel> [message]");
+	static constexpr std::string_view defaultHelp = "Parts from a channel. Syntax: part <channel> [message]"sv;
 	return defaultHelp;
 }
 
@@ -248,7 +244,7 @@ GENERIC_COMMAND_AS_CONSOLE_COMMAND(PartGenericCommand)
 
 DebugInfoGenericCommand::DebugInfoGenericCommand()
 {
-	this->addTrigger("debuginfo"_jrs);
+	this->addTrigger("debuginfo"sv);
 }
 
 Jupiter::GenericCommand::ResponseLine *DebugInfoGenericCommand::trigger(std::string_view parameters)
@@ -259,7 +255,7 @@ Jupiter::GenericCommand::ResponseLine *DebugInfoGenericCommand::trigger(std::str
 	else if (IRCCommand::active_server != nullptr)
 		server = IRCCommand::active_server;
 	else
-		return new Jupiter::GenericCommand::ResponseLine("Error: No IRC server is currently selected."_jrs, GenericCommand::DisplayType::PublicError);
+		return new Jupiter::GenericCommand::ResponseLine("Error: No IRC server is currently selected."sv, GenericCommand::DisplayType::PublicError);
 
 	Jupiter::GenericCommand::ResponseLine *ret = new Jupiter::GenericCommand::ResponseLine("Prefixes: "s += server->getPrefixes(), GenericCommand::DisplayType::PublicSuccess);
 	Jupiter::GenericCommand::ResponseLine *line = new Jupiter::GenericCommand::ResponseLine("Prefix Modes: "s += server->getPrefixModes(), GenericCommand::DisplayType::PublicSuccess);
@@ -292,7 +288,7 @@ Jupiter::GenericCommand::ResponseLine *DebugInfoGenericCommand::trigger(std::str
 
 std::string_view DebugInfoGenericCommand::getHelp(std::string_view )
 {
-	static STRING_LITERAL_AS_NAMED_REFERENCE(defaultHelp, "DEBUG COMMAND - Spits out some information about channels. Syntax: debuginfo");
+	static constexpr std::string_view defaultHelp = "DEBUG COMMAND - Spits out some information about channels. Syntax: debuginfo"sv;
 	return defaultHelp;
 }
 
@@ -303,7 +299,7 @@ GENERIC_COMMAND_AS_CONSOLE_COMMAND(DebugInfoGenericCommand)
 
 ExitGenericCommand::ExitGenericCommand()
 {
-	this->addTrigger("exit"_jrs);
+	this->addTrigger("exit"sv);
 }
 
 Jupiter::GenericCommand::ResponseLine *ExitGenericCommand::trigger(std::string_view parameters)
@@ -313,7 +309,7 @@ Jupiter::GenericCommand::ResponseLine *ExitGenericCommand::trigger(std::string_v
 
 std::string_view ExitGenericCommand::getHelp(std::string_view )
 {
-	static STRING_LITERAL_AS_NAMED_REFERENCE(defaultHelp, "Closes the bot's application process. Syntax: exit");
+	static constexpr std::string_view defaultHelp = "Closes the bot's application process. Syntax: exit"sv;
 	return defaultHelp;
 }
 
@@ -324,8 +320,8 @@ GENERIC_COMMAND_AS_CONSOLE_COMMAND(ExitGenericCommand)
 
 IRCConnectGenericCommand::IRCConnectGenericCommand()
 {
-	this->addTrigger("IRCConnect"_jrs);
-	this->addTrigger("IRCReconnect"_jrs);
+	this->addTrigger("IRCConnect"sv);
+	this->addTrigger("IRCReconnect"sv);
 }
 
 Jupiter::GenericCommand::ResponseLine *IRCConnectGenericCommand::trigger(std::string_view parameters)
@@ -338,25 +334,25 @@ Jupiter::GenericCommand::ResponseLine *IRCConnectGenericCommand::trigger(std::st
 		else if (IRCCommand::active_server != nullptr)
 			server = IRCCommand::active_server;
 		else
-			return new Jupiter::GenericCommand::ResponseLine("Error: No IRC server is currently selected."_jrs, GenericCommand::DisplayType::PublicError);
+			return new Jupiter::GenericCommand::ResponseLine("Error: No IRC server is currently selected."sv, GenericCommand::DisplayType::PublicError);
 
-		server->disconnect("Connect command used; reconnecting..."_jrs, false);
-		return new Jupiter::GenericCommand::ResponseLine("Disconnected from IRC server."_jrs, GenericCommand::DisplayType::PublicSuccess);
+		server->disconnect("Connect command used; reconnecting..."sv, false);
+		return new Jupiter::GenericCommand::ResponseLine("Disconnected from IRC server."sv, GenericCommand::DisplayType::PublicSuccess);
 	}
 	IRC_Bot *server = serverManager->getServer(parameters);
 	if (server != nullptr)
 	{
-		server->disconnect("Connect command used; reconnecting..."_jrs, false);
-		return new Jupiter::GenericCommand::ResponseLine("Disconnected from IRC server."_jrs, GenericCommand::DisplayType::PublicSuccess);
+		server->disconnect("Connect command used; reconnecting..."sv, false);
+		return new Jupiter::GenericCommand::ResponseLine("Disconnected from IRC server."sv, GenericCommand::DisplayType::PublicSuccess);
 	}
 	if (serverManager->addServer(parameters))
-		return new Jupiter::GenericCommand::ResponseLine("Connection successfully established; server added to server list."_jrs, GenericCommand::DisplayType::PublicSuccess);
-	return new Jupiter::GenericCommand::ResponseLine("Error: Unable to find configuration settings for server, or connection refused."_jrs, GenericCommand::DisplayType::PublicError);
+		return new Jupiter::GenericCommand::ResponseLine("Connection successfully established; server added to server list."sv, GenericCommand::DisplayType::PublicSuccess);
+	return new Jupiter::GenericCommand::ResponseLine("Error: Unable to find configuration settings for server, or connection refused."sv, GenericCommand::DisplayType::PublicError);
 }
 
 std::string_view IRCConnectGenericCommand::getHelp(std::string_view )
 {
-	static STRING_LITERAL_AS_NAMED_REFERENCE(defaultHelp, "Connects/reconnects to an IRC server, based on config entry. Syntax: IRCConnect [server=here]");
+	static constexpr std::string_view defaultHelp = "Connects/reconnects to an IRC server, based on config entry. Syntax: IRCConnect [server=here]"sv;
 	return defaultHelp;
 }
 
@@ -367,7 +363,7 @@ GENERIC_COMMAND_AS_CONSOLE_COMMAND(IRCConnectGenericCommand)
 
 IRCDisconnectGenericCommand::IRCDisconnectGenericCommand()
 {
-	this->addTrigger("IRCDisconnect"_jrs);
+	this->addTrigger("IRCDisconnect"sv);
 }
 
 Jupiter::GenericCommand::ResponseLine *IRCDisconnectGenericCommand::trigger(std::string_view parameters)
@@ -378,15 +374,15 @@ Jupiter::GenericCommand::ResponseLine *IRCDisconnectGenericCommand::trigger(std:
 	else if (IRCCommand::active_server != nullptr)
 		server = IRCCommand::active_server;
 	else
-		return new Jupiter::GenericCommand::ResponseLine("Error: No IRC server is currently selected."_jrs, GenericCommand::DisplayType::PublicError);
+		return new Jupiter::GenericCommand::ResponseLine("Error: No IRC server is currently selected."sv, GenericCommand::DisplayType::PublicError);
 
-	server->disconnect("Disconnect command used."_jrs, true);
-	return new Jupiter::GenericCommand::ResponseLine("Disconnected from server."_jrs, GenericCommand::DisplayType::PublicSuccess);
+	server->disconnect("Disconnect command used."sv, true);
+	return new Jupiter::GenericCommand::ResponseLine("Disconnected from server."sv, GenericCommand::DisplayType::PublicSuccess);
 }
 
 std::string_view IRCDisconnectGenericCommand::getHelp(std::string_view )
 {
-	static STRING_LITERAL_AS_NAMED_REFERENCE(defaultHelp, "Disconnects from an IRC server, based on config entry. Syntax: IRCDisconnect");
+	static constexpr std::string_view defaultHelp = "Disconnects from an IRC server, based on config entry. Syntax: IRCDisconnect"sv;
 	return defaultHelp;
 }
 

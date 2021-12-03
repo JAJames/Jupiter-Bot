@@ -20,7 +20,6 @@
 #define _RENX_LADDER_ALL_TIME
 
 #include "Jupiter/Plugin.h"
-#include "Jupiter/Reference_String.h"
 #include "RenX_Plugin.h"
 #include "RenX_LadderDatabase.h"
 

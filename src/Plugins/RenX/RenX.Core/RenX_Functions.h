@@ -26,7 +26,6 @@
 
 #include <chrono>
 #include "Jupiter/Config.h"
-#include "Jupiter/String.hpp"
 #include "RenX.h"
 #include "RenX_Map.h"
 
@@ -135,7 +134,7 @@ namespace RenX
 	* @param player Data of the player
 	* @return IRC-ready version of the player's name.
 	*/
-	RENX_API Jupiter::String getFormattedPlayerName(const RenX::PlayerInfo &player);
+	RENX_API std::string getFormattedPlayerName(const RenX::PlayerInfo &player);
 
 	/**
 	* @brief Creates a string containing a human-readable version of a map's GUID
@@ -143,7 +142,7 @@ namespace RenX
 	* @param map Map containing the GUID to interpret
 	* @return Human-readable map GUID
 	*/
-	RENX_API Jupiter::StringS formatGUID(const RenX::Map &map);
+	RENX_API std::string formatGUID(const RenX::Map &map);
 
 	/**
 	* @brief Calculates for how many seconds a player has been in the server.
@@ -160,7 +159,7 @@ namespace RenX
 	* @param player Player to calculate UUID of
 	* @return UUID of the player based on their steam ID.
 	*/
-	RENX_API Jupiter::StringS default_uuid_func(RenX::PlayerInfo &player);
+	RENX_API std::string default_uuid_func(RenX::PlayerInfo &player);
 
 	/**
 	* @brief Calculates a player's Kill-Death ratio, based on their data.

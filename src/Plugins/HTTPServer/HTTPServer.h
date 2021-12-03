@@ -25,8 +25,6 @@
  */
 
 #include "Jupiter/Plugin.h"
-#include "Jupiter/Reference_String.h"
-#include "Jupiter/String.hpp"
 #include "Jupiter/HTTP_Server.h"
 #include "Jupiter_Bot.h"
 

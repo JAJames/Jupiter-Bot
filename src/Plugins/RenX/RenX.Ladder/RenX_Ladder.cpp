@@ -24,12 +24,11 @@
 #include "RenX_PlayerInfo.h"
 #include "RenX_BanDatabase.h"
 
-using namespace Jupiter::literals;
 using namespace std::literals;
 
 bool RenX_LadderPlugin::initialize() {
-	RenX_LadderPlugin::only_pure = this->config.get<bool>("OnlyPure"_jrs, false);
-	int mlcpno = this->config.get<int>("MaxLadderCommandPartNameOutput"_jrs, 5);
+	RenX_LadderPlugin::only_pure = this->config.get<bool>("OnlyPure"sv, false);
+	int mlcpno = this->config.get<int>("MaxLadderCommandPartNameOutput"sv, 5);
 	if (mlcpno < 0)
 		RenX_LadderPlugin::max_ladder_command_part_name_output = 0;
 	else
@@ -65,9 +64,9 @@ void RenX_LadderPlugin::RenX_OnGameOver(RenX::Server &server, RenX::WinType winT
 
 void RenX_LadderPlugin::RenX_OnCommand(RenX::Server &server, std::string_view ) {
 	if (jessilib::equalsi(server.getCurrentRCONCommand(), "clientvarlist"sv)) {
-		if (server.varData[this->name].get("w"_jrs, "0"_jrs) == "1"sv) {
+		if (server.varData[this->name].get("w"sv, "0"sv) == "1"sv) {
 			server.varData[this->name].set("w"sv, "0"s);
-			RenX::TeamType team = static_cast<RenX::TeamType>(server.varData[this->name].get("t"_jrs, "\0"_jrs)[0]);
+			RenX::TeamType team = static_cast<RenX::TeamType>(server.varData[this->name].get("t"sv, "\0"sv)[0]);
 			for (const auto& database : RenX::ladder_databases) {
 				database->updateLadder(server, team);
 			}
@@ -84,7 +83,7 @@ RenX_LadderPlugin pluginInstance;
 
 /** Ladder Commands */
 
-Jupiter::StringS FormatLadderResponse(RenX::LadderDatabase::Entry *entry, size_t rank) {
+std::string FormatLadderResponse(RenX::LadderDatabase::Entry *entry, size_t rank) {
 	return string_printf("#%" PRIuPTR ": \"%.*s\" - Score: %" PRIu64 " - Kills: %" PRIu32 " - Deaths: %" PRIu32 " - KDR: %.2f - SPM: %.2f",
 		rank, entry->most_recent_name.size(), entry->most_recent_name.data(), entry->total_score, entry->total_kills, entry->total_deaths,
 		static_cast<double>(entry->total_kills) / (entry->total_deaths == 0 ? 1 : static_cast<double>(entry->total_deaths)),
@@ -94,17 +93,17 @@ Jupiter::StringS FormatLadderResponse(RenX::LadderDatabase::Entry *entry, size_t
 // Ladder Command
 
 LadderGenericCommand::LadderGenericCommand() {
-	this->addTrigger("ladder"_jrs);
-	this->addTrigger("rank"_jrs);
+	this->addTrigger("ladder"sv);
+	this->addTrigger("rank"sv);
 }
 
 Jupiter::GenericCommand::ResponseLine *LadderGenericCommand::trigger(std::string_view parameters) {
 	if (parameters.empty()) {
-		return new Jupiter::GenericCommand::ResponseLine("Error: Too few parameters. Syntax: ladder <name | rank>"_jrs, GenericCommand::DisplayType::PrivateError);
+		return new Jupiter::GenericCommand::ResponseLine("Error: Too few parameters. Syntax: ladder <name | rank>"sv, GenericCommand::DisplayType::PrivateError);
 	}
 
 	if (RenX::default_ladder_database == nullptr) {
-		return new Jupiter::GenericCommand::ResponseLine("Error: No default ladder database specified."_jrs, GenericCommand::DisplayType::PrivateError);
+		return new Jupiter::GenericCommand::ResponseLine("Error: No default ladder database specified."sv, GenericCommand::DisplayType::PrivateError);
 	}
 
 	RenX::LadderDatabase::Entry *entry;
@@ -113,18 +112,18 @@ Jupiter::GenericCommand::ResponseLine *LadderGenericCommand::trigger(std::string
 	if (parameters_view.find_first_not_of("0123456789"sv) == std::string_view::npos) {
 		rank = Jupiter::asUnsignedInt(parameters_view, 10);
 		if (rank == 0)
-			return new Jupiter::GenericCommand::ResponseLine("Error: Invalid parameters"_jrs, GenericCommand::DisplayType::PrivateError);
+			return new Jupiter::GenericCommand::ResponseLine("Error: Invalid parameters"sv, GenericCommand::DisplayType::PrivateError);
 
 		entry = RenX::default_ladder_database->getPlayerEntryByIndex(rank - 1);
 		if (entry == nullptr)
-			return new Jupiter::GenericCommand::ResponseLine("Error: Player not found"_jrs, GenericCommand::DisplayType::PrivateError);
+			return new Jupiter::GenericCommand::ResponseLine("Error: Player not found"sv, GenericCommand::DisplayType::PrivateError);
 
 		return new Jupiter::GenericCommand::ResponseLine(FormatLadderResponse(entry, rank), GenericCommand::DisplayType::PublicSuccess);
 	}
 	
 	std::forward_list<std::pair<RenX::LadderDatabase::Entry, size_t>> list = RenX::default_ladder_database->getPlayerEntriesAndIndexByPartName(parameters, pluginInstance.getMaxLadderCommandPartNameOutput());
 	if (list.empty())
-		return new Jupiter::GenericCommand::ResponseLine("Error: Player not found"_jrs, GenericCommand::DisplayType::PrivateError);
+		return new Jupiter::GenericCommand::ResponseLine("Error: Player not found"sv, GenericCommand::DisplayType::PrivateError);
 
 	std::pair<RenX::LadderDatabase::Entry, size_t> &head_pair = list.front();
 	Jupiter::GenericCommand::ResponseLine *response_head = new Jupiter::GenericCommand::ResponseLine(FormatLadderResponse(std::addressof(head_pair.first), head_pair.second + 1), GenericCommand::DisplayType::PrivateSuccess);
@@ -141,7 +140,7 @@ Jupiter::GenericCommand::ResponseLine *LadderGenericCommand::trigger(std::string
 }
 
 std::string_view LadderGenericCommand::getHelp(std::string_view ) {
-	static STRING_LITERAL_AS_NAMED_REFERENCE(defaultHelp, "Fetches ladder information about a player. Syntax: ladder <name | rank>");
+	static constexpr std::string_view defaultHelp = "Fetches ladder information about a player. Syntax: ladder <name | rank>"sv;
 	return defaultHelp;
 }
 
@@ -151,8 +150,8 @@ GENERIC_COMMAND_AS_CONSOLE_COMMAND(LadderGenericCommand)
 // Ladder Game Command
 
 void LadderGameCommand::create() {
-	this->addTrigger("ladder"_jrs);
-	this->addTrigger("rank"_jrs);
+	this->addTrigger("ladder"sv);
+	this->addTrigger("rank"sv);
 }
 
 void LadderGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *player, std::string_view parameters) {
@@ -164,13 +163,13 @@ void LadderGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *player, 
 					source->sendMessage(FormatLadderResponse(pair.first, pair.second + 1));
 				}
 				else
-					source->sendMessage(*player, "Error: You have no ladder data. Get started by sticking around until the end of the match!"_jrs);
+					source->sendMessage(*player, "Error: You have no ladder data. Get started by sticking around until the end of the match!"sv);
 			}
 			else
-				source->sendMessage(*player, "Error: No default ladder database specified."_jrs);
+				source->sendMessage(*player, "Error: No default ladder database specified."sv);
 		}
 		else
-			source->sendMessage(*player, "Error: You have no ladder data, because you're not using Steam."_jrs);
+			source->sendMessage(*player, "Error: You have no ladder data, because you're not using Steam."sv);
 	}
 	else {
 		Jupiter::GenericCommand::ResponseLine *response = LadderGenericCommand_instance.trigger(parameters);
@@ -185,7 +184,7 @@ void LadderGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *player, 
 }
 
 std::string_view LadderGameCommand::getHelp(std::string_view ) {
-	static STRING_LITERAL_AS_NAMED_REFERENCE(defaultHelp, "Displays ladder information about yourself, or another player. Syntax: ladder [name / rank]");
+	static constexpr std::string_view defaultHelp = "Displays ladder information about yourself, or another player. Syntax: ladder [name / rank]"sv;
 	return defaultHelp;
 }
 

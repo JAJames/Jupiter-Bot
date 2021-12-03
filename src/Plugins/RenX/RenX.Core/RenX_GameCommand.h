@@ -25,7 +25,6 @@
  */
 
 #include "Jupiter/Command.h"
-#include "Jupiter/String.hpp"
 #include "RenX.h"
 #include "RenX_Core.h" // getCore().
 

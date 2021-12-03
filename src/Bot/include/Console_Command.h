@@ -24,6 +24,7 @@
 * @brief Provides an extendable command system specialized for console-based commands.
 */
 
+#include <iostream>
 #include "Jupiter/GenericCommand.h"
 #include "Jupiter_Bot.h"
 

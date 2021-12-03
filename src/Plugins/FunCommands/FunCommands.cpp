@@ -24,121 +24,122 @@
 #include "FunCommands.h"
 #include "IRC_Bot.h"
 
-using namespace Jupiter::literals;
 using namespace std::literals;
 
 // 8ball
 
 void EightBallIRCCommand::create()
 {
-	this->addTrigger("8ball"_jrs);
-	this->addTrigger("8balls"_jrs);
-	this->addTrigger("eightBall"_jrs);
+	this->addTrigger("8ball"sv);
+	this->addTrigger("8balls"sv);
+	this->addTrigger("eightBall"sv);
 }
 
 void EightBallIRCCommand::trigger(IRC_Bot *source, std::string_view channel, std::string_view nick, std::string_view parameters)
 {
-	Jupiter::StringS msg;
+	std::string msg;
 	switch (rand() % 31)
 	{
 	case 0:
-		msg.set("No."_jrs);
+		msg = "No."sv;
 		break;
 	case 1:
-		msg.set("Yes."_jrs);
+		msg = "Yes."sv;
 		break;
 	case 2:
-		msg.set("Maybe."_jrs);
+		msg = "Maybe."sv;
 		break;
 	case 3:
-		msg.set("Seven."_jrs);
+		msg = "Seven."sv;
 		break;
 	case 4:
-		msg.set("Consider counseling."_jrs);
+		msg = "Consider counseling."sv;
 		break;
 	case 5:
-		msg.set("Look into a realationship. A real one."_jrs);
+		msg = "Look into a realationship. A real one."sv;
 		break;
 	case 6:
-		msg.set("Quit asking me these deep questions, before I get deeply into you."_jrs);
+		msg = "Quit asking me these deep questions, before I get deeply into you."sv;
 		break;
 	case 7:
-		msg.set("Fuck you."_jrs);
+		msg = "Fuck you."sv;
 		break;
 	case 8:
-		msg.set("Fuck me."_jrs);
+		msg = "Fuck me."sv;
 		break;
 	case 9:
-		msg.set("Good thing I bend that way!"_jrs);
+		msg = "Good thing I bend that way!"sv;
 		break;
 	case 10:
-		msg = "Hai "s + nick + "!";
+		msg = jessilib::join<std::string>("Hai "sv, nick, "!"sv);
 		break;
 	case 11:
-		msg = "Let's ban "s + nick + "!";
+		msg = jessilib::join<std::string>("Let's ban "sv, nick, "!"sv);
 		break;
 	case 12:
-		msg.set("Fuck your lineage."_jrs);
+		msg = "Fuck your lineage."sv;
 		break;
 	case 13:
-		if (channel == "#Jail"sv)
-			msg.set("Ask me those kind of questions in #Politics"_jrs);
-		else
-			msg.set("Ask me those kind of questions in #Jail"_jrs);
+		if (channel == "#Jail"sv) {
+			msg = "Ask me those kind of questions in #Politics"sv;
+		}
+		else {
+			msg = "Ask me those kind of questions in #Jail"sv;
+		}
 		break;
 	case 14:
-		msg.set("I don't talk to slut-mongers."_jrs);
+		msg = "I don't talk to slut-mongers."sv;
 		break;
 	case 15:
-		msg.set("I only talk to slut-mongers."_jrs);
+		msg = "I only talk to slut-mongers."sv;
 		break;
 	case 16:
-		msg.set("Nuclear launch detected."_jrs);
+		msg = "Nuclear launch detected."sv;
 		break;
 	case 17:
-		msg.set("404 - Not found."_jrs);
+		msg = "404 - Not found."sv;
 		break;
 	case 18:
-		msg.set("I hurr u liek mudkipz?"_jrs);
+		msg = "I hurr u liek mudkipz?"sv;
 		break;
 	case 19:
-		msg.set("Fortune might be in your favor."_jrs);
+		msg = "Fortune might be in your favor."sv;
 		break;
 	case 20:
-		msg.set("Fortune might not be in your favor."_jrs);
+		msg = "Fortune might not be in your favor."sv;
 		break;
 	case 21:
-		msg.set("Based on the tragectory of James Bond (9007) in relationship to the 9th circle of hell located on the 3rd planet of Sol, you're going to hell."_jrs);
+		msg = "Based on the tragectory of James Bond (9007) in relationship to the 9th circle of hell located on the 3rd planet of Sol, you're going to hell."sv;
 		break;
 	case 22:
-		msg.set("Based on the tragectory of James Bond (9007) in relationship to the 9th circle of hell located on the 3rd planet of Sol, yes!"_jrs);
+		msg = "Based on the tragectory of James Bond (9007) in relationship to the 9th circle of hell located on the 3rd planet of Sol, yes!"sv;
 		break;
 	case 23:
-		msg.set("Based on the tragectory of James Bond (9007) in relationship to the 9th circle of hell located on the 3rd planet of Sol, it's approximately as likely as getting a \"yes\" from me."_jrs);
+		msg = "Based on the tragectory of James Bond (9007) in relationship to the 9th circle of hell located on the 3rd planet of Sol, it's approximately as likely as getting a \"yes\" from me."sv;
 		break;
 	case 24:
-		msg.set("Fucking campers."_jrs);
+		msg = "Fucking campers."sv;
 		break;
 	case 25:
-		msg.set("The 8ball seems to be stuck. Try again later. (Dang, you can't even get an 8ball to work for you? That's pretty sad yo)"_jrs);
+		msg = "The 8ball seems to be stuck. Try again later. (Dang, you can't even get an 8ball to work for you? That's pretty sad yo)"sv;
 		break;
 	case 26:
-		msg.set("The 8ball says... Go away? Wow, it really must not like you. Go away."_jrs);
+		msg = "The 8ball says... Go away? Wow, it really must not like you. Go away."sv;
 		break;
 	case 27:
-		msg.set("Swag"_jrs);
+		msg = "Swag"sv;
 		break;
 	case 28:
-		msg.set("Based on the orbit and trajectory of the 33rd moon of the planet assinine 6, no."_jrs);
+		msg = "Based on the orbit and trajectory of the 33rd moon of the planet assinine 6, no."sv;
 		break;
 	case 29:
-		msg.set("Based on the orbin and trajectory of the moon assinsix 9, yes!"_jrs);
+		msg = "Based on the orbin and trajectory of the moon assinsix 9, yes!"sv;
 		break;
 	case 30:
-		msg.set("Come visit me on the 5th planet away from Sol, and I'll give you whatever you want."_jrs);
+		msg = "Come visit me on the 5th planet away from Sol, and I'll give you whatever you want."sv;
 		break;
 	default:
-		msg.set("Nothingness. You suck. Go rot."_jrs);
+		msg = "Nothingness. You suck. Go rot."sv;
 		break;
 	}
 	source->sendMessage(channel, msg);
@@ -146,7 +147,7 @@ void EightBallIRCCommand::trigger(IRC_Bot *source, std::string_view channel, std
 
 std::string_view EightBallIRCCommand::getHelp(std::string_view )
 {
-	static STRING_LITERAL_AS_NAMED_REFERENCE(defaultHelp, "Accurately answers your question 60% of the time, EVERY time. Syntax: 8ball [question]");
+	static constexpr std::string_view defaultHelp = "Accurately answers your question 60% of the time, EVERY time. Syntax: 8ball [question]"sv;
 	return defaultHelp;
 }
 
@@ -156,43 +157,43 @@ IRC_COMMAND_INIT(EightBallIRCCommand)
 
 ResolveGenericCommand::ResolveGenericCommand()
 {
-	this->addTrigger("resolve"_jrs);
+	this->addTrigger("resolve"sv);
 }
 
 Jupiter::GenericCommand::ResponseLine *ResolveGenericCommand::trigger(std::string_view parameters) {
 	auto command_split = jessilib::word_split_once_view(std::string_view{parameters}, WHITESPACE_SV);
 	if (command_split.second.empty()) {
-		return new Jupiter::GenericCommand::ResponseLine("Error: Too few parameters. Syntax: resolve <hostname|ip> <address>"_jrs, GenericCommand::DisplayType::PrivateError);
+		return new Jupiter::GenericCommand::ResponseLine("Error: Too few parameters. Syntax: resolve <hostname|ip> <address>"sv, GenericCommand::DisplayType::PrivateError);
 	}
 
 	std::string_view subcommand = command_split.first;
 	if (jessilib::equalsi(subcommand, "hostname"sv)
 		|| jessilib::equalsi(subcommand, "host"sv))
 	{
-		Jupiter::ReferenceString resolved = Jupiter::Socket::resolveHostname(static_cast<std::string>(command_split.second).c_str(), 0);
+		std::string_view resolved = Jupiter::Socket::resolveHostname(static_cast<std::string>(command_split.second).c_str(), 0);
 		if (resolved.empty())
-			return new Jupiter::GenericCommand::ResponseLine("Error: Unable to resolve."_jrs, GenericCommand::DisplayType::PublicError);
+			return new Jupiter::GenericCommand::ResponseLine("Error: Unable to resolve."sv, GenericCommand::DisplayType::PublicError);
 		return new Jupiter::GenericCommand::ResponseLine(resolved, GenericCommand::DisplayType::PublicSuccess);
 	}
 	else if (jessilib::equalsi(subcommand, "ip"sv))
 	{
-		Jupiter::ReferenceString resolved = Jupiter::Socket::resolveAddress(static_cast<std::string>(command_split.second).c_str(), 0);
+		std::string_view resolved = Jupiter::Socket::resolveAddress(static_cast<std::string>(command_split.second).c_str(), 0);
 		if (resolved.empty())
-			return new Jupiter::GenericCommand::ResponseLine("Error: Unable to resolve."_jrs, GenericCommand::DisplayType::PublicError);
+			return new Jupiter::GenericCommand::ResponseLine("Error: Unable to resolve."sv, GenericCommand::DisplayType::PublicError);
 		return new Jupiter::GenericCommand::ResponseLine(resolved, GenericCommand::DisplayType::PublicSuccess);
 	}
-	return new Jupiter::GenericCommand::ResponseLine("Error: Invalid type. You can only resolve hostnames and IP addresses."_jrs, GenericCommand::DisplayType::PrivateError);
+	return new Jupiter::GenericCommand::ResponseLine("Error: Invalid type. You can only resolve hostnames and IP addresses."sv, GenericCommand::DisplayType::PrivateError);
 }
 
 std::string_view ResolveGenericCommand::getHelp(std::string_view parameters)
 {
-	static STRING_LITERAL_AS_NAMED_REFERENCE(defaultHelp, "Resolves an IP address or hostname. Syntax: resolve <hostname|ip> <address>");
-	static STRING_LITERAL_AS_NAMED_REFERENCE(hostHelp, "Resolves a hostname to an IP address. Syntax: resolve hostname <address>");
-	static STRING_LITERAL_AS_NAMED_REFERENCE(ipHelp, "Reverse-resolves an IP address to a hostname. Syntax: resolve ip <address>");
+	static constexpr std::string_view defaultHelp = "Resolves an IP address or hostname. Syntax: resolve <hostname|ip> <address>"sv;
+	static constexpr std::string_view hostHelp = "Resolves a hostname to an IP address. Syntax: resolve hostname <address>"sv;
+	static constexpr std::string_view ipHelp = "Reverse-resolves an IP address to a hostname. Syntax: resolve ip <address>"sv;
 
-	if (jessilib::equalsi(parameters, "hostname"_jrs) || jessilib::equalsi(parameters, "host"_jrs))
+	if (jessilib::equalsi(parameters, "hostname"sv) || jessilib::equalsi(parameters, "host"sv))
 		return hostHelp;
-	if (jessilib::equalsi(parameters, "ip"_jrs))
+	if (jessilib::equalsi(parameters, "ip"sv))
 		return ipHelp;
 
 	return defaultHelp;

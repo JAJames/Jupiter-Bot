@@ -24,7 +24,6 @@
  * @brief Defines the BuildingInfo structure.
  */
 
-#include "Jupiter/String.hpp"
 #include "Jupiter/Config.h"
 #include "RenX.h"
 

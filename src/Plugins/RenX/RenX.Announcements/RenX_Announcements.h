@@ -22,8 +22,6 @@
 #include "Jupiter/Plugin.h"
 #include "Jupiter/Timer.h"
 #include "Jupiter/File.h"
-#include "Jupiter/String.hpp"
-#include "Jupiter/Reference_String.h"
 #include "RenX_Plugin.h"
 
 class RenX_AnnouncementsPlugin : public RenX::Plugin

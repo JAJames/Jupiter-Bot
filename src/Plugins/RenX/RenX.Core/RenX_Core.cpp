@@ -30,7 +30,7 @@
 #include "RenX_ExemptionDatabase.h"
 #include "RenX_Tags.h"
 
-using namespace Jupiter::literals;
+using namespace std::literals;
 
 RenX::Core pluginInstance;
 RenX::Core *RenXInstance = &pluginInstance;
@@ -45,8 +45,8 @@ bool RenX::Core::initialize() {
 	RenX::tags->initialize();
 	RenX::initTranslations(this->config);
 
-	std::string_view serverList = this->config.get("Servers"_jrs);
-	m_commandsFile.read(this->config.get("CommandsFile"_jrs, "RenXGameCommands.ini"_jrs));
+	std::string_view serverList = this->config.get("Servers"sv);
+	m_commandsFile.read(this->config.get("CommandsFile"sv, "RenXGameCommands.ini"sv));
 
 	auto server_entries = jessilib::word_split_view(serverList, WHITESPACE_SV);
 	for (const auto& entry : server_entries) {
@@ -89,7 +89,7 @@ size_t RenX::Core::getServerIndex(RenX::Server *server) {
 		}
 	}
 
-	return Jupiter::INVALID_INDEX;
+	return SIZE_MAX;
 }
 
 RenX::Server* RenX::Core::getServer(size_t index) {
@@ -137,7 +137,7 @@ size_t RenX::Core::removeServer(RenX::Server *server) {
 		}
 	}
 
-	return Jupiter::INVALID_INDEX;
+	return SIZE_MAX;
 }
 
 bool RenX::Core::hasServer(RenX::Server* in_server) {

@@ -16,7 +16,9 @@
  * Written by Jessica James <jessica.aj@outlook.com>
  */
 
+#include <iostream>
 #include "jessilib/unicode.hpp"
+#include "Jupiter/DataBuffer.h"
 #include "RenX_LadderDatabase.h"
 #include "RenX_Server.h"
 #include "RenX_PlayerInfo.h"
@@ -144,7 +146,7 @@ void RenX::LadderDatabase::process_data(Jupiter::DataBuffer &buffer, FILE *file,
 
 	entry->most_recent_ip = buffer.pop<uint32_t>();
 	entry->last_game = buffer.pop<time_t>();
-	entry->most_recent_name = buffer.pop<Jupiter::String_Strict, char>();
+	entry->most_recent_name = buffer.pop<std::string>();
 
 	// push data to list
 	if (m_head == nullptr) {
@@ -206,7 +208,7 @@ std::pair<RenX::LadderDatabase::Entry *, size_t> RenX::LadderDatabase::getPlayer
 			return std::pair<Entry*, size_t>(itr, index);
 		}
 	}
-	return std::pair<Entry*, size_t>(nullptr, Jupiter::INVALID_INDEX);
+	return std::pair<Entry*, size_t>(nullptr, SIZE_MAX);
 }
 
 RenX::LadderDatabase::Entry *RenX::LadderDatabase::getPlayerEntryByName(std::string_view name) const {
@@ -227,7 +229,7 @@ std::pair<RenX::LadderDatabase::Entry *, size_t> RenX::LadderDatabase::getPlayer
 		}
 	}
 
-	return std::pair<Entry*, size_t>(nullptr, Jupiter::INVALID_INDEX);
+	return std::pair<Entry*, size_t>(nullptr, SIZE_MAX);
 }
 
 RenX::LadderDatabase::Entry *RenX::LadderDatabase::getPlayerEntryByPartName(std::string_view name) const {
@@ -248,7 +250,7 @@ std::pair<RenX::LadderDatabase::Entry *, size_t> RenX::LadderDatabase::getPlayer
 		}
 	}
 
-	return std::pair<Entry *, size_t>(nullptr, Jupiter::INVALID_INDEX);
+	return std::pair<Entry *, size_t>(nullptr, SIZE_MAX);
 }
 
 std::forward_list<RenX::LadderDatabase::Entry> RenX::LadderDatabase::getPlayerEntriesByPartName(std::string_view name, size_t max) const {
@@ -593,11 +595,11 @@ void RenX::LadderDatabase::updateLadder(RenX::Server &server, const RenX::TeamTy
 
 		if (m_output_times)
 		{
-			Jupiter::StringS str = string_printf("Ladder: %zu entries sorted in %f seconds; Database written in %f seconds." ENDL,
+			std::string str = string_printf("Ladder: %zu entries sorted in %f seconds; Database written in %f seconds." ENDL,
 				getEntries(),
 				static_cast<double>(sort_duration.count()) * (static_cast<double>(std::chrono::steady_clock::duration::period::num) / static_cast<double>(std::chrono::steady_clock::duration::period::den) * static_cast<double>(std::chrono::seconds::duration::period::den / std::chrono::seconds::duration::period::num)),
 				static_cast<double>(write_duration.count()) * (static_cast<double>(std::chrono::steady_clock::duration::period::num) / static_cast<double>(std::chrono::steady_clock::duration::period::den) * static_cast<double>(std::chrono::seconds::duration::period::den / std::chrono::seconds::duration::period::num)));
-			std::cout << std::string_view{str} << std::endl;
+			std::cout << str << std::endl;
 			server.sendLogChan(str);
 		}
 	}

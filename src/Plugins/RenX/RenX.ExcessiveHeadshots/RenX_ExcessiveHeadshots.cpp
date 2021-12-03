@@ -23,15 +23,14 @@
 #include "RenX_PlayerInfo.h"
 #include "RenX_Functions.h"
 
-using namespace Jupiter::literals;
 using namespace std::literals;
 
 bool RenX_ExcessiveHeadshotsPlugin::initialize() {
-	RenX_ExcessiveHeadshotsPlugin::ratio = this->config.get<double>("HeadshotKillRatio"_jrs, 0.5);
-	RenX_ExcessiveHeadshotsPlugin::minKills = this->config.get<unsigned int>("Kills"_jrs, 10);
-	RenX_ExcessiveHeadshotsPlugin::minKD = this->config.get<double>("KillDeathRatio"_jrs, 5.0);
-	RenX_ExcessiveHeadshotsPlugin::minKPS = this->config.get<double>("KillsPerSecond"_jrs, 0.5);
-	RenX_ExcessiveHeadshotsPlugin::minFlags = this->config.get<unsigned int>("Flags"_jrs, 4);
+	RenX_ExcessiveHeadshotsPlugin::ratio = this->config.get<double>("HeadshotKillRatio"sv, 0.5);
+	RenX_ExcessiveHeadshotsPlugin::minKills = this->config.get<unsigned int>("Kills"sv, 10);
+	RenX_ExcessiveHeadshotsPlugin::minKD = this->config.get<double>("KillDeathRatio"sv, 5.0);
+	RenX_ExcessiveHeadshotsPlugin::minKPS = this->config.get<double>("KillsPerSecond"sv, 0.5);
+	RenX_ExcessiveHeadshotsPlugin::minFlags = this->config.get<unsigned int>("Flags"sv, 4);
 	return true;
 }
 
@@ -57,7 +56,7 @@ void RenX_ExcessiveHeadshotsPlugin::RenX_OnKill(RenX::Server &server, const RenX
 
 		if (flags >= RenX_ExcessiveHeadshotsPlugin::minFlags)
 		{
-			server.banPlayer(player, "Jupiter Bot"_jrs, "Aimbot detected"_jrs);
+			server.banPlayer(player, "Jupiter Bot"sv, "Aimbot detected"sv);
 			server.sendPubChan(IRCCOLOR "13[Aimbot]" IRCCOLOR " %.*s was banned from the server! Kills: %u - Deaths: %u - Headshots: %u", player.name.size(), player.name.data(), player.kills, player.deaths, player.headshots);
 			std::string_view steamid = server.formatSteamID(player);
 			server.sendAdmChan(IRCCOLOR "13[Aimbot]" IRCCOLOR " %.*s was banned from the server! Kills: %u - Deaths: %u - Headshots: %u - IP: " IRCBOLD "%.*s" IRCBOLD " - Steam ID: " IRCBOLD "%.*s" IRCBOLD, player.name.size(), player.name.data(), player.kills, player.deaths, player.headshots, player.ip.size(), player.ip.data(), steamid.size(),

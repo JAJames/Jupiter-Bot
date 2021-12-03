@@ -19,11 +19,10 @@
 #include "RenX_Server.h"
 #include "RenX_AlwaysRecord.h"
 
-using namespace Jupiter::literals;
+using namespace std::literals;
 
-void RenX_AlwaysRecord::RenX_OnMapStart(RenX::Server &server, std::string_view )
-{
-	server.send("demorec"_jrs);
+void RenX_AlwaysRecord::RenX_OnMapStart(RenX::Server &server, std::string_view ) {
+	server.send("demorec"sv);
 }
 
 // Plugin instantiation and entry point.

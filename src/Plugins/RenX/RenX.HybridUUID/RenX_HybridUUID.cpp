@@ -16,17 +16,15 @@
  * Written by Jessica James <jessica.aj@outlook.com>
  */
 
-#include "Jupiter/String.hpp"
 #include "RenX_Core.h"
 #include "RenX_Server.h"
 #include "RenX_PlayerInfo.h"
 #include "RenX_Functions.h"
 #include "RenX_HybridUUID.h"
 
-using namespace Jupiter::literals;
 using namespace std::literals;
 
-Jupiter::StringS calc_uuid(RenX::PlayerInfo &player)
+std::string calc_uuid(RenX::PlayerInfo &player)
 {
 	if (player.steamid != 0U)
 		return string_printf("S%.16llX", player.steamid);

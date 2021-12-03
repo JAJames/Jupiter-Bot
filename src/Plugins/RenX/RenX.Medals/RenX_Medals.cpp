@@ -28,7 +28,6 @@
 #include "RenX_Core.h"
 #include "RenX_Tags.h"
 
-using namespace Jupiter::literals;
 using namespace std::literals;
 
 bool RenX_MedalsPlugin::initialize()
@@ -52,8 +51,8 @@ RenX_MedalsPlugin::~RenX_MedalsPlugin()
 		if (server->players.size() != 0) {
 			for (auto node = server->players.begin(); node != server->players.end(); ++node) {
 				if (!node->uuid.empty() && !node->isBot) {
-					RenX_MedalsPlugin::medalsFile[node->uuid].set("Recs"_jrs, node->varData[this->getName()].get("Recs"sv, ""s));
-					RenX_MedalsPlugin::medalsFile[node->uuid].set("Noobs"_jrs, node->varData[this->getName()].get("Noobs"sv, ""s));
+					RenX_MedalsPlugin::medalsFile[node->uuid].set("Recs"sv, node->varData[this->getName()].get("Recs"sv, ""s));
+					RenX_MedalsPlugin::medalsFile[node->uuid].set("Noobs"sv, node->varData[this->getName()].get("Noobs"sv, ""s));
 				}
 			}
 		}
@@ -65,7 +64,7 @@ RenX_MedalsPlugin::~RenX_MedalsPlugin()
 struct CongratPlayerData
 {
 	RenX::Server *server;
-	Jupiter::StringS playerName;
+	std::string playerName;
 	unsigned int type;
 };
 
@@ -78,16 +77,16 @@ void congratPlayer(unsigned int, void *params)
 		switch (congratPlayerData->type)
 		{
 		case 0:
-			congratPlayerData->server->sendMessage(congratPlayerData->playerName + " has been recommended for having the highest score last game!"_jrs);
+			congratPlayerData->server->sendMessage(jessilib::join<std::string>(congratPlayerData->playerName, " has been recommended for having the highest score last game!"sv));
 			break;
 		case 1:
-			congratPlayerData->server->sendMessage(congratPlayerData->playerName + " has been recommended for having the most kills last game!"_jrs);
+			congratPlayerData->server->sendMessage(jessilib::join<std::string>(congratPlayerData->playerName, " has been recommended for having the most kills last game!"sv));
 			break;
 		case 2:
-			congratPlayerData->server->sendMessage(congratPlayerData->playerName + " has been recommended for having the most vehicle kills last game!"_jrs);
+			congratPlayerData->server->sendMessage(jessilib::join<std::string>(congratPlayerData->playerName, " has been recommended for having the most vehicle kills last game!"sv));
 			break;
 		case 3:
-			congratPlayerData->server->sendMessage(congratPlayerData->playerName + " has been recommended for having the highest Kill-Death ratio last game!"_jrs);
+			congratPlayerData->server->sendMessage(jessilib::join<std::string>(congratPlayerData->playerName, " has been recommended for having the highest Kill-Death ratio last game!"sv));
 			break;
 		default:
 			break;
@@ -104,8 +103,8 @@ void RenX_MedalsPlugin::RenX_SanitizeTags(std::string& fmt) {
 
 void RenX_MedalsPlugin::RenX_ProcessTags(std::string& msg, const RenX::Server *server, const RenX::PlayerInfo *player, const RenX::PlayerInfo *, const RenX::BuildingInfo *) {
 	if (player != nullptr) {
-		std::string_view recs = RenX_MedalsPlugin::medalsFile.get(player->uuid, "Recs"_jrs);
-		std::string_view noobs = RenX_MedalsPlugin::medalsFile.get(player->uuid, "Noobs"_jrs);
+		std::string_view recs = RenX_MedalsPlugin::medalsFile.get(player->uuid, "Recs"sv);
+		std::string_view noobs = RenX_MedalsPlugin::medalsFile.get(player->uuid, "Noobs"sv);
 
 		RenX::replace_tag(msg, this->INTERNAL_RECS_TAG, recs);
 		RenX::replace_tag(msg, this->INTERNAL_NOOB_TAG, noobs);
@@ -122,8 +121,8 @@ void RenX_MedalsPlugin::RenX_OnPlayerCreate(RenX::Server &, const RenX::PlayerIn
 
 void RenX_MedalsPlugin::RenX_OnPlayerDelete(RenX::Server &, const RenX::PlayerInfo &player) {
 	if (!player.uuid.empty() && player.isBot == false) {
-		RenX_MedalsPlugin::medalsFile[player.uuid].set("Recs"_jrs, player.varData[this->getName()].get("Recs"sv, ""s));
-		RenX_MedalsPlugin::medalsFile[player.uuid].set("Noobs"_jrs, player.varData[this->getName()].get("Noobs"sv, ""s));
+		RenX_MedalsPlugin::medalsFile[player.uuid].set("Recs"sv, player.varData[this->getName()].get("Recs"sv, ""s));
+		RenX_MedalsPlugin::medalsFile[player.uuid].set("Noobs"sv, player.varData[this->getName()].get("Noobs"sv, ""s));
 	}
 }
 
@@ -132,9 +131,11 @@ void RenX_MedalsPlugin::RenX_OnJoin(RenX::Server &server, const RenX::PlayerInfo
 		int worth = getWorth(player);
 		Jupiter::Config *section = RenX_MedalsPlugin::config.getSection(RenX_MedalsPlugin::firstSection);
 		if (section != nullptr) {
-			while (section->get<int>("MaxRecs"_jrs, INT_MAX) < worth)
-				if ((section = RenX_MedalsPlugin::config.getSection(section->get("NextSection"_jrs))) == nullptr)
+			while (section->get<int>("MaxRecs"sv, std::numeric_limits<int>::max()) < worth) {
+				if ((section = RenX_MedalsPlugin::config.getSection(section->get("NextSection"sv))) == nullptr) {
 					return; // No matching section found.
+				}
+			}
 
 			size_t table_size = section->getTable().size();
 
@@ -253,15 +254,15 @@ int RenX_MedalsPlugin::OnRehash()
 
 void RenX_MedalsPlugin::init()
 {
-	RenX_MedalsPlugin::killCongratDelay = std::chrono::seconds(this->config.get<long long>("KillCongratDelay"_jrs, 60));
-	RenX_MedalsPlugin::vehicleKillCongratDelay = std::chrono::seconds(this->config.get<long long>("VehicleKillCongratDelay"_jrs, 60));
-	RenX_MedalsPlugin::kdrCongratDelay = std::chrono::seconds(this->config.get<long long>("KDRCongratDelay"_jrs, 60));
-	RenX_MedalsPlugin::medalsFileName = this->config.get("MedalsFile"_jrs, "Medals.ini"_jrs);
+	RenX_MedalsPlugin::killCongratDelay = std::chrono::seconds(this->config.get<long long>("KillCongratDelay"sv, 60));
+	RenX_MedalsPlugin::vehicleKillCongratDelay = std::chrono::seconds(this->config.get<long long>("VehicleKillCongratDelay"sv, 60));
+	RenX_MedalsPlugin::kdrCongratDelay = std::chrono::seconds(this->config.get<long long>("KDRCongratDelay"sv, 60));
+	RenX_MedalsPlugin::medalsFileName = this->config.get("MedalsFile"sv, "Medals.ini"sv);
 	RenX_MedalsPlugin::medalsFile.read(RenX_MedalsPlugin::medalsFileName);
-	RenX_MedalsPlugin::firstSection = RenX_MedalsPlugin::config.get("FirstSection"_jrs);
-	RenX_MedalsPlugin::recsTag = RenX_MedalsPlugin::config.get("RecsTag"_jrs, "{RECS}"_jrs);
-	RenX_MedalsPlugin::noobTag = RenX_MedalsPlugin::config.get("NoobsTag"_jrs, "{NOOBS}"_jrs);
-	RenX_MedalsPlugin::worthTag = RenX_MedalsPlugin::config.get("WorthTag"_jrs, "{WORTH}"_jrs);
+	RenX_MedalsPlugin::firstSection = RenX_MedalsPlugin::config.get("FirstSection"sv);
+	RenX_MedalsPlugin::recsTag = RenX_MedalsPlugin::config.get("RecsTag"sv, "{RECS}"sv);
+	RenX_MedalsPlugin::noobTag = RenX_MedalsPlugin::config.get("NoobsTag"sv, "{NOOBS}"sv);
+	RenX_MedalsPlugin::worthTag = RenX_MedalsPlugin::config.get("WorthTag"sv, "{WORTH}"sv);
 
 	RenX::Core *core = RenX::getCore();
 	size_t server_count = core->getServerCount();
@@ -286,11 +287,11 @@ RenX_MedalsPlugin pluginInstance;
 
 void RecsGameCommand::create()
 {
-	this->addTrigger("recs"_jrs);
-	this->addTrigger("recommends"_jrs);
-	this->addTrigger("recommendations"_jrs);
-	this->addTrigger("noobs"_jrs);
-	this->addTrigger("n00bs"_jrs);
+	this->addTrigger("recs"sv);
+	this->addTrigger("recommends"sv);
+	this->addTrigger("recommendations"sv);
+	this->addTrigger("noobs"sv);
+	this->addTrigger("n00bs"sv);
 }
 
 void RecsGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *player, std::string_view parameters)
@@ -302,32 +303,32 @@ void RecsGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *player, st
 		{
 			Jupiter::Config *section = pluginInstance.medalsFile.getSection(parameters);
 			if (section == nullptr)
-				source->sendMessage(*player, "Error: Player not found! Syntax: recs [player]"_jrs);
+				source->sendMessage(*player, "Error: Player not found! Syntax: recs [player]"sv);
 			else
 			{
-				unsigned int recs = section->get<unsigned int>("Recs"_jrs);
-				unsigned int noobs = section->get<unsigned int>("Noobs"_jrs);
+				unsigned int recs = section->get<unsigned int>("Recs"sv);
+				unsigned int noobs = section->get<unsigned int>("Noobs"sv);
 				source->sendMessage(*player, string_printf("[Archive] %.*s has %u and %u n00bs. Their worth: %d", section->getName().size(), section->getName().c_str(), recs, noobs, recs - noobs));
 			}
 		}
 		else if (target->uuid.empty())
-			source->sendMessage(*player, "Error: Player is not using steam."_jrs);
+			source->sendMessage(*player, "Error: Player is not using steam."sv);
 		else if (target->isBot)
-			source->sendMessage(*player, "Error: Bots do not have any recommendations."_jrs);
+			source->sendMessage(*player, "Error: Bots do not have any recommendations."sv);
 		else if (target == player)
-			RecsGameCommand::trigger(source, player, ""_jrs);
+			RecsGameCommand::trigger(source, player, ""sv);
 		else
 			source->sendMessage(*player, string_printf("%.*s has %lu and %lu n00bs. Their worth: %d", target->name.size(), target->name.data(), getRecs(*target), getNoobs(*target), getWorth(*target)));
 	}
 	else if (player->uuid.empty())
-		source->sendMessage(*player, "Error: You are not using steam."_jrs);
+		source->sendMessage(*player, "Error: You are not using steam."sv);
 	else
 		source->sendMessage(*player, string_printf("%.*s, you have %lu recs and %lu n00bs. Your worth: %d", player->name.size(), player->name.data(), getRecs(*player), getNoobs(*player), getWorth(*player)));
 }
 
 std::string_view RecsGameCommand::getHelp(std::string_view )
 {
-	static STRING_LITERAL_AS_NAMED_REFERENCE(defaultHelp, "Gets a count of a player's recommendations and noobs. Syntax: recs [player]");
+	static constexpr std::string_view defaultHelp = "Gets a count of a player's recommendations and noobs. Syntax: recs [player]"sv;
 	return defaultHelp;
 }
 
@@ -337,8 +338,8 @@ GAME_COMMAND_INIT(RecsGameCommand)
 
 void RecGameCommand::create()
 {
-	this->addTrigger("rec"_jrs);
-	this->addTrigger("recommend"_jrs);
+	this->addTrigger("rec"sv);
+	this->addTrigger("recommend"sv);
 }
 
 void RecGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *player, std::string_view parameters) {
@@ -349,25 +350,25 @@ void RecGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *player, std
 			target = source->getPlayerByPartName(parameters_split.first);
 		}
 		if (target == nullptr) {
-			source->sendMessage(*player, "Error: Player not found! Syntax: rec <player>"_jrs);
+			source->sendMessage(*player, "Error: Player not found! Syntax: rec <player>"sv);
 		}
 		else if (target->uuid.empty()) {
-			source->sendMessage(*player, "Error: Player is not using steam."_jrs);
+			source->sendMessage(*player, "Error: Player is not using steam."sv);
 		}
 		else if (target->isBot) {
-			source->sendMessage(*player, "Error: Bots can not receive recommendations."_jrs);
+			source->sendMessage(*player, "Error: Bots can not receive recommendations."sv);
 		}
 		else if (target == player) {
 			addNoob(*player);
-			source->sendMessage(*player, "You can't recommend yourself, you noob! (+1 noob)"_jrs);
+			source->sendMessage(*player, "You can't recommend yourself, you noob! (+1 noob)"sv);
 		}
-		else if (!player->varData["RenX.Medals"_jrs].get("gr"_jrs).empty() && player->adminType.empty()) {
-			source->sendMessage(*player, "You can only give one recommendation per game."_jrs);
+		else if (!player->varData["RenX.Medals"sv].get("gr"sv).empty() && player->adminType.empty()) {
+			source->sendMessage(*player, "You can only give one recommendation per game."sv);
 		}
 		else {
 			addRec(*target);
 			source->sendMessage(string_printf("%.*s has recommended %.*s!", player->name.size(), player->name.data(), target->name.size(), target->name.data()));
-			player->varData["RenX.Medals"_jrs].set("gr"_jrs, "1"s);
+			player->varData["RenX.Medals"sv].set("gr"sv, "1"s);
 		}
 	}
 	else RecsGameCommand_instance.trigger(source, player, parameters);
@@ -375,7 +376,7 @@ void RecGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *player, std
 
 std::string_view RecGameCommand::getHelp(std::string_view )
 {
-	static STRING_LITERAL_AS_NAMED_REFERENCE(defaultHelp, "Recommends a player for their gameplay. Syntax: rec <player> [reason]");
+	static constexpr std::string_view defaultHelp = "Recommends a player for their gameplay. Syntax: rec <player> [reason]"sv;
 	return defaultHelp;
 }
 
@@ -385,8 +386,8 @@ GAME_COMMAND_INIT(RecGameCommand)
 
 void NoobGameCommand::create()
 {
-	this->addTrigger("noob"_jrs);
-	this->addTrigger("n00b"_jrs);
+	this->addTrigger("noob"sv);
+	this->addTrigger("n00b"sv);
 }
 
 void NoobGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *player, std::string_view parameters) {
@@ -397,21 +398,21 @@ void NoobGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *player, st
 			target = source->getPlayerByPartName(parameters_split.first);
 		}
 		if (target == nullptr) {
-			source->sendMessage(*player, "Error: Player not found! Syntax: noob [player]"_jrs);
+			source->sendMessage(*player, "Error: Player not found! Syntax: noob [player]"sv);
 		}
 		else if (target->uuid.empty()) {
-			source->sendMessage(*player, "Error: Player is not using steam."_jrs);
+			source->sendMessage(*player, "Error: Player is not using steam."sv);
 		}
 		else if (target->isBot) {
-			source->sendMessage(*player, "Error: Bots can not receive n00bs."_jrs);
+			source->sendMessage(*player, "Error: Bots can not receive n00bs."sv);
 		}
-		else if (!player->varData["RenX.Medals"_jrs].get("gn"_jrs).empty() && player->adminType.empty()) {
-			source->sendMessage(*player, "You can only give one noob per game."_jrs);
+		else if (!player->varData["RenX.Medals"sv].get("gn"sv).empty() && player->adminType.empty()) {
+			source->sendMessage(*player, "You can only give one noob per game."sv);
 		}
 		else {
 			addNoob(*target);
 			source->sendMessage(string_printf("%.*s has noob'd %.*s!", player->name.size(), player->name.data(), target->name.size(), target->name.data()));
-			player->varData["RenX.Medals"_jrs].set("gn"_jrs, "1"s);
+			player->varData["RenX.Medals"sv].set("gn"sv, "1"s);
 		}
 	}
 	else RecsGameCommand_instance.trigger(source, player, parameters);
@@ -419,7 +420,7 @@ void NoobGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *player, st
 
 std::string_view NoobGameCommand::getHelp(std::string_view )
 {
-	static STRING_LITERAL_AS_NAMED_REFERENCE(defaultHelp, "Tells people that a player is bad. Syntax: noob [player]");
+	static constexpr std::string_view defaultHelp = "Tells people that a player is bad. Syntax: noob [player]"sv;
 	return defaultHelp;
 }
 
@@ -427,24 +428,24 @@ GAME_COMMAND_INIT(NoobGameCommand)
 
 void addRec(const RenX::PlayerInfo &player, int amount) {
 	if (!jessilib::starts_withi(player.uuid, "Player"sv) && !player.isBot) {
-		player.varData[pluginInstance.getName()].set("Recs"_jrs, static_cast<std::string>(string_printf("%u", getRecs(player) + amount)));
+		player.varData[pluginInstance.getName()].set("Recs"sv, static_cast<std::string>(string_printf("%u", getRecs(player) + amount)));
 	}
 }
 
 void addNoob(const RenX::PlayerInfo &player, int amount) {
 	if (!jessilib::starts_withi(player.uuid, "Player"sv) && !player.isBot) {
-		player.varData[pluginInstance.getName()].set("Noobs"_jrs,static_cast<std::string>(string_printf("%u", getNoobs(player) + amount)));
+		player.varData[pluginInstance.getName()].set("Noobs"sv,static_cast<std::string>(string_printf("%u", getNoobs(player) + amount)));
 	}
 }
 
 unsigned long getRecs(const RenX::PlayerInfo &player)
 {
-	return player.varData[pluginInstance.getName()].get<unsigned long>("Recs"_jrs);
+	return player.varData[pluginInstance.getName()].get<unsigned long>("Recs"sv);
 }
 
 unsigned long getNoobs(const RenX::PlayerInfo &player)
 {
-	return player.varData[pluginInstance.getName()].get<unsigned long>("Noobs"_jrs);
+	return player.varData[pluginInstance.getName()].get<unsigned long>("Noobs"sv);
 }
 
 int getWorth(const RenX::PlayerInfo &player)

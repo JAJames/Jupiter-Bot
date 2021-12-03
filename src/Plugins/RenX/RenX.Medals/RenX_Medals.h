@@ -21,7 +21,6 @@
 
 #include <chrono>
 #include "Jupiter/Plugin.h"
-#include "Jupiter/String.hpp"
 #include "RenX_Plugin.h"
 #include "RenX_GameCommand.h"
 
@@ -60,17 +59,17 @@ public:
 	std::chrono::milliseconds killCongratDelay;
 	std::chrono::milliseconds vehicleKillCongratDelay;
 	std::chrono::milliseconds kdrCongratDelay;
-	Jupiter::StringS recsTag;
-	Jupiter::StringS noobTag;
-	Jupiter::StringS worthTag;
+	std::string recsTag;
+	std::string noobTag;
+	std::string worthTag;
 	std::string firstSection;
-	Jupiter::StringS medalsFileName;
+	std::string medalsFileName;
 	Jupiter::INIConfig medalsFile;
 
 private:
-	Jupiter::StringS INTERNAL_RECS_TAG;
-	Jupiter::StringS INTERNAL_NOOB_TAG;
-	Jupiter::StringS INTERNAL_WORTH_TAG;
+	std::string INTERNAL_RECS_TAG;
+	std::string INTERNAL_NOOB_TAG;
+	std::string INTERNAL_WORTH_TAG;
 	void init();
 };
 

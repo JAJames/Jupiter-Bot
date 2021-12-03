@@ -21,7 +21,7 @@
 #include "RenX_Server.h"
 #include "RenX_Tags.h"
 
-using namespace Jupiter::literals;
+using namespace std::literals;
 
 RenX_ExtraLoggingPlugin::RenX_ExtraLoggingPlugin()
 {
@@ -46,15 +46,15 @@ int RenX_ExtraLoggingPlugin::OnRehash()
 }
 
 bool RenX_ExtraLoggingPlugin::initialize() {
-	RenX_ExtraLoggingPlugin::filePrefix = this->config.get("FilePrefix"_jrs, string_printf("[%.*s] %.*s", RenX::tags->timeTag.size(),
+	RenX_ExtraLoggingPlugin::filePrefix = this->config.get("FilePrefix"sv, string_printf("[%.*s] %.*s", RenX::tags->timeTag.size(),
 		RenX::tags->timeTag.data(), RenX::tags->serverPrefixTag.size(),
 		RenX::tags->serverPrefixTag.data()));
-	RenX_ExtraLoggingPlugin::consolePrefix = this->config.get("ConsolePrefix"_jrs, RenX_ExtraLoggingPlugin::filePrefix);
-	RenX_ExtraLoggingPlugin::newDayFmt = this->config.get("NewDayFormat"_jrs, string_printf("Time: %.*s %.*s", RenX::tags->timeTag.size(),
+	RenX_ExtraLoggingPlugin::consolePrefix = this->config.get("ConsolePrefix"sv, RenX_ExtraLoggingPlugin::filePrefix);
+	RenX_ExtraLoggingPlugin::newDayFmt = this->config.get("NewDayFormat"sv, string_printf("Time: %.*s %.*s", RenX::tags->timeTag.size(),
 		RenX::tags->timeTag.data(), RenX::tags->dateTag.size(),
 		RenX::tags->dateTag.data()));
-	RenX_ExtraLoggingPlugin::printToConsole = this->config.get<bool>("PrintToConsole"_jrs, true);
-	const std::string logFile = static_cast<std::string>(this->config.get("LogFile"_jrs));
+	RenX_ExtraLoggingPlugin::printToConsole = this->config.get<bool>("PrintToConsole"sv, true);
+	const std::string logFile = static_cast<std::string>(this->config.get("LogFile"sv));
 
 	RenX::sanitizeTags(RenX_ExtraLoggingPlugin::filePrefix);
 	RenX::sanitizeTags(RenX_ExtraLoggingPlugin::consolePrefix);

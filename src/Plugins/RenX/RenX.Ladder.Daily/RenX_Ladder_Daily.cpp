@@ -20,22 +20,22 @@
 #include "Jupiter/IRC_Client.h"
 #include "RenX_Ladder_Daily.h"
 
-using namespace Jupiter::literals;
+using namespace std::literals;
 
-bool RenX_Ladder_Daily_TimePlugin::initialize()
-{
+bool RenX_Ladder_Daily_TimePlugin::initialize() {
 	time_t current_time = time(0);
 	// Load database
-	this->database.process_file(this->config.get("LadderDatabase"_jrs, "Ladder.Daily.db"_jrs));
-	this->database.setName(this->config.get("DatabaseName"_jrs, "Daily"_jrs));
-	this->database.setOutputTimes(this->config.get<bool>("OutputTimes"_jrs, false));
+	this->database.process_file(this->config.get("LadderDatabase"sv, "Ladder.Daily.db"sv));
+	this->database.setName(this->config.get("DatabaseName"sv, "Daily"sv));
+	this->database.setOutputTimes(this->config.get<bool>("OutputTimes"sv, false));
 
 	this->last_sorted_day = gmtime(&current_time)->tm_wday;
 	this->database.OnPreUpdateLadder = OnPreUpdateLadder;
 
 	// Force database to default, if desired
-	if (this->config.get<bool>("ForceDefault"_jrs, false))
+	if (this->config.get<bool>("ForceDefault"sv, false)) {
 		RenX::default_ladder_database = &this->database;
+	}
 
 	return true;
 }
@@ -43,16 +43,15 @@ bool RenX_Ladder_Daily_TimePlugin::initialize()
 // Plugin instantiation and entry point.
 RenX_Ladder_Daily_TimePlugin pluginInstance;
 
-void OnPreUpdateLadder(RenX::LadderDatabase &database, RenX::Server &, const RenX::TeamType &)
-{
+void OnPreUpdateLadder(RenX::LadderDatabase &database, RenX::Server &, const RenX::TeamType &) {
 	time_t current_time = time(0);
 	tm *tm_ptr = gmtime(&current_time);
-	if (pluginInstance.last_sorted_day != tm_ptr->tm_wday)
+	if (pluginInstance.last_sorted_day != tm_ptr->tm_wday) {
 		database.erase();
+	}
 	pluginInstance.last_sorted_day = tm_ptr->tm_wday;
 }
 
-extern "C" JUPITER_EXPORT Jupiter::Plugin *getPlugin()
-{
+extern "C" JUPITER_EXPORT Jupiter::Plugin *getPlugin() {
 	return &pluginInstance;
 }

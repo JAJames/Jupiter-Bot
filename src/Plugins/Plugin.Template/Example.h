@@ -10,7 +10,6 @@
 #define _EXAMPLE_H_HEADER
 
 #include "Jupiter/Plugin.h"
-#include "Jupiter/Reference_String.h"
 
 class TPlugin : public Jupiter::Plugin
 {

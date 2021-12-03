@@ -20,7 +20,6 @@
 #define _RENX_EXTRALOGGING_H_HEADER
 
 #include "Jupiter/Plugin.h"
-#include "Jupiter/String.hpp"
 #include "RenX_Plugin.h"
 
 class RenX_ExtraLoggingPlugin : public RenX::Plugin

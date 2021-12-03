@@ -18,16 +18,16 @@
 
 #include "jessilib/word_split.hpp"
 #include "Jupiter/IRC_Client.h"
-#include "Jupiter/String.hpp"
+#include "Jupiter/Functions.h"
+#include "Jupiter/Readable_String.h"
 #include "ServerManager.h"
 #include "IRC_Bot.h"
 #include "ChannelRelay.h"
 
-using namespace Jupiter::literals;
 using namespace std::literals;
 
 bool ChannelRelayPlugin::initialize() {
-	std::string_view types_string = this->config.get("Types"_jrs);
+	std::string_view types_string = this->config.get("Types"sv);
 	std::vector<std::string_view> split_types = jessilib::word_split_view(types_string, WHITESPACE_SV);
 
 	if (split_types.empty()) {

@@ -23,7 +23,6 @@
 #include "RenX_PlayerInfo.h"
 #include "RenX_KickDupes.h"
 
-using namespace Jupiter::literals;
 using namespace std::literals;
 
 bool RenX_KickDupesPlugin::initialize() {
@@ -48,7 +47,7 @@ void RenX_KickDupesPlugin::RenX_OnPlayerIdentify(RenX::Server &in_server, const 
 		if (player.hwid == in_player.hwid && player.id != in_player.id) {
 			// Two players have the same HWID, but separate player IDs; kick the pre-existing player if there's too many.
 			if (++hits > s_tolerance) {
-				in_server.forceKickPlayer(player, "Ghost client detected"_jrs);
+				in_server.forceKickPlayer(player, "Ghost client detected"sv);
 			}
 		}
 	}

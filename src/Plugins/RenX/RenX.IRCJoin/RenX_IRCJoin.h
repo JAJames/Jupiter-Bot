@@ -20,7 +20,6 @@
 #define _RENX_IRCJOIN_H_HEADER
 
 #include "Jupiter/Plugin.h"
-#include "Jupiter/Reference_String.h"
 #include "RenX_Plugin.h"
 
 class RenX_IRCJoinPlugin : public RenX::Plugin
@@ -38,12 +37,12 @@ private:
 	bool partMsgAlways;
 	int minAccessPartMessage;
 	int maxAccessPartMessage;
-	Jupiter::StringS nameTag;
-	Jupiter::StringS chanTag;
-	Jupiter::StringS partReasonTag;
-	Jupiter::StringS joinFmt;
-	Jupiter::StringS partFmt;
-	Jupiter::StringS partFmtNoReason;
+	std::string nameTag;
+	std::string chanTag;
+	std::string partReasonTag;
+	std::string joinFmt;
+	std::string partFmt;
+	std::string partFmtNoReason;
 };
 
 #endif // _RENX_IRCJOIN_H_HEADER

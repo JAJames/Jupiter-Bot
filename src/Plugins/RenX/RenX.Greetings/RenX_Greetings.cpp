@@ -22,7 +22,6 @@
 #include "RenX_Server.h"
 #include "RenX_Tags.h"
 
-using namespace Jupiter::literals;
 using namespace std::literals;
 
 void RenX_GreetingsPlugin::RenX_OnJoin(RenX::Server &server, const RenX::PlayerInfo &player) {

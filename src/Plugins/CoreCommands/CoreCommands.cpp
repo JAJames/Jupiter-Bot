@@ -22,13 +22,12 @@
 #include "CoreCommands.h"
 #include "IRC_Bot.h"
 
-using namespace Jupiter::literals;
 using namespace std::literals;
 
 // Help Console Command
 
 HelpConsoleCommand::HelpConsoleCommand() {
-	this->addTrigger(STRING_LITERAL_AS_REFERENCE("help"));
+	this->addTrigger("help"sv);
 }
 
 void HelpConsoleCommand::trigger(std::string_view parameters) {
@@ -54,7 +53,7 @@ void HelpConsoleCommand::trigger(std::string_view parameters) {
 }
 
 std::string_view HelpConsoleCommand::getHelp(std::string_view ) {
-	static STRING_LITERAL_AS_NAMED_REFERENCE(defaultHelp, "Lists commands, or sends command-specific help. Syntax: help [command]");
+	static constexpr std::string_view defaultHelp = "Lists commands, or sends command-specific help. Syntax: help [command]"sv;
 	return defaultHelp;
 }
 
@@ -63,7 +62,7 @@ CONSOLE_COMMAND_INIT(HelpConsoleCommand)
 // Help IRC Command.
 
 void HelpIRCCommand::create() {
-	this->addTrigger("help"_jrs);
+	this->addTrigger("help"sv);
 }
 
 void HelpIRCCommand::trigger(IRC_Bot *source, std::string_view in_channel, std::string_view nick, std::string_view parameters) {
@@ -75,14 +74,14 @@ void HelpIRCCommand::trigger(IRC_Bot *source, std::string_view in_channel, std::
 			for (int i = 0; i <= access; i++) {
 				auto cmds = source->getAccessCommands(channel, i);
 				if (cmds.size() != 0) {
-					Jupiter::StringL triggers = source->getTriggers(cmds);
+					std::string triggers = source->getTriggers(cmds);
 					if (triggers.size() >= 0) {
 						source->sendNotice(nick, string_printf("Access level %d commands: %.*s", i, triggers.size(),
 							triggers.data()));
 					}
 				}
 			}
-			source->sendNotice(nick, "For command-specific help, use: help <command>"_jrs);
+			source->sendNotice(nick, "For command-specific help, use: help <command>"sv);
 		}
 		else {
 			auto command_split = jessilib::word_split_once_view(std::string_view{parameters}, WHITESPACE_SV);
@@ -91,19 +90,19 @@ void HelpIRCCommand::trigger(IRC_Bot *source, std::string_view in_channel, std::
 				int command_access = cmd->getAccessLevel(channel);
 
 				if (command_access < 0)
-					source->sendNotice(nick, "Error: Command disabled."_jrs);
+					source->sendNotice(nick, "Error: Command disabled."sv);
 				else if (access < command_access)
-					source->sendNotice(nick, "Access Denied."_jrs);
+					source->sendNotice(nick, "Access Denied."sv);
 				else
 					source->sendNotice(nick, cmd->getHelp(command_split.second));
 			}
-			else source->sendNotice(nick, "Error: Command not found."_jrs);
+			else source->sendNotice(nick, "Error: Command not found."sv);
 		}
 	}
 }
 
 std::string_view HelpIRCCommand::getHelp(std::string_view ) {
-	static STRING_LITERAL_AS_NAMED_REFERENCE(defaultHelp, "Syntax: help [command]");
+	static constexpr std::string_view defaultHelp = "Syntax: help [command]"sv;
 	return defaultHelp;
 }
 
@@ -112,12 +111,12 @@ IRC_COMMAND_INIT(HelpIRCCommand)
 // Version Command
 
 VersionGenericCommand::VersionGenericCommand() {
-	this->addTrigger(STRING_LITERAL_AS_REFERENCE("version"));
-	this->addTrigger(STRING_LITERAL_AS_REFERENCE("versioninfo"));
-	this->addTrigger(STRING_LITERAL_AS_REFERENCE("copyright"));
-	this->addTrigger(STRING_LITERAL_AS_REFERENCE("copyrightinfo"));
-	this->addTrigger(STRING_LITERAL_AS_REFERENCE("client"));
-	this->addTrigger(STRING_LITERAL_AS_REFERENCE("clientinfo"));
+	this->addTrigger("version"sv);
+	this->addTrigger("versioninfo"sv);
+	this->addTrigger("copyright"sv);
+	this->addTrigger("copyrightinfo"sv);
+	this->addTrigger("client"sv);
+	this->addTrigger("clientinfo"sv);
 }
 
 Jupiter::GenericCommand::ResponseLine *VersionGenericCommand::trigger(std::string_view parameters) {
@@ -127,7 +126,7 @@ Jupiter::GenericCommand::ResponseLine *VersionGenericCommand::trigger(std::strin
 }
 
 std::string_view VersionGenericCommand::getHelp(std::string_view ) {
-	static STRING_LITERAL_AS_NAMED_REFERENCE(defaultHelp, "Displays version and copyright information");
+	static constexpr std::string_view defaultHelp = "Displays version and copyright information"sv;
 	return defaultHelp;
 }
 
@@ -137,7 +136,7 @@ GENERIC_COMMAND_AS_CONSOLE_COMMAND(VersionGenericCommand)
 // Rehash Command
 
 RehashGenericCommand::RehashGenericCommand() {
-	this->addTrigger(STRING_LITERAL_AS_REFERENCE("rehash"));
+	this->addTrigger("rehash"sv);
 }
 
 Jupiter::GenericCommand::ResponseLine *RehashGenericCommand::trigger(std::string_view parameters) {
@@ -150,7 +149,7 @@ Jupiter::GenericCommand::ResponseLine *RehashGenericCommand::trigger(std::string
 }
 
 std::string_view RehashGenericCommand::getHelp(std::string_view ) {
-	static STRING_LITERAL_AS_NAMED_REFERENCE(defaultHelp, "Rehashes configuration data from a file. Syntax: rehash [file]");
+	static constexpr std::string_view defaultHelp = "Rehashes configuration data from a file. Syntax: rehash [file]"sv;
 	return defaultHelp;
 }
 

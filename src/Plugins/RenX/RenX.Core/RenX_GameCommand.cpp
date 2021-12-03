@@ -19,6 +19,8 @@
 #include "RenX_GameCommand.h"
 #include "RenX_Server.h"
 
+using namespace std::literals;
+
 std::vector<RenX::GameCommand*> g_GameMasterCommandList;
 std::vector<RenX::GameCommand*> &RenX::GameMasterCommandList = g_GameMasterCommandList;
 
@@ -82,14 +84,12 @@ void RenX::BasicGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *pla
 }
 
 std::string_view RenX::BasicGameCommand::getHelp(std::string_view ) {
-	static STRING_LITERAL_AS_NAMED_REFERENCE(defaultHelp, "Returns a basic text string.");
+	static constexpr std::string_view defaultHelp = "Returns a basic text string."sv;
 	if (m_help_message.empty()) {
 		return defaultHelp;
 	}
 
-	static Jupiter::ReferenceString please_delete_this_later_jessica;
-	please_delete_this_later_jessica = m_help_message;
-	return please_delete_this_later_jessica;
+	return m_help_message;
 }
 
 RenX::BasicGameCommand *RenX::BasicGameCommand::copy() {

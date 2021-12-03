@@ -16,14 +16,13 @@
  * Written by Jessica James <jessica.aj@outlook.com>
  */
 
-#include "Jupiter/String.hpp"
 #include "RenX_Core.h"
 #include "RenX_Server.h"
 #include "RenX_PlayerInfo.h"
 #include "RenX_Functions.h"
 #include "RenX_NicknameUUID.h"
 
-Jupiter::StringS calc_uuid(RenX::PlayerInfo &player)
+std::string calc_uuid(RenX::PlayerInfo &player)
 {
 	return player.name;
 }

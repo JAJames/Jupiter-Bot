@@ -21,8 +21,6 @@
 
 #include <list>
 #include "Jupiter/Plugin.h"
-#include "Jupiter/Reference_String.h"
-#include "Jupiter/String.hpp"
 #include "IRC_Command.h"
 #include "RenX_Plugin.h"
 #include "RenX_GameCommand.h"

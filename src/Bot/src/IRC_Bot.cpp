@@ -24,15 +24,15 @@
 #include "Jupiter/Config.h"
 #include "Jupiter/Plugin.h"
 #include "Jupiter/Functions.h"
+#include "Jupiter/Readable_String.h"
 #include "IRC_Bot.h"
 #include "IRC_Command.h"
 
-using namespace Jupiter::literals;
 using namespace std::literals;
 
 IRC_Bot::IRC_Bot(Jupiter::Config *in_primary_section, Jupiter::Config *in_secondary_section)
 	: Client(in_primary_section, in_secondary_section) {
-	m_commandPrefix = this->readConfigValue("Prefix"_jrs);
+	m_commandPrefix = this->readConfigValue("Prefix"sv);
 	
 	for (const auto& command : IRCMasterCommandList) {
 		m_commands.emplace_back(command->copy());
@@ -105,14 +105,14 @@ void IRC_Bot::setCommandAccessLevels(IRCCommand *in_command) {
 			return;
 		}
 
-		Jupiter::Config *section = in_section->getSection("Commands"_jrs);
+		Jupiter::Config *section = in_section->getSection("Commands"sv);
 		if (section == nullptr) {
 			return;
 		}
 
 		for (auto& entry : section->getTable()) {
 			size_t tmp_index;
-			Jupiter::ReferenceString tmp_key, tmp_sub_key;
+			std::string_view tmp_key, tmp_sub_key;
 			IRCCommand *command;
 
 			tmp_index = entry.first.find('.');
@@ -174,10 +174,10 @@ void IRC_Bot::OnChat(std::string_view in_channel, std::string_view nick, std::st
 					IRCCommand::active_server = this;
 					int command_access = cmd->getAccessLevel(channel);
 					if (command_access < 0) {
-						this->sendNotice(nick, "Error: Command disabled."_jrs);
+						this->sendNotice(nick, "Error: Command disabled."sv);
 					}
 					else if (Jupiter::IRC::Client::getAccessLevel(*channel, nick) < command_access) {
-						this->sendNotice(nick, "Access Denied."_jrs);
+						this->sendNotice(nick, "Access Denied."sv);
 					}
 					else {
 						cmd->trigger(this, in_channel, nick, message_split.second);

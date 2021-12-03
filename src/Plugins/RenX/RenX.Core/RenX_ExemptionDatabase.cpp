@@ -18,12 +18,13 @@
 
 #include <cstdio>
 #include "Jupiter/IRC_Client.h"
+#include "Jupiter/DataBuffer.h"
 #include "RenX_PlayerInfo.h"
 #include "RenX_ExemptionDatabase.h"
 #include "RenX_Core.h"
 #include "RenX_Plugin.h"
 
-using namespace Jupiter::literals;
+using namespace std::literals;
 
 RenX::ExemptionDatabase g_exemptionDatabase;
 RenX::ExemptionDatabase *RenX::exemptionDatabase = &g_exemptionDatabase;
@@ -40,7 +41,7 @@ void RenX::ExemptionDatabase::process_data(Jupiter::DataBuffer &buffer, FILE *fi
 	entry->steamid = buffer.pop<uint64_t>();
 	entry->ip = buffer.pop<uint32_t>();
 	entry->prefix_length = buffer.pop<uint8_t>();
-	entry->setter = buffer.pop<Jupiter::String_Strict, char>();
+	entry->setter = buffer.pop<std::string>();
 
 	m_entries.push_back(std::move(entry));
 }
@@ -167,7 +168,7 @@ const std::vector<std::unique_ptr<RenX::ExemptionDatabase::Entry>>& RenX::Exempt
 }
 
 bool RenX::ExemptionDatabase::initialize() {
-	m_filename = static_cast<std::string>(RenX::getCore()->getConfig().get("ExemptionDB"_jrs, "Exemptions.db"_jrs));
+	m_filename = RenX::getCore()->getConfig().get("ExemptionDB"sv, "Exemptions.db"s);
 	return this->process_file(m_filename);
 }
 

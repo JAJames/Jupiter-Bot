@@ -10,7 +10,6 @@
 #include <deque>
 #include <functional>
 #include "Jupiter/Plugin.h"
-#include "Jupiter/Reference_String.h"
 #include "Jupiter/TCPSocket.h"
 #include "RenX_Plugin.h"
 

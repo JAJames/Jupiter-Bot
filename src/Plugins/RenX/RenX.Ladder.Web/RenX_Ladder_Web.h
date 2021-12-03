@@ -20,14 +20,12 @@
 #define _RENX_LADDER_WEB_H
 
 #include "Jupiter/Plugin.h"
-#include "Jupiter/Reference_String.h"
-#include "Jupiter/String.hpp"
 #include "RenX_Plugin.h"
 
 class RenX_Ladder_WebPlugin : public RenX::Plugin
 {
 protected:
-	Jupiter::String generate_entry_table(RenX::LadderDatabase *db, uint8_t format, size_t index, size_t count);
+	std::string generate_entry_table(RenX::LadderDatabase *db, uint8_t format, size_t index, size_t count);
 
 public:
 	const uint8_t FLAG_INCLUDE_PAGE_HEADER = 0x01;
@@ -37,8 +35,8 @@ public:
 	const uint8_t FLAG_INCLUDE_SEARCH = 0x10;
 	const uint8_t FLAG_INCLUDE_SELECTOR = 0x20;
 
-	Jupiter::StringS header;
-	Jupiter::StringS footer;
+	std::string header;
+	std::string footer;
 	std::string* generate_ladder_page(RenX::LadderDatabase *db, uint8_t format, size_t start_index, size_t count, const Jupiter::HTTP::HTMLFormResponse& query_params);
 	std::string* generate_search_page(RenX::LadderDatabase *db, uint8_t format, size_t start_index, size_t count, std::string_view name, const Jupiter::HTTP::HTMLFormResponse& query_params);
 	std::string* generate_profile_page(RenX::LadderDatabase *db, uint8_t format, uint64_t steam_id, const Jupiter::HTTP::HTMLFormResponse& query_params);

@@ -19,12 +19,13 @@
 #include <ctime>
 #include <cstdio>
 #include "Jupiter/IRC_Client.h"
+#include "Jupiter/DataBuffer.h"
 #include "RenX_PlayerInfo.h"
 #include "RenX_BanDatabase.h"
 #include "RenX_Core.h"
 #include "RenX_Plugin.h"
 
-using namespace Jupiter::literals;
+using namespace std::literals;
 
 RenX::BanDatabase _banDatabase;
 RenX::BanDatabase *RenX::banDatabase = &_banDatabase;
@@ -54,15 +55,15 @@ void RenX::BanDatabase::process_data(Jupiter::DataBuffer &buffer, FILE *file, fp
 	entry->ip = buffer.pop<uint32_t>();
 	entry->prefix_length = buffer.pop<uint8_t>();
 	if (m_read_version >= 5U)
-		entry->hwid = buffer.pop<Jupiter::String_Strict, char>();
-	entry->rdns = buffer.pop<Jupiter::String_Strict, char>();
-	entry->name = buffer.pop<Jupiter::String_Strict, char>();
-	entry->banner = buffer.pop<Jupiter::String_Strict, char>();
-	entry->reason = buffer.pop<Jupiter::String_Strict, char>();
+		entry->hwid = buffer.pop<std::string>();
+	entry->rdns = buffer.pop<std::string>();
+	entry->name = buffer.pop<std::string>();
+	entry->banner = buffer.pop<std::string>();
+	entry->reason = buffer.pop<std::string>();
 
 	// Read varData from buffer to entry
 	for (size_t varData_entries = buffer.pop<size_t>(); varData_entries != 0; --varData_entries) {
-		entry->varData[buffer.pop<Jupiter::String_Strict, char>()] = buffer.pop<Jupiter::String_Strict, char>();
+		entry->varData[buffer.pop<std::string>()] = buffer.pop<std::string>();
 	}
 
 	m_entries.push_back(std::move(entry));
@@ -177,10 +178,12 @@ void RenX::BanDatabase::add(RenX::Server *server, const RenX::PlayerInfo &player
 	entry->reason = reason;
 
 	// add plugin data
-	Jupiter::String pluginData;
+	std::string pluginData;
 	for (Plugin* plugin : RenX::getCore()->getPlugins()) {
 		if (plugin->RenX_OnBan(*server, player, pluginData)) {
-			entry->varData[plugin->getName()] = pluginData;
+			if (!pluginData.empty()) {
+				entry->varData[plugin->getName()] = pluginData;
+			}
 		}
 	}
 
@@ -240,7 +243,7 @@ const std::vector<std::unique_ptr<RenX::BanDatabase::Entry>>& RenX::BanDatabase:
 }
 
 bool RenX::BanDatabase::initialize() {
-	m_filename = static_cast<std::string>(RenX::getCore()->getConfig().get("BanDB"_jrs, "Bans.db"_jrs));
+	m_filename = RenX::getCore()->getConfig().get("BanDB"sv, "Bans.db"s);
 	return this->process_file(m_filename);
 }
 

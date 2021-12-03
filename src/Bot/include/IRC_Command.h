@@ -26,7 +26,6 @@
 
 #include "Jupiter/GenericCommand.h"
 #include "Jupiter/IRC_Client.h"
-#include "Jupiter/String.hpp"
 #include "Jupiter_Bot.h"
 #include "ServerManager.h"
 #include "IRC_Bot.h"

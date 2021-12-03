@@ -25,14 +25,13 @@
 #include "RenX_Ladder_Web.h"
 
 using namespace std::literals;
-using namespace Jupiter::literals;
 
 bool RenX_Ladder_WebPlugin::initialize() {
-	RenX_Ladder_WebPlugin::ladder_page_name = this->config.get("LadderPageName"_jrs, ""_jrs);
-	RenX_Ladder_WebPlugin::search_page_name = this->config.get("SearchPageName"_jrs, "search"_jrs);
-	RenX_Ladder_WebPlugin::profile_page_name = this->config.get("ProfilePageName"_jrs, "profile"_jrs);
-	RenX_Ladder_WebPlugin::web_hostname = this->config.get("Hostname"_jrs, ""_jrs);
-	RenX_Ladder_WebPlugin::web_path = this->config.get("Path"_jrs, "/"_jrs);
+	RenX_Ladder_WebPlugin::ladder_page_name = this->config.get("LadderPageName"sv, ""sv);
+	RenX_Ladder_WebPlugin::search_page_name = this->config.get("SearchPageName"sv, "search"sv);
+	RenX_Ladder_WebPlugin::profile_page_name = this->config.get("ProfilePageName"sv, "profile"sv);
+	RenX_Ladder_WebPlugin::web_hostname = this->config.get("Hostname"sv, ""sv);
+	RenX_Ladder_WebPlugin::web_path = this->config.get("Path"sv, "/"sv);
 
 	this->init();
 
@@ -71,17 +70,17 @@ void RenX_Ladder_WebPlugin::init() {
 	FILE *file;
 	int chr;
 
-	RenX_Ladder_WebPlugin::web_header_filename = static_cast<std::string>(this->config.get("HeaderFilename"_jrs, "RenX.Ladder.Web.Header.html"_jrs));
-	RenX_Ladder_WebPlugin::web_footer_filename = static_cast<std::string>(this->config.get("FooterFilename"_jrs, "RenX.Ladder.Web.Footer.html"_jrs));
-	RenX_Ladder_WebPlugin::web_profile_filename = static_cast<std::string>(this->config.get("ProfileFilename"_jrs, "RenX.Ladder.Web.Profile.html"_jrs));
-	RenX_Ladder_WebPlugin::web_ladder_table_header_filename = static_cast<std::string>(this->config.get("LadderTableHeaderFilename"_jrs, "RenX.Ladder.Web.Ladder.Table.Header.html"_jrs));
-	RenX_Ladder_WebPlugin::web_ladder_table_footer_filename = static_cast<std::string>(this->config.get("LadderTableFooterFilename"_jrs, "RenX.Ladder.Web.Ladder.Table.Footer.html"_jrs));
-	RenX_Ladder_WebPlugin::entries_per_page = this->config.get<size_t>("EntriesPerPage"_jrs, 50);
-	RenX_Ladder_WebPlugin::min_search_name_length = this->config.get<size_t>("MinSearchNameLength"_jrs, 3);
+	RenX_Ladder_WebPlugin::web_header_filename = static_cast<std::string>(this->config.get("HeaderFilename"sv, "RenX.Ladder.Web.Header.html"sv));
+	RenX_Ladder_WebPlugin::web_footer_filename = static_cast<std::string>(this->config.get("FooterFilename"sv, "RenX.Ladder.Web.Footer.html"sv));
+	RenX_Ladder_WebPlugin::web_profile_filename = static_cast<std::string>(this->config.get("ProfileFilename"sv, "RenX.Ladder.Web.Profile.html"sv));
+	RenX_Ladder_WebPlugin::web_ladder_table_header_filename = static_cast<std::string>(this->config.get("LadderTableHeaderFilename"sv, "RenX.Ladder.Web.Ladder.Table.Header.html"sv));
+	RenX_Ladder_WebPlugin::web_ladder_table_footer_filename = static_cast<std::string>(this->config.get("LadderTableFooterFilename"sv, "RenX.Ladder.Web.Ladder.Table.Footer.html"sv));
+	RenX_Ladder_WebPlugin::entries_per_page = this->config.get<size_t>("EntriesPerPage"sv, 50);
+	RenX_Ladder_WebPlugin::min_search_name_length = this->config.get<size_t>("MinSearchNameLength"sv, 3);
 
-	RenX_Ladder_WebPlugin::entry_table_row = this->config.get("EntryTableRow"_jrs, R"html(<tr><td class="data-col-a">{RANK}</td><td class="data-col-b"><a href="profile?id={STEAM}&database={OBJECT}">{NAME}</a></td><td class="data-col-a">{SCORE}</td><td class="data-col-b">{SPM}</td><td class="data-col-a">{GAMES}</td><td class="data-col-b">{WINS}</td><td class="data-col-a">{LOSSES}</td><td class="data-col-b">{WLR}</td><td class="data-col-a">{KILLS}</td><td class="data-col-b">{DEATHS}</td><td class="data-col-a">{KDR}</td></tr>)html"_jrs);
-	RenX_Ladder_WebPlugin::entry_profile_previous = this->config.get("EntryProfilePrevious"_jrs, R"html(<form class="profile-previous"><input type="hidden" name="database" value="{OBJECT}"/><input type="hidden" name="id" value="{WEAPON}"/><input class="profile-previous-submit" type="submit" value="&#x21A9 Previous" /></form>)html"_jrs);
-	RenX_Ladder_WebPlugin::entry_profile_next = this->config.get("EntryProfileNext"_jrs, R"html(<form class="profile-next"><input type="hidden" name="database" value="{OBJECT}"/><input type="hidden" name="id" value="{VSTEAM}"/><input class="profile-next-submit" type="submit" value="Next &#x21AA" /></form>)html"_jrs);
+	RenX_Ladder_WebPlugin::entry_table_row = this->config.get("EntryTableRow"sv, R"html(<tr><td class="data-col-a">{RANK}</td><td class="data-col-b"><a href="profile?id={STEAM}&database={OBJECT}">{NAME}</a></td><td class="data-col-a">{SCORE}</td><td class="data-col-b">{SPM}</td><td class="data-col-a">{GAMES}</td><td class="data-col-b">{WINS}</td><td class="data-col-a">{LOSSES}</td><td class="data-col-b">{WLR}</td><td class="data-col-a">{KILLS}</td><td class="data-col-b">{DEATHS}</td><td class="data-col-a">{KDR}</td></tr>)html"sv);
+	RenX_Ladder_WebPlugin::entry_profile_previous = this->config.get("EntryProfilePrevious"sv, R"html(<form class="profile-previous"><input type="hidden" name="database" value="{OBJECT}"/><input type="hidden" name="id" value="{WEAPON}"/><input class="profile-previous-submit" type="submit" value="&#x21A9 Previous" /></form>)html"sv);
+	RenX_Ladder_WebPlugin::entry_profile_next = this->config.get("EntryProfileNext"sv, R"html(<form class="profile-next"><input type="hidden" name="database" value="{OBJECT}"/><input type="hidden" name="id" value="{VSTEAM}"/><input class="profile-next-submit" type="submit" value="Next &#x21AA" /></form>)html"sv);
 
 	RenX::sanitizeTags(RenX_Ladder_WebPlugin::entry_table_row);
 	RenX::sanitizeTags(RenX_Ladder_WebPlugin::entry_profile_previous);
@@ -155,30 +154,30 @@ int RenX_Ladder_WebPlugin::OnRehash() {
 RenX_Ladder_WebPlugin pluginInstance;
 
 /** Search bar */
-Jupiter::String generate_search(RenX::LadderDatabase *db) {
+std::string generate_search(RenX::LadderDatabase *db) {
 	std::string result;
-	result = R"database-search(<form action="search" method="get" class="leaderboard-search"><input type="text" class="leaderboard-search-input" name="name" size="30" placeholder="Player name" value=""/>)database-search"_jrs;
+	result = R"database-search(<form action="search" method="get" class="leaderboard-search"><input type="text" class="leaderboard-search-input" name="name" size="30" placeholder="Player name" value=""/>)database-search"sv;
 
 	if (db != nullptr && db != RenX::default_ladder_database) {
-		result += R"database-search(<input type="hidden" name="database" value=")database-search"_jrs;
+		result += R"database-search(<input type="hidden" name="database" value=")database-search"sv;
 		result += db->getName();
-		result += R"database-search("/>)database-search"_jrs;
+		result += R"database-search("/>)database-search"sv;
 	}
-	result += R"database-search(<input type="submit"  class="leaderboard-button" value="Search"/></form>)database-search"_jrs;
+	result += R"database-search(<input type="submit"  class="leaderboard-button" value="Search"/></form>)database-search"sv;
 	return result;
 }
 
 /** Database selector */
-Jupiter::String generate_database_selector(RenX::LadderDatabase *db, const Jupiter::HTTP::HTMLFormResponse& query_params) {
+std::string generate_database_selector(RenX::LadderDatabase *db, const Jupiter::HTTP::HTMLFormResponse& query_params) {
 	std::string result;
 
-	result = R"database-select(<form method="get" class="database-select-form"><select name="database" class="database-select">)database-select"_jrs;
+	result = R"database-select(<form method="get" class="database-select-form"><select name="database" class="database-select">)database-select"sv;
 	if (db != nullptr) {
-		result += "<option value=\""_jrs;
+		result += "<option value=\""sv;
 		result += db->getName();
-		result += "\">"_jrs;
+		result += "\">"sv;
 		result += db->getName();
-		result += "</option>"_jrs;
+		result += "</option>"sv;
 	}
 	else if (RenX::ladder_databases.size() == 0) {
 		return {};
@@ -186,64 +185,64 @@ Jupiter::String generate_database_selector(RenX::LadderDatabase *db, const Jupit
 
 	for (const auto& database : RenX::ladder_databases) {
 		if (database != db) {
-			result += "<option value=\""_jrs;
+			result += "<option value=\""sv;
 			result += database->getName();
-			result += "\">"_jrs;
+			result += "\">"sv;
 			result += database->getName();
-			result += "</option>"_jrs;
+			result += "</option>"sv;
 		}
 	}
 
 	auto value = query_params.tableFind("id"sv);
 	if (value != query_params.table.end()) {
-		result += R"html(<input type="hidden" name="id" value=")html"_jrs;
+		result += R"html(<input type="hidden" name="id" value=")html"sv;
 		result += value->second;
-		result += R"html("/>)html"_jrs;
+		result += R"html("/>)html"sv;
 	}
 
-	result += R"database-select(</select><input type="submit" class="leaderboard-button" value="Go"/></form>)database-select"_jrs;
+	result += R"database-select(</select><input type="submit" class="leaderboard-button" value="Go"/></form>)database-select"sv;
 	return result;
 }
 
 /** Page buttons */
-Jupiter::String generate_page_buttons(RenX::LadderDatabase *db) {
+std::string generate_page_buttons(RenX::LadderDatabase *db) {
 	std::string result;
 	size_t entry_count = db->getEntries();
 	size_t entries_per_page = pluginInstance.getEntriesPerPage();
 
-	result = R"html(<div id="leaderboard-paging">)html"_jrs;
+	result = R"html(<div id="leaderboard-paging">)html"sv;
 
 	size_t entry_index = 0, page_index = 1;
 	while (entry_index < entry_count) {
 		// Add page
-		result += R"html(<span class="leaderboard-page"><a href="?start=)html"_jrs;
+		result += R"html(<span class="leaderboard-page"><a href="?start=)html"sv;
 		result += string_printf("%u", entry_index);
 		if (db != RenX::default_ladder_database) {
-			result += "&database="_jrs;
+			result += "&database="sv;
 			result += db->getName();
 		}
-		result += R"html(">)html"_jrs;
+		result += R"html(">)html"sv;
 		result += string_printf("%u", page_index);
-		result += R"html(</a></span>)html"_jrs;
+		result += R"html(</a></span>)html"sv;
 
 		// Increment indexes
 		entry_index += entries_per_page;
 		++page_index;
 	}
 
-	result += R"html(</div>)html"_jrs;
+	result += R"html(</div>)html"sv;
 	return result;
 }
 
 /** Ladder page */
 
-Jupiter::String RenX_Ladder_WebPlugin::generate_entry_table(RenX::LadderDatabase *db, uint8_t format, size_t index, size_t count) {
+std::string RenX_Ladder_WebPlugin::generate_entry_table(RenX::LadderDatabase *db, uint8_t format, size_t index, size_t count) {
 	if (db->getEntries() == 0) { // No ladder data
-		return Jupiter::String("Error: No ladder data"_jrs);
+		return std::string("Error: No ladder data"sv);
 	}
 
 	if (index >= db->getEntries() || count == 0) { // Invalid entry range
-		return Jupiter::String("Error: Invalid range"_jrs);
+		return std::string("Error: Invalid range"sv);
 	}
 
 	if (index + count > db->getEntries()) { // Invalid entry range; use valid portion of range
@@ -259,7 +258,8 @@ Jupiter::String RenX_Ladder_WebPlugin::generate_entry_table(RenX::LadderDatabase
 	}
 
 	// table header
-	Jupiter::String result(2048);
+	std::string result;
+	result.reserve(ladder_table_header.size() + ladder_table_footer.size() + (count * entry_table_row.size()) + 256);
 
 	if ((format & this->FLAG_INCLUDE_DATA_HEADER) != 0) { // Data Header
 		result = RenX_Ladder_WebPlugin::ladder_table_header;
@@ -326,7 +326,7 @@ std::string* RenX_Ladder_WebPlugin::generate_search_page(RenX::LadderDatabase *d
 		result->append(generate_database_selector(db, query_params));
 
 	if (db->getEntries() == 0) { // No ladder data
-		result->append("Error: No ladder data"_jrs);
+		result->append("Error: No ladder data"sv);
 
 		if ((format & this->FLAG_INCLUDE_PAGE_FOOTER) != 0) // Footer
 			result->append(RenX_Ladder_WebPlugin::footer);
@@ -375,7 +375,7 @@ std::string* RenX_Ladder_WebPlugin::generate_profile_page(RenX::LadderDatabase *
 		result->append(generate_database_selector(db, query_params));
 
 	if (db->getEntries() == 0) { // No ladder data
-		result->append("Error: No ladder data"_jrs);
+		result->append("Error: No ladder data"sv);
 
 		if ((format & this->FLAG_INCLUDE_PAGE_FOOTER) != 0) // Footer
 			result->append(RenX_Ladder_WebPlugin::footer);
@@ -391,14 +391,14 @@ std::string* RenX_Ladder_WebPlugin::generate_profile_page(RenX::LadderDatabase *
 	}
 
 	if (entry == nullptr) {
-		result->append("Error: Player not found"_jrs);
+		result->append("Error: Player not found"sv);
 	}
 	else {
 		std::string profile_data(RenX_Ladder_WebPlugin::entry_profile);
 		RenX::processTags(profile_data, *entry);
 		result->append(profile_data);
 
-		result->append("<div class=\"profile-navigation\">"_jrs);
+		result->append("<div class=\"profile-navigation\">"sv);
 		if (entry->prev != nullptr)
 		{
 			profile_data = RenX_Ladder_WebPlugin::entry_profile_previous;
@@ -415,7 +415,7 @@ std::string* RenX_Ladder_WebPlugin::generate_profile_page(RenX::LadderDatabase *
 			RenX::processTags(profile_data, *entry->next);
 			result->append(profile_data);
 		}
-		result->append("</div>"_jrs);
+		result->append("</div>"sv);
 	}
 
 	if ((format & this->FLAG_INCLUDE_PAGE_FOOTER) != 0) // Footer
@@ -431,10 +431,10 @@ std::string* generate_no_db_page(const Jupiter::HTTP::HTMLFormResponse& query_pa
 	if (RenX::ladder_databases.size() != 0) {
 		result->append(generate_search(nullptr));
 		result->append(generate_database_selector(nullptr, query_params));
-		result->append("Error: No such database exists"_jrs);
+		result->append("Error: No such database exists"sv);
 	}
 	else {
-		result->append("Error: No ladder databases loaded"_jrs);
+		result->append("Error: No ladder databases loaded"sv);
 	}
 	result->append(pluginInstance.footer);
 	return result;
@@ -511,8 +511,8 @@ std::string* handle_profile_page(std::string_view query_string) {
 
 	if (html_form_response.table.size() != 0)
 	{
-		format = html_form_response.tableGetCast<uint8_t>("format"_jrs, format);
-		steam_id = html_form_response.tableGetCast<uint64_t>("id"_jrs, steam_id);
+		format = html_form_response.tableGetCast<uint8_t>("format"sv, format);
+		steam_id = html_form_response.tableGetCast<uint64_t>("id"sv, steam_id);
 
 		std::string_view db_name = html_form_response.tableGet("database"sv, {});
 		if (!db_name.empty()) {

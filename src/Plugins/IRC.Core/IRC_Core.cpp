@@ -18,11 +18,12 @@
 
 #include "jessilib/word_split.hpp"
 #include "Jupiter/GenericCommand.h"
+#include "Jupiter/Functions.h"
 #include "ServerManager.h"
 #include "IRC_Command.h"
 #include "IRC_Core.h"
 
-using namespace Jupiter::literals;
+using namespace std::literals;
 
 IRCCorePlugin::~IRCCorePlugin() {
 	// Destroy all IRC connections on plugin unload
@@ -33,7 +34,7 @@ IRCCorePlugin::~IRCCorePlugin() {
 
 bool IRCCorePlugin::initialize() {
 	// TODO: initialize() isn't bringing in generic commands from already-loaded plugins
-	std::string_view serverList = this->config.get("Servers"_jrs);
+	std::string_view serverList = this->config.get("Servers"sv);
 	if (!serverList.empty()) {
 		serverManager->setConfig(this->config);
 

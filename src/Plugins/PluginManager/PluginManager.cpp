@@ -23,15 +23,14 @@
 #include "jessilib/unicode.hpp"
 #include "PluginManager.h"
 
-using namespace Jupiter::literals;
 using namespace std::literals;
 
 // Plugin Generic Command
 PluginGenericCommand::PluginGenericCommand() {
-	this->addTrigger(STRING_LITERAL_AS_REFERENCE("plugin"));
-	this->addTrigger(STRING_LITERAL_AS_REFERENCE("plugins"));
-	this->addTrigger(STRING_LITERAL_AS_REFERENCE("module"));
-	this->addTrigger(STRING_LITERAL_AS_REFERENCE("modules"));
+	this->addTrigger("plugin"sv);
+	this->addTrigger("plugins"sv);
+	this->addTrigger("module"sv);
+	this->addTrigger("modules"sv);
 }
 
 Jupiter::GenericCommand::ResponseLine *PluginGenericCommand::trigger(std::string_view parameters) {
@@ -61,23 +60,23 @@ Jupiter::GenericCommand::ResponseLine *PluginGenericCommand::trigger(std::string
 	auto split_params = jessilib::word_split_once_view(parameters_view, WHITESPACE_SV);
 	if (jessilib::starts_withi(parameters_view, "load "sv)) {
 		if (Jupiter::Plugin::load(split_params.second) == nullptr) {
-			return result->set("Error: Failed to load plugin."_jrs, GenericCommand::DisplayType::PublicError);
+			return result->set("Error: Failed to load plugin."sv, GenericCommand::DisplayType::PublicError);
 		}
 
-		return result->set("Plugin successfully loaded."_jrs, GenericCommand::DisplayType::PublicSuccess);
+		return result->set("Plugin successfully loaded."sv, GenericCommand::DisplayType::PublicSuccess);
 	}
 
 	if (jessilib::starts_withi(parameters_view, "unload "sv)) {
 		auto plugin = find_plugin(split_params.second);
 		if (plugin == nullptr) {
-			return result->set("Error: Plugin does not exist."_jrs, GenericCommand::DisplayType::PublicError);
+			return result->set("Error: Plugin does not exist."sv, GenericCommand::DisplayType::PublicError);
 		}
 
 		if (!Jupiter::Plugin::free(plugin)) {
-			return result->set("Error: Failed to unload plugin."_jrs, GenericCommand::DisplayType::PublicError);
+			return result->set("Error: Failed to unload plugin."sv, GenericCommand::DisplayType::PublicError);
 		}
 
-		return result->set("Plugin successfully unloaded."_jrs, GenericCommand::DisplayType::PublicSuccess);
+		return result->set("Plugin successfully unloaded."sv, GenericCommand::DisplayType::PublicSuccess);
 	}
 
 	if (jessilib::starts_withi(parameters_view, "reload"sv)) {
@@ -88,45 +87,45 @@ Jupiter::GenericCommand::ResponseLine *PluginGenericCommand::trigger(std::string
 				Jupiter::reinitialize_plugins();
 			}, true);
 
-			return result->set("Triggering full plugin reload..."_jrs, GenericCommand::DisplayType::PublicSuccess);
+			return result->set("Triggering full plugin reload..."sv, GenericCommand::DisplayType::PublicSuccess);
 		}
 		else {
 			// A specific plugin
 			auto plugin = find_plugin(split_params.second);
 			if (plugin == nullptr) {
-				return result->set("Error: Plugin does not exist."_jrs, GenericCommand::DisplayType::PublicError);
+				return result->set("Error: Plugin does not exist."sv, GenericCommand::DisplayType::PublicError);
 			}
 
 			std::string_view plugin_name = plugin->getName();
 			if (!Jupiter::Plugin::free(plugin)) {
-				return result->set("Error: Failed to unload plugin."_jrs, GenericCommand::DisplayType::PublicError);
+				return result->set("Error: Failed to unload plugin."sv, GenericCommand::DisplayType::PublicError);
 			}
 
 			if (Jupiter::Plugin::load(plugin_name) == nullptr) {
-				return result->set("Error: Failed to load plugin."_jrs, GenericCommand::DisplayType::PublicError);
+				return result->set("Error: Failed to load plugin."sv, GenericCommand::DisplayType::PublicError);
 			}
 
-			return result->set("Plugin successfully reloaded."_jrs, GenericCommand::DisplayType::PublicSuccess);
+			return result->set("Plugin successfully reloaded."sv, GenericCommand::DisplayType::PublicSuccess);
 		}
 	}
-	return result->set("Error: Invalid Syntax. Syntax: plugin {[list], <load> <plugin>, <unload> <plugin>, <reload> [all|plugin]}"_jrs, GenericCommand::DisplayType::PrivateError);
+	return result->set("Error: Invalid Syntax. Syntax: plugin {[list], <load> <plugin>, <unload> <plugin>, <reload> [all|plugin]}"sv, GenericCommand::DisplayType::PrivateError);
 }
 
 std::string_view PluginGenericCommand::getHelp(std::string_view parameters) {
-	static STRING_LITERAL_AS_NAMED_REFERENCE(loadHelp, "Loads a plugin by file name. Do not include a file extension. Syntax: plugin load <plugin>");
-	static STRING_LITERAL_AS_NAMED_REFERENCE(unloadHelp, "Unloads a plugin by name. Syntax: plugin unload <plugin>");
-	static STRING_LITERAL_AS_NAMED_REFERENCE(listHelp, "Lists all of the plugins currently loaded. Syntax: plugin [list]");
-	static STRING_LITERAL_AS_NAMED_REFERENCE(defaultHelp, "Manages plugins. Syntax: plugin {[list], <load> <plugin>, <unload> <plugin>, <reload> [plugin]}");
+	static constexpr std::string_view loadHelp = "Loads a plugin by file name. Do not include a file extension. Syntax: plugin load <plugin>"sv;
+	static constexpr std::string_view unloadHelp = "Unloads a plugin by name. Syntax: plugin unload <plugin>"sv;
+	static constexpr std::string_view listHelp = "Lists all of the plugins currently loaded. Syntax: plugin [list]"sv;
+	static constexpr std::string_view defaultHelp = "Manages plugins. Syntax: plugin {[list], <load> <plugin>, <unload> <plugin>, <reload> [plugin]}"sv;
 
-	if (jessilib::equalsi(parameters, STRING_LITERAL_AS_REFERENCE("load"))) {
+	if (jessilib::equalsi(parameters, "load"sv)) {
 		return loadHelp;
 	}
 
-	if (jessilib::equalsi(parameters, STRING_LITERAL_AS_REFERENCE("unload"))) {
+	if (jessilib::equalsi(parameters, "unload"sv)) {
 		return unloadHelp;
 	}
 
-	if (jessilib::equalsi(parameters, STRING_LITERAL_AS_REFERENCE("list"))) {
+	if (jessilib::equalsi(parameters, "list"sv)) {
 		return listHelp;
 	}
 

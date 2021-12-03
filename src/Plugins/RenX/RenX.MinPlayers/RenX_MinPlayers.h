@@ -20,7 +20,6 @@
 #define _RENX_MINPLAYERS_H_HEADER
 
 #include "Jupiter/Plugin.h"
-#include "Jupiter/Reference_String.h"
 #include "RenX_Plugin.h"
 
 class RenX_MinPlayersPlugin : public RenX::Plugin

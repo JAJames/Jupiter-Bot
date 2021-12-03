@@ -24,97 +24,97 @@
 #include "RenX_Server.h"
 #include "RenX_Tags.h"
 
-using namespace Jupiter::literals;
+using namespace std::literals;
 
 bool RenX_LoggingPlugin::initialize()
 {
-	RenX_LoggingPlugin::muteOwnExecute = this->config.get<bool>("MuteOwnExecute"_jrs, true);
-	RenX_LoggingPlugin::playerRDNSPublic = this->config.get<bool>("PlayerRDNSPublic"_jrs, false);
-	RenX_LoggingPlugin::playerIdentifyPublic = this->config.get<bool>("PlayerIdentifyPublic"_jrs, false);
-	RenX_LoggingPlugin::joinPublic = this->config.get<bool>("JoinPublic"_jrs, true);
-	RenX_LoggingPlugin::partPublic = this->config.get<bool>("PartPublic"_jrs, true);
-	RenX_LoggingPlugin::kickPublic = this->config.get<bool>("KickPublic"_jrs, true);
-	RenX_LoggingPlugin::nameChangePublic = this->config.get<bool>("NameChangePublic"_jrs, true);
-	RenX_LoggingPlugin::teamChangePublic = this->config.get<bool>("TeamChangePublic"_jrs, true);
-	RenX_LoggingPlugin::speedHackPublic = this->config.get<bool>("SpeedHackPublic"_jrs, false);
-	RenX_LoggingPlugin::playerPublic = this->config.get<bool>("PlayerPublic"_jrs, false);
-	RenX_LoggingPlugin::chatPublic = this->config.get<bool>("ChatPublic"_jrs, true);
-	RenX_LoggingPlugin::teamChatPublic = this->config.get<bool>("TeamChatPublic"_jrs, false);
-	RenX_LoggingPlugin::radioChatPublic = this->config.get<bool>("RadioChatPublic"_jrs, false);
-	RenX_LoggingPlugin::hostChatPublic = this->config.get<bool>("HostChatPublic"_jrs, true);
-	RenX_LoggingPlugin::hostPagePublic = this->config.get<bool>("HostPagePublic"_jrs, false);
-	RenX_LoggingPlugin::adminMessagePublic = this->config.get<bool>("AdminMessagePublic"_jrs, true);
-	RenX_LoggingPlugin::adminPMessagePublic = this->config.get<bool>("AdminPagePublic"_jrs, false);
-	RenX_LoggingPlugin::otherChatPublic = this->config.get<bool>("OtherChatPublic"_jrs, false);
-	RenX_LoggingPlugin::deployPublic = this->config.get<bool>("DeployPublic"_jrs, true);
-	RenX_LoggingPlugin::mineDeployPublic = this->config.get<bool>("MineDeployPublic"_jrs, false);
-	RenX_LoggingPlugin::overMinePublic = this->config.get<bool>("OverMinePublic"_jrs, false);
-	RenX_LoggingPlugin::disarmPublic = this->config.get<bool>("DisarmPublic"_jrs, true);
-	RenX_LoggingPlugin::mineDisarmPublic = this->config.get<bool>("MineDisarmPublic"_jrs, false);
-	RenX_LoggingPlugin::explodePublic = this->config.get<bool>("ExplodePublic"_jrs, false);
-	RenX_LoggingPlugin::suicidePublic = this->config.get<bool>("SuicidePublic"_jrs, true);
-	RenX_LoggingPlugin::killPublic = this->config.get<bool>("KillPublic"_jrs, true);
-	RenX_LoggingPlugin::diePublic = this->config.get<bool>("DiePublic"_jrs, true);
-	RenX_LoggingPlugin::destroyPublic = this->config.get<bool>("DestroyPublic"_jrs, true);
-	RenX_LoggingPlugin::capturePublic = this->config.get<bool>("CapturePublic"_jrs, true);
-	RenX_LoggingPlugin::neutralizePublic = this->config.get<bool>("NeutralizePublic"_jrs, true);
-	RenX_LoggingPlugin::characterPurchasePublic = this->config.get<bool>("CharacterPurchasePublic"_jrs, false);
-	RenX_LoggingPlugin::itemPurchasePublic = this->config.get<bool>("ItemPurchasePublic"_jrs, false);
-	RenX_LoggingPlugin::weaponPurchasePublic = this->config.get<bool>("WeaponPurchasePublic"_jrs, false);
-	RenX_LoggingPlugin::refillPurchasePublic = this->config.get<bool>("RefillPurchasePublic"_jrs, false);
-	RenX_LoggingPlugin::vehiclePurchasePublic = this->config.get<bool>("VehiclePurchasePublic"_jrs, false);
-	RenX_LoggingPlugin::vehicleSpawnPublic = this->config.get<bool>("VehicleSpawnPublic"_jrs, true);
-	RenX_LoggingPlugin::spawnPublic = this->config.get<bool>("SpawnPublic"_jrs, true);
-	RenX_LoggingPlugin::botJoinPublic = this->config.get<bool>("BotJoinPublic"_jrs, true);
-	RenX_LoggingPlugin::vehicleCratePublic = this->config.get<bool>("VehicleCratePublic"_jrs, false);
-	RenX_LoggingPlugin::TSVehicleCratePublic = this->config.get<bool>("TSVehicleCratePublic"_jrs, RenX_LoggingPlugin::vehicleCratePublic);
-	RenX_LoggingPlugin::RAVehicleCratePublic = this->config.get<bool>("RAVehicleCratePublic"_jrs, RenX_LoggingPlugin::vehicleCratePublic);
-	RenX_LoggingPlugin::deathCratePublic = this->config.get<bool>("DeathCratePublic"_jrs, true);
-	RenX_LoggingPlugin::moneyCratePublic = this->config.get<bool>("MoneyCratePublic"_jrs, false);
-	RenX_LoggingPlugin::characterCratePublic = this->config.get<bool>("CharacterCratePublic"_jrs, false);
-	RenX_LoggingPlugin::spyCratePublic = this->config.get<bool>("SpyCratePublic"_jrs, false);
-	RenX_LoggingPlugin::refillCratePublic = this->config.get<bool>("RefillCratePublic"_jrs, false);
-	RenX_LoggingPlugin::timeBombCratePublic = this->config.get<bool>("TimeBombCratePublic"_jrs, false);
-	RenX_LoggingPlugin::speedCratePublic = this->config.get<bool>("SpeedCratePublic"_jrs, false);
-	RenX_LoggingPlugin::nukeCratePublic = this->config.get<bool>("NukeCratePublic"_jrs, true);
-	RenX_LoggingPlugin::abductionCratePublic = this->config.get<bool>("AbductionCratePublic"_jrs, true);
-	RenX_LoggingPlugin::unspecifiedCratePublic = this->config.get<bool>("UnspecifiedCratePublic"_jrs, false);
-	RenX_LoggingPlugin::otherCratePublic = this->config.get<bool>("OtherCratePublic"_jrs, false);
-	RenX_LoggingPlugin::stealPublic = this->config.get<bool>("StealPublic"_jrs, true);
-	RenX_LoggingPlugin::donatePublic = this->config.get<bool>("DonatePublic"_jrs, true);
-	RenX_LoggingPlugin::gamePublic = this->config.get<bool>("GamePublic"_jrs, true);
-	RenX_LoggingPlugin::gameOverPublic = this->config.get<bool>("GameOverPublic"_jrs, true);
-	RenX_LoggingPlugin::executePublic = this->config.get<bool>("ExecutePublic"_jrs, false);
-	RenX_LoggingPlugin::playerCommandPublic = this->config.get<bool>("PlayerCommandPublic"_jrs, false);
-	RenX_LoggingPlugin::subscribePublic = this->config.get<bool>("SubscribePublic"_jrs, false);
-	RenX_LoggingPlugin::RCONPublic = this->config.get<bool>("RCONPublic"_jrs, false);
-	RenX_LoggingPlugin::adminLoginPublic = this->config.get<bool>("AdminLoginPublic"_jrs, true);
-	RenX_LoggingPlugin::adminGrantPublic = this->config.get<bool>("AdminGrantPublic"_jrs, true);
-	RenX_LoggingPlugin::adminLogoutPublic = this->config.get<bool>("AdminLogoutPublic"_jrs, true);
-	RenX_LoggingPlugin::adminPublic = this->config.get<bool>("AdminPublic"_jrs, false);
-	RenX_LoggingPlugin::voteCallPublic = this->config.get<bool>("VoteCallPublic"_jrs, true);
-	RenX_LoggingPlugin::voteOverPublic = this->config.get<bool>("VoteOverPublic"_jrs, true);
-	RenX_LoggingPlugin::voteCancelPublic = this->config.get<bool>("VoteCancelPublic"_jrs, true);
-	RenX_LoggingPlugin::votePublic = this->config.get<bool>("VotePublic"_jrs, false);
-	RenX_LoggingPlugin::mapChangePublic = this->config.get<bool>("MapChangePublic"_jrs, true);
-	RenX_LoggingPlugin::mapLoadPublic = this->config.get<bool>("MapLoadPublic"_jrs, true);
-	RenX_LoggingPlugin::mapStartPublic = this->config.get<bool>("MapStartPublic"_jrs, true);
-	RenX_LoggingPlugin::mapPublic = this->config.get<bool>("MapPublic"_jrs, false);
-	RenX_LoggingPlugin::demoRecordPublic = this->config.get<bool>("DemoRecordPublic"_jrs, true);
-	RenX_LoggingPlugin::demoRecordStopPublic = this->config.get<bool>("DemoRecordStopPublic"_jrs, true);
-	RenX_LoggingPlugin::demoPublic = this->config.get<bool>("DemoPublic"_jrs, false);
-	RenX_LoggingPlugin::logPublic = this->config.get<bool>("LogPublic"_jrs, false);
-	RenX_LoggingPlugin::commandPublic = this->config.get<bool>("CommandPublic"_jrs, false);
-	RenX_LoggingPlugin::errorPublic = this->config.get<bool>("ErrorPublic"_jrs, false);
-	RenX_LoggingPlugin::versionPublic = this->config.get<bool>("VersionPublic"_jrs, true);
-	RenX_LoggingPlugin::authorizedPublic = this->config.get<bool>("AuthorizedPublic"_jrs, true);
-	RenX_LoggingPlugin::otherPublic = this->config.get<bool>("OtherPublic"_jrs, false);
+	RenX_LoggingPlugin::muteOwnExecute = this->config.get<bool>("MuteOwnExecute"sv, true);
+	RenX_LoggingPlugin::playerRDNSPublic = this->config.get<bool>("PlayerRDNSPublic"sv, false);
+	RenX_LoggingPlugin::playerIdentifyPublic = this->config.get<bool>("PlayerIdentifyPublic"sv, false);
+	RenX_LoggingPlugin::joinPublic = this->config.get<bool>("JoinPublic"sv, true);
+	RenX_LoggingPlugin::partPublic = this->config.get<bool>("PartPublic"sv, true);
+	RenX_LoggingPlugin::kickPublic = this->config.get<bool>("KickPublic"sv, true);
+	RenX_LoggingPlugin::nameChangePublic = this->config.get<bool>("NameChangePublic"sv, true);
+	RenX_LoggingPlugin::teamChangePublic = this->config.get<bool>("TeamChangePublic"sv, true);
+	RenX_LoggingPlugin::speedHackPublic = this->config.get<bool>("SpeedHackPublic"sv, false);
+	RenX_LoggingPlugin::playerPublic = this->config.get<bool>("PlayerPublic"sv, false);
+	RenX_LoggingPlugin::chatPublic = this->config.get<bool>("ChatPublic"sv, true);
+	RenX_LoggingPlugin::teamChatPublic = this->config.get<bool>("TeamChatPublic"sv, false);
+	RenX_LoggingPlugin::radioChatPublic = this->config.get<bool>("RadioChatPublic"sv, false);
+	RenX_LoggingPlugin::hostChatPublic = this->config.get<bool>("HostChatPublic"sv, true);
+	RenX_LoggingPlugin::hostPagePublic = this->config.get<bool>("HostPagePublic"sv, false);
+	RenX_LoggingPlugin::adminMessagePublic = this->config.get<bool>("AdminMessagePublic"sv, true);
+	RenX_LoggingPlugin::adminPMessagePublic = this->config.get<bool>("AdminPagePublic"sv, false);
+	RenX_LoggingPlugin::otherChatPublic = this->config.get<bool>("OtherChatPublic"sv, false);
+	RenX_LoggingPlugin::deployPublic = this->config.get<bool>("DeployPublic"sv, true);
+	RenX_LoggingPlugin::mineDeployPublic = this->config.get<bool>("MineDeployPublic"sv, false);
+	RenX_LoggingPlugin::overMinePublic = this->config.get<bool>("OverMinePublic"sv, false);
+	RenX_LoggingPlugin::disarmPublic = this->config.get<bool>("DisarmPublic"sv, true);
+	RenX_LoggingPlugin::mineDisarmPublic = this->config.get<bool>("MineDisarmPublic"sv, false);
+	RenX_LoggingPlugin::explodePublic = this->config.get<bool>("ExplodePublic"sv, false);
+	RenX_LoggingPlugin::suicidePublic = this->config.get<bool>("SuicidePublic"sv, true);
+	RenX_LoggingPlugin::killPublic = this->config.get<bool>("KillPublic"sv, true);
+	RenX_LoggingPlugin::diePublic = this->config.get<bool>("DiePublic"sv, true);
+	RenX_LoggingPlugin::destroyPublic = this->config.get<bool>("DestroyPublic"sv, true);
+	RenX_LoggingPlugin::capturePublic = this->config.get<bool>("CapturePublic"sv, true);
+	RenX_LoggingPlugin::neutralizePublic = this->config.get<bool>("NeutralizePublic"sv, true);
+	RenX_LoggingPlugin::characterPurchasePublic = this->config.get<bool>("CharacterPurchasePublic"sv, false);
+	RenX_LoggingPlugin::itemPurchasePublic = this->config.get<bool>("ItemPurchasePublic"sv, false);
+	RenX_LoggingPlugin::weaponPurchasePublic = this->config.get<bool>("WeaponPurchasePublic"sv, false);
+	RenX_LoggingPlugin::refillPurchasePublic = this->config.get<bool>("RefillPurchasePublic"sv, false);
+	RenX_LoggingPlugin::vehiclePurchasePublic = this->config.get<bool>("VehiclePurchasePublic"sv, false);
+	RenX_LoggingPlugin::vehicleSpawnPublic = this->config.get<bool>("VehicleSpawnPublic"sv, true);
+	RenX_LoggingPlugin::spawnPublic = this->config.get<bool>("SpawnPublic"sv, true);
+	RenX_LoggingPlugin::botJoinPublic = this->config.get<bool>("BotJoinPublic"sv, true);
+	RenX_LoggingPlugin::vehicleCratePublic = this->config.get<bool>("VehicleCratePublic"sv, false);
+	RenX_LoggingPlugin::TSVehicleCratePublic = this->config.get<bool>("TSVehicleCratePublic"sv, RenX_LoggingPlugin::vehicleCratePublic);
+	RenX_LoggingPlugin::RAVehicleCratePublic = this->config.get<bool>("RAVehicleCratePublic"sv, RenX_LoggingPlugin::vehicleCratePublic);
+	RenX_LoggingPlugin::deathCratePublic = this->config.get<bool>("DeathCratePublic"sv, true);
+	RenX_LoggingPlugin::moneyCratePublic = this->config.get<bool>("MoneyCratePublic"sv, false);
+	RenX_LoggingPlugin::characterCratePublic = this->config.get<bool>("CharacterCratePublic"sv, false);
+	RenX_LoggingPlugin::spyCratePublic = this->config.get<bool>("SpyCratePublic"sv, false);
+	RenX_LoggingPlugin::refillCratePublic = this->config.get<bool>("RefillCratePublic"sv, false);
+	RenX_LoggingPlugin::timeBombCratePublic = this->config.get<bool>("TimeBombCratePublic"sv, false);
+	RenX_LoggingPlugin::speedCratePublic = this->config.get<bool>("SpeedCratePublic"sv, false);
+	RenX_LoggingPlugin::nukeCratePublic = this->config.get<bool>("NukeCratePublic"sv, true);
+	RenX_LoggingPlugin::abductionCratePublic = this->config.get<bool>("AbductionCratePublic"sv, true);
+	RenX_LoggingPlugin::unspecifiedCratePublic = this->config.get<bool>("UnspecifiedCratePublic"sv, false);
+	RenX_LoggingPlugin::otherCratePublic = this->config.get<bool>("OtherCratePublic"sv, false);
+	RenX_LoggingPlugin::stealPublic = this->config.get<bool>("StealPublic"sv, true);
+	RenX_LoggingPlugin::donatePublic = this->config.get<bool>("DonatePublic"sv, true);
+	RenX_LoggingPlugin::gamePublic = this->config.get<bool>("GamePublic"sv, true);
+	RenX_LoggingPlugin::gameOverPublic = this->config.get<bool>("GameOverPublic"sv, true);
+	RenX_LoggingPlugin::executePublic = this->config.get<bool>("ExecutePublic"sv, false);
+	RenX_LoggingPlugin::playerCommandPublic = this->config.get<bool>("PlayerCommandPublic"sv, false);
+	RenX_LoggingPlugin::subscribePublic = this->config.get<bool>("SubscribePublic"sv, false);
+	RenX_LoggingPlugin::RCONPublic = this->config.get<bool>("RCONPublic"sv, false);
+	RenX_LoggingPlugin::adminLoginPublic = this->config.get<bool>("AdminLoginPublic"sv, true);
+	RenX_LoggingPlugin::adminGrantPublic = this->config.get<bool>("AdminGrantPublic"sv, true);
+	RenX_LoggingPlugin::adminLogoutPublic = this->config.get<bool>("AdminLogoutPublic"sv, true);
+	RenX_LoggingPlugin::adminPublic = this->config.get<bool>("AdminPublic"sv, false);
+	RenX_LoggingPlugin::voteCallPublic = this->config.get<bool>("VoteCallPublic"sv, true);
+	RenX_LoggingPlugin::voteOverPublic = this->config.get<bool>("VoteOverPublic"sv, true);
+	RenX_LoggingPlugin::voteCancelPublic = this->config.get<bool>("VoteCancelPublic"sv, true);
+	RenX_LoggingPlugin::votePublic = this->config.get<bool>("VotePublic"sv, false);
+	RenX_LoggingPlugin::mapChangePublic = this->config.get<bool>("MapChangePublic"sv, true);
+	RenX_LoggingPlugin::mapLoadPublic = this->config.get<bool>("MapLoadPublic"sv, true);
+	RenX_LoggingPlugin::mapStartPublic = this->config.get<bool>("MapStartPublic"sv, true);
+	RenX_LoggingPlugin::mapPublic = this->config.get<bool>("MapPublic"sv, false);
+	RenX_LoggingPlugin::demoRecordPublic = this->config.get<bool>("DemoRecordPublic"sv, true);
+	RenX_LoggingPlugin::demoRecordStopPublic = this->config.get<bool>("DemoRecordStopPublic"sv, true);
+	RenX_LoggingPlugin::demoPublic = this->config.get<bool>("DemoPublic"sv, false);
+	RenX_LoggingPlugin::logPublic = this->config.get<bool>("LogPublic"sv, false);
+	RenX_LoggingPlugin::commandPublic = this->config.get<bool>("CommandPublic"sv, false);
+	RenX_LoggingPlugin::errorPublic = this->config.get<bool>("ErrorPublic"sv, false);
+	RenX_LoggingPlugin::versionPublic = this->config.get<bool>("VersionPublic"sv, true);
+	RenX_LoggingPlugin::authorizedPublic = this->config.get<bool>("AuthorizedPublic"sv, true);
+	RenX_LoggingPlugin::otherPublic = this->config.get<bool>("OtherPublic"sv, false);
 
 	/** Event formats */
-	RenX_LoggingPlugin::playerRDNSFmt = this->config.get("PlayerRDNSFormat"_jrs,
-		""_jrs);
+	RenX_LoggingPlugin::playerRDNSFmt = this->config.get("PlayerRDNSFormat"sv,
+		""sv);
 
-	RenX_LoggingPlugin::playerIdentifyFmt = this->config.get("PlayerIdentifyFormat"_jrs,
+	RenX_LoggingPlugin::playerIdentifyFmt = this->config.get("PlayerIdentifyFormat"sv,
 		string_printf(IRCCOLOR "12[Join] " IRCBOLD "%.*s" IRCBOLD " (" IRCBOLD "%.*s" IRCBOLD ") joined the game fighting for the %.*s from " IRCBOLD "%.*s" IRCBOLD " (" IRCBOLD "%.*s" IRCBOLD ") with HWID " IRCBOLD "%.*s" IRCBOLD ".", RenX::tags->nameTag.size(),
 			RenX::tags->nameTag.data(), RenX::tags->steamTag.size(),
 			RenX::tags->steamTag.data(), RenX::tags->teamLongTag.size(),
@@ -123,148 +123,148 @@ bool RenX_LoggingPlugin::initialize()
 			RenX::tags->rdnsTag.data(), RenX::tags->hwidTag.size(),
 			RenX::tags->hwidTag.data()));
 
-	RenX_LoggingPlugin::joinPublicFmt = this->config.get("JoinPublicFormat"_jrs,
+	RenX_LoggingPlugin::joinPublicFmt = this->config.get("JoinPublicFormat"sv,
 		string_printf(IRCCOLOR "12[Join] " IRCBOLD "%.*s" IRCBOLD " joined the game fighting for the %.*s!", RenX::tags->nameTag.size(),
 			RenX::tags->nameTag.data(), RenX::tags->teamLongTag.size(),
 			RenX::tags->teamLongTag.data()));
 
-	RenX_LoggingPlugin::joinAdminFmt = this->config.get("JoinAdminFormat"_jrs,
-		""_jrs);
+	RenX_LoggingPlugin::joinAdminFmt = this->config.get("JoinAdminFormat"sv,
+		""sv);
 
-	RenX_LoggingPlugin::joinNoSteamAdminFmt = this->config.get("JoinNoSteamAdminFormat"_jrs,
-		""_jrs);
+	RenX_LoggingPlugin::joinNoSteamAdminFmt = this->config.get("JoinNoSteamAdminFormat"sv,
+		""sv);
 
-	RenX_LoggingPlugin::partFmt = this->config.get("PartFormat"_jrs,
+	RenX_LoggingPlugin::partFmt = this->config.get("PartFormat"sv,
 		string_printf(IRCCOLOR "12[Part] " IRCBOLD "%.*s" IRCBOLD " left the %.*s.", RenX::tags->nameTag.size(),
 			RenX::tags->nameTag.data(), RenX::tags->teamLongTag.size(),
 			RenX::tags->teamLongTag.data()));
 
-	RenX_LoggingPlugin::kickFmt = this->config.get("KickFormat"_jrs,
+	RenX_LoggingPlugin::kickFmt = this->config.get("KickFormat"sv,
 		string_printf(IRCCOLOR "04[Kick] " IRCBOLD "%.*s" IRCCOLOR IRCBOLD " was " IRCBOLD IRCCOLOR "04kicked" IRCCOLOR IRCBOLD " (" IRCCOLOR "04%.*s" IRCCOLOR ")", RenX::tags->nameTag.size(),
 			RenX::tags->nameTag.data(), RenX::tags->messageTag.size(),
 			RenX::tags->messageTag.data()));
 
-	RenX_LoggingPlugin::playerExecuteFmt = this->config.get("PlayerExecuteFormat"_jrs,
+	RenX_LoggingPlugin::playerExecuteFmt = this->config.get("PlayerExecuteFormat"sv,
 		string_printf("%.*s" IRCCOLOR "07 executed: %.*s", RenX::tags->nameTag.size(),
 			RenX::tags->nameTag.data(), RenX::tags->messageTag.size(),
 			RenX::tags->messageTag.data()));
 
-	RenX_LoggingPlugin::playerCommandSuccessFmt = this->config.get("PlayerCommandSuccessFormat"_jrs,
+	RenX_LoggingPlugin::playerCommandSuccessFmt = this->config.get("PlayerCommandSuccessFormat"sv,
 		string_printf("%.*s" IRCCOLOR ": " IRCCOLOR "10%.*s", RenX::tags->nameTag.size(),
 			RenX::tags->nameTag.data(), RenX::tags->messageTag.size(),
 			RenX::tags->messageTag.data()));
 
-	RenX_LoggingPlugin::playerCommandFailFmt = this->config.get("PlayerCommandFailFormat"_jrs, ""_jss);
+	RenX_LoggingPlugin::playerCommandFailFmt = this->config.get("PlayerCommandFailFormat"sv, ""s);
 
-	RenX_LoggingPlugin::playerFmt = this->config.get("PlayerFormat"_jrs,
+	RenX_LoggingPlugin::playerFmt = this->config.get("PlayerFormat"sv,
 		string_printf(IRCCOLOR "12[Player]" IRCCOLOR " %.*s", RenX::tags->messageTag.size(),
 			RenX::tags->messageTag.data()));
 
-	RenX_LoggingPlugin::nameChangeFmt = this->config.get("NameChangeFormat"_jrs,
+	RenX_LoggingPlugin::nameChangeFmt = this->config.get("NameChangeFormat"sv,
 		string_printf(IRCBOLD "%.*s" IRCBOLD " changed their name to " IRCBOLD "%.*s" IRCBOLD ".", RenX::tags->nameTag.size(),
 			RenX::tags->nameTag.data(), RenX::tags->newNameTag.size(),
 			RenX::tags->newNameTag.data()));
 
-	RenX_LoggingPlugin::teamChangeFmt = this->config.get("TeamChangeFormat"_jrs,
+	RenX_LoggingPlugin::teamChangeFmt = this->config.get("TeamChangeFormat"sv,
 		string_printf("%.*s" IRCCOLOR " switched teams!", RenX::tags->nameTag.size(),
 			RenX::tags->nameTag.data()));
 
-	RenX_LoggingPlugin::speedHackFmt = this->config.get("SpeedHackFormat"_jrs,
+	RenX_LoggingPlugin::speedHackFmt = this->config.get("SpeedHackFormat"sv,
 		string_printf(IRCCOLOR "04[SpeedHack] " IRCBOLD "%.*s" IRCBOLD " has thrown a Speed Hack warning!", RenX::tags->nameTag.size(),
 			RenX::tags->nameTag.data()));
 
-	RenX_LoggingPlugin::chatFmt = this->config.get("ChatFormat"_jrs,
+	RenX_LoggingPlugin::chatFmt = this->config.get("ChatFormat"sv,
 		string_printf(IRCBOLD "%.*s" IRCCOLOR IRCBOLD ": %.*s", RenX::tags->nameTag.size(),
 			RenX::tags->nameTag.data(), RenX::tags->messageTag.size(),
 			RenX::tags->messageTag.data()));
 
-	RenX_LoggingPlugin::teamChatFmt = this->config.get("TeamChatFormat"_jrs,
+	RenX_LoggingPlugin::teamChatFmt = this->config.get("TeamChatFormat"sv,
 		string_printf(IRCBOLD "%.*s" IRCBOLD ": %.*s", RenX::tags->nameTag.size(), RenX::tags->nameTag.data(), RenX::tags->messageTag.size(),
 			RenX::tags->messageTag.data()));
 
-	RenX_LoggingPlugin::radioChatFmt = this->config.get("RadioChatFormat"_jrs,
+	RenX_LoggingPlugin::radioChatFmt = this->config.get("RadioChatFormat"sv,
 		string_printf(IRCBOLD "%.*s" IRCBOLD ": \x1D%.*s", RenX::tags->nameTag.size(),
 			RenX::tags->nameTag.data(), RenX::tags->messageTag.size(),
 			RenX::tags->messageTag.data()));
 
-	RenX_LoggingPlugin::hostChatFmt = this->config.get("HostChatFormat"_jrs,
+	RenX_LoggingPlugin::hostChatFmt = this->config.get("HostChatFormat"sv,
 		string_printf(IRCCOLOR "12Host" IRCCOLOR "0: %.*s", RenX::tags->messageTag.size(),
 			RenX::tags->messageTag.data()));
 
-	RenX_LoggingPlugin::hostPageFmt = this->config.get("HostPageFormat"_jrs,
+	RenX_LoggingPlugin::hostPageFmt = this->config.get("HostPageFormat"sv,
 		string_printf(IRCCOLOR "12(Host -> %.*s): %.*s", RenX::tags->rawNameTag.size(),
 			RenX::tags->rawNameTag.data(), RenX::tags->messageTag.size(),
 			RenX::tags->messageTag.data()));
 
-	RenX_LoggingPlugin::adminMsgFmt = this->config.get("AdminMsgFormat"_jrs,
+	RenX_LoggingPlugin::adminMsgFmt = this->config.get("AdminMsgFormat"sv,
 		string_printf(IRCCOLOR "10%.*s: %.*s", RenX::tags->rawNameTag.size(), RenX::tags->rawNameTag.data(), RenX::tags->messageTag.size(),
 			RenX::tags->messageTag.data()));
 
-	RenX_LoggingPlugin::warnMsgFmt = this->config.get("WarnMsgFormat"_jrs,
+	RenX_LoggingPlugin::warnMsgFmt = this->config.get("WarnMsgFormat"sv,
 		string_printf(IRCCOLOR "07%.*s: %.*s", RenX::tags->rawNameTag.size(), RenX::tags->rawNameTag.data(), RenX::tags->messageTag.size(),
 			RenX::tags->messageTag.data()));
 
-	RenX_LoggingPlugin::pAdminMsgFmt = this->config.get("PAdminMsgFormat"_jrs,
+	RenX_LoggingPlugin::pAdminMsgFmt = this->config.get("PAdminMsgFormat"sv,
 		string_printf(IRCCOLOR "10(%.*s -> %.*s): %.*s", RenX::tags->rawNameTag.size(),
 			RenX::tags->rawNameTag.data(), RenX::tags->victimRawNameTag.size(),
 			RenX::tags->victimRawNameTag.data(), RenX::tags->messageTag.size(),
 			RenX::tags->messageTag.data()));
 
-	RenX_LoggingPlugin::pWarnMsgFmt = this->config.get("PWarnMsgFormat"_jrs,
+	RenX_LoggingPlugin::pWarnMsgFmt = this->config.get("PWarnMsgFormat"sv,
 		string_printf(IRCCOLOR "07(%.*s -> %.*s): %.*s", RenX::tags->rawNameTag.size(),
 			RenX::tags->rawNameTag.data(), RenX::tags->victimRawNameTag.size(),
 			RenX::tags->victimRawNameTag.data(), RenX::tags->messageTag.size(),
 			RenX::tags->messageTag.data()));
 
-	RenX_LoggingPlugin::otherChatFmt = this->config.get("OtherChatFormat"_jrs,
+	RenX_LoggingPlugin::otherChatFmt = this->config.get("OtherChatFormat"sv,
 		string_printf(IRCCOLOR "06[Other Chat]" IRCCOLOR " %.*s", RenX::tags->messageTag.size(),
 			RenX::tags->messageTag.data()));
 
-	RenX_LoggingPlugin::deployFmt = this->config.get("DeployFormat"_jrs,
+	RenX_LoggingPlugin::deployFmt = this->config.get("DeployFormat"sv,
 		string_printf(IRCBOLD "%.*s" IRCCOLOR IRCBOLD " deployed a " IRCBOLD IRCCOLOR "12%.*s" IRCBOLD, RenX::tags->nameTag.size(),
 			RenX::tags->nameTag.data(), RenX::tags->objectTag.size(),
 			RenX::tags->objectTag.data()));
 
-	RenX_LoggingPlugin::mineDeployFmt = this->config.get("MineDeployFormat"_jrs,
+	RenX_LoggingPlugin::mineDeployFmt = this->config.get("MineDeployFormat"sv,
 		RenX_LoggingPlugin::deployFmt);
 
-	RenX_LoggingPlugin::overMineFmt = this->config.get("OverMineFormat"_jrs,
+	RenX_LoggingPlugin::overMineFmt = this->config.get("OverMineFormat"sv,
 		string_printf(IRCBOLD "%.*s" IRCCOLOR IRCBOLD " is " IRCCOLOR "04over-mining" IRCCOLOR ": " IRCBOLD IRCCOLOR "12%.*s" IRCBOLD, RenX::tags->nameTag.size(),
 			RenX::tags->nameTag.data(), RenX::tags->objectTag.size(),
 			RenX::tags->objectTag.data()));
 
-	RenX_LoggingPlugin::disarmFmt = this->config.get("DisarmFormat"_jrs,
+	RenX_LoggingPlugin::disarmFmt = this->config.get("DisarmFormat"sv,
 		string_printf(IRCBOLD "%.*s" IRCCOLOR IRCBOLD " disarmed %.*s" IRCBOLD IRCCOLOR "'s " IRCCOLOR "12%.*s" IRCBOLD, RenX::tags->nameTag.size(),
 			RenX::tags->nameTag.data(), RenX::tags->victimNameTag.size(),
 			RenX::tags->victimNameTag.data(), RenX::tags->objectTag.size(),
 			RenX::tags->objectTag.data()));
 
-	RenX_LoggingPlugin::mineDisarmFmt = this->config.get("MineDisarmFormat"_jrs,
+	RenX_LoggingPlugin::mineDisarmFmt = this->config.get("MineDisarmFormat"sv,
 		RenX_LoggingPlugin::disarmFmt);
 
-	RenX_LoggingPlugin::disarmNoOwnerFmt = this->config.get("DisarmNoOwnerFormat"_jrs,
+	RenX_LoggingPlugin::disarmNoOwnerFmt = this->config.get("DisarmNoOwnerFormat"sv,
 		string_printf(IRCBOLD "%.*s" IRCBOLD " disarmed a " IRCBOLD "%.*s" IRCBOLD, RenX::tags->nameTag.size(),
 			RenX::tags->nameTag.data(), RenX::tags->objectTag.size(),
 			RenX::tags->objectTag.data()));
 
-	RenX_LoggingPlugin::mineDisarmNoOwnerFmt = this->config.get("MineDisarmNoOwnerFormat"_jrs,
+	RenX_LoggingPlugin::mineDisarmNoOwnerFmt = this->config.get("MineDisarmNoOwnerFormat"sv,
 		RenX_LoggingPlugin::disarmNoOwnerFmt);
 
-	RenX_LoggingPlugin::explodeFmt = this->config.get("ExplodeFormat"_jrs,
+	RenX_LoggingPlugin::explodeFmt = this->config.get("ExplodeFormat"sv,
 		string_printf("%.*s" IRCCOLOR " detonated a " IRCCOLOR "07%.*s" IRCCOLOR ".", RenX::tags->nameTag.size(),
 			RenX::tags->nameTag.data(), RenX::tags->weaponTag.size(),
 			RenX::tags->weaponTag.data()));
 
-	RenX_LoggingPlugin::explodeNoOwnerFmt = this->config.get("ExplodeNoOwnerFormat"_jrs,
+	RenX_LoggingPlugin::explodeNoOwnerFmt = this->config.get("ExplodeNoOwnerFormat"sv,
 		string_printf("A " IRCCOLOR "07%.*s" IRCCOLOR " detonated.", RenX::tags->weaponTag.size(),
 			RenX::tags->weaponTag.data()));
 
-	RenX_LoggingPlugin::suicideFmt = this->config.get("SuicideFormat"_jrs,
+	RenX_LoggingPlugin::suicideFmt = this->config.get("SuicideFormat"sv,
 		string_printf("%.*s" IRCCOLOR " suicided (" IRCCOLOR "12%.*s" IRCCOLOR ").", RenX::tags->nameTag.size(),
 			RenX::tags->nameTag.data(), RenX::tags->weaponTag.size(),
 			RenX::tags->weaponTag.data()));
 
-	RenX_LoggingPlugin::killFmt = this->config.get("KillFormat"_jrs,
+	RenX_LoggingPlugin::killFmt = this->config.get("KillFormat"sv,
 		string_printf("%.*s" IRCCOLOR " killed %.*s" IRCCOLOR " (" IRCCOLOR "%.*s%.*s/%.*s" IRCCOLOR " vs " IRCCOLOR "%.*s%.*s" IRCCOLOR ").", RenX::tags->nameTag.size(),
 			RenX::tags->nameTag.data(), RenX::tags->victimNameTag.size(),
 			RenX::tags->victimNameTag.data(), RenX::tags->teamColorTag.size(),
@@ -274,32 +274,32 @@ bool RenX_LoggingPlugin::initialize()
 			RenX::tags->victimTeamColorTag.data(), RenX::tags->victimCharacterTag.size(),
 			RenX::tags->victimCharacterTag.data()));
 
-	RenX_LoggingPlugin::killFmt2 = this->config.get("KillFormat2"_jrs,
+	RenX_LoggingPlugin::killFmt2 = this->config.get("KillFormat2"sv,
 		string_printf(IRCCOLOR "%.*s%.*s" IRCCOLOR " killed %.*s" IRCCOLOR " (" IRCCOLOR "12%.*s" IRCCOLOR ").", RenX::tags->teamColorTag.size(),
 			RenX::tags->teamColorTag.data(), RenX::tags->nameTag.size(),
 			RenX::tags->nameTag.data(), RenX::tags->victimNameTag.size(),
 			RenX::tags->victimNameTag.data(), RenX::tags->weaponTag.size(),
 			RenX::tags->weaponTag.data()));
 
-	RenX_LoggingPlugin::dieFmt = this->config.get("DieFormat"_jrs,
+	RenX_LoggingPlugin::dieFmt = this->config.get("DieFormat"sv,
 		string_printf("%.*s" IRCCOLOR " died (" IRCCOLOR "12%.*s" IRCCOLOR ").", RenX::tags->nameTag.size(),
 			RenX::tags->nameTag.data(), RenX::tags->weaponTag.size(),
 			RenX::tags->weaponTag.data()));
 
-	RenX_LoggingPlugin::dieFmt2 = this->config.get("DieFormat2"_jrs,
+	RenX_LoggingPlugin::dieFmt2 = this->config.get("DieFormat2"sv,
 		string_printf(IRCCOLOR "%.*s%.*s" IRCCOLOR " died (" IRCCOLOR "12%.*s" IRCCOLOR ").", RenX::tags->teamColorTag.size(),
 			RenX::tags->teamColorTag.data(), RenX::tags->nameTag.size(),
 			RenX::tags->nameTag.data(), RenX::tags->weaponTag.size(),
 			RenX::tags->weaponTag.data()));
 
-	RenX_LoggingPlugin::destroyBuildingFmt = this->config.get("DestroyBuildingFormat"_jrs,
+	RenX_LoggingPlugin::destroyBuildingFmt = this->config.get("DestroyBuildingFormat"sv,
 		string_printf("%.*s" IRCCOLOR " destroyed the " IRCCOLOR "%.*s%.*s" IRCCOLOR " (" IRCCOLOR "12%.*s" IRCCOLOR ").", RenX::tags->nameTag.size(),
 			RenX::tags->nameTag.data(), RenX::tags->victimTeamColorTag.size(),
 			RenX::tags->victimTeamColorTag.data(), RenX::tags->objectTag.size(),
 			RenX::tags->objectTag.data(), RenX::tags->weaponTag.size(),
 			RenX::tags->weaponTag.data()));
 	
-	RenX_LoggingPlugin::destroyBuildingFmt2 = this->config.get("DestroyBuildingFormat2"_jrs,
+	RenX_LoggingPlugin::destroyBuildingFmt2 = this->config.get("DestroyBuildingFormat2"sv,
 		string_printf(IRCCOLOR "%.*s%.*s" IRCCOLOR " destroyed the " IRCCOLOR "%.*s%.*s" IRCCOLOR " (" IRCCOLOR "12%.*s" IRCCOLOR ").", RenX::tags->teamColorTag.size(),
 			RenX::tags->teamColorTag.data(), RenX::tags->nameTag.size(),
 			RenX::tags->nameTag.data(), RenX::tags->victimTeamColorTag.size(),
@@ -307,14 +307,14 @@ bool RenX_LoggingPlugin::initialize()
 			RenX::tags->objectTag.data(), RenX::tags->weaponTag.size(),
 			RenX::tags->weaponTag.data()));
 
-	RenX_LoggingPlugin::destroyDefenceFmt = this->config.get("DestroyDefenceFormat"_jrs,
+	RenX_LoggingPlugin::destroyDefenceFmt = this->config.get("DestroyDefenceFormat"sv,
 		string_printf("%.*s" IRCCOLOR " destroyed a " IRCCOLOR "%.*s%.*s" IRCCOLOR " (" IRCCOLOR "12%.*s" IRCCOLOR ").", RenX::tags->nameTag.size(),
 			RenX::tags->nameTag.data(), RenX::tags->victimTeamColorTag.size(),
 			RenX::tags->victimTeamColorTag.data(), RenX::tags->objectTag.size(),
 			RenX::tags->objectTag.data(), RenX::tags->weaponTag.size(),
 			RenX::tags->weaponTag.data()));
 	
-	RenX_LoggingPlugin::destroyDefenceFmt2 = this->config.get("DestroyDefenceFormat2"_jrs,
+	RenX_LoggingPlugin::destroyDefenceFmt2 = this->config.get("DestroyDefenceFormat2"sv,
 		string_printf(IRCCOLOR "%.*s%.*s" IRCCOLOR " destroyed a " IRCCOLOR "%.*s%.*s" IRCCOLOR " (" IRCCOLOR "12%.*s" IRCCOLOR ").", RenX::tags->teamColorTag.size(),
 			RenX::tags->teamColorTag.data(), RenX::tags->nameTag.size(),
 			RenX::tags->nameTag.data(), RenX::tags->victimTeamColorTag.size(),
@@ -322,14 +322,14 @@ bool RenX_LoggingPlugin::initialize()
 			RenX::tags->objectTag.data(), RenX::tags->weaponTag.size(),
 			RenX::tags->weaponTag.data()));
 
-	RenX_LoggingPlugin::destroyVehicleFmt = this->config.get("DestroyVehicleFormat"_jrs,
+	RenX_LoggingPlugin::destroyVehicleFmt = this->config.get("DestroyVehicleFormat"sv,
 		string_printf("%.*s" IRCCOLOR " destroyed a " IRCCOLOR "%.*s%.*s" IRCCOLOR " (" IRCCOLOR "12%.*s" IRCCOLOR ").", RenX::tags->nameTag.size(),
 			RenX::tags->nameTag.data(), RenX::tags->victimTeamColorTag.size(),
 			RenX::tags->victimTeamColorTag.data(), RenX::tags->objectTag.size(),
 			RenX::tags->objectTag.data(), RenX::tags->weaponTag.size(),
 			RenX::tags->weaponTag.data()));
 
-	RenX_LoggingPlugin::destroyVehicleFmt2 = this->config.get("DestroyVehicleFormat2"_jrs,
+	RenX_LoggingPlugin::destroyVehicleFmt2 = this->config.get("DestroyVehicleFormat2"sv,
 		string_printf(IRCCOLOR "%.*s%.*s" IRCCOLOR " destroyed a " IRCCOLOR "%.*s%.*s" IRCCOLOR " (" IRCCOLOR "12%.*s" IRCCOLOR ").", RenX::tags->teamColorTag.size(),
 			RenX::tags->teamColorTag.data(), RenX::tags->nameTag.size(),
 			RenX::tags->nameTag.data(), RenX::tags->victimTeamColorTag.size(),
@@ -337,158 +337,158 @@ bool RenX_LoggingPlugin::initialize()
 			RenX::tags->objectTag.data(), RenX::tags->weaponTag.size(),
 			RenX::tags->weaponTag.data()));
 
-	RenX_LoggingPlugin::captureFmt = this->config.get("CaptureFormat"_jrs,
+	RenX_LoggingPlugin::captureFmt = this->config.get("CaptureFormat"sv,
 		string_printf(IRCBOLD "%.*s" IRCCOLOR IRCBOLD " captured the " IRCBOLD IRCCOLOR "%.*s%.*s" IRCCOLOR IRCBOLD ".", RenX::tags->nameTag.size(),
 			RenX::tags->nameTag.data(), RenX::tags->victimTeamColorTag.size(),
 			RenX::tags->victimTeamColorTag.data(), RenX::tags->objectTag.size(),
 			RenX::tags->objectTag.data()));
 
-	RenX_LoggingPlugin::neutralizeFmt = this->config.get("NeutralizeFormat"_jrs,
+	RenX_LoggingPlugin::neutralizeFmt = this->config.get("NeutralizeFormat"sv,
 		string_printf(IRCBOLD "%.*s" IRCCOLOR IRCBOLD " neutralized the " IRCBOLD IRCCOLOR "%.*s%.*s" IRCCOLOR IRCBOLD ".", RenX::tags->nameTag.size(),
 			RenX::tags->nameTag.data(), RenX::tags->victimTeamColorTag.size(),
 			RenX::tags->victimTeamColorTag.data(), RenX::tags->objectTag.size(),
 			RenX::tags->objectTag.data()));
 
-	RenX_LoggingPlugin::characterPurchaseFmt = this->config.get("CharacterPurchaseFormat"_jrs,
+	RenX_LoggingPlugin::characterPurchaseFmt = this->config.get("CharacterPurchaseFormat"sv,
 		string_printf(IRCBOLD "%.*s" IRCCOLOR IRCBOLD " purchased a " IRCBOLD IRCCOLOR "%.*s%.*s" IRCCOLOR IRCBOLD ".", RenX::tags->nameTag.size(),
 			RenX::tags->nameTag.data(), RenX::tags->teamColorTag.size(),
 			RenX::tags->teamColorTag.data(), RenX::tags->victimCharacterTag.size(),
 			RenX::tags->victimCharacterTag.data()));
 
-	RenX_LoggingPlugin::itemPurchaseFmt = this->config.get("ItemPurchaseFormat"_jrs,
+	RenX_LoggingPlugin::itemPurchaseFmt = this->config.get("ItemPurchaseFormat"sv,
 		string_printf(IRCBOLD "%.*s" IRCCOLOR IRCBOLD " purchased a " IRCBOLD IRCCOLOR "%.*s%.*s" IRCCOLOR IRCBOLD ".", RenX::tags->nameTag.size(),
 			RenX::tags->nameTag.data(), RenX::tags->teamColorTag.size(),
 			RenX::tags->teamColorTag.data(), RenX::tags->objectTag.size(),
 			RenX::tags->objectTag.data()));
 
-	RenX_LoggingPlugin::weaponPurchaseFmt = this->config.get("WeaponPurchaseFormat"_jrs,
+	RenX_LoggingPlugin::weaponPurchaseFmt = this->config.get("WeaponPurchaseFormat"sv,
 		string_printf(IRCBOLD "%.*s" IRCCOLOR IRCBOLD " purchased a " IRCBOLD IRCCOLOR "%.*s%.*s" IRCCOLOR IRCBOLD ".", RenX::tags->nameTag.size(),
 			RenX::tags->nameTag.data(), RenX::tags->teamColorTag.size(),
 			RenX::tags->teamColorTag.data(), RenX::tags->weaponTag.size(),
 			RenX::tags->weaponTag.data()));
 
-	RenX_LoggingPlugin::refillPurchaseFmt = this->config.get("RefillPurchaseFormat"_jrs,
+	RenX_LoggingPlugin::refillPurchaseFmt = this->config.get("RefillPurchaseFormat"sv,
 		string_printf(IRCBOLD "%.*s" IRCCOLOR IRCBOLD " purchased a " IRCBOLD IRCCOLOR "%.*srefill" IRCCOLOR IRCBOLD ".", RenX::tags->nameTag.size(),
 			RenX::tags->nameTag.data(), RenX::tags->teamColorTag.size(),
 			RenX::tags->teamColorTag.data()));
 
-	RenX_LoggingPlugin::vehiclePurchaseFmt = this->config.get("VehiclePurchaseFormat"_jrs,
+	RenX_LoggingPlugin::vehiclePurchaseFmt = this->config.get("VehiclePurchaseFormat"sv,
 		string_printf(IRCBOLD "%.*s" IRCCOLOR IRCBOLD " purchased a " IRCBOLD IRCCOLOR "%.*s%.*s" IRCCOLOR IRCBOLD ".", RenX::tags->nameTag.size(),
 			RenX::tags->nameTag.data(), RenX::tags->teamColorTag.size(),
 			RenX::tags->teamColorTag.data(), RenX::tags->victimVehicleTag.size(),
 			RenX::tags->victimVehicleTag.data()));
 
-	RenX_LoggingPlugin::vehicleSpawnFmt = this->config.get("VehicleSpawnFormat"_jrs,
+	RenX_LoggingPlugin::vehicleSpawnFmt = this->config.get("VehicleSpawnFormat"sv,
 		string_printf("A " IRCBOLD IRCCOLOR "%.*s%.*s" IRCCOLOR IRCBOLD " has spawned.", RenX::tags->teamColorTag.size(),
 			RenX::tags->teamColorTag.data(), RenX::tags->vehicleTag.size(),
 			RenX::tags->vehicleTag.data()));
 
-	RenX_LoggingPlugin::spawnFmt = this->config.get("SpawnFormat"_jrs,
+	RenX_LoggingPlugin::spawnFmt = this->config.get("SpawnFormat"sv,
 		string_printf(IRCBOLD "%.*s" IRCCOLOR IRCBOLD " spawned as a " IRCCOLOR "%.*s%.*s.", RenX::tags->nameTag.size(),
 			RenX::tags->nameTag.data(), RenX::tags->teamColorTag.size(),
 			RenX::tags->teamColorTag.data(), RenX::tags->victimCharacterTag.size(),
 			RenX::tags->victimCharacterTag.data()));
 
-	RenX_LoggingPlugin::botJoinFmt = this->config.get("BotJoinFormat"_jrs,
+	RenX_LoggingPlugin::botJoinFmt = this->config.get("BotJoinFormat"sv,
 		string_printf(IRCBOLD "%.*s" IRCCOLOR IRCBOLD " online.", RenX::tags->nameTag.size(),
 			RenX::tags->nameTag.data()));
 
-	RenX_LoggingPlugin::vehicleCrateFmt = this->config.get("VehicleCrateFormat"_jrs,
+	RenX_LoggingPlugin::vehicleCrateFmt = this->config.get("VehicleCrateFormat"sv,
 		string_printf(IRCBOLD "%.*s" IRCCOLOR IRCBOLD " picked up a " IRCCOLOR "12%.*s" IRCCOLOR " vehicle crate.", RenX::tags->nameTag.size(),
 			RenX::tags->nameTag.data(), RenX::tags->objectTag.size(),
 			RenX::tags->objectTag.data()));
 
-	RenX_LoggingPlugin::TSVehicleCrateFmt = this->config.get("TSVehicleCrateFormat"_jrs,
+	RenX_LoggingPlugin::TSVehicleCrateFmt = this->config.get("TSVehicleCrateFormat"sv,
 		RenX_LoggingPlugin::vehicleCrateFmt);
 
-	RenX_LoggingPlugin::RAVehicleCrateFmt = this->config.get("RAVehicleCrateFormat"_jrs,
+	RenX_LoggingPlugin::RAVehicleCrateFmt = this->config.get("RAVehicleCrateFormat"sv,
 		RenX_LoggingPlugin::vehicleCrateFmt);
 
-	RenX_LoggingPlugin::deathCrateFmt = this->config.get("DeathCrateFormat"_jrs,
+	RenX_LoggingPlugin::deathCrateFmt = this->config.get("DeathCrateFormat"sv,
 		string_printf(IRCBOLD "%.*s" IRCCOLOR IRCBOLD " picked up a " IRCCOLOR "12death" IRCCOLOR " crate.", RenX::tags->nameTag.size(),
 			RenX::tags->nameTag.data()));
 
-	RenX_LoggingPlugin::moneyCrateFmt = this->config.get("MoneyCrateFormat"_jrs,
+	RenX_LoggingPlugin::moneyCrateFmt = this->config.get("MoneyCrateFormat"sv,
 		string_printf(IRCBOLD "%.*s" IRCCOLOR IRCBOLD " picked up " IRCCOLOR "09%.*s credits" IRCCOLOR " from a " IRCCOLOR "12money" IRCCOLOR " crate.", RenX::tags->nameTag.size(),
 			RenX::tags->nameTag.data(), RenX::tags->objectTag.size(),
 			RenX::tags->objectTag.data()));
 
-	RenX_LoggingPlugin::characterCrateFmt = this->config.get("CharacterCrateFormat"_jrs,
+	RenX_LoggingPlugin::characterCrateFmt = this->config.get("CharacterCrateFormat"sv,
 		string_printf(IRCBOLD "%.*s" IRCCOLOR IRCBOLD " picked up a " IRCCOLOR "%.*s%.*s" IRCCOLOR " " IRCCOLOR "12character" IRCCOLOR " crate.", RenX::tags->nameTag.size(),
 			RenX::tags->nameTag.data(), RenX::tags->teamColorTag.size(),
 			RenX::tags->teamColorTag.data(), RenX::tags->victimCharacterTag.size(),
 			RenX::tags->victimCharacterTag.data()));
 
-	RenX_LoggingPlugin::spyCrateFmt = this->config.get("SpyCrateFormat"_jrs,
+	RenX_LoggingPlugin::spyCrateFmt = this->config.get("SpyCrateFormat"sv,
 		string_printf(IRCBOLD "%.*s" IRCCOLOR IRCBOLD " picked up a " IRCCOLOR "%.*s%.*s" IRCCOLOR " " IRCCOLOR "12spy" IRCCOLOR " crate.", RenX::tags->nameTag.size(),
 			RenX::tags->nameTag.data(), RenX::tags->victimTeamColorTag.size(),
 			RenX::tags->victimTeamColorTag.data(), RenX::tags->victimCharacterTag.size(),
 			RenX::tags->victimCharacterTag.data()));
 
-	RenX_LoggingPlugin::refillCrateFmt = this->config.get("RefillCrateFormat"_jrs,
+	RenX_LoggingPlugin::refillCrateFmt = this->config.get("RefillCrateFormat"sv,
 		string_printf(IRCBOLD "%.*s" IRCCOLOR IRCBOLD " picked up a " IRCCOLOR "%.*srefill" IRCCOLOR " crate.", RenX::tags->nameTag.size(),
 			RenX::tags->nameTag.data(), RenX::tags->teamColorTag.size(),
 			RenX::tags->teamColorTag.data()));
 
-	RenX_LoggingPlugin::timeBombCrateFmt = this->config.get("TimeBombCrateFormat"_jrs,
+	RenX_LoggingPlugin::timeBombCrateFmt = this->config.get("TimeBombCrateFormat"sv,
 		string_printf(IRCBOLD "%.*s" IRCCOLOR IRCBOLD " picked up a " IRCCOLOR "11time-bomb" IRCCOLOR " crate.", RenX::tags->nameTag.size(),
 			RenX::tags->nameTag.data()));
 
-	RenX_LoggingPlugin::speedCrateFmt = this->config.get("SpeedCrateFormat"_jrs,
+	RenX_LoggingPlugin::speedCrateFmt = this->config.get("SpeedCrateFormat"sv,
 		string_printf(IRCBOLD "%.*s" IRCCOLOR IRCBOLD " picked up a " IRCCOLOR "11speed" IRCCOLOR " crate.", RenX::tags->nameTag.size(),
 			RenX::tags->nameTag.data()));
 
-	RenX_LoggingPlugin::nukeCrateFmt = this->config.get("NukeCrateFormat"_jrs,
+	RenX_LoggingPlugin::nukeCrateFmt = this->config.get("NukeCrateFormat"sv,
 		string_printf(IRCBOLD "%.*s" IRCCOLOR IRCBOLD " picked up a " IRCCOLOR "04nuke" IRCCOLOR " crate.", RenX::tags->nameTag.size(),
 			RenX::tags->nameTag.data()));
 
-	RenX_LoggingPlugin::abductionCrateFmt = this->config.get("AbductionCrateFormat"_jrs,
+	RenX_LoggingPlugin::abductionCrateFmt = this->config.get("AbductionCrateFormat"sv,
 		string_printf(IRCBOLD "%.*s" IRCCOLOR IRCBOLD " has been " IRCBOLD IRCCOLOR "06abducted" IRCCOLOR IRCBOLD " by the " IRCBOLD IRCCOLOR "06Scrin" IRCCOLOR IRCBOLD "!", RenX::tags->nameTag.size(),
 			RenX::tags->nameTag.data()));
 
-	RenX_LoggingPlugin::unspecifiedCrateFmt = this->config.get("UnspecifiedCrateFormat"_jrs,
+	RenX_LoggingPlugin::unspecifiedCrateFmt = this->config.get("UnspecifiedCrateFormat"sv,
 		string_printf(IRCBOLD "%.*s" IRCCOLOR IRCBOLD " picked up an " IRCCOLOR "13unspecified" IRCCOLOR " crate.", RenX::tags->nameTag.size(),
 			RenX::tags->nameTag.data()));
 
-	RenX_LoggingPlugin::otherCrateFmt = this->config.get("OtherCrateFormat"_jrs,
+	RenX_LoggingPlugin::otherCrateFmt = this->config.get("OtherCrateFormat"sv,
 		string_printf(IRCBOLD "%.*s" IRCCOLOR IRCBOLD " picked up a " IRCCOLOR "13%.*s" IRCCOLOR " crate.", RenX::tags->nameTag.size(),
 			RenX::tags->nameTag.data(), RenX::tags->objectTag.size(),
 			RenX::tags->objectTag.data()));
 
-	RenX_LoggingPlugin::stealFmt = this->config.get("StealFormat"_jrs,
+	RenX_LoggingPlugin::stealFmt = this->config.get("StealFormat"sv,
 		string_printf(IRCBOLD "%.*s" IRCCOLOR IRCBOLD " stole " IRCBOLD "%.*s" IRCBOLD "'s " IRCBOLD "%.*s" IRCBOLD "!", RenX::tags->nameTag.size(),
 			RenX::tags->nameTag.data(), RenX::tags->victimNameTag.size(),
 			RenX::tags->victimNameTag.data(), RenX::tags->objectTag.size(),
 			RenX::tags->objectTag.data()));
 
-	RenX_LoggingPlugin::stealNoOwnerFmt = this->config.get("StealNoOwnerFormat"_jrs,
+	RenX_LoggingPlugin::stealNoOwnerFmt = this->config.get("StealNoOwnerFormat"sv,
 		string_printf(IRCBOLD "%.*s" IRCCOLOR IRCBOLD " stole a " IRCBOLD IRCCOLOR "12%.*s" IRCBOLD "!", RenX::tags->nameTag.size(),
 			RenX::tags->nameTag.data(), RenX::tags->objectTag.size(),
 			RenX::tags->objectTag.data()));
 
-	RenX_LoggingPlugin::donateFmt = this->config.get("DonateFormat"_jrs,
+	RenX_LoggingPlugin::donateFmt = this->config.get("DonateFormat"sv,
 		string_printf(IRCBOLD "%.*s" IRCCOLOR IRCBOLD " donated " IRCCOLOR "09%.*s credits" IRCCOLOR " to " IRCBOLD "%.*s" IRCBOLD ".", RenX::tags->nameTag.size(),
 			RenX::tags->nameTag.data(), RenX::tags->objectTag.size(),
 			RenX::tags->objectTag.data(), RenX::tags->victimNameTag.size(),
 			RenX::tags->victimNameTag.data()));
 
-	RenX_LoggingPlugin::gameOverFmt = this->config.get("GameOverFormat"_jrs,
+	RenX_LoggingPlugin::gameOverFmt = this->config.get("GameOverFormat"sv,
 		string_printf(IRCCOLOR "03[Game]" IRCCOLOR "%.*s The " IRCBOLD "%.*s" IRCBOLD " won by " IRCBOLD "%.*s" IRCBOLD, RenX::tags->teamColorTag.size(),
 			RenX::tags->teamColorTag.data(), RenX::tags->teamLongTag.size(),
 			RenX::tags->teamLongTag.data(), RenX::tags->messageTag.size(),
 			RenX::tags->messageTag.data()));
 
-	RenX_LoggingPlugin::gameOverTieFmt = this->config.get("GameOverTieNoWinFormat"_jrs,
+	RenX_LoggingPlugin::gameOverTieFmt = this->config.get("GameOverTieNoWinFormat"sv,
 		string_printf(IRCCOLOR "03[Game]" IRCCOLOR "10 The battle ended in a " IRCBOLD "%.*s" IRCBOLD " - Victory handed to " IRCBOLD IRCCOLOR "%.*s%.*s" IRCBOLD, RenX::tags->messageTag.size(),
 			RenX::tags->messageTag.data(), RenX::tags->teamColorTag.size(),
 			RenX::tags->teamColorTag.data(), RenX::tags->teamLongTag.size(),
 			RenX::tags->teamLongTag.data()));
 
-	RenX_LoggingPlugin::gameOverTieNoWinFmt = this->config.get("GameOverTieFormat"_jrs,
+	RenX_LoggingPlugin::gameOverTieNoWinFmt = this->config.get("GameOverTieFormat"sv,
 		string_printf(IRCCOLOR "03[Game]" IRCCOLOR "10 The battle ended in a " IRCBOLD "%.*s" IRCBOLD, RenX::tags->messageTag.size(),
 			RenX::tags->messageTag.data()));
 
-	RenX_LoggingPlugin::gameOverScoreFmt = this->config.get("GameOverScoreFormat"_jrs,
+	RenX_LoggingPlugin::gameOverScoreFmt = this->config.get("GameOverScoreFormat"sv,
 		string_printf(IRCCOLOR "03[Game]" IRCCOLOR "%.*s %.*s" IRCCOLOR ": %.*s | " IRCCOLOR "%.*s%.*s" IRCCOLOR ": %.*s", RenX::tags->teamColorTag.size(),
 			RenX::tags->teamColorTag.data(), RenX::tags->teamLongTag.size(),
 			RenX::tags->teamLongTag.data(), RenX::tags->winScoreTag.size(),
@@ -497,97 +497,97 @@ bool RenX_LoggingPlugin::initialize()
 			RenX::tags->victimTeamLongTag.data(), RenX::tags->loseScoreTag.size(),
 			RenX::tags->loseScoreTag.data()));
 
-	RenX_LoggingPlugin::gameFmt = this->config.get("GameFormat"_jrs,
+	RenX_LoggingPlugin::gameFmt = this->config.get("GameFormat"sv,
 		string_printf(IRCCOLOR "03[Game]" IRCCOLOR " %.*s", RenX::tags->messageTag.size(),
 			RenX::tags->messageTag.data()));
 
-	RenX_LoggingPlugin::executeFmt = this->config.get("ExecuteFormat"_jrs,
+	RenX_LoggingPlugin::executeFmt = this->config.get("ExecuteFormat"sv,
 		string_printf(IRCCOLOR "07%.*s executed: %.*s", RenX::tags->nameTag.size(),
 			RenX::tags->nameTag.data(), RenX::tags->messageTag.size(),
 			RenX::tags->messageTag.data()));
 
-	RenX_LoggingPlugin::devBotExecuteFmt = this->config.get("DevBotExecuteFormat"_jrs, ""_jss);
+	RenX_LoggingPlugin::devBotExecuteFmt = this->config.get("DevBotExecuteFormat"sv, ""s);
 
-	RenX_LoggingPlugin::subscribeFmt = this->config.get("SubscribeFormat"_jrs,
+	RenX_LoggingPlugin::subscribeFmt = this->config.get("SubscribeFormat"sv,
 		string_printf(IRCCOLOR "03%.*s subscribed to the RCON data stream.", RenX::tags->nameTag.size(),
 			RenX::tags->nameTag.data()));
 
-	RenX_LoggingPlugin::rconFmt = this->config.get("RCONFormat"_jrs,
+	RenX_LoggingPlugin::rconFmt = this->config.get("RCONFormat"sv,
 		string_printf(IRCCOLOR "05[RCON]" IRCCOLOR " %.*s", RenX::tags->messageTag.size(),
 			RenX::tags->messageTag.data()));
 
-	RenX_LoggingPlugin::adminLoginFmt = this->config.get("AdminLoginFormat"_jrs,
+	RenX_LoggingPlugin::adminLoginFmt = this->config.get("AdminLoginFormat"sv,
 		string_printf(IRCCOLOR "07[Admin] " IRCBOLD "%.*s" IRCBOLD IRCCOLOR " logged in with " IRCCOLOR "07" IRCBOLD "%.*s" IRCBOLD IRCNORMAL " privledges.", RenX::tags->nameTag.size(),
 			RenX::tags->nameTag.data(), RenX::tags->adminTag.size(),
 			RenX::tags->adminTag.data()));
 
-	RenX_LoggingPlugin::adminGrantFmt = this->config.get("AdminGrantFormat"_jrs,
+	RenX_LoggingPlugin::adminGrantFmt = this->config.get("AdminGrantFormat"sv,
 		string_printf(IRCCOLOR "07[Admin] " IRCBOLD "%.*s" IRCBOLD IRCCOLOR " was granted " IRCCOLOR "07" IRCBOLD "%.*s" IRCBOLD IRCNORMAL " privledges.", RenX::tags->nameTag.size(),
 			RenX::tags->nameTag.data(), RenX::tags->adminTag.size(),
 			RenX::tags->adminTag.data()));
 
-	RenX_LoggingPlugin::adminLogoutFmt = this->config.get("AdminLogoutFormat"_jrs,
+	RenX_LoggingPlugin::adminLogoutFmt = this->config.get("AdminLogoutFormat"sv,
 		string_printf(IRCCOLOR "07[Admin] " IRCBOLD "%.*s" IRCBOLD IRCCOLOR " logged out of their " IRCCOLOR "07" IRCBOLD "%.*s" IRCBOLD IRCNORMAL " privledges.", RenX::tags->nameTag.size(),
 			RenX::tags->nameTag.data(), RenX::tags->adminTag.size(),
 			RenX::tags->adminTag.data()));
 
-	RenX_LoggingPlugin::adminFmt = this->config.get("AdminFormat"_jrs,
+	RenX_LoggingPlugin::adminFmt = this->config.get("AdminFormat"sv,
 		string_printf(IRCCOLOR "07[Admin]" IRCCOLOR " %.*s", RenX::tags->messageTag.size(),
 			RenX::tags->messageTag.data()));
 
-	RenX_LoggingPlugin::voteAddBotsFmt = this->config.get("VoteAddBotsFormat"_jrs,
+	RenX_LoggingPlugin::voteAddBotsFmt = this->config.get("VoteAddBotsFormat"sv,
 		string_printf(IRCCOLOR "[Vote] " IRCBOLD "%.*s" IRCNORMAL " has called for adding " IRCCOLOR "12%.*s" IRCCOLOR " bots to %.*s, with skill level " IRCCOLOR "07%.*s" IRCCOLOR ".", RenX::tags->nameTag.size(),
 			RenX::tags->nameTag.data(), RenX::tags->objectTag.size(),
 			RenX::tags->objectTag.data(), RenX::tags->victimTeamShortTag.size(),
 			RenX::tags->victimTeamShortTag.data(), RenX::tags->weaponTag.size(),
 			RenX::tags->weaponTag.data()));
 	
-	RenX_LoggingPlugin::voteChangeMapFmt = this->config.get("VoteChangeMapFormat"_jrs,
+	RenX_LoggingPlugin::voteChangeMapFmt = this->config.get("VoteChangeMapFormat"sv,
 		string_printf(IRCCOLOR "[Vote] " IRCBOLD "%.*s" IRCNORMAL " has called for a Map Change.", RenX::tags->nameTag.size(),
 			RenX::tags->nameTag.data()));
 	
-	RenX_LoggingPlugin::voteKickFmt = this->config.get("VoteKickFormat"_jrs,
+	RenX_LoggingPlugin::voteKickFmt = this->config.get("VoteKickFormat"sv,
 		string_printf(IRCCOLOR "[Vote] " IRCBOLD "%.*s" IRCNORMAL " has called for a kick against %.*s" IRCNORMAL ".", RenX::tags->nameTag.size(),
 			RenX::tags->nameTag.data(), RenX::tags->victimNameTag.size(),
 			RenX::tags->victimNameTag.data()));
 	
-	RenX_LoggingPlugin::voteMineBanFmt = this->config.get("VoteMineBanFormat"_jrs,
+	RenX_LoggingPlugin::voteMineBanFmt = this->config.get("VoteMineBanFormat"sv,
 		string_printf(IRCCOLOR "%.*s[Vote] " IRCBOLD "%.*s" IRCBOLD " has called for a Mine Ban against %.*s" IRCNORMAL ".", RenX::tags->victimTeamColorTag.size(),
 			RenX::tags->victimTeamColorTag.data(), RenX::tags->nameTag.size(),
 			RenX::tags->nameTag.data(), RenX::tags->nameTag.size(),
 			RenX::tags->nameTag.data()));
 	
-	RenX_LoggingPlugin::voteRemoveBotsFmt = this->config.get("VoteRemoveBotsFormat"_jrs,
+	RenX_LoggingPlugin::voteRemoveBotsFmt = this->config.get("VoteRemoveBotsFormat"sv,
 		string_printf(IRCCOLOR "[Vote] " IRCBOLD "%.*s" IRCNORMAL " has called a vote to remove " IRCCOLOR "12%.*s" IRCCOLOR " bots from " IRCCOLOR "%.*s%.*s" IRCNORMAL ".", RenX::tags->nameTag.size(),
 			RenX::tags->nameTag.data(), RenX::tags->objectTag.size(),
 			RenX::tags->objectTag.data(), RenX::tags->victimTeamColorTag.size(),
 			RenX::tags->victimTeamColorTag.data(), RenX::tags->victimTeamShortTag.size(),
 			RenX::tags->victimTeamShortTag.data()));
 	
-	RenX_LoggingPlugin::voteRestartMapFmt = this->config.get("VoteRestartMapFormat"_jrs,
+	RenX_LoggingPlugin::voteRestartMapFmt = this->config.get("VoteRestartMapFormat"sv,
 		string_printf(IRCCOLOR "[Vote] " IRCBOLD "%.*s" IRCNORMAL " has called for a Map Restart.", RenX::tags->nameTag.size(),
 			RenX::tags->nameTag.data()));
 	
-	RenX_LoggingPlugin::voteSurrenderFmt = this->config.get("VoteSurrenderFormat"_jrs,
+	RenX_LoggingPlugin::voteSurrenderFmt = this->config.get("VoteSurrenderFormat"sv,
 		string_printf(IRCCOLOR "%.*s[Vote] " IRCBOLD "%.*s" IRCBOLD " has called for a Surrender.", RenX::tags->victimTeamColorTag.size(),
 			RenX::tags->victimTeamColorTag.data(), RenX::tags->nameTag.size(),
 			RenX::tags->nameTag.data()));
 	
-	RenX_LoggingPlugin::voteSurveyFmt = this->config.get("VoteSurveyFormat"_jrs,
+	RenX_LoggingPlugin::voteSurveyFmt = this->config.get("VoteSurveyFormat"sv,
 		string_printf(IRCCOLOR "%.*s[Vote] " IRCBOLD "%.*s" IRCBOLD IRCCOLOR "%.*s has started a Survey: " IRCCOLOR "12%.*s", RenX::tags->victimTeamColorTag.size(),
 			RenX::tags->victimTeamColorTag.data(), RenX::tags->nameTag.size(),
 			RenX::tags->nameTag.data(), RenX::tags->victimTeamColorTag.size(),
 			RenX::tags->victimTeamColorTag.data(), RenX::tags->messageTag.size(),
 			RenX::tags->messageTag.data()));
 
-	RenX_LoggingPlugin::voteOtherFmt = this->config.get("VoteOtherFormat"_jrs,
+	RenX_LoggingPlugin::voteOtherFmt = this->config.get("VoteOtherFormat"sv,
 		string_printf(IRCCOLOR "%.*s[Vote] " IRCBOLD "%.*s" IRCBOLD IRCCOLOR "%.*s has called a \"%.*s\" vote.", RenX::tags->victimTeamColorTag.size(),
 			RenX::tags->victimTeamColorTag.data(), RenX::tags->nameTag.size(),
 			RenX::tags->nameTag.data(), RenX::tags->victimTeamColorTag.size(),
 			RenX::tags->victimTeamColorTag.data(), RenX::tags->objectTag.size(),
 			RenX::tags->objectTag.data()));
 
-	RenX_LoggingPlugin::voteOverSuccessFmt = this->config.get("VoteOverSuccessFormat"_jrs,
+	RenX_LoggingPlugin::voteOverSuccessFmt = this->config.get("VoteOverSuccessFormat"sv,
 		string_printf(IRCCOLOR "%.*s[Vote] A vote for \"%.*s\" " IRCBOLD IRCCOLOR "09passed" IRCBOLD IRCCOLOR "%.*s (Votes Yes: %.*s | Votes No: %.*s).", RenX::tags->victimTeamColorTag.size(),
 			RenX::tags->victimTeamColorTag.data(), RenX::tags->objectTag.size(),
 			RenX::tags->objectTag.data(), RenX::tags->victimTeamColorTag.size(),
@@ -595,7 +595,7 @@ bool RenX_LoggingPlugin::initialize()
 			RenX::tags->winScoreTag.data(), RenX::tags->loseScoreTag.size(),
 			RenX::tags->loseScoreTag.data()));
 
-	RenX_LoggingPlugin::voteOverFailFmt = this->config.get("VoteOverFailFormat"_jrs,
+	RenX_LoggingPlugin::voteOverFailFmt = this->config.get("VoteOverFailFormat"sv,
 		string_printf(IRCCOLOR "%.*s[Vote] A vote for \"%.*s\" " IRCBOLD IRCCOLOR "04failed" IRCBOLD IRCCOLOR "%.*s (Votes Yes: %.*s | Votes No: %.*s).", RenX::tags->victimTeamColorTag.size(),
 			RenX::tags->victimTeamColorTag.data(), RenX::tags->objectTag.size(),
 			RenX::tags->objectTag.data(), RenX::tags->victimTeamColorTag.size(),
@@ -603,64 +603,64 @@ bool RenX_LoggingPlugin::initialize()
 			RenX::tags->winScoreTag.data(), RenX::tags->loseScoreTag.size(),
 			RenX::tags->loseScoreTag.data()));
 
-	RenX_LoggingPlugin::voteCancelFmt = this->config.get("VoteCancelFormat"_jrs,
+	RenX_LoggingPlugin::voteCancelFmt = this->config.get("VoteCancelFormat"sv,
 		string_printf(IRCCOLOR "%.*s[Vote] A vote for \"%.*s\" was " IRCBOLD IRCCOLOR "07cancelled" IRCCOLOR IRCBOLD ".", RenX::tags->victimTeamColorTag.size(),
 			RenX::tags->victimTeamColorTag.data(), RenX::tags->objectTag.size(),
 			RenX::tags->objectTag.data()));
 
-	RenX_LoggingPlugin::voteFmt = this->config.get("VoteFormat"_jrs,
+	RenX_LoggingPlugin::voteFmt = this->config.get("VoteFormat"sv,
 		string_printf(IRCCOLOR "06[Vote]" IRCCOLOR " %.*s", RenX::tags->messageTag.size(),
 			RenX::tags->messageTag.data()));
 
-	RenX_LoggingPlugin::mapChangeFmt = this->config.get("MapChangeFormat"_jrs,
+	RenX_LoggingPlugin::mapChangeFmt = this->config.get("MapChangeFormat"sv,
 		string_printf(IRCCOLOR "03Loading %.*s...", RenX::tags->messageTag.size(),
 			RenX::tags->messageTag.data()));
 
-	RenX_LoggingPlugin::mapLoadFmt = this->config.get("MapLoadFormat"_jrs,
+	RenX_LoggingPlugin::mapLoadFmt = this->config.get("MapLoadFormat"sv,
 		string_printf(IRCCOLOR "03%.*s loaded.", RenX::tags->messageTag.size(), RenX::tags->messageTag.data()));
 
-	RenX_LoggingPlugin::mapStartFmt = this->config.get("MapStartFormat"_jrs,
+	RenX_LoggingPlugin::mapStartFmt = this->config.get("MapStartFormat"sv,
 		string_printf(IRCCOLOR "03%.*s started.", RenX::tags->messageTag.size(),
 			RenX::tags->messageTag.data()));
 
-	RenX_LoggingPlugin::mapFmt = this->config.get("MapFormat"_jrs,
+	RenX_LoggingPlugin::mapFmt = this->config.get("MapFormat"sv,
 		string_printf(IRCCOLOR "06[Map]" IRCCOLOR " %.*s", RenX::tags->messageTag.size(),
 			RenX::tags->messageTag.data()));
 
-	RenX_LoggingPlugin::demoRecordFmt = this->config.get("DemoRecordFormat"_jrs,
+	RenX_LoggingPlugin::demoRecordFmt = this->config.get("DemoRecordFormat"sv,
 		string_printf("%.*s has started a demo recording.", RenX::tags->nameTag.size(),
 			RenX::tags->nameTag.data()));
 
-	RenX_LoggingPlugin::rconDemoRecordFmt = this->config.get("RCONDemoRecordFormat"_jrs,
-		IRCCOLOR "07A demo recording has started."_jrs);
+	RenX_LoggingPlugin::rconDemoRecordFmt = this->config.get("RCONDemoRecordFormat"sv,
+		IRCCOLOR "07A demo recording has started."sv);
 
-	RenX_LoggingPlugin::demoRecordStopFmt = this->config.get("DemoRecordStopFormat"_jrs,
-		IRCCOLOR "07The demo recording has stopped."_jrs);
+	RenX_LoggingPlugin::demoRecordStopFmt = this->config.get("DemoRecordStopFormat"sv,
+		IRCCOLOR "07The demo recording has stopped."sv);
 
-	RenX_LoggingPlugin::demoFmt = this->config.get("DemoFormat"_jrs,
+	RenX_LoggingPlugin::demoFmt = this->config.get("DemoFormat"sv,
 		string_printf(IRCCOLOR "06[Demo]" IRCCOLOR " %.*s", RenX::tags->messageTag.size(),
 			RenX::tags->messageTag.data()));
 
-	RenX_LoggingPlugin::logFmt = this->config.get("LogFormat"_jrs,
+	RenX_LoggingPlugin::logFmt = this->config.get("LogFormat"sv,
 		string_printf(IRCCOLOR "07[Log]" IRCCOLOR " %.*s", RenX::tags->messageTag.size(),
 			RenX::tags->messageTag.data()));
 
-	RenX_LoggingPlugin::commandFmt = this->config.get("CommandFormat"_jrs,
+	RenX_LoggingPlugin::commandFmt = this->config.get("CommandFormat"sv,
 		string_printf("")); // Disabled by default.
 
-	RenX_LoggingPlugin::errorFmt = this->config.get("ErrorFormat"_jrs,
+	RenX_LoggingPlugin::errorFmt = this->config.get("ErrorFormat"sv,
 		string_printf(IRCCOLOR "04[Error]" IRCCOLOR " %.*s", RenX::tags->messageTag.size(),
 			RenX::tags->messageTag.data()));
 
-	RenX_LoggingPlugin::versionFmt = this->config.get("VersionFormat"_jrs,
+	RenX_LoggingPlugin::versionFmt = this->config.get("VersionFormat"sv,
 		string_printf(IRCCOLOR "03Renegade X RCON connection established; using RCON verison " IRCBOLD "%.*s" IRCBOLD " for game version " IRCBOLD "%.*s" IRCBOLD, RenX::tags->rconVersionTag.size(),
 			RenX::tags->rconVersionTag.data(), RenX::tags->gameVersionTag.size(),
 			RenX::tags->gameVersionTag.data()));
 
-	RenX_LoggingPlugin::authorizedFmt = this->config.get("AuthorizedFormat"_jrs,
+	RenX_LoggingPlugin::authorizedFmt = this->config.get("AuthorizedFormat"sv,
 		string_printf(IRCCOLOR "03RCON authorization completed."));
 
-	RenX_LoggingPlugin::otherFmt = this->config.get("OtherFormat"_jrs,
+	RenX_LoggingPlugin::otherFmt = this->config.get("OtherFormat"sv,
 		string_printf(IRCCOLOR "06[Other]" IRCCOLOR " %.*s", RenX::tags->messageTag.size(),
 			RenX::tags->messageTag.data()));
 
@@ -1139,8 +1139,8 @@ void RenX_LoggingPlugin::RenX_OnHostAdminMessage(RenX::Server &server, std::stri
 	if (!msg.empty())
 	{
 		RenX::processTags(msg, &server);
-		RenX::replace_tag(msg, RenX::tags->INTERNAL_NAME_TAG, "Host"_jrs);
-		RenX::replace_tag(msg, RenX::tags->INTERNAL_RAW_NAME_TAG, "Host"_jrs);
+		RenX::replace_tag(msg, RenX::tags->INTERNAL_NAME_TAG, "Host"sv);
+		RenX::replace_tag(msg, RenX::tags->INTERNAL_RAW_NAME_TAG, "Host"sv);
 		RenX::replace_tag(msg, RenX::tags->INTERNAL_MESSAGE_TAG, message);
 		(server.*func)(msg);
 	}
@@ -1158,8 +1158,8 @@ void RenX_LoggingPlugin::RenX_OnHostAdminPMessage(RenX::Server &server, const Re
 	if (!msg.empty())
 	{
 		RenX::processTags(msg, &server, nullptr, &player);
-		RenX::replace_tag(msg, RenX::tags->INTERNAL_NAME_TAG, "Host"_jrs);
-		RenX::replace_tag(msg, RenX::tags->INTERNAL_RAW_NAME_TAG, "Host"_jrs);
+		RenX::replace_tag(msg, RenX::tags->INTERNAL_NAME_TAG, "Host"sv);
+		RenX::replace_tag(msg, RenX::tags->INTERNAL_RAW_NAME_TAG, "Host"sv);
 		RenX::replace_tag(msg, RenX::tags->INTERNAL_MESSAGE_TAG, message);
 		(server.*func)(msg);
 	}
@@ -1177,8 +1177,8 @@ void RenX_LoggingPlugin::RenX_OnHostWarnMessage(RenX::Server &server, std::strin
 	if (!msg.empty())
 	{
 		RenX::processTags(msg, &server);
-		RenX::replace_tag(msg, RenX::tags->INTERNAL_NAME_TAG, "Host"_jrs);
-		RenX::replace_tag(msg, RenX::tags->INTERNAL_RAW_NAME_TAG, "Host"_jrs);
+		RenX::replace_tag(msg, RenX::tags->INTERNAL_NAME_TAG, "Host"sv);
+		RenX::replace_tag(msg, RenX::tags->INTERNAL_RAW_NAME_TAG, "Host"sv);
 		RenX::replace_tag(msg, RenX::tags->INTERNAL_MESSAGE_TAG, message);
 		(server.*func)(msg);
 	}
@@ -1196,8 +1196,8 @@ void RenX_LoggingPlugin::RenX_OnHostWarnPMessage(RenX::Server &server, const Ren
 	if (!msg.empty())
 	{
 		RenX::processTags(msg, &server, nullptr, &player);
-		RenX::replace_tag(msg, RenX::tags->INTERNAL_NAME_TAG, "Host"_jrs);
-		RenX::replace_tag(msg, RenX::tags->INTERNAL_RAW_NAME_TAG, "Host"_jrs);
+		RenX::replace_tag(msg, RenX::tags->INTERNAL_NAME_TAG, "Host"sv);
+		RenX::replace_tag(msg, RenX::tags->INTERNAL_RAW_NAME_TAG, "Host"sv);
 		RenX::replace_tag(msg, RenX::tags->INTERNAL_MESSAGE_TAG, message);
 		(server.*func)(msg);
 	}

@@ -22,7 +22,7 @@
 #include "IRC_Bot.h"
 #include "IRC_Command.h"
 
-using namespace Jupiter::literals;
+using namespace std::literals;
 
 ServerManager g_serverManager;
 ServerManager *serverManager = &g_serverManager;
@@ -72,7 +72,7 @@ size_t ServerManager::removeCommand(std::string_view command) {
 void ServerManager::OnConfigRehash() {
 	for (const auto& server : m_servers) {
 		server->setPrimaryConfigSection(m_config->getSection(server->getConfigSection()));
-		server->setSecondaryConfigSection(m_config->getSection("Defualt"_jrs));
+		server->setSecondaryConfigSection(m_config->getSection("Defualt"sv));
 		server->setCommandAccessLevels();
 	}
 }
@@ -104,7 +104,7 @@ IRC_Bot *ServerManager::getServer(size_t serverIndex) {
 }
 
 bool ServerManager::addServer(std::string_view serverConfig) {
-	auto server = std::make_unique<IRC_Bot>(m_config->getSection(serverConfig), m_config->getSection("Default"_jrs));
+	auto server = std::make_unique<IRC_Bot>(m_config->getSection(serverConfig), m_config->getSection("Default"sv));
 	if (server->connect()) {
 		m_servers.push_back(std::move(server));
 		return true;

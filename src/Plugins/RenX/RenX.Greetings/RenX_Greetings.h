@@ -20,9 +20,7 @@
 #define _RENX_GREETING_H_HEADER
 
 #include "Jupiter/Plugin.h"
-#include "Jupiter/Reference_String.h"
 #include "Jupiter/File.h"
-#include "Jupiter/String.hpp"
 #include "RenX_Plugin.h"
 
 class RenX_GreetingsPlugin : public RenX::Plugin

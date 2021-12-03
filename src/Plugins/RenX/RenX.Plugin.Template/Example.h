@@ -10,7 +10,6 @@
 #define _EXAMPLE_H_HEADER
 
 #include "Jupiter/Plugin.h"
-#include "Jupiter/Reference_String.h"
 #include "RenX_Plugin.h"
 
 class RenX_TPlugin : public RenX::Plugin

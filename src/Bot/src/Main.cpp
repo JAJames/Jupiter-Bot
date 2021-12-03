@@ -39,7 +39,6 @@
 #include <Windows.h>
 #endif // _WIN32
 
-using namespace Jupiter::literals;
 using namespace std::literals;
 
 Jupiter::INIConfig o_config;
@@ -91,13 +90,13 @@ void inputLoop() {
 
 void initialize_plugins() {
 	std::cout << "Loading plugins..." << std::endl;
-	std::string_view plugin_list_str = Jupiter::g_config->get("Plugins"_jrs);
+	std::string_view plugin_list_str = Jupiter::g_config->get("Plugins"sv);
 	if (plugin_list_str.empty()) {
 		std::cout << "No plugins to load!" << std::endl;
 	}
 	else {
 		// initialize plugins
-		auto plugin_names = jessilib::word_split<std::vector, Jupiter::ReferenceString>(plugin_list_str, WHITESPACE_SV);
+		auto plugin_names = jessilib::word_split_view(plugin_list_str, WHITESPACE_SV);
 		std::cout << "Attempting to load " << plugin_names.size() << " plugins..." << std::endl;
 
 		for (const auto& plugin_name : plugin_names) {
@@ -206,10 +205,10 @@ int main(int argc, char* argv[]) {
 	printf("Config loaded (%fms)." ENDL, time_taken);
 
 	if (plugins_directory.empty())
-		plugins_directory = o_config.get("PluginsDirectory"_jrs);
+		plugins_directory = o_config.get("PluginsDirectory"sv);
 
 	if (configs_directory.empty())
-		configs_directory = o_config.get("ConfigsDirectory"_jrs);
+		configs_directory = o_config.get("ConfigsDirectory"sv);
 
 	if (!plugins_directory.empty()) {
 		Jupiter::Plugin::setDirectory(plugins_directory);
@@ -226,7 +225,7 @@ int main(int argc, char* argv[]) {
 	printf("Initialization completed in %f milliseconds." ENDL, static_cast<double>(std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::steady_clock::now() - Jupiter::g_start_time).count()) / 1000.0 );
 
 	if (!consoleCommands.empty()) {
-		printf("%zu Console Commands have been initialized%s" ENDL, consoleCommands.size(), getConsoleCommand("help"_jrs) == nullptr ? "." : "; type \"help\" for more information.");
+		printf("%zu Console Commands have been initialized%s" ENDL, consoleCommands.size(), getConsoleCommand("help"sv) == nullptr ? "." : "; type \"help\" for more information.");
 	}
 	if (!IRCMasterCommandList.empty()) {
 		printf("%zu IRC Commands have been loaded into the master list." ENDL, IRCMasterCommandList.size());

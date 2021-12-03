@@ -16,7 +16,6 @@
  * Written by Jessica James <jessica.aj@outlook.com>
  */
 
-#include "Jupiter/Reference_String.h"
 #include "Jupiter/IRC_Client.h"
 #include "RenX_Core.h"
 #include "RenX_Functions.h"
@@ -26,7 +25,7 @@
 #include "RenX_Plugin.h"
 #include "RenX_Tags.h"
 
-using namespace Jupiter::literals;
+using namespace std::literals;
 
 struct TagsImp : RenX::Tags
 {
@@ -36,7 +35,7 @@ struct TagsImp : RenX::Tags
 	void sanitizeTags(std::string& fmt);
 	std::string_view getUniqueInternalTag();
 private:
-	Jupiter::StringS uniqueTag;
+	std::string uniqueTag;
 	uint32_t tagItr;
 	size_t bar_width;
 } _tags;
@@ -50,16 +49,16 @@ bool RenX::Tags::initialize()
 bool TagsImp::initialize()
 {
 	this->tagItr = 0;
-	this->uniqueTag = "\0\0\0\0\0\0"_jrs;
+	this->uniqueTag = "\0\0\0\0\0\0"sv;
 
 	Jupiter::Config &config = RenX::getCore()->getConfig();
-	std::string_view configSection = config.get("TagDefinitions"_jrs, "Tags"_jrs);
+	std::string_view configSection = config.get("TagDefinitions"sv, "Tags"sv);
 
-	TagsImp::bar_width = config[configSection].get<int>("BarWidth"_jrs, 19);
+	TagsImp::bar_width = config[configSection].get<int>("BarWidth"sv, 19);
 
 	/** Global formats */
-	this->dateFmt = static_cast<std::string>(config[configSection].get("DateFormat"_jrs, "%A, %B %d, %Y"_jrs));
-	this->timeFmt = static_cast<std::string>(config[configSection].get("TimeFormat"_jrs, "%H:%M:%S"_jrs));
+	this->dateFmt = static_cast<std::string>(config[configSection].get("DateFormat"sv, "%A, %B %d, %Y"sv));
+	this->timeFmt = static_cast<std::string>(config[configSection].get("TimeFormat"sv, "%H:%M:%S"sv));
 
 	/** Internal message tags */
 
@@ -250,188 +249,188 @@ bool TagsImp::initialize()
 	/** External (config) tags */
 
 	/** Global tags */
-	this->dateTag = config[configSection].get("DateTag"_jrs, "{DATE}"_jrs);
-	this->timeTag = config[configSection].get("TimeTag"_jrs, "{TIME}"_jrs);
+	this->dateTag = config[configSection].get("DateTag"sv, "{DATE}"sv);
+	this->timeTag = config[configSection].get("TimeTag"sv, "{TIME}"sv);
 
 	/** Server tags */
-	this->rconVersionTag = config[configSection].get("RCONVersionTag"_jrs, "{RVER}"_jrs);
-	this->gameVersionTag = config[configSection].get("GameVersionTag"_jrs, "{GVER}"_jrs);
-	this->rulesTag = config[configSection].get("RulesTag"_jrs, "{RULES}"_jrs);
-	this->userTag = config[configSection].get("UserTag"_jrs, "{USER}"_jrs);
-	this->serverNameTag = config[configSection].get("ServerNameTag"_jrs, "{SERVERNAME}"_jrs);
-	this->mapTag = config[configSection].get("MapTag"_jrs, "{MAP}"_jrs);
-	this->mapGUIDTag = config[configSection].get("MapGUIDTag"_jrs, "{MGUID}"_jrs);
-	this->serverHostnameTag = config[configSection].get("ServerHostnameTag"_jrs, "{SERVERHOST}"_jrs);
-	this->serverPortTag = config[configSection].get("ServerPortTag"_jrs, "{SERVERPORT}"_jrs);
-	this->socketHostnameTag = config[configSection].get("SocketHostnameTag"_jrs, "{SOCKHOST}"_jrs);
-	this->socketPortTag = config[configSection].get("SocketPortTag"_jrs, "{SOCKPORT}"_jrs);
-	this->serverPrefixTag = config[configSection].get("ServerPrefixTag"_jrs, "{SERVERPREFIX}"_jrs);
+	this->rconVersionTag = config[configSection].get("RCONVersionTag"sv, "{RVER}"sv);
+	this->gameVersionTag = config[configSection].get("GameVersionTag"sv, "{GVER}"sv);
+	this->rulesTag = config[configSection].get("RulesTag"sv, "{RULES}"sv);
+	this->userTag = config[configSection].get("UserTag"sv, "{USER}"sv);
+	this->serverNameTag = config[configSection].get("ServerNameTag"sv, "{SERVERNAME}"sv);
+	this->mapTag = config[configSection].get("MapTag"sv, "{MAP}"sv);
+	this->mapGUIDTag = config[configSection].get("MapGUIDTag"sv, "{MGUID}"sv);
+	this->serverHostnameTag = config[configSection].get("ServerHostnameTag"sv, "{SERVERHOST}"sv);
+	this->serverPortTag = config[configSection].get("ServerPortTag"sv, "{SERVERPORT}"sv);
+	this->socketHostnameTag = config[configSection].get("SocketHostnameTag"sv, "{SOCKHOST}"sv);
+	this->socketPortTag = config[configSection].get("SocketPortTag"sv, "{SOCKPORT}"sv);
+	this->serverPrefixTag = config[configSection].get("ServerPrefixTag"sv, "{SERVERPREFIX}"sv);
 
 	/** Player tags */
-	this->nameTag = config[configSection].get("NameTag"_jrs, "{NAME}"_jrs);
-	this->rawNameTag = config[configSection].get("RawNameTag"_jrs, "{RNAME}"_jrs);
-	this->ipTag = config[configSection].get("IPTag"_jrs, "{IP}"_jrs);
-	this->hwidTag = config[configSection].get("HWIDTag"_jrs, "{HWID}"_jrs);
-	this->rdnsTag = config[configSection].get("RDNSTag"_jrs, "{RDNS}"_jrs);
-	this->steamTag = config[configSection].get("SteamTag"_jrs, "{STEAM}"_jrs);
-	this->uuidTag = config[configSection].get("UUIDTag"_jrs, "{UUID}"_jrs);
-	this->idTag = config[configSection].get("IDTag"_jrs, "{ID}"_jrs);
-	this->characterTag = config[configSection].get("CharacterTag"_jrs, "{CHAR}"_jrs);
-	this->vehicleTag = config[configSection].get("VehicleTag"_jrs, "{VEH}"_jrs);
-	this->adminTag = config[configSection].get("AdminTag"_jrs, "{ADMIN}"_jrs);
-	this->prefixTag = config[configSection].get("PrefixTag"_jrs, "{PREFIX}"_jrs);
-	this->gamePrefixTag = config[configSection].get("GamePrefixTag"_jrs, "{GPREFIX}"_jrs);
-	this->teamColorTag = config[configSection].get("TeamColorTag"_jrs, "{TCOLOR}"_jrs);
-	this->teamShortTag = config[configSection].get("ShortTeamTag"_jrs, "{TEAMS}"_jrs);
-	this->teamLongTag = config[configSection].get("LongTeamTag"_jrs, "{TEAML}"_jrs);
-	this->pingTag = config[configSection].get("PingTag"_jrs, "{PING}"_jrs);
-	this->scoreTag = config[configSection].get("ScoreTag"_jrs, "{SCORE}"_jrs);
-	this->scorePerMinuteTag = config[configSection].get("ScorePerMinuteTag"_jrs, "{SPM}"_jrs);
-	this->creditsTag = config[configSection].get("CreditsTag"_jrs, "{CREDITS}"_jrs);
-	this->killsTag = config[configSection].get("KillsTag"_jrs, "{KILLS}"_jrs);
-	this->deathsTag = config[configSection].get("DeathsTag"_jrs, "{DEATHS}"_jrs);
-	this->kdrTag = config[configSection].get("KDRTag"_jrs, "{KDR}"_jrs);
-	this->suicidesTag = config[configSection].get("SuicidesTag"_jrs, "{SUICIDES}"_jrs);
-	this->headshotsTag = config[configSection].get("HeadshotsTag"_jrs, "{HEADSHOTS}"_jrs);
-	this->headshotKillRatioTag = config[configSection].get("HeadshotKillRatioTag"_jrs, "{HSKR}"_jrs);
-	this->vehicleKillsTag = config[configSection].get("VehicleKillsTag"_jrs, "{VEHICLEKILLS}"_jrs);
-	this->buildingKillsTag = config[configSection].get("BuildingKillsTag"_jrs, "{BUILDINGKILLS}"_jrs);
-	this->defenceKillsTag = config[configSection].get("DefenceKillsTag"_jrs, "{DEFENCEKILLS}"_jrs);
-	this->gameTimeTag = config[configSection].get("GameTimeTag"_jrs, "{GAMETIME}"_jrs);
-	this->gamesTag = config[configSection].get("GamesTag"_jrs, "{GAMES}"_jrs);
-	this->GDIGamesTag = config[configSection].get("GDIGamesTag"_jrs, "{GDIGAMES}"_jrs);
-	this->NodGamesTag = config[configSection].get("NodGamesTag"_jrs, "{NODGAMES}"_jrs);
-	this->winsTag = config[configSection].get("WinsTag"_jrs, "{WINS}"_jrs);
-	this->GDIWinsTag = config[configSection].get("GDIWinsTag"_jrs, "{GDIWINS}"_jrs);
-	this->NodWinsTag = config[configSection].get("NodWinsTag"_jrs, "{NODWINS}"_jrs);
-	this->tiesTag = config[configSection].get("TiesTag"_jrs, "{TIES}"_jrs);
-	this->lossesTag = config[configSection].get("LossesTag"_jrs, "{LOSSES}"_jrs);
-	this->GDILossesTag = config[configSection].get("GDILossesTag"_jrs, "{GDILOSSES}"_jrs);
-	this->NodLossesTag = config[configSection].get("NodLossesTag"_jrs, "{NODLOSSES}"_jrs);
-	this->winLossRatioTag = config[configSection].get("WinLossRatioTag"_jrs, "{WLR}"_jrs);
-	this->GDIWinLossRatioTag = config[configSection].get("GDIWinLossRatioTag"_jrs, "{GDIWLR}"_jrs);
-	this->NodWinLossRatioTag = config[configSection].get("NodWinLossRatioTag"_jrs, "{NODWLR}"_jrs);
-	this->beaconPlacementsTag = config[configSection].get("BeaconPlacementsTag"_jrs, "{BEACONPLACEMENTS}"_jrs);
-	this->beaconDisarmsTag = config[configSection].get("BeaconDisarmsTag"_jrs, "{BEACONDISARMS}"_jrs);
-	this->proxyPlacementsTag = config[configSection].get("ProxyPlacementsTag"_jrs, "{PROXYPLACEMENTS}"_jrs);
-	this->proxyDisarmsTag = config[configSection].get("ProxyDisarmsTag"_jrs, "{PROXYDISARMS}"_jrs);
-	this->capturesTag = config[configSection].get("CapturesTag"_jrs, "{CAPTURES}"_jrs);
-	this->stealsTag = config[configSection].get("StealsTag"_jrs, "{STEALS}"_jrs);
-	this->stolenTag = config[configSection].get("StolenTag"_jrs, "{STOLEN}"_jrs);
-	this->accessTag = config[configSection].get("AccessTag"_jrs, "{ACCESS}"_jrs);
+	this->nameTag = config[configSection].get("NameTag"sv, "{NAME}"sv);
+	this->rawNameTag = config[configSection].get("RawNameTag"sv, "{RNAME}"sv);
+	this->ipTag = config[configSection].get("IPTag"sv, "{IP}"sv);
+	this->hwidTag = config[configSection].get("HWIDTag"sv, "{HWID}"sv);
+	this->rdnsTag = config[configSection].get("RDNSTag"sv, "{RDNS}"sv);
+	this->steamTag = config[configSection].get("SteamTag"sv, "{STEAM}"sv);
+	this->uuidTag = config[configSection].get("UUIDTag"sv, "{UUID}"sv);
+	this->idTag = config[configSection].get("IDTag"sv, "{ID}"sv);
+	this->characterTag = config[configSection].get("CharacterTag"sv, "{CHAR}"sv);
+	this->vehicleTag = config[configSection].get("VehicleTag"sv, "{VEH}"sv);
+	this->adminTag = config[configSection].get("AdminTag"sv, "{ADMIN}"sv);
+	this->prefixTag = config[configSection].get("PrefixTag"sv, "{PREFIX}"sv);
+	this->gamePrefixTag = config[configSection].get("GamePrefixTag"sv, "{GPREFIX}"sv);
+	this->teamColorTag = config[configSection].get("TeamColorTag"sv, "{TCOLOR}"sv);
+	this->teamShortTag = config[configSection].get("ShortTeamTag"sv, "{TEAMS}"sv);
+	this->teamLongTag = config[configSection].get("LongTeamTag"sv, "{TEAML}"sv);
+	this->pingTag = config[configSection].get("PingTag"sv, "{PING}"sv);
+	this->scoreTag = config[configSection].get("ScoreTag"sv, "{SCORE}"sv);
+	this->scorePerMinuteTag = config[configSection].get("ScorePerMinuteTag"sv, "{SPM}"sv);
+	this->creditsTag = config[configSection].get("CreditsTag"sv, "{CREDITS}"sv);
+	this->killsTag = config[configSection].get("KillsTag"sv, "{KILLS}"sv);
+	this->deathsTag = config[configSection].get("DeathsTag"sv, "{DEATHS}"sv);
+	this->kdrTag = config[configSection].get("KDRTag"sv, "{KDR}"sv);
+	this->suicidesTag = config[configSection].get("SuicidesTag"sv, "{SUICIDES}"sv);
+	this->headshotsTag = config[configSection].get("HeadshotsTag"sv, "{HEADSHOTS}"sv);
+	this->headshotKillRatioTag = config[configSection].get("HeadshotKillRatioTag"sv, "{HSKR}"sv);
+	this->vehicleKillsTag = config[configSection].get("VehicleKillsTag"sv, "{VEHICLEKILLS}"sv);
+	this->buildingKillsTag = config[configSection].get("BuildingKillsTag"sv, "{BUILDINGKILLS}"sv);
+	this->defenceKillsTag = config[configSection].get("DefenceKillsTag"sv, "{DEFENCEKILLS}"sv);
+	this->gameTimeTag = config[configSection].get("GameTimeTag"sv, "{GAMETIME}"sv);
+	this->gamesTag = config[configSection].get("GamesTag"sv, "{GAMES}"sv);
+	this->GDIGamesTag = config[configSection].get("GDIGamesTag"sv, "{GDIGAMES}"sv);
+	this->NodGamesTag = config[configSection].get("NodGamesTag"sv, "{NODGAMES}"sv);
+	this->winsTag = config[configSection].get("WinsTag"sv, "{WINS}"sv);
+	this->GDIWinsTag = config[configSection].get("GDIWinsTag"sv, "{GDIWINS}"sv);
+	this->NodWinsTag = config[configSection].get("NodWinsTag"sv, "{NODWINS}"sv);
+	this->tiesTag = config[configSection].get("TiesTag"sv, "{TIES}"sv);
+	this->lossesTag = config[configSection].get("LossesTag"sv, "{LOSSES}"sv);
+	this->GDILossesTag = config[configSection].get("GDILossesTag"sv, "{GDILOSSES}"sv);
+	this->NodLossesTag = config[configSection].get("NodLossesTag"sv, "{NODLOSSES}"sv);
+	this->winLossRatioTag = config[configSection].get("WinLossRatioTag"sv, "{WLR}"sv);
+	this->GDIWinLossRatioTag = config[configSection].get("GDIWinLossRatioTag"sv, "{GDIWLR}"sv);
+	this->NodWinLossRatioTag = config[configSection].get("NodWinLossRatioTag"sv, "{NODWLR}"sv);
+	this->beaconPlacementsTag = config[configSection].get("BeaconPlacementsTag"sv, "{BEACONPLACEMENTS}"sv);
+	this->beaconDisarmsTag = config[configSection].get("BeaconDisarmsTag"sv, "{BEACONDISARMS}"sv);
+	this->proxyPlacementsTag = config[configSection].get("ProxyPlacementsTag"sv, "{PROXYPLACEMENTS}"sv);
+	this->proxyDisarmsTag = config[configSection].get("ProxyDisarmsTag"sv, "{PROXYDISARMS}"sv);
+	this->capturesTag = config[configSection].get("CapturesTag"sv, "{CAPTURES}"sv);
+	this->stealsTag = config[configSection].get("StealsTag"sv, "{STEALS}"sv);
+	this->stolenTag = config[configSection].get("StolenTag"sv, "{STOLEN}"sv);
+	this->accessTag = config[configSection].get("AccessTag"sv, "{ACCESS}"sv);
 
 	/** Victim player tags */
-	this->victimNameTag = config[configSection].get("VictimNameTag"_jrs, "{VNAME}"_jrs);
-	this->victimRawNameTag = config[configSection].get("VictimRawNameTag"_jrs, "{VRNAME}"_jrs);
-	this->victimIPTag = config[configSection].get("VictimIPTag"_jrs, "{VIP}"_jrs);
-	this->victimHWIDTag = config[configSection].get("VictimHWIDTag"_jrs, "{VHWID}"_jrs);
-	this->victimRDNSTag = config[configSection].get("VictimRDNSTag"_jrs, "{VRDNS}"_jrs);
-	this->victimSteamTag = config[configSection].get("VictimSteamTag"_jrs, "{VSTEAM}"_jrs);
-	this->victimUUIDTag = config[configSection].get("VictimUUIDTag"_jrs, "{VUUID}"_jrs);
-	this->victimIDTag = config[configSection].get("VictimIDTag"_jrs, "{VID}"_jrs);
-	this->victimCharacterTag = config[configSection].get("VictimCharacterTag"_jrs, "{VCHAR}"_jrs);
-	this->victimVehicleTag = config[configSection].get("VictimVehicleTag"_jrs, "{VVEH}"_jrs);
-	this->victimAdminTag = config[configSection].get("VictimAdminTag"_jrs, "{VADMIN}"_jrs);
-	this->victimPrefixTag = config[configSection].get("VictimPrefixTag"_jrs, "{VPREFIX}"_jrs);
-	this->victimGamePrefixTag = config[configSection].get("VictimGamePrefixTag"_jrs, "{VGPREFIX}"_jrs);
-	this->victimTeamColorTag = config[configSection].get("VictimTeamColorTag"_jrs, "{VTCOLOR}"_jrs);
-	this->victimTeamShortTag = config[configSection].get("VictimShortTeamTag"_jrs, "{VTEAMS}"_jrs);
-	this->victimTeamLongTag = config[configSection].get("VictimLongTeamTag"_jrs, "{VTEAML}"_jrs);
-	this->victimPingTag = config[configSection].get("VictimPingTag"_jrs, "{VPING}"_jrs);
-	this->victimScoreTag = config[configSection].get("VictimScoreTag"_jrs, "{VSCORE}"_jrs);
-	this->victimScorePerMinuteTag = config[configSection].get("VictimScorePerMinuteTag"_jrs, "{VSPM}"_jrs);
-	this->victimCreditsTag = config[configSection].get("VictimCreditsTag"_jrs, "{VCREDITS}"_jrs);
-	this->victimKillsTag = config[configSection].get("VictimKillsTag"_jrs, "{VKILLS}"_jrs);
-	this->victimDeathsTag = config[configSection].get("VictimDeathsTag"_jrs, "{VDEATHS}"_jrs);
-	this->victimKDRTag = config[configSection].get("VictimKDRTag"_jrs, "{VKDR}"_jrs);
-	this->victimSuicidesTag = config[configSection].get("VictimSuicidesTag"_jrs, "{VSUICIDES}"_jrs);
-	this->victimHeadshotsTag = config[configSection].get("VictimHeadshotsTag"_jrs, "{VHEADSHOTS}"_jrs);
-	this->victimHeadshotKillRatioTag = config[configSection].get("VictimHeadshotKillRatioTag"_jrs, "{VHSKR}"_jrs);
-	this->victimVehicleKillsTag = config[configSection].get("VictimVehicleKillsTag"_jrs, "{VVEHICLEKILLS}"_jrs);
-	this->victimBuildingKillsTag = config[configSection].get("VictimBuildingKillsTag"_jrs, "{VBUILDINGKILLS}"_jrs);
-	this->victimDefenceKillsTag = config[configSection].get("VictimDefenceKillsTag"_jrs, "{VDEFENCEKILLS}"_jrs);
-	this->victimGameTimeTag = config[configSection].get("VictimGameTimeTag"_jrs, "{VGAMETIME}"_jrs);
-	this->victimGamesTag = config[configSection].get("VictimGamesTag"_jrs, "{VGAMES}"_jrs);
-	this->victimGDIGamesTag = config[configSection].get("VictimGDIGamesTag"_jrs, "{VGDIGAMES}"_jrs);
-	this->victimNodGamesTag = config[configSection].get("VictimNodGamesTag"_jrs, "{VNODGAMES}"_jrs);
-	this->victimWinsTag = config[configSection].get("VictimWinsTag"_jrs, "{VWINS}"_jrs);
-	this->victimGDIWinsTag = config[configSection].get("VictimGDIWinsTag"_jrs, "{VGDIWINS}"_jrs);
-	this->victimNodWinsTag = config[configSection].get("VictimNodWinsTag"_jrs, "{VNODWINS}"_jrs);
-	this->victimTiesTag = config[configSection].get("VictimTiesTag"_jrs, "{VTIES}"_jrs);
-	this->victimLossesTag = config[configSection].get("VictimLossesTag"_jrs, "{VLOSSES}"_jrs);
-	this->victimGDILossesTag = config[configSection].get("VictimGDILossesTag"_jrs, "{VGDILOSSES}"_jrs);
-	this->victimNodLossesTag = config[configSection].get("VictimNodLossesTag"_jrs, "{VNODLOSSES}"_jrs);
-	this->victimWinLossRatioTag = config[configSection].get("VictimWinLossRatioTag"_jrs, "{VWLR}"_jrs);
-	this->victimGDIWinLossRatioTag = config[configSection].get("VictimGDIWinLossRatioTag"_jrs, "{VGDIWLR}"_jrs);
-	this->victimNodWinLossRatioTag = config[configSection].get("VictimNodWinLossRatioTag"_jrs, "{VNODWLR}"_jrs);
-	this->victimBeaconPlacementsTag = config[configSection].get("VictimBeaconPlacementsTag"_jrs, "{VBEACONPLACEMENTS}"_jrs);
-	this->victimBeaconDisarmsTag = config[configSection].get("VictimBeaconDisarmsTag"_jrs, "{VBEACONDISARMS}"_jrs);
-	this->victimProxyPlacementsTag = config[configSection].get("VictimProxyPlacementsTag"_jrs, "{VPROXYPLACEMENTS}"_jrs);
-	this->victimProxyDisarmsTag = config[configSection].get("VictimProxyDisarmsTag"_jrs, "{VPROXYDISARMS}"_jrs);
-	this->victimCapturesTag = config[configSection].get("VictimCapturesTag"_jrs, "{VCAPTURES}"_jrs);
-	this->victimStealsTag = config[configSection].get("VictimStealsTag"_jrs, "{VSTEALS}"_jrs);
-	this->victimStolenTag = config[configSection].get("VictimStolenTag"_jrs, "{VSTOLEN}"_jrs);
-	this->victimAccessTag = config[configSection].get("VictimAccessTag"_jrs, "{VACCESS}"_jrs);
+	this->victimNameTag = config[configSection].get("VictimNameTag"sv, "{VNAME}"sv);
+	this->victimRawNameTag = config[configSection].get("VictimRawNameTag"sv, "{VRNAME}"sv);
+	this->victimIPTag = config[configSection].get("VictimIPTag"sv, "{VIP}"sv);
+	this->victimHWIDTag = config[configSection].get("VictimHWIDTag"sv, "{VHWID}"sv);
+	this->victimRDNSTag = config[configSection].get("VictimRDNSTag"sv, "{VRDNS}"sv);
+	this->victimSteamTag = config[configSection].get("VictimSteamTag"sv, "{VSTEAM}"sv);
+	this->victimUUIDTag = config[configSection].get("VictimUUIDTag"sv, "{VUUID}"sv);
+	this->victimIDTag = config[configSection].get("VictimIDTag"sv, "{VID}"sv);
+	this->victimCharacterTag = config[configSection].get("VictimCharacterTag"sv, "{VCHAR}"sv);
+	this->victimVehicleTag = config[configSection].get("VictimVehicleTag"sv, "{VVEH}"sv);
+	this->victimAdminTag = config[configSection].get("VictimAdminTag"sv, "{VADMIN}"sv);
+	this->victimPrefixTag = config[configSection].get("VictimPrefixTag"sv, "{VPREFIX}"sv);
+	this->victimGamePrefixTag = config[configSection].get("VictimGamePrefixTag"sv, "{VGPREFIX}"sv);
+	this->victimTeamColorTag = config[configSection].get("VictimTeamColorTag"sv, "{VTCOLOR}"sv);
+	this->victimTeamShortTag = config[configSection].get("VictimShortTeamTag"sv, "{VTEAMS}"sv);
+	this->victimTeamLongTag = config[configSection].get("VictimLongTeamTag"sv, "{VTEAML}"sv);
+	this->victimPingTag = config[configSection].get("VictimPingTag"sv, "{VPING}"sv);
+	this->victimScoreTag = config[configSection].get("VictimScoreTag"sv, "{VSCORE}"sv);
+	this->victimScorePerMinuteTag = config[configSection].get("VictimScorePerMinuteTag"sv, "{VSPM}"sv);
+	this->victimCreditsTag = config[configSection].get("VictimCreditsTag"sv, "{VCREDITS}"sv);
+	this->victimKillsTag = config[configSection].get("VictimKillsTag"sv, "{VKILLS}"sv);
+	this->victimDeathsTag = config[configSection].get("VictimDeathsTag"sv, "{VDEATHS}"sv);
+	this->victimKDRTag = config[configSection].get("VictimKDRTag"sv, "{VKDR}"sv);
+	this->victimSuicidesTag = config[configSection].get("VictimSuicidesTag"sv, "{VSUICIDES}"sv);
+	this->victimHeadshotsTag = config[configSection].get("VictimHeadshotsTag"sv, "{VHEADSHOTS}"sv);
+	this->victimHeadshotKillRatioTag = config[configSection].get("VictimHeadshotKillRatioTag"sv, "{VHSKR}"sv);
+	this->victimVehicleKillsTag = config[configSection].get("VictimVehicleKillsTag"sv, "{VVEHICLEKILLS}"sv);
+	this->victimBuildingKillsTag = config[configSection].get("VictimBuildingKillsTag"sv, "{VBUILDINGKILLS}"sv);
+	this->victimDefenceKillsTag = config[configSection].get("VictimDefenceKillsTag"sv, "{VDEFENCEKILLS}"sv);
+	this->victimGameTimeTag = config[configSection].get("VictimGameTimeTag"sv, "{VGAMETIME}"sv);
+	this->victimGamesTag = config[configSection].get("VictimGamesTag"sv, "{VGAMES}"sv);
+	this->victimGDIGamesTag = config[configSection].get("VictimGDIGamesTag"sv, "{VGDIGAMES}"sv);
+	this->victimNodGamesTag = config[configSection].get("VictimNodGamesTag"sv, "{VNODGAMES}"sv);
+	this->victimWinsTag = config[configSection].get("VictimWinsTag"sv, "{VWINS}"sv);
+	this->victimGDIWinsTag = config[configSection].get("VictimGDIWinsTag"sv, "{VGDIWINS}"sv);
+	this->victimNodWinsTag = config[configSection].get("VictimNodWinsTag"sv, "{VNODWINS}"sv);
+	this->victimTiesTag = config[configSection].get("VictimTiesTag"sv, "{VTIES}"sv);
+	this->victimLossesTag = config[configSection].get("VictimLossesTag"sv, "{VLOSSES}"sv);
+	this->victimGDILossesTag = config[configSection].get("VictimGDILossesTag"sv, "{VGDILOSSES}"sv);
+	this->victimNodLossesTag = config[configSection].get("VictimNodLossesTag"sv, "{VNODLOSSES}"sv);
+	this->victimWinLossRatioTag = config[configSection].get("VictimWinLossRatioTag"sv, "{VWLR}"sv);
+	this->victimGDIWinLossRatioTag = config[configSection].get("VictimGDIWinLossRatioTag"sv, "{VGDIWLR}"sv);
+	this->victimNodWinLossRatioTag = config[configSection].get("VictimNodWinLossRatioTag"sv, "{VNODWLR}"sv);
+	this->victimBeaconPlacementsTag = config[configSection].get("VictimBeaconPlacementsTag"sv, "{VBEACONPLACEMENTS}"sv);
+	this->victimBeaconDisarmsTag = config[configSection].get("VictimBeaconDisarmsTag"sv, "{VBEACONDISARMS}"sv);
+	this->victimProxyPlacementsTag = config[configSection].get("VictimProxyPlacementsTag"sv, "{VPROXYPLACEMENTS}"sv);
+	this->victimProxyDisarmsTag = config[configSection].get("VictimProxyDisarmsTag"sv, "{VPROXYDISARMS}"sv);
+	this->victimCapturesTag = config[configSection].get("VictimCapturesTag"sv, "{VCAPTURES}"sv);
+	this->victimStealsTag = config[configSection].get("VictimStealsTag"sv, "{VSTEALS}"sv);
+	this->victimStolenTag = config[configSection].get("VictimStolenTag"sv, "{VSTOLEN}"sv);
+	this->victimAccessTag = config[configSection].get("VictimAccessTag"sv, "{VACCESS}"sv);
 
 	/** Building tags */
-	this->buildingNameTag = config[configSection].get("BuildingNameTag"_jrs, "{BNAME}"_jrs);
-	this->buildingRawNameTag = config[configSection].get("BuildingRawNameTag"_jrs, "{BRNAME}"_jrs);
-	this->buildingHealthTag = config[configSection].get("BuildingHealthTag"_jrs, "{BHEALTH}"_jrs);
-	this->buildingMaxHealthTag = config[configSection].get("BuildingMaxHealthTag"_jrs, "{BMHEALTH}"_jrs);
-	this->buildingHealthPercentageTag = config[configSection].get("BuildingHealthPercentageTag"_jrs, "{BHP}"_jrs);
-	this->buildingArmorTag = config[configSection].get("BuildingArmorTag"_jrs, "{BARMOR}"_jrs);
-	this->buildingMaxArmorTag = config[configSection].get("BuildingMaxArmorTag"_jrs, "{BMARMOR}"_jrs);
-	this->buildingArmorPercentageTag = config[configSection].get("BuildingArmorPercentageTag"_jrs, "{BAP}"_jrs);
-	this->buildingDurabilityTag = config[configSection].get("BuildingDurabilityTag"_jrs, "{BDURABILITY}"_jrs);
-	this->buildingMaxDurabilityTag = config[configSection].get("BuildingMaxDurabilityTag"_jrs, "{BMDURABILITY}"_jrs);
-	this->buildingDurabilityPercentageTag = config[configSection].get("BuildingDurabilityPercentageTag"_jrs, "{BDP}"_jrs);
-	this->buildingTeamColorTag = config[configSection].get("BuildingTeamColorTag"_jrs, "{BCOLOR}"_jrs);
-	this->buildingTeamShortTag = config[configSection].get("BuildingShortTeamTag"_jrs, "{BTEAMS}"_jrs);
-	this->buildingTeamLongTag = config[configSection].get("BuildingLongTeamTag"_jrs, "{BTEAML}"_jrs);
+	this->buildingNameTag = config[configSection].get("BuildingNameTag"sv, "{BNAME}"sv);
+	this->buildingRawNameTag = config[configSection].get("BuildingRawNameTag"sv, "{BRNAME}"sv);
+	this->buildingHealthTag = config[configSection].get("BuildingHealthTag"sv, "{BHEALTH}"sv);
+	this->buildingMaxHealthTag = config[configSection].get("BuildingMaxHealthTag"sv, "{BMHEALTH}"sv);
+	this->buildingHealthPercentageTag = config[configSection].get("BuildingHealthPercentageTag"sv, "{BHP}"sv);
+	this->buildingArmorTag = config[configSection].get("BuildingArmorTag"sv, "{BARMOR}"sv);
+	this->buildingMaxArmorTag = config[configSection].get("BuildingMaxArmorTag"sv, "{BMARMOR}"sv);
+	this->buildingArmorPercentageTag = config[configSection].get("BuildingArmorPercentageTag"sv, "{BAP}"sv);
+	this->buildingDurabilityTag = config[configSection].get("BuildingDurabilityTag"sv, "{BDURABILITY}"sv);
+	this->buildingMaxDurabilityTag = config[configSection].get("BuildingMaxDurabilityTag"sv, "{BMDURABILITY}"sv);
+	this->buildingDurabilityPercentageTag = config[configSection].get("BuildingDurabilityPercentageTag"sv, "{BDP}"sv);
+	this->buildingTeamColorTag = config[configSection].get("BuildingTeamColorTag"sv, "{BCOLOR}"sv);
+	this->buildingTeamShortTag = config[configSection].get("BuildingShortTeamTag"sv, "{BTEAMS}"sv);
+	this->buildingTeamLongTag = config[configSection].get("BuildingLongTeamTag"sv, "{BTEAML}"sv);
 
 	/** Ladder tags */
-	this->rankTag = config[configSection].get("RankTag"_jrs, "{RANK}"_jrs);
-	this->lastGameTag = config[configSection].get("LastGameTag"_jrs, "{LASTGAME}"_jrs);
-	this->GDIScoreTag = config[configSection].get("GDIScoreTag"_jrs, "{GDISCORE}"_jrs);
-	this->GDISPMTag = config[configSection].get("GDISPMTag"_jrs, "{GDISPM}"_jrs);
-	this->GDIGameTimeTag = config[configSection].get("GDIGameTimeTag"_jrs, "{GDIGAMETIME}"_jrs);
-	this->GDITiesTag = config[configSection].get("GDITiesTag"_jrs, "{GDITIES}"_jrs);
-	this->GDIBeaconPlacementsTag = config[configSection].get("GDIBeaconPlacementsTag"_jrs, "{GDIBEACONPLACEMENTS}"_jrs);
-	this->GDIBeaconDisarmsTag = config[configSection].get("GDIBeaconDisarmsTag"_jrs, "{GDIBEACONDISARMS}"_jrs);
-	this->GDIProxyPlacementsTag = config[configSection].get("GDIProxyPlacementsTag"_jrs, "{GDIPROXYPLACEMENTS}"_jrs);
-	this->GDIProxyDisarmsTag = config[configSection].get("GDIProxyDisarmsTag"_jrs, "{GDIPROXYDISARMS}"_jrs);
-	this->GDIKillsTag = config[configSection].get("GDIKillsTag"_jrs, "{GDIKILLS}"_jrs);
-	this->GDIDeathsTag = config[configSection].get("GDIDeathsTag"_jrs, "{GDIDEATHS}"_jrs);
-	this->GDIVehicleKillsTag = config[configSection].get("GDIVehicleKillsTag"_jrs, "{GDIVEHICLEKILLS}"_jrs);
-	this->GDIDefenceKillsTag = config[configSection].get("GDIDefenceKillsTag"_jrs, "{GDIDEFENCEKILLS}"_jrs);
-	this->GDIBuildingKillsTag = config[configSection].get("GDIBuildingKillsTag"_jrs, "{GDIBUILDINGKILLS}"_jrs);
-	this->GDIKDRTag = config[configSection].get("GDIKDRTag"_jrs, "{GDIKDR}"_jrs);
-	this->GDIHeadshotsTag = config[configSection].get("GDIHeadshotsTag"_jrs, "{GDIHEADSHOTS}"_jrs);
-	this->GDIHeadshotKillRatioTag = config[configSection].get("GDIHeadshotKillRatioTag"_jrs, "{GDIHSKR}"_jrs);
-	this->NodScoreTag = config[configSection].get("NodScoreTag"_jrs, "{NODSCORE}"_jrs);
-	this->NodSPMTag = config[configSection].get("NodSPMTag"_jrs, "{NODSPM}"_jrs);
-	this->NodGameTimeTag = config[configSection].get("NodGameTimeTag"_jrs, "{NODGAMETIME}"_jrs);
-	this->NodTiesTag = config[configSection].get("NodTiesTag"_jrs, "{NODTIES}"_jrs);
-	this->NodBeaconPlacementsTag = config[configSection].get("NodBeaconPlacementsTag"_jrs, "{NODBEACONPLACEMENTS}"_jrs);
-	this->NodBeaconDisarmsTag = config[configSection].get("NodBeaconDisarmsTag"_jrs, "{NODBEACONDISARMS}"_jrs);
-	this->NodProxyPlacementsTag = config[configSection].get("NodProxyPlacementsTag"_jrs, "{NODPROXYPLACEMENTS}"_jrs);
-	this->NodProxyDisarmsTag = config[configSection].get("NodProxyDisarmsTag"_jrs, "{NODPROXYDISARMS}"_jrs);
-	this->NodKillsTag = config[configSection].get("NodKillsTag"_jrs, "{NODKILLS}"_jrs);
-	this->NodDeathsTag = config[configSection].get("NodDeathsTag"_jrs, "{NODDEATHS}"_jrs);
-	this->NodVehicleKillsTag = config[configSection].get("NodVehicleKillsTag"_jrs, "{NODVEHICLEKILLS}"_jrs);
-	this->NodDefenceKillsTag = config[configSection].get("NodDefenceKillsTag"_jrs, "{NODDEFENCEKILLS}"_jrs);
-	this->NodBuildingKillsTag = config[configSection].get("NodBuildingKillsTag"_jrs, "{NODBUILDINGKILLS}"_jrs);
-	this->NodKDRTag = config[configSection].get("NodKDRTag"_jrs, "{NODKDR}"_jrs);
-	this->NodHeadshotsTag = config[configSection].get("NodHeadshotsTag"_jrs, "{NODHEADSHOTS}"_jrs);
-	this->NodHeadshotKillRatioTag = config[configSection].get("NodHeadshotKillRatioTag"_jrs, "{NODHSKR}"_jrs);
+	this->rankTag = config[configSection].get("RankTag"sv, "{RANK}"sv);
+	this->lastGameTag = config[configSection].get("LastGameTag"sv, "{LASTGAME}"sv);
+	this->GDIScoreTag = config[configSection].get("GDIScoreTag"sv, "{GDISCORE}"sv);
+	this->GDISPMTag = config[configSection].get("GDISPMTag"sv, "{GDISPM}"sv);
+	this->GDIGameTimeTag = config[configSection].get("GDIGameTimeTag"sv, "{GDIGAMETIME}"sv);
+	this->GDITiesTag = config[configSection].get("GDITiesTag"sv, "{GDITIES}"sv);
+	this->GDIBeaconPlacementsTag = config[configSection].get("GDIBeaconPlacementsTag"sv, "{GDIBEACONPLACEMENTS}"sv);
+	this->GDIBeaconDisarmsTag = config[configSection].get("GDIBeaconDisarmsTag"sv, "{GDIBEACONDISARMS}"sv);
+	this->GDIProxyPlacementsTag = config[configSection].get("GDIProxyPlacementsTag"sv, "{GDIPROXYPLACEMENTS}"sv);
+	this->GDIProxyDisarmsTag = config[configSection].get("GDIProxyDisarmsTag"sv, "{GDIPROXYDISARMS}"sv);
+	this->GDIKillsTag = config[configSection].get("GDIKillsTag"sv, "{GDIKILLS}"sv);
+	this->GDIDeathsTag = config[configSection].get("GDIDeathsTag"sv, "{GDIDEATHS}"sv);
+	this->GDIVehicleKillsTag = config[configSection].get("GDIVehicleKillsTag"sv, "{GDIVEHICLEKILLS}"sv);
+	this->GDIDefenceKillsTag = config[configSection].get("GDIDefenceKillsTag"sv, "{GDIDEFENCEKILLS}"sv);
+	this->GDIBuildingKillsTag = config[configSection].get("GDIBuildingKillsTag"sv, "{GDIBUILDINGKILLS}"sv);
+	this->GDIKDRTag = config[configSection].get("GDIKDRTag"sv, "{GDIKDR}"sv);
+	this->GDIHeadshotsTag = config[configSection].get("GDIHeadshotsTag"sv, "{GDIHEADSHOTS}"sv);
+	this->GDIHeadshotKillRatioTag = config[configSection].get("GDIHeadshotKillRatioTag"sv, "{GDIHSKR}"sv);
+	this->NodScoreTag = config[configSection].get("NodScoreTag"sv, "{NODSCORE}"sv);
+	this->NodSPMTag = config[configSection].get("NodSPMTag"sv, "{NODSPM}"sv);
+	this->NodGameTimeTag = config[configSection].get("NodGameTimeTag"sv, "{NODGAMETIME}"sv);
+	this->NodTiesTag = config[configSection].get("NodTiesTag"sv, "{NODTIES}"sv);
+	this->NodBeaconPlacementsTag = config[configSection].get("NodBeaconPlacementsTag"sv, "{NODBEACONPLACEMENTS}"sv);
+	this->NodBeaconDisarmsTag = config[configSection].get("NodBeaconDisarmsTag"sv, "{NODBEACONDISARMS}"sv);
+	this->NodProxyPlacementsTag = config[configSection].get("NodProxyPlacementsTag"sv, "{NODPROXYPLACEMENTS}"sv);
+	this->NodProxyDisarmsTag = config[configSection].get("NodProxyDisarmsTag"sv, "{NODPROXYDISARMS}"sv);
+	this->NodKillsTag = config[configSection].get("NodKillsTag"sv, "{NODKILLS}"sv);
+	this->NodDeathsTag = config[configSection].get("NodDeathsTag"sv, "{NODDEATHS}"sv);
+	this->NodVehicleKillsTag = config[configSection].get("NodVehicleKillsTag"sv, "{NODVEHICLEKILLS}"sv);
+	this->NodDefenceKillsTag = config[configSection].get("NodDefenceKillsTag"sv, "{NODDEFENCEKILLS}"sv);
+	this->NodBuildingKillsTag = config[configSection].get("NodBuildingKillsTag"sv, "{NODBUILDINGKILLS}"sv);
+	this->NodKDRTag = config[configSection].get("NodKDRTag"sv, "{NODKDR}"sv);
+	this->NodHeadshotsTag = config[configSection].get("NodHeadshotsTag"sv, "{NODHEADSHOTS}"sv);
+	this->NodHeadshotKillRatioTag = config[configSection].get("NodHeadshotKillRatioTag"sv, "{NODHSKR}"sv);
 
 	/** Other tags */
-	this->weaponTag = config[configSection].get("WeaponTag"_jrs, "{WEAPON}"_jrs);
-	this->objectTag = config[configSection].get("ObjectTag"_jrs, "{OBJECT}"_jrs);
-	this->messageTag = config[configSection].get("MessageTag"_jrs, "{MESSAGE}"_jrs);
-	this->newNameTag = config[configSection].get("NewNameTag"_jrs, "{NNAME}"_jrs);
-	this->winScoreTag = config[configSection].get("WinScoreTag"_jrs, "{WINSCORE}"_jrs);
-	this->loseScoreTag = config[configSection].get("LoseScoreTag"_jrs, "{LOSESCORE}"_jrs);
+	this->weaponTag = config[configSection].get("WeaponTag"sv, "{WEAPON}"sv);
+	this->objectTag = config[configSection].get("ObjectTag"sv, "{OBJECT}"sv);
+	this->messageTag = config[configSection].get("MessageTag"sv, "{MESSAGE}"sv);
+	this->newNameTag = config[configSection].get("NewNameTag"sv, "{NNAME}"sv);
+	this->winScoreTag = config[configSection].get("WinScoreTag"sv, "{WINSCORE}"sv);
+	this->loseScoreTag = config[configSection].get("LoseScoreTag"sv, "{LOSESCORE}"sv);
 
 	return true;
 }
@@ -868,9 +867,8 @@ void TagsImp::sanitizeTags(std::string& fmt)
 	}
 }
 
-std::string_view TagsImp::getUniqueInternalTag()
-{
-	this->uniqueTag.set(1, reinterpret_cast<const char *>(&this->tagItr), sizeof(TagsImp::tagItr));
+std::string_view TagsImp::getUniqueInternalTag() {
+	std::memcpy(this->uniqueTag.data() + 1, reinterpret_cast<const char *>(&this->tagItr), sizeof(TagsImp::tagItr));
 	++TagsImp::tagItr;
 	return this->uniqueTag;
 }

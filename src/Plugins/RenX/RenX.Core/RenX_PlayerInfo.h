@@ -27,8 +27,6 @@
 #include <chrono>
 #include <mutex>
 #include <thread>
-#include "Jupiter/Reference_String.h"
-#include "Jupiter/String.hpp"
 #include "Jupiter/Config.h"
 #include "RenX.h"
 
@@ -51,10 +49,10 @@ namespace RenX
 		// TODO: Add backpack
 		std::string name;
 		std::string ip;
-		Jupiter::StringS adminType;
+		std::string adminType;
 		std::string uuid;
-		Jupiter::StringS character;
-		Jupiter::StringS vehicle;
+		std::string character;
+		std::string vehicle;
 		std::string hwid;
 		uint64_t steamid = 0;
 		uint32_t ip32 = 0;
@@ -103,8 +101,8 @@ namespace RenX
 		void start_resolve_rdns();
 		bool rdns_pending = false;
 		
-		mutable Jupiter::StringS gamePrefix;
-		mutable Jupiter::StringS formatNamePrefix;
+		mutable std::string gamePrefix;
+		mutable std::string formatNamePrefix;
 		mutable int access = 0;
 		mutable Jupiter::Config varData; // TODO: use jessilib::object instead
 
@@ -112,7 +110,7 @@ namespace RenX
 		std::shared_ptr<std::string> m_rdns_ptr; // Needs synchronization across threads
 	};
 
-	static std::string_view rdns_pending{ "RDNS_PENDING" };
+	static constexpr std::string_view rdns_pending{ "RDNS_PENDING" };
 }
 
 /** Re-enable warnings */

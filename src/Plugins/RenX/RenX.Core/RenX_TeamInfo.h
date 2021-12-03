@@ -24,7 +24,6 @@
  * @brief Defines the BuildingInfo structure.
  */
 
-#include "Jupiter/String.hpp"
 #include "RenX.h"
 
 /** DLL Linkage Nagging */
@@ -49,7 +48,7 @@ namespace RenX
 		int32_t mine_limit;
 		int32_t vehicle_count;
 		int32_t vehicle_limit;
-		Jupiter::StringS name;
+		std::string name;
 	};
 
 }

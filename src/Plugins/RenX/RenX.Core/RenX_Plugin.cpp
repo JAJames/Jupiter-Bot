@@ -73,7 +73,7 @@ void RenX::Plugin::RenX_OnServerDisconnect(Server &, RenX::DisconnectReason) {
 	return;
 }
 
-bool RenX::Plugin::RenX_OnBan(Server &, const PlayerInfo &, Jupiter::StringType &) {
+bool RenX::Plugin::RenX_OnBan(Server &, const PlayerInfo &, std::string &) {
 	return false;
 }
 

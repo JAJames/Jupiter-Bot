@@ -22,11 +22,11 @@
 #include "RenX_PlayerInfo.h"
 #include "RenX_Warn.h"
 
-using namespace Jupiter::literals;
+using namespace std::literals;
 
 bool RenX_WarnPlugin::initialize() {
-	m_maxWarns = this->config.get<int>("MaxWarns"_jrs, 3);
-	m_warnAction = this->config.get<int>("MaxAction"_jrs, -1);
+	m_maxWarns = this->config.get<int>("MaxWarns"sv, 3);
+	m_warnAction = this->config.get<int>("MaxAction"sv, -1);
 	return true;
 }
 
@@ -38,20 +38,20 @@ int RenX_WarnPlugin::OnRehash() {
 // Plugin instantiation and entry point.
 RenX_WarnPlugin pluginInstance;
 
-STRING_LITERAL_AS_NAMED_REFERENCE(WARNS_KEY, "w");
+static constexpr std::string_view WARNS_KEY = "w"sv;
 
 // Warn IRC Command
 
 void WarnIRCCommand::create() {
-	this->addTrigger("warn"_jrs);
-	this->addTrigger("w"_jrs);
+	this->addTrigger("warn"sv);
+	this->addTrigger("w"sv);
 	this->setAccessLevel(2);
 }
 
 void WarnIRCCommand::trigger(IRC_Bot *source, std::string_view channel, std::string_view nick, std::string_view parameters) {
 	auto parameters_split = jessilib::word_split_once_view(std::string_view{parameters}, WHITESPACE_SV);
 	if (parameters_split.second.empty()) {
-		source->sendNotice(nick, "Error: Too Few Parameters. Syntax: Warn <Player> <Reason>"_jrs);
+		source->sendNotice(nick, "Error: Too Few Parameters. Syntax: Warn <Player> <Reason>"sv);
 		return;
 	}
 
@@ -62,7 +62,7 @@ void WarnIRCCommand::trigger(IRC_Bot *source, std::string_view channel, std::str
 
 	const auto& servers = RenX::getCore()->getServers(chan->getType());
 	if (servers.empty()) {
-		source->sendMessage(channel, "Error: Channel not attached to any connected Renegade X servers."_jrs);
+		source->sendMessage(channel, "Error: Channel not attached to any connected Renegade X servers."sv);
 		return;
 	}
 
@@ -82,7 +82,7 @@ void WarnIRCCommand::trigger(IRC_Bot *source, std::string_view channel, std::str
 						source->sendNotice(nick, string_printf("%.*s has been kicked from the server for exceeding the warning limit (%d warnings).", player->name.size(), player->name.data(), warns));
 						break;
 					default:
-						server->banPlayer(*player, "Jupiter Bot/RenX.Warn"_jrs, string_printf("Warning limit reached (%d warnings)", warns), std::chrono::seconds(pluginInstance.m_warnAction));
+						server->banPlayer(*player, "Jupiter Bot/RenX.Warn"sv, string_printf("Warning limit reached (%d warnings)", warns), std::chrono::seconds(pluginInstance.m_warnAction));
 						source->sendNotice(nick, string_printf("%.*s has been banned from the server for exceeding the warning limit (%d warnings).", player->name.size(), player->name.data(), reason.size(), reason.data(), warns));
 						break;
 					}
@@ -99,7 +99,7 @@ void WarnIRCCommand::trigger(IRC_Bot *source, std::string_view channel, std::str
 }
 
 std::string_view WarnIRCCommand::getHelp(std::string_view ) {
-	static STRING_LITERAL_AS_NAMED_REFERENCE(defaultHelp, "Warns a player. Syntax: Warn <Player> <Reason>");
+	static constexpr std::string_view defaultHelp = "Warns a player. Syntax: Warn <Player> <Reason>"sv;
 	return defaultHelp;
 }
 
@@ -108,9 +108,9 @@ IRC_COMMAND_INIT(WarnIRCCommand)
 // Pardon IRC Command
 
 void PardonIRCCommand::create() {
-	this->addTrigger("pardon"_jrs);
-	this->addTrigger("forgive"_jrs);
-	this->addTrigger("unwarn"_jrs);
+	this->addTrigger("pardon"sv);
+	this->addTrigger("forgive"sv);
+	this->addTrigger("unwarn"sv);
 	this->setAccessLevel(2);
 }
 
@@ -127,7 +127,7 @@ void PardonIRCCommand::trigger(IRC_Bot *source, std::string_view channel, std::s
 
 	const auto& servers = RenX::getCore()->getServers(chan->getType());
 	if (servers.empty()) {
-		source->sendMessage(channel, "Error: Channel not attached to any connected Renegade X servers."_jrs);
+		source->sendMessage(channel, "Error: Channel not attached to any connected Renegade X servers."sv);
 		return;
 	}
 
@@ -146,7 +146,7 @@ void PardonIRCCommand::trigger(IRC_Bot *source, std::string_view channel, std::s
 }
 
 std::string_view PardonIRCCommand::getHelp(std::string_view ) {
-	static STRING_LITERAL_AS_NAMED_REFERENCE(defaultHelp, "Resets a player's warnings. Syntax: Pardon <Player>");
+	static constexpr std::string_view defaultHelp = "Resets a player's warnings. Syntax: Pardon <Player>"sv;
 	return defaultHelp;
 }
 
@@ -155,8 +155,8 @@ IRC_COMMAND_INIT(PardonIRCCommand)
 // Warn Game Command
 
 void WarnGameCommand::create() {
-	this->addTrigger("warn"_jrs);
-	this->addTrigger("w"_jrs);
+	this->addTrigger("warn"sv);
+	this->addTrigger("w"sv);
 	this->setAccessLevel(1);
 }
 
@@ -177,7 +177,7 @@ void WarnGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *player, st
 					source->sendMessage(*player, string_printf("%.*s has been kicked from the server for exceeding the warning limit (%d warnings).", target->name.size(), target->name.data(), warns));
 					break;
 				default:
-					source->banPlayer(*target, "Jupiter Bot/RenX.Warn"_jrs, string_printf("Warning limit reached (%d warnings)", warns), std::chrono::seconds(pluginInstance.m_warnAction));
+					source->banPlayer(*target, "Jupiter Bot/RenX.Warn"sv, string_printf("Warning limit reached (%d warnings)", warns), std::chrono::seconds(pluginInstance.m_warnAction));
 					source->sendMessage(*player, string_printf("%.*s has been banned from the server for exceeding the warning limit (%d warnings).", target->name.size(), target->name.data(), warns));
 					break;
 				}
@@ -190,11 +190,11 @@ void WarnGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *player, st
 		}
 	}
 	else
-		source->sendMessage(*player, "Error: Too few parameters. Syntax: Warn <Player> <Reason>"_jrs);
+		source->sendMessage(*player, "Error: Too few parameters. Syntax: Warn <Player> <Reason>"sv);
 }
 
 std::string_view WarnGameCommand::getHelp(std::string_view ) {
-	static STRING_LITERAL_AS_NAMED_REFERENCE(defaultHelp, "Warns a player. Syntax: Warn <Player> <Reason>");
+	static constexpr std::string_view defaultHelp = "Warns a player. Syntax: Warn <Player> <Reason>"sv;
 	return defaultHelp;
 }
 
@@ -203,9 +203,9 @@ GAME_COMMAND_INIT(WarnGameCommand)
 // Pardon Game Command
 
 void PardonGameCommand::create() {
-	this->addTrigger("pardon"_jrs);
-	this->addTrigger("forgive"_jrs);
-	this->addTrigger("unwarn"_jrs);
+	this->addTrigger("pardon"sv);
+	this->addTrigger("forgive"sv);
+	this->addTrigger("unwarn"sv);
 	this->setAccessLevel(1);
 }
 
@@ -224,7 +224,7 @@ void PardonGameCommand::trigger(RenX::Server *source, RenX::PlayerInfo *player, 
 }
 
 std::string_view PardonGameCommand::getHelp(std::string_view ) {
-	static STRING_LITERAL_AS_NAMED_REFERENCE(defaultHelp, "Resets a player's warnings. Syntax: Pardon <Player>");
+	static constexpr std::string_view defaultHelp = "Resets a player's warnings. Syntax: Pardon <Player>"sv;
 	return defaultHelp;
 }
 

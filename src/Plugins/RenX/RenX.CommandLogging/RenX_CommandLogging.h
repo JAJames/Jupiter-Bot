@@ -10,7 +10,6 @@
 #define _RENX_CMDLOGGING_H_HEADER
 
 #include "Jupiter/Plugin.h"
-#include "Jupiter/Reference_String.h"
 #include "RenX_Plugin.h"
 
 class RenX_CommandLoggingPlugin : public RenX::Plugin

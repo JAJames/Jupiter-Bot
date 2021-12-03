@@ -20,7 +20,6 @@
 #define _IRC_CORE_H_HEADER
 
 #include "Jupiter/Plugin.h"
-#include "Jupiter/Reference_String.h"
 
 class IRCCorePlugin : public Jupiter::Plugin
 {

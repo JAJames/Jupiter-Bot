@@ -20,23 +20,23 @@
 #include "Jupiter/IRC_Client.h"
 #include "RenX_Ladder_Weekly.h"
 
-using namespace Jupiter::literals;
+using namespace std::literals;
 
-bool RenX_Ladder_Weekly_TimePlugin::initialize()
-{
+bool RenX_Ladder_Weekly_TimePlugin::initialize() {
 	time_t current_time = time(0);
 	// Load database
-	this->database.process_file(this->config.get("LadderDatabase"_jrs, "Ladder.Weekly.db"_jrs));
-	this->database.setName(this->config.get("DatabaseName"_jrs, "Weekly"_jrs));
-	this->database.setOutputTimes(this->config.get<bool>("OutputTimes"_jrs, false));
+	this->database.process_file(this->config.get("LadderDatabase"sv, "Ladder.Weekly.db"sv));
+	this->database.setName(this->config.get("DatabaseName"sv, "Weekly"sv));
+	this->database.setOutputTimes(this->config.get<bool>("OutputTimes"sv, false));
 
 	this->last_sorted_day = gmtime(&current_time)->tm_wday;
-	this->reset_day = this->config.get<int>("ResetDay"_jrs);
+	this->reset_day = this->config.get<int>("ResetDay"sv);
 	this->database.OnPreUpdateLadder = OnPreUpdateLadder;
 
 	// Force database to default, if desired
-	if (this->config.get<bool>("ForceDefault"_jrs, false))
+	if (this->config.get<bool>("ForceDefault"sv, false)) {
 		RenX::default_ladder_database = &this->database;
+	}
 
 	return true;
 }
@@ -44,16 +44,16 @@ bool RenX_Ladder_Weekly_TimePlugin::initialize()
 // Plugin instantiation and entry point.
 RenX_Ladder_Weekly_TimePlugin pluginInstance;
 
-void OnPreUpdateLadder(RenX::LadderDatabase &database, RenX::Server &, const RenX::TeamType &)
-{
+void OnPreUpdateLadder(RenX::LadderDatabase &database, RenX::Server &, const RenX::TeamType &) {
 	time_t current_time = time(0);
 	tm *tm_ptr = gmtime(&current_time);
-	if (pluginInstance.last_sorted_day != tm_ptr->tm_wday && tm_ptr->tm_wday == pluginInstance.reset_day)
+	if (pluginInstance.last_sorted_day != tm_ptr->tm_wday && tm_ptr->tm_wday == pluginInstance.reset_day) {
 		database.erase();
+	}
+
 	pluginInstance.last_sorted_day = tm_ptr->tm_wday;
 }
 
-extern "C" JUPITER_EXPORT Jupiter::Plugin *getPlugin()
-{
+extern "C" JUPITER_EXPORT Jupiter::Plugin *getPlugin() {
 	return &pluginInstance;
 }

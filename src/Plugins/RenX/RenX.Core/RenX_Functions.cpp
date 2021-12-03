@@ -26,23 +26,22 @@
 #include "RenX_Server.h"
 #include "RenX_PlayerInfo.h"
 
-using namespace Jupiter::literals;
 using namespace std::literals;
 
 /** Team color translations */
-Jupiter::ReferenceString NodColor = "04";
-Jupiter::ReferenceString GDIColor = "08";
-Jupiter::ReferenceString OtherColor = "14";
+static std::string_view NodColor = "04";
+static std::string_view GDIColor = "08";
+static std::string_view OtherColor = "14";
 
 /** Short team name translations */
-Jupiter::ReferenceString NodShortName = "Nod";
-Jupiter::ReferenceString GDIShortName = "GDI";
-Jupiter::ReferenceString OtherShortName = "N/A";
+static std::string_view NodShortName = "Nod";
+static std::string_view GDIShortName = "GDI";
+static std::string_view OtherShortName = "N/A";
 
 /** Long team name translations */
-Jupiter::ReferenceString NodLongName = "Brotherhood of Nod";
-Jupiter::ReferenceString GDILongName = "Global Defense Initiative";
-Jupiter::ReferenceString OtherLongName = "Unknown";
+static std::string_view NodLongName = "Brotherhood of Nod";
+static std::string_view GDILongName = "Global Defense Initiative";
+static std::string_view OtherLongName = "Unknown";
 
 /** RenegadeX RCON protocol message deliminator */
 const char RenX::DelimC = '\x02';
@@ -51,304 +50,304 @@ const std::string_view RenX::DevBotName = "DevBot"sv;
 
 /** WinType translations */
 
-Jupiter::ReferenceString scoreWinTypeTranslation = "Domination (High Score)";
-Jupiter::ReferenceString baseWinTypeTranslation = "Conquest (Base Destruction)";
-Jupiter::ReferenceString beaconWinTypeTranslation = "Espionage (Beacon)";
-Jupiter::ReferenceString tieWinTypeTranslation = "Draw (Tie)";
-Jupiter::ReferenceString shutdownWinTypeTranslation = "Ceasefire (Shutdown)";
-Jupiter::ReferenceString surrenderWinTypeTranslation = "Forfeit (Surrender)";
-Jupiter::ReferenceString unknownWinTypeTranslation = "Aliens (Unknown)";
+static std::string_view scoreWinTypeTranslation = "Domination (High Score)";
+static std::string_view baseWinTypeTranslation = "Conquest (Base Destruction)";
+static std::string_view beaconWinTypeTranslation = "Espionage (Beacon)";
+static std::string_view tieWinTypeTranslation = "Draw (Tie)";
+static std::string_view shutdownWinTypeTranslation = "Ceasefire (Shutdown)";
+static std::string_view surrenderWinTypeTranslation = "Forfeit (Surrender)";
+static std::string_view unknownWinTypeTranslation = "Aliens (Unknown)";
 
 /** WinType plain translations */
 
-Jupiter::ReferenceString scoreWinTypePlainTranslation = "High Score";
-Jupiter::ReferenceString baseWinTypePlainTranslation = "Base Destruction";
-Jupiter::ReferenceString beaconWinTypePlainTranslation = "Beacon";
-Jupiter::ReferenceString tieWinTypePlainTranslation = "Tie";
-Jupiter::ReferenceString shutdownWinTypePlainTranslation = "Shutdown";
-Jupiter::ReferenceString surrenderWinTypePlainTranslation = "Surrender";
-Jupiter::ReferenceString unknownWinTypePlainTranslation = "Unknown";
+static std::string_view scoreWinTypePlainTranslation = "High Score";
+static std::string_view baseWinTypePlainTranslation = "Base Destruction";
+static std::string_view beaconWinTypePlainTranslation = "Beacon";
+static std::string_view tieWinTypePlainTranslation = "Tie";
+static std::string_view shutdownWinTypePlainTranslation = "Shutdown";
+static std::string_view surrenderWinTypePlainTranslation = "Surrender";
+static std::string_view unknownWinTypePlainTranslation = "Unknown";
 
 /** Vote translations */
 
-Jupiter::ReferenceString translated_VoteMenuChoice_AddBots = STRING_LITERAL_AS_REFERENCE("Add Bots");
-Jupiter::ReferenceString translated_VoteMenuChoice_ChangeMap = STRING_LITERAL_AS_REFERENCE("Change Map");
-Jupiter::ReferenceString translated_VoteMenuChoice_Donate = STRING_LITERAL_AS_REFERENCE("Donate");
-Jupiter::ReferenceString translated_VoteMenuChoice_Kick = STRING_LITERAL_AS_REFERENCE("Kick");
-Jupiter::ReferenceString translated_VoteMenuChoice_RemoveBots = STRING_LITERAL_AS_REFERENCE("Remove Bots");
-Jupiter::ReferenceString translated_VoteMenuChoice_RestartMatch = STRING_LITERAL_AS_REFERENCE("Restart Match");
-Jupiter::ReferenceString translated_VoteMenuChoice_StartMatch = STRING_LITERAL_AS_REFERENCE("Start Match");
-Jupiter::ReferenceString translated_VoteMenuChoice_Survey = STRING_LITERAL_AS_REFERENCE("Survey");
+static constexpr std::string_view translated_VoteMenuChoice_AddBots = "Add Bots"sv;
+static constexpr std::string_view translated_VoteMenuChoice_ChangeMap = "Change Map"sv;
+static constexpr std::string_view translated_VoteMenuChoice_Donate = "Donate"sv;
+static constexpr std::string_view translated_VoteMenuChoice_Kick = "Kick"sv;
+static constexpr std::string_view translated_VoteMenuChoice_RemoveBots = "Remove Bots"sv;
+static constexpr std::string_view translated_VoteMenuChoice_RestartMatch = "Restart Match"sv;
+static constexpr std::string_view translated_VoteMenuChoice_StartMatch = "Start Match"sv;
+static constexpr std::string_view translated_VoteMenuChoice_Survey = "Survey"sv;
 
 /** Object / damage type translations */
 
 /** Nod Vehicles */
-Jupiter::ReferenceString translated_Vehicle_Harvester_Nod = STRING_LITERAL_AS_REFERENCE("Nod Harvester");
-Jupiter::ReferenceString translated_Vehicle_Buggy = STRING_LITERAL_AS_REFERENCE("Buggy");
-Jupiter::ReferenceString translated_Vehicle_Artillery = STRING_LITERAL_AS_REFERENCE("Mobile Artillery");
-Jupiter::ReferenceString translated_Vehicle_APC_Nod = STRING_LITERAL_AS_REFERENCE("Nod APC");
-Jupiter::ReferenceString translated_Vehicle_LightTank = STRING_LITERAL_AS_REFERENCE("Light Tank");
-Jupiter::ReferenceString translated_Vehicle_FlameTank = STRING_LITERAL_AS_REFERENCE("Flame Tank");
-Jupiter::ReferenceString translated_Vehicle_StealthTank = STRING_LITERAL_AS_REFERENCE("Stealth Tank");
-Jupiter::ReferenceString translated_Vehicle_Chinook_Nod = STRING_LITERAL_AS_REFERENCE("Nod Chinook");
-Jupiter::ReferenceString translated_Vehicle_Apache = STRING_LITERAL_AS_REFERENCE("Apache");
+static constexpr std::string_view translated_Vehicle_Harvester_Nod = "Nod Harvester"sv;
+static constexpr std::string_view translated_Vehicle_Buggy = "Buggy"sv;
+static constexpr std::string_view translated_Vehicle_Artillery = "Mobile Artillery"sv;
+static constexpr std::string_view translated_Vehicle_APC_Nod = "Nod APC"sv;
+static constexpr std::string_view translated_Vehicle_LightTank = "Light Tank"sv;
+static constexpr std::string_view translated_Vehicle_FlameTank = "Flame Tank"sv;
+static constexpr std::string_view translated_Vehicle_StealthTank = "Stealth Tank"sv;
+static constexpr std::string_view translated_Vehicle_Chinook_Nod = "Nod Chinook"sv;
+static constexpr std::string_view translated_Vehicle_Apache = "Apache"sv;
 
-Jupiter::ReferenceString translated_Vehicle_ReconBike = STRING_LITERAL_AS_REFERENCE("Recon Bike");
-Jupiter::ReferenceString translated_Vehicle_TickTank = STRING_LITERAL_AS_REFERENCE("Tick Tank");
+static constexpr std::string_view translated_Vehicle_ReconBike = "Recon Bike"sv;
+static constexpr std::string_view translated_Vehicle_TickTank = "Tick Tank"sv;
 
 /** GDI Vehicles */
-Jupiter::ReferenceString translated_Vehicle_Harvester_GDI = STRING_LITERAL_AS_REFERENCE("GDI Harvester");
-Jupiter::ReferenceString translated_Vehicle_Humvee = STRING_LITERAL_AS_REFERENCE("Humvee");
-Jupiter::ReferenceString translated_Vehicle_MRLS = STRING_LITERAL_AS_REFERENCE("Mobile Rocket Launcher System");
-Jupiter::ReferenceString translated_Vehicle_APC_GDI = STRING_LITERAL_AS_REFERENCE("GDI APC");
-Jupiter::ReferenceString translated_Vehicle_MediumTank = STRING_LITERAL_AS_REFERENCE("Medium Tank");
-Jupiter::ReferenceString translated_Vehicle_MammothTank = STRING_LITERAL_AS_REFERENCE("Mammoth Tank");
-Jupiter::ReferenceString translated_Vehicle_Chinook_GDI = STRING_LITERAL_AS_REFERENCE("GDI Chinook");
-Jupiter::ReferenceString translated_Vehicle_Orca = STRING_LITERAL_AS_REFERENCE("Orca");
+static constexpr std::string_view translated_Vehicle_Harvester_GDI = "GDI Harvester"sv;
+static constexpr std::string_view translated_Vehicle_Humvee = "Humvee"sv;
+static constexpr std::string_view translated_Vehicle_MRLS = "Mobile Rocket Launcher System"sv;
+static constexpr std::string_view translated_Vehicle_APC_GDI = "GDI APC"sv;
+static constexpr std::string_view translated_Vehicle_MediumTank = "Medium Tank"sv;
+static constexpr std::string_view translated_Vehicle_MammothTank = "Mammoth Tank"sv;
+static constexpr std::string_view translated_Vehicle_Chinook_GDI = "GDI Chinook"sv;
+static constexpr std::string_view translated_Vehicle_Orca = "Orca"sv;
 
-Jupiter::ReferenceString translated_Vehicle_HoverMRLS = STRING_LITERAL_AS_REFERENCE("Hover MRLS");
-Jupiter::ReferenceString translated_Vehicle_Titan = STRING_LITERAL_AS_REFERENCE("Titan");
-Jupiter::ReferenceString translated_Vehicle_Wolverine = STRING_LITERAL_AS_REFERENCE("Wolverine");
+static constexpr std::string_view translated_Vehicle_HoverMRLS = "Hover MRLS"sv;
+static constexpr std::string_view translated_Vehicle_Titan = "Titan"sv;
+static constexpr std::string_view translated_Vehicle_Wolverine = "Wolverine"sv;
 
 /** Other Vehicles */
-Jupiter::ReferenceString translated_Vehicle_A10_DmgType_GattlingGun = STRING_LITERAL_AS_REFERENCE("A10 Thunderbolt Gattling Gun");
-Jupiter::ReferenceString translated_Vehicle_A10_DmgType_Bomb = STRING_LITERAL_AS_REFERENCE("A10 Thunderbolt Bomb");
-Jupiter::ReferenceString translated_Vehicle_AC130_DmgType_HeavyCannon = STRING_LITERAL_AS_REFERENCE("AC130 Heavy Cannon");
-Jupiter::ReferenceString translated_Vehicle_AC130_DmgType_AutoCannon = STRING_LITERAL_AS_REFERENCE("AC130 Auto Cannon");
+static constexpr std::string_view translated_Vehicle_A10_DmgType_GattlingGun = "A10 Thunderbolt Gattling Gun"sv;
+static constexpr std::string_view translated_Vehicle_A10_DmgType_Bomb = "A10 Thunderbolt Bomb"sv;
+static constexpr std::string_view translated_Vehicle_AC130_DmgType_HeavyCannon = "AC130 Heavy Cannon"sv;
+static constexpr std::string_view translated_Vehicle_AC130_DmgType_AutoCannon = "AC130 Auto Cannon"sv;
 
 /** Weapons */
-Jupiter::ReferenceString translated_Weapon_HeavyPistol = STRING_LITERAL_AS_REFERENCE("Heavy Pistol");
-Jupiter::ReferenceString translated_Weapon_Carbine = STRING_LITERAL_AS_REFERENCE("Carbine");
-Jupiter::ReferenceString translated_Weapon_Airstrike_GDI = STRING_LITERAL_AS_REFERENCE("GDI Airstrike");
-Jupiter::ReferenceString translated_Weapon_Airstrike_Nod = STRING_LITERAL_AS_REFERENCE("Nod Airstrike");
-Jupiter::ReferenceString translated_Weapon_TiberiumFlechetteRifle = STRING_LITERAL_AS_REFERENCE("Tiberium Flechette Gun");
-Jupiter::ReferenceString translated_Weapon_TiberiumAutoRifle = STRING_LITERAL_AS_REFERENCE("Tiberium Automatic Rifle");
-Jupiter::ReferenceString translated_Weapon_TiberiumAutoRifle_Blue = STRING_LITERAL_AS_REFERENCE("Blue Tiberium Automatic Rifle Burst");
-Jupiter::ReferenceString translated_Weapon_EMPGrenade = STRING_LITERAL_AS_REFERENCE("EMP Grenade");
-Jupiter::ReferenceString translated_Weapon_SmokeGrenade = STRING_LITERAL_AS_REFERENCE("Smoke Grenade");
-Jupiter::ReferenceString translated_Weapon_TimedC4 = STRING_LITERAL_AS_REFERENCE("Timed C4");
-Jupiter::ReferenceString translated_Weapon_RemoteC4 = STRING_LITERAL_AS_REFERENCE("Remote C4");
-Jupiter::ReferenceString translated_Weapon_ProxyC4 = STRING_LITERAL_AS_REFERENCE("Proximity C4");
-Jupiter::ReferenceString translated_Weapon_ATMine = STRING_LITERAL_AS_REFERENCE("Anti-Tank Mine");
-Jupiter::ReferenceString translated_Weapon_IonCannonBeacon = STRING_LITERAL_AS_REFERENCE("Ion Cannon Beacon");
-Jupiter::ReferenceString translated_Weapon_NukeBeacon = STRING_LITERAL_AS_REFERENCE("Nuclear Missile Beacon");
-Jupiter::ReferenceString translated_Weapon_DeployedC4 = STRING_LITERAL_AS_REFERENCE("Timed C4");
-Jupiter::ReferenceString translated_Weapon_DeployedTimedC4 = STRING_LITERAL_AS_REFERENCE("Timed C4");
-Jupiter::ReferenceString translated_Weapon_DeployedRemoteC4 = STRING_LITERAL_AS_REFERENCE("Remote C4");
-Jupiter::ReferenceString translated_Weapon_DeployedProxyC4 = STRING_LITERAL_AS_REFERENCE("Proximity C4");
-Jupiter::ReferenceString translated_Weapon_DeployedATMine = STRING_LITERAL_AS_REFERENCE("Anti-Tank Mine");
-Jupiter::ReferenceString translated_Weapon_DeployedIonCannonBeacon = STRING_LITERAL_AS_REFERENCE("Ion Cannon Beacon");
-Jupiter::ReferenceString translated_Weapon_DeployedNukeBeacon = STRING_LITERAL_AS_REFERENCE("Nuclear Missile Beacon");
-Jupiter::ReferenceString translated_Weapon_CrateNuke = STRING_LITERAL_AS_REFERENCE("Nuclear Crate Explosion");
-Jupiter::ReferenceString translated_Weapon_DevNuke = STRING_LITERAL_AS_REFERENCE("Nuclear Dev Explosion");
+static constexpr std::string_view translated_Weapon_HeavyPistol = "Heavy Pistol"sv;
+static constexpr std::string_view translated_Weapon_Carbine = "Carbine"sv;
+static constexpr std::string_view translated_Weapon_Airstrike_GDI = "GDI Airstrike"sv;
+static constexpr std::string_view translated_Weapon_Airstrike_Nod = "Nod Airstrike"sv;
+static constexpr std::string_view translated_Weapon_TiberiumFlechetteRifle = "Tiberium Flechette Gun"sv;
+static constexpr std::string_view translated_Weapon_TiberiumAutoRifle = "Tiberium Automatic Rifle"sv;
+static constexpr std::string_view translated_Weapon_TiberiumAutoRifle_Blue = "Blue Tiberium Automatic Rifle Burst"sv;
+static constexpr std::string_view translated_Weapon_EMPGrenade = "EMP Grenade"sv;
+static constexpr std::string_view translated_Weapon_SmokeGrenade = "Smoke Grenade"sv;
+static constexpr std::string_view translated_Weapon_TimedC4 = "Timed C4"sv;
+static constexpr std::string_view translated_Weapon_RemoteC4 = "Remote C4"sv;
+static constexpr std::string_view translated_Weapon_ProxyC4 = "Proximity C4"sv;
+static constexpr std::string_view translated_Weapon_ATMine = "Anti-Tank Mine"sv;
+static constexpr std::string_view translated_Weapon_IonCannonBeacon = "Ion Cannon Beacon"sv;
+static constexpr std::string_view translated_Weapon_NukeBeacon = "Nuclear Missile Beacon"sv;
+static constexpr std::string_view translated_Weapon_DeployedC4 = "Timed C4"sv;
+static constexpr std::string_view translated_Weapon_DeployedTimedC4 = "Timed C4"sv;
+static constexpr std::string_view translated_Weapon_DeployedRemoteC4 = "Remote C4"sv;
+static constexpr std::string_view translated_Weapon_DeployedProxyC4 = "Proximity C4"sv;
+static constexpr std::string_view translated_Weapon_DeployedATMine = "Anti-Tank Mine"sv;
+static constexpr std::string_view translated_Weapon_DeployedIonCannonBeacon = "Ion Cannon Beacon"sv;
+static constexpr std::string_view translated_Weapon_DeployedNukeBeacon = "Nuclear Missile Beacon"sv;
+static constexpr std::string_view translated_Weapon_CrateNuke = "Nuclear Crate Explosion"sv;
+static constexpr std::string_view translated_Weapon_DevNuke = "Nuclear Dev Explosion"sv;
 
 /** Projectiles */
-Jupiter::ReferenceString translated_Projectile_EMPGrenade = STRING_LITERAL_AS_REFERENCE("EMP Grenade");
-Jupiter::ReferenceString translated_Projectile_SmokeGrenade = STRING_LITERAL_AS_REFERENCE("Smoke Grenade");
+static constexpr std::string_view translated_Projectile_EMPGrenade = "EMP Grenade"sv;
+static constexpr std::string_view translated_Projectile_SmokeGrenade = "Smoke Grenade"sv;
 
 /** GDI Characters */
-Jupiter::ReferenceString translated_GDI_Deadeye = STRING_LITERAL_AS_REFERENCE("Deadeye");
-Jupiter::ReferenceString translated_GDI_Engineer = STRING_LITERAL_AS_REFERENCE("GDI Engineer");
-Jupiter::ReferenceString translated_GDI_Grenadier = STRING_LITERAL_AS_REFERENCE("Grenadier");
-Jupiter::ReferenceString translated_GDI_Gunner = STRING_LITERAL_AS_REFERENCE("Gunner");
-Jupiter::ReferenceString translated_GDI_Havoc = STRING_LITERAL_AS_REFERENCE("Havoc");
-Jupiter::ReferenceString translated_GDI_Hotwire = STRING_LITERAL_AS_REFERENCE("Hotwire");
-Jupiter::ReferenceString translated_GDI_Marksman = STRING_LITERAL_AS_REFERENCE("GDI Marksman");
-Jupiter::ReferenceString translated_GDI_McFarland = STRING_LITERAL_AS_REFERENCE("McFarland");
-Jupiter::ReferenceString translated_GDI_Mobius = STRING_LITERAL_AS_REFERENCE("Mobius");
-Jupiter::ReferenceString translated_GDI_Officer = STRING_LITERAL_AS_REFERENCE("GDI Officer");
-Jupiter::ReferenceString translated_GDI_Patch = STRING_LITERAL_AS_REFERENCE("Patch");
-Jupiter::ReferenceString translated_GDI_RocketSoldier = STRING_LITERAL_AS_REFERENCE("GDI Rocket Soldier");
-Jupiter::ReferenceString translated_GDI_Shotgunner = STRING_LITERAL_AS_REFERENCE("GDI Shotgunner");
-Jupiter::ReferenceString translated_GDI_Soldier = STRING_LITERAL_AS_REFERENCE("GDI Soldier");
-Jupiter::ReferenceString translated_GDI_Sydney = STRING_LITERAL_AS_REFERENCE("Sydney");
+static constexpr std::string_view translated_GDI_Deadeye = "Deadeye"sv;
+static constexpr std::string_view translated_GDI_Engineer = "GDI Engineer"sv;
+static constexpr std::string_view translated_GDI_Grenadier = "Grenadier"sv;
+static constexpr std::string_view translated_GDI_Gunner = "Gunner"sv;
+static constexpr std::string_view translated_GDI_Havoc = "Havoc"sv;
+static constexpr std::string_view translated_GDI_Hotwire = "Hotwire"sv;
+static constexpr std::string_view translated_GDI_Marksman = "GDI Marksman"sv;
+static constexpr std::string_view translated_GDI_McFarland = "McFarland"sv;
+static constexpr std::string_view translated_GDI_Mobius = "Mobius"sv;
+static constexpr std::string_view translated_GDI_Officer = "GDI Officer"sv;
+static constexpr std::string_view translated_GDI_Patch = "Patch"sv;
+static constexpr std::string_view translated_GDI_RocketSoldier = "GDI Rocket Soldier"sv;
+static constexpr std::string_view translated_GDI_Shotgunner = "GDI Shotgunner"sv;
+static constexpr std::string_view translated_GDI_Soldier = "GDI Soldier"sv;
+static constexpr std::string_view translated_GDI_Sydney = "Sydney"sv;
 
 /** Nod Characters */
-Jupiter::ReferenceString translated_Nod_BlackHandSniper = STRING_LITERAL_AS_REFERENCE("Black Hand Sniper");
-Jupiter::ReferenceString translated_Nod_ChemicalTrooper = STRING_LITERAL_AS_REFERENCE("Chemical Trooper");
-Jupiter::ReferenceString translated_Nod_Engineer = STRING_LITERAL_AS_REFERENCE("Nod Engineer");
-Jupiter::ReferenceString translated_Nod_FlameTrooper = STRING_LITERAL_AS_REFERENCE("Flame Trooper");
-Jupiter::ReferenceString translated_Nod_LaserChainGunner = STRING_LITERAL_AS_REFERENCE("Laser Chain Gunner");
-Jupiter::ReferenceString translated_Nod_Marksman = STRING_LITERAL_AS_REFERENCE("Nod Marksman");
-Jupiter::ReferenceString translated_Nod_Mendoza = STRING_LITERAL_AS_REFERENCE("Mendoza");
-Jupiter::ReferenceString translated_Nod_Officer = STRING_LITERAL_AS_REFERENCE("Nod Officer");
-Jupiter::ReferenceString translated_Nod_Raveshaw = STRING_LITERAL_AS_REFERENCE("Raveshaw");
-Jupiter::ReferenceString translated_Nod_RocketSoldier = STRING_LITERAL_AS_REFERENCE("Nod Rocket Soldier");
-Jupiter::ReferenceString translated_Nod_Sakura = STRING_LITERAL_AS_REFERENCE("Sakura");
-Jupiter::ReferenceString translated_Nod_Shotgunner = STRING_LITERAL_AS_REFERENCE("Nod Shotgunner");
-Jupiter::ReferenceString translated_Nod_Soldier = STRING_LITERAL_AS_REFERENCE("Nod Soldier");
-Jupiter::ReferenceString translated_Nod_StealthBlackHand = STRING_LITERAL_AS_REFERENCE("Stealth Black Hand");
-Jupiter::ReferenceString translated_Nod_Technician = STRING_LITERAL_AS_REFERENCE("Technician");
+static constexpr std::string_view translated_Nod_BlackHandSniper = "Black Hand Sniper"sv;
+static constexpr std::string_view translated_Nod_ChemicalTrooper = "Chemical Trooper"sv;
+static constexpr std::string_view translated_Nod_Engineer = "Nod Engineer"sv;
+static constexpr std::string_view translated_Nod_FlameTrooper = "Flame Trooper"sv;
+static constexpr std::string_view translated_Nod_LaserChainGunner = "Laser Chain Gunner"sv;
+static constexpr std::string_view translated_Nod_Marksman = "Nod Marksman"sv;
+static constexpr std::string_view translated_Nod_Mendoza = "Mendoza"sv;
+static constexpr std::string_view translated_Nod_Officer = "Nod Officer"sv;
+static constexpr std::string_view translated_Nod_Raveshaw = "Raveshaw"sv;
+static constexpr std::string_view translated_Nod_RocketSoldier = "Nod Rocket Soldier"sv;
+static constexpr std::string_view translated_Nod_Sakura = "Sakura"sv;
+static constexpr std::string_view translated_Nod_Shotgunner = "Nod Shotgunner"sv;
+static constexpr std::string_view translated_Nod_Soldier = "Nod Soldier"sv;
+static constexpr std::string_view translated_Nod_StealthBlackHand = "Stealth Black Hand"sv;
+static constexpr std::string_view translated_Nod_Technician = "Technician"sv;
 
 /** Non-weapon damage types */
-Jupiter::ReferenceString translated_DmgType_Suicided = STRING_LITERAL_AS_REFERENCE("Suicide");
-Jupiter::ReferenceString translated_DmgType_Fell = STRING_LITERAL_AS_REFERENCE("Fall");
-Jupiter::ReferenceString translated_DmgType_Tiberium = STRING_LITERAL_AS_REFERENCE("Tiberium");
-Jupiter::ReferenceString translated_DmgType_TiberiumBleed = STRING_LITERAL_AS_REFERENCE("Tiberium Decay");
-Jupiter::ReferenceString translated_DmgType_TiberiumBleed_Blue = STRING_LITERAL_AS_REFERENCE("Blue Tiberium Decay");
-Jupiter::ReferenceString translated_DmgType_RanOver = STRING_LITERAL_AS_REFERENCE("Crushed");
+static constexpr std::string_view translated_DmgType_Suicided = "Suicide"sv;
+static constexpr std::string_view translated_DmgType_Fell = "Fall"sv;
+static constexpr std::string_view translated_DmgType_Tiberium = "Tiberium"sv;
+static constexpr std::string_view translated_DmgType_TiberiumBleed = "Tiberium Decay"sv;
+static constexpr std::string_view translated_DmgType_TiberiumBleed_Blue = "Blue Tiberium Decay"sv;
+static constexpr std::string_view translated_DmgType_RanOver = "Crushed"sv;
 
 /** Infantry weapons */
-Jupiter::ReferenceString translated_DmgType_Pistol = STRING_LITERAL_AS_REFERENCE("Pistol");
-Jupiter::ReferenceString translated_DmgType_SMG = STRING_LITERAL_AS_REFERENCE("Machine Pistol");
-Jupiter::ReferenceString translated_DmgType_HeavyPistol = STRING_LITERAL_AS_REFERENCE("Heavy Pistol");
-Jupiter::ReferenceString translated_DmgType_Carbine = STRING_LITERAL_AS_REFERENCE("Carbine");
-Jupiter::ReferenceString translated_DmgType_TiberiumFlechetteRifle = STRING_LITERAL_AS_REFERENCE("Tiberium Flechette Gun"); // Not a rifle.
-Jupiter::ReferenceString translated_DmgType_TiberiumAutoRifle = STRING_LITERAL_AS_REFERENCE("Tiberium Automatic Rifle");
-Jupiter::ReferenceString translated_DmgType_TiberiumAutoRifle_Blue = STRING_LITERAL_AS_REFERENCE("Blue Tiberium Automatic Rifle Burst");
-Jupiter::ReferenceString translated_DmgType_TiberiumAutoRifle_Flechette_Blue = STRING_LITERAL_AS_REFERENCE("Blue Tiberium Automatic Rifle");
+static constexpr std::string_view translated_DmgType_Pistol = "Pistol"sv;
+static constexpr std::string_view translated_DmgType_SMG = "Machine Pistol"sv;
+static constexpr std::string_view translated_DmgType_HeavyPistol = "Heavy Pistol"sv;
+static constexpr std::string_view translated_DmgType_Carbine = "Carbine"sv;
+static constexpr std::string_view translated_DmgType_TiberiumFlechetteRifle = "Tiberium Flechette Gun"sv; // Not a rifle.
+static constexpr std::string_view translated_DmgType_TiberiumAutoRifle = "Tiberium Automatic Rifle"sv;
+static constexpr std::string_view translated_DmgType_TiberiumAutoRifle_Blue = "Blue Tiberium Automatic Rifle Burst"sv;
+static constexpr std::string_view translated_DmgType_TiberiumAutoRifle_Flechette_Blue = "Blue Tiberium Automatic Rifle"sv;
 
-Jupiter::ReferenceString translated_DmgType_Grenade = STRING_LITERAL_AS_REFERENCE("Grenade");
-Jupiter::ReferenceString translated_DmgType_TimedC4 = STRING_LITERAL_AS_REFERENCE("Timed C4");
-Jupiter::ReferenceString translated_DmgType_RemoteC4 = STRING_LITERAL_AS_REFERENCE("Remote C4");
-Jupiter::ReferenceString translated_DmgType_ProxyC4 = STRING_LITERAL_AS_REFERENCE("Proximity C4");
-Jupiter::ReferenceString translated_DmgType_ATMine = STRING_LITERAL_AS_REFERENCE("Anti-Tank Mine");
-Jupiter::ReferenceString translated_DmgType_EMPGrenade = STRING_LITERAL_AS_REFERENCE("EMP Grenade");
-Jupiter::ReferenceString translated_DmgType_BurnC4 = STRING_LITERAL_AS_REFERENCE("C4 Burn");
-Jupiter::ReferenceString translated_DmgType_FireBleed = STRING_LITERAL_AS_REFERENCE("Fire Burn"); // Caused by C4 or flame weapons
+static constexpr std::string_view translated_DmgType_Grenade = "Grenade"sv;
+static constexpr std::string_view translated_DmgType_TimedC4 = "Timed C4"sv;
+static constexpr std::string_view translated_DmgType_RemoteC4 = "Remote C4"sv;
+static constexpr std::string_view translated_DmgType_ProxyC4 = "Proximity C4"sv;
+static constexpr std::string_view translated_DmgType_ATMine = "Anti-Tank Mine"sv;
+static constexpr std::string_view translated_DmgType_EMPGrenade = "EMP Grenade"sv;
+static constexpr std::string_view translated_DmgType_BurnC4 = "C4 Burn"sv;
+static constexpr std::string_view translated_DmgType_FireBleed = "Fire Burn"sv; // Caused by C4 or flame weapons
 
-Jupiter::ReferenceString translated_DmgType_AutoRifle = STRING_LITERAL_AS_REFERENCE("Automatic Rifle");
-Jupiter::ReferenceString translated_DmgType_Shotgun = STRING_LITERAL_AS_REFERENCE("Shotgun");
-Jupiter::ReferenceString translated_DmgType_FlameThrower = STRING_LITERAL_AS_REFERENCE("Flamethrower");
-Jupiter::ReferenceString translated_DmgType_GrenadeLauncher = STRING_LITERAL_AS_REFERENCE("Grenade Launcher");
-Jupiter::ReferenceString translated_DmgType_MarksmanRifle = STRING_LITERAL_AS_REFERENCE("Marksman's Rifle");
+static constexpr std::string_view translated_DmgType_AutoRifle = "Automatic Rifle"sv;
+static constexpr std::string_view translated_DmgType_Shotgun = "Shotgun"sv;
+static constexpr std::string_view translated_DmgType_FlameThrower = "Flamethrower"sv;
+static constexpr std::string_view translated_DmgType_GrenadeLauncher = "Grenade Launcher"sv;
+static constexpr std::string_view translated_DmgType_MarksmanRifle = "Marksman's Rifle"sv;
 
-Jupiter::ReferenceString translated_DmgType_ChainGun = STRING_LITERAL_AS_REFERENCE("Chain Gun");
-Jupiter::ReferenceString translated_DmgType_MissileLauncher = STRING_LITERAL_AS_REFERENCE("Missile Launcher");
-Jupiter::ReferenceString translated_DmgType_MissileLauncher_Alt = STRING_LITERAL_AS_REFERENCE("Missile Launcher");
-Jupiter::ReferenceString translated_DmgType_ChemicalThrower = STRING_LITERAL_AS_REFERENCE("Chemical Spray Gun");
-Jupiter::ReferenceString translated_DmgType_LaserRifle = STRING_LITERAL_AS_REFERENCE("Laser Rifle");
-Jupiter::ReferenceString translated_DmgType_TacticalRifle = STRING_LITERAL_AS_REFERENCE("Tactical Rifle");
-Jupiter::ReferenceString translated_DmgType_RocketLauncher = STRING_LITERAL_AS_REFERENCE("Rocket Launcher");
-Jupiter::ReferenceString translated_DmgType_LaserChainGun = STRING_LITERAL_AS_REFERENCE("Laser Chain Gun");
-Jupiter::ReferenceString translated_DmgType_FlakCannon = STRING_LITERAL_AS_REFERENCE("Flak");
-Jupiter::ReferenceString translated_DmgType_FlakCannon_Alt = STRING_LITERAL_AS_REFERENCE("Concentrated Flak");
-Jupiter::ReferenceString translated_DmgType_SniperRifle = STRING_LITERAL_AS_REFERENCE("Sniper Rifle");
-Jupiter::ReferenceString translated_DmgType_RamjetRifle = STRING_LITERAL_AS_REFERENCE("Ramjet");
-Jupiter::ReferenceString translated_DmgType_Railgun = STRING_LITERAL_AS_REFERENCE("Railgun");
-Jupiter::ReferenceString translated_DmgType_PersonalIonCannon = STRING_LITERAL_AS_REFERENCE("Personal Ion Cannon");
-Jupiter::ReferenceString translated_DmgType_VoltRifle = STRING_LITERAL_AS_REFERENCE("Volt Rifle");
-Jupiter::ReferenceString translated_DmgType_VoltRifle_Alt = STRING_LITERAL_AS_REFERENCE("Volt Rifle Burst");
-Jupiter::ReferenceString translated_DmgType_VoltAutoRifle = STRING_LITERAL_AS_REFERENCE("Volt Automatic Rifle");
-Jupiter::ReferenceString translated_DmgType_VoltAutoRifle_Alt = STRING_LITERAL_AS_REFERENCE("Volt Automatic Rifle Burst");
+static constexpr std::string_view translated_DmgType_ChainGun = "Chain Gun"sv;
+static constexpr std::string_view translated_DmgType_MissileLauncher = "Missile Launcher"sv;
+static constexpr std::string_view translated_DmgType_MissileLauncher_Alt = "Missile Launcher"sv;
+static constexpr std::string_view translated_DmgType_ChemicalThrower = "Chemical Spray Gun"sv;
+static constexpr std::string_view translated_DmgType_LaserRifle = "Laser Rifle"sv;
+static constexpr std::string_view translated_DmgType_TacticalRifle = "Tactical Rifle"sv;
+static constexpr std::string_view translated_DmgType_RocketLauncher = "Rocket Launcher"sv;
+static constexpr std::string_view translated_DmgType_LaserChainGun = "Laser Chain Gun"sv;
+static constexpr std::string_view translated_DmgType_FlakCannon = "Flak"sv;
+static constexpr std::string_view translated_DmgType_FlakCannon_Alt = "Concentrated Flak"sv;
+static constexpr std::string_view translated_DmgType_SniperRifle = "Sniper Rifle"sv;
+static constexpr std::string_view translated_DmgType_RamjetRifle = "Ramjet"sv;
+static constexpr std::string_view translated_DmgType_Railgun = "Railgun"sv;
+static constexpr std::string_view translated_DmgType_PersonalIonCannon = "Personal Ion Cannon"sv;
+static constexpr std::string_view translated_DmgType_VoltRifle = "Volt Rifle"sv;
+static constexpr std::string_view translated_DmgType_VoltRifle_Alt = "Volt Rifle Burst"sv;
+static constexpr std::string_view translated_DmgType_VoltAutoRifle = "Volt Automatic Rifle"sv;
+static constexpr std::string_view translated_DmgType_VoltAutoRifle_Alt = "Volt Automatic Rifle Burst"sv;
 
 /** Vehicle weapons */
-Jupiter::ReferenceString translated_DmgType_MammothTank_Missile = STRING_LITERAL_AS_REFERENCE("Mammoth Tank Missile");
-Jupiter::ReferenceString translated_DmgType_MammothTank_Cannon = STRING_LITERAL_AS_REFERENCE("Mammoth Tank Cannon");
-Jupiter::ReferenceString translated_DmgType_Orca_Missile = STRING_LITERAL_AS_REFERENCE("Orca Missile");
-Jupiter::ReferenceString translated_DmgType_Orca_Gun = STRING_LITERAL_AS_REFERENCE("Orca Gun");
-Jupiter::ReferenceString translated_DmgType_Orca_Passenger = STRING_LITERAL_AS_REFERENCE("Orca Passenger Missile");
-Jupiter::ReferenceString translated_DmgType_Apache_Rocket = STRING_LITERAL_AS_REFERENCE("Apache Rocket");
-Jupiter::ReferenceString translated_DmgType_Apache_Gun = STRING_LITERAL_AS_REFERENCE("Apache Gun");
-Jupiter::ReferenceString translated_DmgType_Apache_Passenger = STRING_LITERAL_AS_REFERENCE("Apache Passenger Missile");
+static constexpr std::string_view translated_DmgType_MammothTank_Missile = "Mammoth Tank Missile"sv;
+static constexpr std::string_view translated_DmgType_MammothTank_Cannon = "Mammoth Tank Cannon"sv;
+static constexpr std::string_view translated_DmgType_Orca_Missile = "Orca Missile"sv;
+static constexpr std::string_view translated_DmgType_Orca_Gun = "Orca Gun"sv;
+static constexpr std::string_view translated_DmgType_Orca_Passenger = "Orca Passenger Missile"sv;
+static constexpr std::string_view translated_DmgType_Apache_Rocket = "Apache Rocket"sv;
+static constexpr std::string_view translated_DmgType_Apache_Gun = "Apache Gun"sv;
+static constexpr std::string_view translated_DmgType_Apache_Passenger = "Apache Passenger Missile"sv;
 
 /** Other weapons */
-Jupiter::ReferenceString translated_DmgType_AGT_MG = STRING_LITERAL_AS_REFERENCE("Machine Gun");
-Jupiter::ReferenceString translated_DmgType_AGT_Rocket = STRING_LITERAL_AS_REFERENCE("Rocket");
-Jupiter::ReferenceString translated_DmgType_Obelisk = STRING_LITERAL_AS_REFERENCE("Obelisk Laser");
-Jupiter::ReferenceString translated_DmgType_GuardTower = STRING_LITERAL_AS_REFERENCE("Guard Tower");
-Jupiter::ReferenceString translated_DmgType_Turret = STRING_LITERAL_AS_REFERENCE("Turret");
-Jupiter::ReferenceString translated_DmgType_SAMSite = STRING_LITERAL_AS_REFERENCE("SAM Site");
-Jupiter::ReferenceString translated_DmgType_AATower = STRING_LITERAL_AS_REFERENCE("Anti-Air Guard Tower");
-Jupiter::ReferenceString translated_DmgType_GunEmpl = STRING_LITERAL_AS_REFERENCE("Gun Emplacement Gattling Gun");
-Jupiter::ReferenceString translated_DmgType_GunEmpl_Alt = STRING_LITERAL_AS_REFERENCE("Gun Emplacement Automatic Cannon");
-Jupiter::ReferenceString translated_DmgType_RocketEmpl_Swarm = STRING_LITERAL_AS_REFERENCE("Rocket Emplacement Swarm Missile");
-Jupiter::ReferenceString translated_DmgType_RocketEmpl_Missile = STRING_LITERAL_AS_REFERENCE("Rocket Emplacement Hellfire Missile");
-Jupiter::ReferenceString translated_DmgType_Nuke = STRING_LITERAL_AS_REFERENCE("Nuclear Missile Strike");
-Jupiter::ReferenceString translated_DmgType_IonCannon = STRING_LITERAL_AS_REFERENCE("Ion Cannon Strike");
+static constexpr std::string_view translated_DmgType_AGT_MG = "Machine Gun"sv;
+static constexpr std::string_view translated_DmgType_AGT_Rocket = "Rocket"sv;
+static constexpr std::string_view translated_DmgType_Obelisk = "Obelisk Laser"sv;
+static constexpr std::string_view translated_DmgType_GuardTower = "Guard Tower"sv;
+static constexpr std::string_view translated_DmgType_Turret = "Turret"sv;
+static constexpr std::string_view translated_DmgType_SAMSite = "SAM Site"sv;
+static constexpr std::string_view translated_DmgType_AATower = "Anti-Air Guard Tower"sv;
+static constexpr std::string_view translated_DmgType_GunEmpl = "Gun Emplacement Gattling Gun"sv;
+static constexpr std::string_view translated_DmgType_GunEmpl_Alt = "Gun Emplacement Automatic Cannon"sv;
+static constexpr std::string_view translated_DmgType_RocketEmpl_Swarm = "Rocket Emplacement Swarm Missile"sv;
+static constexpr std::string_view translated_DmgType_RocketEmpl_Missile = "Rocket Emplacement Hellfire Missile"sv;
+static constexpr std::string_view translated_DmgType_Nuke = "Nuclear Missile Strike"sv;
+static constexpr std::string_view translated_DmgType_IonCannon = "Ion Cannon Strike"sv;
 
 /** Nod Vehicles */
-Jupiter::ReferenceString translated_DmgType_Harvester_Nod = STRING_LITERAL_AS_REFERENCE("Nod Harvester");
-Jupiter::ReferenceString translated_DmgType_Buggy = STRING_LITERAL_AS_REFERENCE("Buggy");
-Jupiter::ReferenceString translated_DmgType_Artillery = STRING_LITERAL_AS_REFERENCE("Mobile Artillery");
-Jupiter::ReferenceString translated_DmgType_APC_Nod = STRING_LITERAL_AS_REFERENCE("Nod APC");
-Jupiter::ReferenceString translated_DmgType_LightTank = STRING_LITERAL_AS_REFERENCE("Light Tank");
-Jupiter::ReferenceString translated_DmgType_FlameTank = STRING_LITERAL_AS_REFERENCE("Flame Tank");
-Jupiter::ReferenceString translated_DmgType_StealthTank = STRING_LITERAL_AS_REFERENCE("Stealth Tank");
-Jupiter::ReferenceString translated_DmgType_Chinook_Nod = STRING_LITERAL_AS_REFERENCE("Nod Chinook");
-Jupiter::ReferenceString translated_DmgType_Apache = STRING_LITERAL_AS_REFERENCE("Apache");
+static constexpr std::string_view translated_DmgType_Harvester_Nod = "Nod Harvester"sv;
+static constexpr std::string_view translated_DmgType_Buggy = "Buggy"sv;
+static constexpr std::string_view translated_DmgType_Artillery = "Mobile Artillery"sv;
+static constexpr std::string_view translated_DmgType_APC_Nod = "Nod APC"sv;
+static constexpr std::string_view translated_DmgType_LightTank = "Light Tank"sv;
+static constexpr std::string_view translated_DmgType_FlameTank = "Flame Tank"sv;
+static constexpr std::string_view translated_DmgType_StealthTank = "Stealth Tank"sv;
+static constexpr std::string_view translated_DmgType_Chinook_Nod = "Nod Chinook"sv;
+static constexpr std::string_view translated_DmgType_Apache = "Apache"sv;
 
-Jupiter::ReferenceString translated_Vehicle_ReconBike_DmgType = STRING_LITERAL_AS_REFERENCE("Recon Bike");
-Jupiter::ReferenceString translated_Vehicle_TickTank_DmgType = STRING_LITERAL_AS_REFERENCE("Tick Tank");
+static constexpr std::string_view translated_Vehicle_ReconBike_DmgType = "Recon Bike"sv;
+static constexpr std::string_view translated_Vehicle_TickTank_DmgType = "Tick Tank"sv;
 
 /** GDI Vehicles */
-Jupiter::ReferenceString translated_DmgType_Harvester_GDI = STRING_LITERAL_AS_REFERENCE("GDI Harvester");
-Jupiter::ReferenceString translated_DmgType_Humvee = STRING_LITERAL_AS_REFERENCE("Humvee");
-Jupiter::ReferenceString translated_DmgType_MRLS = STRING_LITERAL_AS_REFERENCE("Mobile Rocket Launcher System");
-Jupiter::ReferenceString translated_DmgType_APC_GDI = STRING_LITERAL_AS_REFERENCE("GDI APC");
-Jupiter::ReferenceString translated_DmgType_MediumTank = STRING_LITERAL_AS_REFERENCE("Medium Tank");
-Jupiter::ReferenceString translated_DmgType_MammothTank = STRING_LITERAL_AS_REFERENCE("Mammoth Tank");
-Jupiter::ReferenceString translated_DmgType_Chinook_GDI = STRING_LITERAL_AS_REFERENCE("GDI Chinook");
-Jupiter::ReferenceString translated_DmgType_Orca = STRING_LITERAL_AS_REFERENCE("Orca");
+static constexpr std::string_view translated_DmgType_Harvester_GDI = "GDI Harvester"sv;
+static constexpr std::string_view translated_DmgType_Humvee = "Humvee"sv;
+static constexpr std::string_view translated_DmgType_MRLS = "Mobile Rocket Launcher System"sv;
+static constexpr std::string_view translated_DmgType_APC_GDI = "GDI APC"sv;
+static constexpr std::string_view translated_DmgType_MediumTank = "Medium Tank"sv;
+static constexpr std::string_view translated_DmgType_MammothTank = "Mammoth Tank"sv;
+static constexpr std::string_view translated_DmgType_Chinook_GDI = "GDI Chinook"sv;
+static constexpr std::string_view translated_DmgType_Orca = "Orca"sv;
 
-Jupiter::ReferenceString translated_Vehicle_HoverMRLS_DmgType = STRING_LITERAL_AS_REFERENCE("Hover MRLS");
-Jupiter::ReferenceString translated_Vehicle_Titan_DmgType = STRING_LITERAL_AS_REFERENCE("Titan");
-Jupiter::ReferenceString translated_Vehicle_Wolverine_DmgType = STRING_LITERAL_AS_REFERENCE("Wolverine");
+static constexpr std::string_view translated_Vehicle_HoverMRLS_DmgType = "Hover MRLS"sv;
+static constexpr std::string_view translated_Vehicle_Titan_DmgType = "Titan"sv;
+static constexpr std::string_view translated_Vehicle_Wolverine_DmgType = "Wolverine"sv;
 
 /** Other Vehicles */
-Jupiter::ReferenceString translated_DmgType_A10_Missile = STRING_LITERAL_AS_REFERENCE("A10 Missile");
+static constexpr std::string_view translated_DmgType_A10_Missile = "A10 Missile"sv;
 
 /** Nod structures */
-Jupiter::ReferenceString translated_Building_HandOfNod = STRING_LITERAL_AS_REFERENCE("Hand of Nod");
-Jupiter::ReferenceString translated_Building_AirTower = STRING_LITERAL_AS_REFERENCE("Airstrip");
-Jupiter::ReferenceString translated_Building_Airstrip = STRING_LITERAL_AS_REFERENCE("Airstrip");
-Jupiter::ReferenceString translated_Building_Refinery_Nod = STRING_LITERAL_AS_REFERENCE("Nod Refinery");
-Jupiter::ReferenceString translated_Building_PowerPlant_Nod = STRING_LITERAL_AS_REFERENCE("Nod Power Plant");
-Jupiter::ReferenceString translated_Building_HandOfNod_Internals = STRING_LITERAL_AS_REFERENCE("Hand of Nod");
-Jupiter::ReferenceString translated_Building_AirTower_Internals = STRING_LITERAL_AS_REFERENCE("Airstrip");
-Jupiter::ReferenceString translated_Building_Airstrip_Internals = STRING_LITERAL_AS_REFERENCE("Airstrip");
-Jupiter::ReferenceString translated_Building_Refinery_Nod_Internals = STRING_LITERAL_AS_REFERENCE("Nod Refinery");
-Jupiter::ReferenceString translated_Building_PowerPlant_Nod_Internals = STRING_LITERAL_AS_REFERENCE("Nod Power Plant");
+static constexpr std::string_view translated_Building_HandOfNod = "Hand of Nod"sv;
+static constexpr std::string_view translated_Building_AirTower = "Airstrip"sv;
+static constexpr std::string_view translated_Building_Airstrip = "Airstrip"sv;
+static constexpr std::string_view translated_Building_Refinery_Nod = "Nod Refinery"sv;
+static constexpr std::string_view translated_Building_PowerPlant_Nod = "Nod Power Plant"sv;
+static constexpr std::string_view translated_Building_HandOfNod_Internals = "Hand of Nod"sv;
+static constexpr std::string_view translated_Building_AirTower_Internals = "Airstrip"sv;
+static constexpr std::string_view translated_Building_Airstrip_Internals = "Airstrip"sv;
+static constexpr std::string_view translated_Building_Refinery_Nod_Internals = "Nod Refinery"sv;
+static constexpr std::string_view translated_Building_PowerPlant_Nod_Internals = "Nod Power Plant"sv;
 
 /** GDI structures */
-Jupiter::ReferenceString translated_Building_Barracks = STRING_LITERAL_AS_REFERENCE("Barracks");
-Jupiter::ReferenceString translated_Building_WeaponsFactory = STRING_LITERAL_AS_REFERENCE("Weapons Factory");
-Jupiter::ReferenceString translated_Building_Refinery_GDI = STRING_LITERAL_AS_REFERENCE("GDI Refinery");
-Jupiter::ReferenceString translated_Building_PowerPlant_GDI = STRING_LITERAL_AS_REFERENCE("GDI Power Plant");
-Jupiter::ReferenceString translated_Building_Barracks_Internals = STRING_LITERAL_AS_REFERENCE("Barracks");
-Jupiter::ReferenceString translated_Building_WeaponsFactory_Internals = STRING_LITERAL_AS_REFERENCE("Weapons Factory");
-Jupiter::ReferenceString translated_Building_Refinery_GDI_Internals = STRING_LITERAL_AS_REFERENCE("GDI Refinery");
-Jupiter::ReferenceString translated_Building_PowerPlant_GDI_Internals = STRING_LITERAL_AS_REFERENCE("GDI Power Plant");
+static constexpr std::string_view translated_Building_Barracks = "Barracks"sv;
+static constexpr std::string_view translated_Building_WeaponsFactory = "Weapons Factory"sv;
+static constexpr std::string_view translated_Building_Refinery_GDI = "GDI Refinery"sv;
+static constexpr std::string_view translated_Building_PowerPlant_GDI = "GDI Power Plant"sv;
+static constexpr std::string_view translated_Building_Barracks_Internals = "Barracks"sv;
+static constexpr std::string_view translated_Building_WeaponsFactory_Internals = "Weapons Factory"sv;
+static constexpr std::string_view translated_Building_Refinery_GDI_Internals = "GDI Refinery"sv;
+static constexpr std::string_view translated_Building_PowerPlant_GDI_Internals = "GDI Power Plant"sv;
 
 /** Defense structures */
-Jupiter::ReferenceString translated_Building_AdvancedGuardTower = STRING_LITERAL_AS_REFERENCE("Advanced Guard Tower");
-Jupiter::ReferenceString translated_Building_Obelisk = STRING_LITERAL_AS_REFERENCE("Obelisk of Light");
-Jupiter::ReferenceString translated_Building_AdvancedGuardTower_Internals = STRING_LITERAL_AS_REFERENCE("Advanced Guard Tower");
-Jupiter::ReferenceString translated_Building_Obelisk_Internals = STRING_LITERAL_AS_REFERENCE("Obelisk of Light");
+static constexpr std::string_view translated_Building_AdvancedGuardTower = "Advanced Guard Tower"sv;
+static constexpr std::string_view translated_Building_Obelisk = "Obelisk of Light"sv;
+static constexpr std::string_view translated_Building_AdvancedGuardTower_Internals = "Advanced Guard Tower"sv;
+static constexpr std::string_view translated_Building_Obelisk_Internals = "Obelisk of Light"sv;
 
 /** Other structures */
-Jupiter::ReferenceString translated_Building_Silo = STRING_LITERAL_AS_REFERENCE("Tiberium Silo");
-Jupiter::ReferenceString translated_Building_CommCentre = STRING_LITERAL_AS_REFERENCE("Communications Center");
-Jupiter::ReferenceString translated_Building_Silo_Internals = STRING_LITERAL_AS_REFERENCE("Tiberium Silo");
-Jupiter::ReferenceString translated_Building_CommCentre_Internals = STRING_LITERAL_AS_REFERENCE("Communications Center");
+static constexpr std::string_view translated_Building_Silo = "Tiberium Silo"sv;
+static constexpr std::string_view translated_Building_CommCentre = "Communications Center"sv;
+static constexpr std::string_view translated_Building_Silo_Internals = "Tiberium Silo"sv;
+static constexpr std::string_view translated_Building_CommCentre_Internals = "Communications Center"sv;
 
 /** Fort structures */
-Jupiter::ReferenceString translated_CapturableMCT_Fort = STRING_LITERAL_AS_REFERENCE("Fort");
-Jupiter::ReferenceString translated_CapturableMCT_MC = STRING_LITERAL_AS_REFERENCE("Medical Center");
-Jupiter::ReferenceString translated_CapturableMCT_Fort_Internals = STRING_LITERAL_AS_REFERENCE("Fort");
-Jupiter::ReferenceString translated_CapturableMCT_MC_Internals = STRING_LITERAL_AS_REFERENCE("Medical Center");
+static constexpr std::string_view translated_CapturableMCT_Fort = "Fort"sv;
+static constexpr std::string_view translated_CapturableMCT_MC = "Medical Center"sv;
+static constexpr std::string_view translated_CapturableMCT_Fort_Internals = "Fort"sv;
+static constexpr std::string_view translated_CapturableMCT_MC_Internals = "Medical Center"sv;
 
 /** Defences */
-Jupiter::ReferenceString translated_Defence_GuardTower = STRING_LITERAL_AS_REFERENCE("Guard Tower");
-Jupiter::ReferenceString translated_Defence_Turret = STRING_LITERAL_AS_REFERENCE("Turret");
-Jupiter::ReferenceString translated_Defence_SAMSite = STRING_LITERAL_AS_REFERENCE("SAM Site");
-Jupiter::ReferenceString translated_Defence_AATower = STRING_LITERAL_AS_REFERENCE("Anti-Air Guard Tower");
-Jupiter::ReferenceString translated_Defence_GunEmplacement = STRING_LITERAL_AS_REFERENCE("Gun Emplacement");
-Jupiter::ReferenceString translated_Defence_RocketEmplacement = STRING_LITERAL_AS_REFERENCE("Rocket Emplacement");
+static constexpr std::string_view translated_Defence_GuardTower = "Guard Tower"sv;
+static constexpr std::string_view translated_Defence_Turret = "Turret"sv;
+static constexpr std::string_view translated_Defence_SAMSite = "SAM Site"sv;
+static constexpr std::string_view translated_Defence_AATower = "Anti-Air Guard Tower"sv;
+static constexpr std::string_view translated_Defence_GunEmplacement = "Gun Emplacement"sv;
+static constexpr std::string_view translated_Defence_RocketEmplacement = "Rocket Emplacement"sv;
 
 /** Defences - Sentinels */
-Jupiter::ReferenceString translated_Sentinel_AGT_MG_Base = STRING_LITERAL_AS_REFERENCE("Advanced Guard Tower");
-Jupiter::ReferenceString translated_Sentinel_AGT_Rockets_Base = STRING_LITERAL_AS_REFERENCE("Advanced Guard Tower");
-Jupiter::ReferenceString translated_Sentinel_Obelisk_Laser_Base = STRING_LITERAL_AS_REFERENCE("Obelisk of Light");
+static constexpr std::string_view translated_Sentinel_AGT_MG_Base = "Advanced Guard Tower"sv;
+static constexpr std::string_view translated_Sentinel_AGT_Rockets_Base = "Advanced Guard Tower"sv;
+static constexpr std::string_view translated_Sentinel_Obelisk_Laser_Base = "Obelisk of Light"sv;
 
 /** UT damage types */
-Jupiter::ReferenceString translated_UTDmgType_VehicleExplosion = STRING_LITERAL_AS_REFERENCE("Vehicle Explosion");
-Jupiter::ReferenceString translated_UTDmgType_Drowned = STRING_LITERAL_AS_REFERENCE("Drowned");
+static constexpr std::string_view translated_UTDmgType_VehicleExplosion = "Vehicle Explosion"sv;
+static constexpr std::string_view translated_UTDmgType_Drowned = "Drowned"sv;
 
 /** Beacons */
-Jupiter::ReferenceString translated_IonCannonBeacon = STRING_LITERAL_AS_REFERENCE("Ion Cannon Beacon");
-Jupiter::ReferenceString translated_NukeBeacon = STRING_LITERAL_AS_REFERENCE("Nuclear Strike Beacon");
-Jupiter::ReferenceString translated_KillZDamageType = STRING_LITERAL_AS_REFERENCE("Kill Zone");
+static constexpr std::string_view translated_IonCannonBeacon = "Ion Cannon Beacon"sv;
+static constexpr std::string_view translated_NukeBeacon = "Nuclear Strike Beacon"sv;
+static constexpr std::string_view translated_KillZDamageType = "Kill Zone"sv;
 
 RenX::TeamType RenX::getTeam(int teamNum)
 {
@@ -433,16 +432,12 @@ RenX::TeamType RenX::getEnemy(TeamType team)
 	}
 }
 
-std::string_view RenX::getCharacter(std::string_view chr)
-{
-	static Jupiter::ReferenceString object;
-
-	object = chr;
-	if (object.find(STRING_LITERAL_AS_REFERENCE("Rx_")) == 0)
+std::string_view RenX::getCharacter(std::string_view object) {
+	if (object.find("Rx_"sv) == 0)
 		object.remove_prefix(3);
-	if (object.find(STRING_LITERAL_AS_REFERENCE("InventoryManager_")) == 0)
+	if (object.find("InventoryManager_"sv) == 0)
 		object.remove_prefix(17);
-	else if (object.find(STRING_LITERAL_AS_REFERENCE("FamilyInfo_")) == 0)
+	else if (object.find("FamilyInfo_"sv) == 0)
 		object.remove_prefix(11);
 
 	return object;
@@ -450,7 +445,7 @@ std::string_view RenX::getCharacter(std::string_view chr)
 
 std::string_view translateCharacter(std::string_view object)
 {
-	if (object.find(STRING_LITERAL_AS_REFERENCE("GDI_")) == 0)
+	if (object.find("GDI_"sv) == 0)
 	{
 		object.remove_prefix(4);
 		if (object == "Deadeye"sv) return translated_GDI_Deadeye;
@@ -469,7 +464,7 @@ std::string_view translateCharacter(std::string_view object)
 		if (object == "Soldier"sv) return translated_GDI_Soldier;
 		if (object == "Sydney"sv) return translated_GDI_Sydney;
 	}
-	else if (object.find(STRING_LITERAL_AS_REFERENCE("Nod_")) == 0)
+	else if (object.find("Nod_"sv) == 0)
 	{
 		object.remove_prefix(4);
 		if (object == "BlackHandSniper"sv) return translated_Nod_BlackHandSniper;
@@ -492,26 +487,26 @@ std::string_view translateCharacter(std::string_view object)
 	return object;
 }
 
-std::string_view RenX::translateName(std::string_view obj)
-{
+// TODO: Use a map...
+std::string_view RenX::translateName(std::string_view obj) {
 	if (obj.empty())
-		return ""_jrs;
+		return ""sv;
 
-	Jupiter::ReferenceString iniTranslation = RenX::getCore()->getConfig()["Name"_jrs].get(obj);
+	std::string_view iniTranslation = RenX::getCore()->getConfig()["Name"sv].get(obj);
 	if (!iniTranslation.empty())
 		return iniTranslation;
 
-	Jupiter::ReferenceString object = obj;
+	std::string_view object = obj;
 
-	if (object.find(STRING_LITERAL_AS_REFERENCE("nBab_")) == 0)
+	if (object.find("nBab_"sv) == 0)
 		object.remove_prefix(5);
 	
-	if (object.find(STRING_LITERAL_AS_REFERENCE("Rx_")) == 0)
+	if (object.find("Rx_"sv) == 0)
 		object.remove_prefix(3);
-	else if (object.find(STRING_LITERAL_AS_REFERENCE("TS_")) == 0)
+	else if (object.find("TS_"sv) == 0)
 		object.remove_prefix(3);
 
-	if (object.find(STRING_LITERAL_AS_REFERENCE("Vehicle_")) == 0)
+	if (object.find("Vehicle_"sv) == 0)
 	{
 		object.remove_prefix(8);
 
@@ -549,7 +544,7 @@ std::string_view RenX::translateName(std::string_view obj)
 		if (object == "AC130_DmgType_HeavyCannon"sv) return translated_Vehicle_AC130_DmgType_HeavyCannon;
 		if (object == "AC130_DmgType_AutoCannon"sv) return translated_Vehicle_AC130_DmgType_AutoCannon;
 	}
-	else if (object.find(STRING_LITERAL_AS_REFERENCE("Weapon_")) == 0)
+	else if (object.find("Weapon_"sv) == 0)
 	{
 		object.remove_prefix(7);
 		if (object == "HeavyPistol"sv) return translated_Weapon_HeavyPistol;
@@ -576,23 +571,23 @@ std::string_view RenX::translateName(std::string_view obj)
 		if (object == "DeployedNukeBeacon"sv) return translated_Weapon_DeployedNukeBeacon;
 		if (object == "CrateNuke"sv) return translated_Weapon_CrateNuke;
 	}
-	else if (object.find(STRING_LITERAL_AS_REFERENCE("Projectile_")) == 0)
+	else if (object.find("Projectile_"sv) == 0)
 	{
 		object.remove_prefix(11);
 		if (object == "EMPGrenade"sv) return translated_Projectile_EMPGrenade;
 		if (object == "SmokeGrenade"sv) return translated_Projectile_SmokeGrenade;
 	}
-	else if (object.find(STRING_LITERAL_AS_REFERENCE("InventoryManager_")) == 0)
+	else if (object.find("InventoryManager_"sv) == 0)
 	{
 		object.remove_prefix(17);
 		return translateCharacter(object);
 	}
-	else if (object.find(STRING_LITERAL_AS_REFERENCE("FamilyInfo_")) == 0)
+	else if (object.find("FamilyInfo_"sv) == 0)
 	{
 		object.remove_prefix(11);
 		return translateCharacter(object);
 	}
-	else if (object.find(STRING_LITERAL_AS_REFERENCE("DmgType_")) == 0)
+	else if (object.find("DmgType_"sv) == 0)
 	{
 		object.remove_prefix(8);
 
@@ -704,7 +699,7 @@ std::string_view RenX::translateName(std::string_view obj)
 		/** Other Vehicles */
 		if (object == "A10_Missile"sv) return translated_DmgType_A10_Missile;
 	}
-	else if (object.find(STRING_LITERAL_AS_REFERENCE("Building_")) == 0)
+	else if (object.find("Building_"sv) == 0)
 	{
 		object.remove_prefix(9);
 		/** Nod structures */
@@ -741,7 +736,7 @@ std::string_view RenX::translateName(std::string_view obj)
 		if (object == "Silo_Internals"sv) return translated_Building_Silo_Internals;
 		if (object == "CommCentre_Internals"sv) return translated_Building_CommCentre_Internals;
 	}
-	else if (object.find(STRING_LITERAL_AS_REFERENCE("CapturableMCT_")) == 0)
+	else if (object.find("CapturableMCT_"sv) == 0)
 	{
 		object.remove_prefix(14);
 		if (object == "Fort"sv) return translated_CapturableMCT_Fort;
@@ -749,7 +744,7 @@ std::string_view RenX::translateName(std::string_view obj)
 		if (object == "Fort_Internals"sv) return translated_CapturableMCT_Fort_Internals;
 		if (object == "MC_Internals"sv) return translated_CapturableMCT_MC_Internals;
 	}
-	else if (object.find(STRING_LITERAL_AS_REFERENCE("Defence_")) == 0)
+	else if (object.find("Defence_"sv) == 0)
 	{
 		object.remove_prefix(8);
 		if (object == "GuardTower"sv) return translated_Defence_GuardTower;
@@ -759,20 +754,20 @@ std::string_view RenX::translateName(std::string_view obj)
 		if (object == "GunEmplacement"sv) return translated_Defence_GunEmplacement;
 		if (object == "RocketEmplacement"sv) return translated_Defence_RocketEmplacement;
 	}
-	else if (object.find(STRING_LITERAL_AS_REFERENCE("Sentinel_")) == 0)
+	else if (object.find("Sentinel_"sv) == 0)
 	{
 		object.remove_prefix(9);
 		if (object == "AGT_MG_Base"sv) return translated_Sentinel_AGT_MG_Base;
 		if (object == "AGT_Rockets_Base"sv) return translated_Sentinel_AGT_Rockets_Base;
 		if (object == "Obelisk_Laser_Base"sv) return translated_Sentinel_Obelisk_Laser_Base;
 	}
-	else if (object.find(STRING_LITERAL_AS_REFERENCE("UTDmgType_")) == 0)
+	else if (object.find("UTDmgType_"sv) == 0)
 	{
 		object.remove_prefix(10);
 		if (object == "VehicleExplosion"sv) return translated_UTDmgType_VehicleExplosion;
 		if (object == "Drowned"sv) return translated_UTDmgType_Drowned;
 	}
-	else if (object.find(STRING_LITERAL_AS_REFERENCE("VoteMenuChoice_")) == 0)
+	else if (object.find("VoteMenuChoice_"sv) == 0)
 	{
 		object.remove_prefix(15);
 		if (object == "AddBots"sv) return translated_VoteMenuChoice_AddBots;
@@ -836,44 +831,44 @@ std::string_view RenX::translateWinTypePlain(RenX::WinType winType)
 
 void RenX::initTranslations(Jupiter::Config &translationsFile)
 {
-	NodColor = translationsFile["TeamColor"_jrs].get("Nod"_jrs, "04"_jrs);
-	GDIColor = translationsFile["TeamColor"_jrs].get("GDI"_jrs, "08"_jrs);
-	OtherColor = translationsFile["TeamColor"_jrs].get("Other"_jrs, "14"_jrs);
+	NodColor = translationsFile["TeamColor"sv].get("Nod"sv, "04"sv);
+	GDIColor = translationsFile["TeamColor"sv].get("GDI"sv, "08"sv);
+	OtherColor = translationsFile["TeamColor"sv].get("Other"sv, "14"sv);
 
-	NodShortName = translationsFile["ShortTeamName"_jrs].get("Nod"_jrs, "Nod"_jrs);
-	GDIShortName = translationsFile["ShortTeamName"_jrs].get("GDI"_jrs, "GDI"_jrs);
-	OtherShortName = translationsFile["ShortTeamName"_jrs].get("Other"_jrs, "N/A"_jrs);
-	NodLongName = translationsFile["LongTeamName"_jrs].get("Nod"_jrs, "Brotherhood of Nod"_jrs);
-	GDILongName = translationsFile["LongTeamName"_jrs].get("GDI"_jrs, "Global Defense Initiative"_jrs);
-	OtherLongName = translationsFile["LongTeamName"_jrs].get("Other"_jrs, "Unknown"_jrs);
+	NodShortName = translationsFile["ShortTeamName"sv].get("Nod"sv, "Nod"sv);
+	GDIShortName = translationsFile["ShortTeamName"sv].get("GDI"sv, "GDI"sv);
+	OtherShortName = translationsFile["ShortTeamName"sv].get("Other"sv, "N/A"sv);
+	NodLongName = translationsFile["LongTeamName"sv].get("Nod"sv, "Brotherhood of Nod"sv);
+	GDILongName = translationsFile["LongTeamName"sv].get("GDI"sv, "Global Defense Initiative"sv);
+	OtherLongName = translationsFile["LongTeamName"sv].get("Other"sv, "Unknown"sv);
 
-	scoreWinTypeTranslation = translationsFile["WinType"_jrs].get("Score"_jrs, "Domination (High Score)"_jrs);
-	baseWinTypeTranslation = translationsFile["WinType"_jrs].get("Base"_jrs, "Conquest (Base Destruction)"_jrs);
-	beaconWinTypeTranslation = translationsFile["WinType"_jrs].get("Beacon"_jrs, "Espionage (Beacon)"_jrs);
-	tieWinTypeTranslation = translationsFile["WinType"_jrs].get("Tie"_jrs, "Draw (Tie)"_jrs);
-	shutdownWinTypeTranslation = translationsFile["WinType"_jrs].get("Shutdown"_jrs, "Ceasefire (Shutdown)"_jrs);
-	surrenderWinTypeTranslation = translationsFile["WinType"_jrs].get("Surrender"_jrs, "Forfeit (Surrender)"_jrs);
-	unknownWinTypeTranslation = translationsFile["WinType"_jrs].get("Unknown"_jrs, "Aliens (Unknown)"_jrs);
+	scoreWinTypeTranslation = translationsFile["WinType"sv].get("Score"sv, "Domination (High Score)"sv);
+	baseWinTypeTranslation = translationsFile["WinType"sv].get("Base"sv, "Conquest (Base Destruction)"sv);
+	beaconWinTypeTranslation = translationsFile["WinType"sv].get("Beacon"sv, "Espionage (Beacon)"sv);
+	tieWinTypeTranslation = translationsFile["WinType"sv].get("Tie"sv, "Draw (Tie)"sv);
+	shutdownWinTypeTranslation = translationsFile["WinType"sv].get("Shutdown"sv, "Ceasefire (Shutdown)"sv);
+	surrenderWinTypeTranslation = translationsFile["WinType"sv].get("Surrender"sv, "Forfeit (Surrender)"sv);
+	unknownWinTypeTranslation = translationsFile["WinType"sv].get("Unknown"sv, "Aliens (Unknown)"sv);
 
-	scoreWinTypePlainTranslation = translationsFile["WinTypePlain"_jrs].get("Score"_jrs, "High Score"_jrs);
-	baseWinTypePlainTranslation = translationsFile["WinTypePlain"_jrs].get("Base"_jrs, "Base Destruction"_jrs);
-	beaconWinTypePlainTranslation = translationsFile["WinTypePlain"_jrs].get("Beacon"_jrs, "Beacon"_jrs);
-	tieWinTypePlainTranslation = translationsFile["WinTypePlain"_jrs].get("Tie"_jrs, "Tie"_jrs);
-	shutdownWinTypePlainTranslation = translationsFile["WinTypePlain"_jrs].get("Shutdown"_jrs, "Shutdown"_jrs);
-	surrenderWinTypePlainTranslation = translationsFile["WinTypePlain"_jrs].get("Surrender"_jrs, "Surrender"_jrs);
-	unknownWinTypePlainTranslation = translationsFile["WinTypePlain"_jrs].get("Unknown"_jrs, "Unknown"_jrs);
+	scoreWinTypePlainTranslation = translationsFile["WinTypePlain"sv].get("Score"sv, "High Score"sv);
+	baseWinTypePlainTranslation = translationsFile["WinTypePlain"sv].get("Base"sv, "Base Destruction"sv);
+	beaconWinTypePlainTranslation = translationsFile["WinTypePlain"sv].get("Beacon"sv, "Beacon"sv);
+	tieWinTypePlainTranslation = translationsFile["WinTypePlain"sv].get("Tie"sv, "Tie"sv);
+	shutdownWinTypePlainTranslation = translationsFile["WinTypePlain"sv].get("Shutdown"sv, "Shutdown"sv);
+	surrenderWinTypePlainTranslation = translationsFile["WinTypePlain"sv].get("Surrender"sv, "Surrender"sv);
+	unknownWinTypePlainTranslation = translationsFile["WinTypePlain"sv].get("Unknown"sv, "Unknown"sv);
 }
 
-Jupiter::String RenX::getFormattedPlayerName(const RenX::PlayerInfo &player)
+std::string RenX::getFormattedPlayerName(const RenX::PlayerInfo &player)
 {
-	Jupiter::String r = player.formatNamePrefix;
+	std::string r = player.formatNamePrefix;
 	r += IRCCOLOR;
 	r += RenX::getTeamColor(player.team);
 	r += player.name;
 	return r;
 }
 
-Jupiter::StringS RenX::formatGUID(const RenX::Map &map)
+std::string RenX::formatGUID(const RenX::Map &map)
 {
 	return string_printf("%.16llX%.16llX", map.guid[0], map.guid[1]);
 }
@@ -883,12 +878,12 @@ std::chrono::milliseconds RenX::getServerTime(const RenX::PlayerInfo &player)
 	return std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - player.joinTime);
 }
 
-Jupiter::StringS RenX::default_uuid_func(RenX::PlayerInfo &player)
+std::string RenX::default_uuid_func(RenX::PlayerInfo &player)
 {
 	if (player.steamid != 0U)
 		return string_printf("0x%.16llX", player.steamid);
 
-	return Jupiter::StringS();
+	return std::string();
 }
 
 double RenX::getKillDeathRatio(const RenX::PlayerInfo &player, bool includeSuicides)

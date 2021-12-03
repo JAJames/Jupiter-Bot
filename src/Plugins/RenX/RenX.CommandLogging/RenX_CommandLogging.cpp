@@ -9,16 +9,16 @@
 #include <iostream>
 #include <fstream>
 #include <string>
+#include "jessilib/unicode.hpp"
 #include "RenX_CommandLogging.h"
 #include "RenX_GameCommand.h"
 #include "RenX_PlayerInfo.h"
 #include "RenX_Server.h"
 #include "RenX_Functions.h"
 
-using namespace Jupiter::literals;
+using namespace std::literals;
 
-void RenX_CommandLoggingPlugin::PrepFile()
-{
+void RenX_CommandLoggingPlugin::PrepFile() {
 	// Check if date changed (Format: YYYY-MM-DD)
 	std::string current_date = getTimeFormat("%F");
 	std::string full_date = getTimeFormat("%c");
@@ -44,39 +44,30 @@ void RenX_CommandLoggingPlugin::PrepFile()
 		<< std::endl;
 }
 
-bool RenX_CommandLoggingPlugin::initialize()
-{
-	RenX_CommandLoggingPlugin::min_access = this->config.get<int>("MinPlayerLevelToLog"_jrs, 1);
-	RenX_CommandLoggingPlugin::min_cmd_access = this->config.get<int>("MinCommandLevelToLog"_jrs, 1);
+bool RenX_CommandLoggingPlugin::initialize() {
+	RenX_CommandLoggingPlugin::min_access = this->config.get<int>("MinPlayerLevelToLog"sv, 1);
+	RenX_CommandLoggingPlugin::min_cmd_access = this->config.get<int>("MinCommandLevelToLog"sv, 1);
 
 	PrepFile();
 
 	return fs.is_open();
 }
 
-RenX_CommandLoggingPlugin::~RenX_CommandLoggingPlugin()
-{
+RenX_CommandLoggingPlugin::~RenX_CommandLoggingPlugin() {
 	if (fs.is_open()) {
 		fs.close();
 	}
 }
 
-void RenX_CommandLoggingPlugin::RenX_OnCommandTriggered(RenX::Server& server, std::string_view  trigger, RenX::PlayerInfo& player, std::string_view  parameters, RenX::GameCommand& command)
-{
+void RenX_CommandLoggingPlugin::RenX_OnCommandTriggered(RenX::Server& server, std::string_view  trigger, RenX::PlayerInfo& player, std::string_view  parameters, RenX::GameCommand& command) {
 	if (player.access < min_access || command.getAccessLevel() < min_cmd_access) {
 		return;
 	}
 
-	WriteToLog(server, player, static_cast<std::string>(trigger) + " " + parameters);
+	WriteToLog(server, player, jessilib::join<std::string>(trigger, " "sv, parameters));
 }
 
-std::ostream& operator<<(std::ostream& in_stream, std::string_view  in_string) {
-	in_stream.write(in_string.data(), in_string.size());
-	return in_stream;
-}
-
-void RenX_CommandLoggingPlugin::WriteToLog(RenX::Server& server, const RenX::PlayerInfo& player, std::string_view  message)
-{
+void RenX_CommandLoggingPlugin::WriteToLog(RenX::Server& server, const RenX::PlayerInfo& player, std::string_view  message) {
 	// Check if new file needs to be opened
 	PrepFile();
 

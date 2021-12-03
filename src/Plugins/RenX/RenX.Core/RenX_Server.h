@@ -26,8 +26,8 @@
 
 #include <chrono>
 #include <list>
+#include <vector>
 #include "Jupiter/TCPSocket.h"
-#include "Jupiter/String.hpp"
 #include "Jupiter/Config.h"
 #include "Jupiter/Thinker.h"
 #include "Jupiter/Rehash.h"
@@ -83,7 +83,7 @@ namespace RenX
 	public: // RenX::Server
 		std::list<RenX::PlayerInfo> players; /** A list of players in the server */
 		std::vector<std::unique_ptr<RenX::BuildingInfo>> buildings; /** A list of buildings in the server */
-		std::vector<Jupiter::StringS> mutators; /** A list of buildings the server is running */
+		std::vector<std::string> mutators; /** A list of buildings the server is running */
 		std::vector<RenX::Map> maps; /** A list of maps in the server's rotation */
 		Jupiter::Config varData; /** Variable data. */
 
@@ -394,7 +394,7 @@ namespace RenX
 		* @param player Player to fetch Steam ID from
 		* @return A player's formatted Steam ID on success, an empty string otherwise.
 		*/
-		Jupiter::StringS formatSteamID(const RenX::PlayerInfo &player) const;
+		std::string formatSteamID(const RenX::PlayerInfo &player) const;
 
 		/**
 		* @brief Formats a Steam ID into a readable string.
@@ -402,7 +402,7 @@ namespace RenX
 		* @param id Steam ID to format
 		* @return A player's formatted Steam ID on success, an empty string otherwise.
 		*/
-		Jupiter::StringS formatSteamID(uint64_t id) const;
+		std::string formatSteamID(uint64_t id) const;
 
 		/**
 		* @brief Kicks a player from the server.
@@ -912,7 +912,7 @@ namespace RenX
 		* @param player Player to calculate UUID of
 		* @return UUID calculated from player.
 		*/
-		typedef Jupiter::StringS(*uuid_func)(RenX::PlayerInfo &player);
+		typedef std::string(*uuid_func)(RenX::PlayerInfo &player);
 
 		/**
 		* @brief Sets the player UUID calculation function.
@@ -1113,7 +1113,7 @@ namespace RenX
 		std::string m_lastLine;
 		std::string m_rconUser;
 		std::string m_gameVersion;
-		Jupiter::StringS m_serverName;
+		std::string m_serverName;
 		std::string m_lastCommand;
 		std::string m_lastCommandParams;
 		RenX::Map m_map;
@@ -1145,8 +1145,8 @@ namespace RenX
 		std::string m_hostname;
 		std::string m_pass;
 		std::string m_configSection;
-		Jupiter::StringS m_rules;
-		Jupiter::StringS m_ban_from_str;
+		std::string m_rules;
+		std::string m_ban_from_str;
 		std::string m_IRCPrefix;
 		std::string m_CommandPrefix;
 		Jupiter::Config* m_commandAccessLevels;

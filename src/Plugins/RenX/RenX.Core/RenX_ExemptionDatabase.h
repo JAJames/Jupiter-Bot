@@ -22,7 +22,6 @@
 #include <cstdint>
 #include <chrono>
 #include "Jupiter/Database.h"
-#include "Jupiter/String.hpp"
 #include "RenX.h"
 
 /** DLL Linkage Nagging */

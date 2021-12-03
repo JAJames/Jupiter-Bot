@@ -22,7 +22,6 @@
 #include "RenX_Server.h"
 #include "RenX_Tags.h"
 
-using namespace Jupiter::literals;
 using namespace std::literals;
 
 RenX_AnnouncementsPlugin pluginInstance;
@@ -83,7 +82,7 @@ bool RenX_AnnouncementsPlugin::initialize()
 		fputs("[RenX.Announcements] ERROR: No announcements loaded." ENDL, stderr);
 		return false;
 	}
-	std::chrono::milliseconds delay = std::chrono::seconds(this->config.get<long long>("Delay"_jrs, 60));
+	std::chrono::milliseconds delay = std::chrono::seconds(this->config.get<long long>("Delay"sv, 60));
 	RenX_AnnouncementsPlugin::timer = new Jupiter::Timer(0, delay, announce_);
 	if (RenX_AnnouncementsPlugin::random == false)
 		RenX_AnnouncementsPlugin::lastLine = RenX_AnnouncementsPlugin::announcementsFile.getLineCount() - 1;

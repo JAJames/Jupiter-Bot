@@ -21,16 +21,16 @@
 #include "RenX_Core.h"
 #include "RenX_Server.h"
 
-using namespace Jupiter::literals;
+using namespace std::literals;
 
 RenX_ListenPlugin::~RenX_ListenPlugin() {
 	RenX_ListenPlugin::socket.close();
 }
 
 bool RenX_ListenPlugin::initialize() {
-	uint16_t port = this->config.get<uint16_t>("Port"_jrs, 21337);
-	std::string_view address = this->config.get("Address"_jrs, "0.0.0.0"_jrs);
-	RenX_ListenPlugin::serverSection = this->config.get("ServerSection"_jrs, this->getName());
+	uint16_t port = this->config.get<uint16_t>("Port"sv, 21337);
+	std::string_view address = this->config.get("Address"sv, "0.0.0.0"sv);
+	RenX_ListenPlugin::serverSection = this->config.get("ServerSection"sv, this->getName());
 
 	return RenX_ListenPlugin::socket.bind(static_cast<std::string>(address).c_str(), port, true) && RenX_ListenPlugin::socket.setBlocking(false);
 }
@@ -51,9 +51,9 @@ int RenX_ListenPlugin::think() {
 int RenX_ListenPlugin::OnRehash() {
 	RenX::Plugin::OnRehash();
 
-	uint16_t port = this->config.get<uint16_t>("Port"_jrs, 21337);
-	std::string_view address = this->config.get("Address"_jrs, "0.0.0.0"_jrs);
-	RenX_ListenPlugin::serverSection = this->config.get("ServerSection"_jrs, this->getName());
+	uint16_t port = this->config.get<uint16_t>("Port"sv, 21337);
+	std::string_view address = this->config.get("Address"sv, "0.0.0.0"sv);
+	RenX_ListenPlugin::serverSection = this->config.get("ServerSection"sv, this->getName());
 
 	if (port != RenX_ListenPlugin::socket.getBoundPort() || address != RenX_ListenPlugin::socket.getBoundHostname()) {
 		puts("Notice: The Renegade-X listening socket has been changed!");

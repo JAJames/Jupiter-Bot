@@ -24,7 +24,7 @@
  * @brief Defines the RenX Map class
  */
 
-#include "Jupiter/String.hpp"
+#include <string>
 #include "RenX.h"
 
 /** DLL Linkage Nagging */

@@ -25,9 +25,9 @@
  */
 
 #include <memory>
+#include <vector>
 #include "Jupiter_Bot.h"
 #include "Jupiter/Thinker.h"
-#include "Jupiter/Readable_String.h"
 
 /** Forward declarations */
 class IRC_Bot;

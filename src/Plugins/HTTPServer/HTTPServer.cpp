@@ -18,32 +18,27 @@
 
 #include "HTTPServer.h"
 
-using namespace Jupiter::literals;
 using namespace std::literals;
 
 bool HTTPServerPlugin::initialize() {
-	return HTTPServerPlugin::server.bind(this->config.get("BindAddress"_jrs, "0.0.0.0"sv), this->config.get<uint16_t>("BindPort"_jrs, 80));
+	return HTTPServerPlugin::server.bind(this->config.get("BindAddress"sv, "0.0.0.0"sv), this->config.get<uint16_t>("BindPort"sv, 80));
 }
 
-int HTTPServerPlugin::think()
-{
+int HTTPServerPlugin::think() {
 	return HTTPServerPlugin::server.think();
 }
 
 // Plugin instantiation and entry point.
 HTTPServerPlugin pluginInstance;
 
-HTTPServerPlugin &getHTTPServerPlugin()
-{
+HTTPServerPlugin &getHTTPServerPlugin() {
 	return pluginInstance;
 }
 
-Jupiter::HTTP::Server &getHTTPServer()
-{
+Jupiter::HTTP::Server &getHTTPServer() {
 	return pluginInstance.server;
 }
 
-extern "C" JUPITER_EXPORT Jupiter::Plugin *getPlugin()
-{
+extern "C" JUPITER_EXPORT Jupiter::Plugin *getPlugin() {
 	return &pluginInstance;
 }

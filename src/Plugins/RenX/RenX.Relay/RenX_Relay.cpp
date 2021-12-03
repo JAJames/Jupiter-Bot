@@ -11,6 +11,7 @@
 #include <unordered_set>
 #include <cassert>
 #include <fstream>
+#include <iostream>
 #include "fmt/format.h" // TODO: replace with <format> later
 #include <charconv>
 #include "jessilib/split.hpp"
@@ -23,7 +24,6 @@
 // String literal redefinition of RenX::DelimC
 #define RX_DELIM "\x02"
 
-using namespace Jupiter::literals;
 using namespace std::literals;
 constexpr const char g_blank_steamid[] = "0x0000000000000000";
 constexpr std::chrono::steady_clock::duration g_reconnect_delay = std::chrono::seconds{15 }; // game server: 120s
@@ -178,7 +178,7 @@ bool RenX_RelayPlugin::initialize() {
 
 	m_default_settings = get_settings(config);
 
-	std::string_view upstreams_list = config.get("Upstreams"_jrs, ""sv);
+	std::string_view upstreams_list = config.get("Upstreams"sv, ""sv);
 	std::vector<std::string_view> upstream_names = jessilib::word_split_view(upstreams_list, WHITESPACE_SV);
 	for (auto upstream_name : upstream_names) {
 		auto upstream_config = config.getSection(upstream_name);
@@ -325,7 +325,7 @@ void RenX_RelayPlugin::RenX_OnRaw(RenX::Server &server, std::string_view line) {
 
 			// This is a command response for an upstream command; this is only relevant to one server: that server
 			// Always echo the command back exactly as it was sent
-			Jupiter::StringS line_sanitized;
+			std::string line_sanitized;
 			const auto& rcon_username = get_upstream_rcon_username(*front_server_info, server);
 			if (rcon_username == server.getRCONUsername()) {
 				// No need to recombine tokens
@@ -556,20 +556,20 @@ RenX_RelayPlugin::upstream_settings RenX_RelayPlugin::get_settings(const Jupiter
 	upstream_settings result{};
 
 	// Read in settings
-	result.m_upstream_hostname = in_config.get<std::string>("UpstreamHost"_jrs, m_default_settings.m_upstream_hostname);
-	result.m_upstream_port = in_config.get<uint16_t>("UpstreamPort"_jrs, m_default_settings.m_upstream_port);
-	result.m_rcon_username = in_config.get<std::string>("RconUsername"_jrs, m_default_settings.m_rcon_username);
-	result.m_log_traffic = in_config.get<bool>("LogTraffic"_jrs, m_default_settings.m_log_traffic);
-	result.m_fake_pings = in_config.get<bool>("FakePings"_jrs, m_default_settings.m_fake_pings);
-	result.m_fake_ignored_commands = in_config.get<bool>("FakeSuppressedCommands"_jrs, m_default_settings.m_fake_ignored_commands);
-	result.m_sanitize_names = in_config.get<bool>("SanitizeNames"_jrs, m_default_settings.m_sanitize_names);
-	result.m_sanitize_ips = in_config.get<bool>("SanitizeIPs"_jrs, m_default_settings.m_sanitize_ips);
-	result.m_sanitize_hwids = in_config.get<bool>("SanitizeHWIDs"_jrs, m_default_settings.m_sanitize_hwids);
-	result.m_sanitize_steam_ids = in_config.get<bool>("SanitizeSteamIDs"_jrs, m_default_settings.m_sanitize_steam_ids);
-	result.m_suppress_unknown_commands = in_config.get<bool>("SuppressUnknownCmds"_jrs, m_default_settings.m_suppress_unknown_commands);
-	result.m_suppress_blacklisted_commands = in_config.get<bool>("SuppressBlacklistedCmds"_jrs, m_default_settings.m_suppress_blacklisted_commands);
-	result.m_suppress_chat_logs = in_config.get<bool>("SuppressChatLogs"_jrs, m_default_settings.m_suppress_chat_logs);
-	result.m_suppress_rcon_command_logs = in_config.get<bool>("SuppressRconCommandLogs"_jrs, m_default_settings.m_suppress_rcon_command_logs);
+	result.m_upstream_hostname = in_config.get<std::string>("UpstreamHost"sv, m_default_settings.m_upstream_hostname);
+	result.m_upstream_port = in_config.get<uint16_t>("UpstreamPort"sv, m_default_settings.m_upstream_port);
+	result.m_rcon_username = in_config.get<std::string>("RconUsername"sv, m_default_settings.m_rcon_username);
+	result.m_log_traffic = in_config.get<bool>("LogTraffic"sv, m_default_settings.m_log_traffic);
+	result.m_fake_pings = in_config.get<bool>("FakePings"sv, m_default_settings.m_fake_pings);
+	result.m_fake_ignored_commands = in_config.get<bool>("FakeSuppressedCommands"sv, m_default_settings.m_fake_ignored_commands);
+	result.m_sanitize_names = in_config.get<bool>("SanitizeNames"sv, m_default_settings.m_sanitize_names);
+	result.m_sanitize_ips = in_config.get<bool>("SanitizeIPs"sv, m_default_settings.m_sanitize_ips);
+	result.m_sanitize_hwids = in_config.get<bool>("SanitizeHWIDs"sv, m_default_settings.m_sanitize_hwids);
+	result.m_sanitize_steam_ids = in_config.get<bool>("SanitizeSteamIDs"sv, m_default_settings.m_sanitize_steam_ids);
+	result.m_suppress_unknown_commands = in_config.get<bool>("SuppressUnknownCmds"sv, m_default_settings.m_suppress_unknown_commands);
+	result.m_suppress_blacklisted_commands = in_config.get<bool>("SuppressBlacklistedCmds"sv, m_default_settings.m_suppress_blacklisted_commands);
+	result.m_suppress_chat_logs = in_config.get<bool>("SuppressChatLogs"sv, m_default_settings.m_suppress_chat_logs);
+	result.m_suppress_rcon_command_logs = in_config.get<bool>("SuppressRconCommandLogs"sv, m_default_settings.m_suppress_rcon_command_logs);
 
 	// Populate fake command handlers
 	if (result.m_fake_pings) {

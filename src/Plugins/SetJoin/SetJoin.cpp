@@ -17,19 +17,22 @@
  */
 
 #include <cstring>
+#include "jessilib/unicode.hpp"
 #include "Jupiter/Functions.h"
 #include "SetJoin.h"
 #include "IRC_Bot.h"
 
-using namespace Jupiter::literals;
+using namespace std::literals;
 
-void SetJoinPlugin::OnJoin(Jupiter::IRC::Client *server, std::string_view chan, std::string_view nick)
-{
+void SetJoinPlugin::OnJoin(Jupiter::IRC::Client *server, std::string_view chan, std::string_view nick) {
 	std::string_view setjoin = this->config[server->getConfigSection()].get(nick);
-	if (setjoin.empty())
-		server->sendNotice(nick, "No setjoin has been set for you. To set one, use the !setjoin command"_jrs);
-	else
-		server->sendMessage(chan, string_printf(IRCBOLD IRCCOLOR "07[%.*s]" IRCCOLOR IRCBOLD ": %.*s", nick.size(), nick.data(), setjoin.size(), setjoin.data()));
+	if (setjoin.empty()) {
+		server->sendNotice(nick, "No setjoin has been set for you. To set one, use the !setjoin command"sv);
+		return;
+	}
+
+	std::string join_message = jessilib::join<std::string>(IRCBOLD IRCCOLOR "07["sv, nick, "]" IRCCOLOR IRCBOLD ": "sv, setjoin);
+	server->sendMessage(chan, join_message);
 }
 
 SetJoinPlugin pluginInstance;
@@ -38,7 +41,7 @@ SetJoinPlugin pluginInstance;
 
 void SetJoinIRCCommand::create()
 {
-	this->addTrigger("setJoin"_jrs);
+	this->addTrigger("setJoin"sv);
 }
 
 void SetJoinIRCCommand::trigger(IRC_Bot *source, std::string_view channel, std::string_view nick, std::string_view parameters)
@@ -47,14 +50,14 @@ void SetJoinIRCCommand::trigger(IRC_Bot *source, std::string_view channel, std::
 	{
 		pluginInstance.setjoin_file[source->getConfigSection()].set(nick, static_cast<std::string>(parameters));
 		pluginInstance.setjoin_file.write();
-		source->sendMessage(channel, "Your join message has been set."_jrs);
+		source->sendMessage(channel, "Your join message has been set."sv);
 	}
-	else source->sendMessage(channel, "Too few parameters! Syntax: setjoin <message>"_jrs);
+	else source->sendMessage(channel, "Too few parameters! Syntax: setjoin <message>"sv);
 }
 
 std::string_view SetJoinIRCCommand::getHelp(std::string_view )
 {
-	static STRING_LITERAL_AS_NAMED_REFERENCE(defaultHelp, "Sets your join message. Syntax: setjoin <message>");
+	static constexpr std::string_view defaultHelp = "Sets your join message. Syntax: setjoin <message>"sv;
 	return defaultHelp;
 }
 
@@ -64,26 +67,29 @@ IRC_COMMAND_INIT(SetJoinIRCCommand)
 
 void ViewJoinIRCCommand::create()
 {
-	this->addTrigger("viewJoin"_jrs);
-	this->addTrigger("vJoin"_jrs);
+	this->addTrigger("viewJoin"sv);
+	this->addTrigger("vJoin"sv);
 }
 
-void ViewJoinIRCCommand::trigger(IRC_Bot *source, std::string_view channel, std::string_view nick, std::string_view parameters)
-{
+void ViewJoinIRCCommand::trigger(IRC_Bot *source, std::string_view channel, std::string_view nick, std::string_view parameters) {
 	std::string_view target = parameters.empty() ? nick : parameters;
 	std::string_view setjoin = pluginInstance.setjoin_file[source->getConfigSection()].get(target);
 
-	if (setjoin.empty())
-		source->sendMessage(channel, string_printf("No setjoin has been set for \"%.*s\".", target.size(),
-			target.data()));
-	else
-		source->sendMessage(channel, string_printf(IRCBOLD IRCCOLOR "07[%.*s]" IRCCOLOR IRCBOLD ": %.*s", target.size(),
-			target.data(), setjoin.size(), setjoin.data()));
+	if (setjoin.empty()) {
+		source->sendMessage(channel, jessilib::join<std::string>("No setjoin has been set for \""sv, target, "\"."sv));
+	}
+	else {
+		std::string join_message = IRCBOLD IRCCOLOR "07[";
+		join_message += target;
+		join_message += "]" IRCCOLOR IRCBOLD ": ";
+		join_message += setjoin;
+		source->sendMessage(channel, join_message);
+	}
 }
 
 std::string_view ViewJoinIRCCommand::getHelp(std::string_view )
 {
-	static STRING_LITERAL_AS_NAMED_REFERENCE(defaultHelp, "Views a user's join message. Syntax: viewjoin [user=you]");
+	static constexpr std::string_view defaultHelp = "Views a user's join message. Syntax: viewjoin [user=you]"sv;
 	return defaultHelp;
 }
 
@@ -93,20 +99,20 @@ IRC_COMMAND_INIT(ViewJoinIRCCommand)
 
 void DelJoinIRCCommand::create()
 {
-	this->addTrigger("delJoin"_jrs);
-	this->addTrigger("dJoin"_jrs);
+	this->addTrigger("delJoin"sv);
+	this->addTrigger("dJoin"sv);
 }
 
 void DelJoinIRCCommand::trigger(IRC_Bot *source, std::string_view channel, std::string_view nick, std::string_view parameters)
 {
 	if (pluginInstance.setjoin_file[source->getConfigSection()].remove(nick))
-		source->sendNotice(nick, "Your setjoin has been deleted successfully."_jrs);
-	else source->sendNotice(nick, "No setjoin was found to delete."_jrs);
+		source->sendNotice(nick, "Your setjoin has been deleted successfully."sv);
+	else source->sendNotice(nick, "No setjoin was found to delete."sv);
 }
 
 std::string_view DelJoinIRCCommand::getHelp(std::string_view )
 {
-	static STRING_LITERAL_AS_NAMED_REFERENCE(defaultHelp, "Deletes your join message. Syntax: deljoin");
+	static constexpr std::string_view defaultHelp = "Deletes your join message. Syntax: deljoin"sv;
 	return defaultHelp;
 }
 

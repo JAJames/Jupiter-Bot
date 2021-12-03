@@ -25,7 +25,6 @@
  */
 
 #include "Jupiter/Plugin.h"
-#include "Jupiter/String_Type.h"
 #include "RenX.h"
 
 namespace RenX
@@ -54,7 +53,7 @@ namespace RenX
 		virtual void RenX_OnServerCreate(Server &server);
 		virtual void RenX_OnServerFullyConnected(Server &server);
 		virtual void RenX_OnServerDisconnect(Server &server, RenX::DisconnectReason reason);
-		virtual bool RenX_OnBan(Server &server, const PlayerInfo &player, Jupiter::StringType &data);
+		virtual bool RenX_OnBan(Server &server, const PlayerInfo &player, std::string &data);
 		virtual void RenX_OnCommandTriggered(Server& server, std::string_view  trigger, RenX::PlayerInfo& player, std::string_view  parameters, GameCommand& command);
 
 		/** Player type logs */

@@ -22,7 +22,6 @@
 #include <cstdint>
 #include <unordered_map>
 #include "Jupiter/Database.h"
-#include "Jupiter/String.hpp"
 #include "RenX.h"
 
 /** DLL Linkage Nagging */
@@ -78,7 +77,7 @@ namespace RenX
 		*/
 		struct RENX_API Entry
 		{
-			using VarDataTableType = std::unordered_map<Jupiter::StringS, Jupiter::StringS, Jupiter::default_hash_function>;
+			using VarDataTableType = std::unordered_map<std::string, std::string, Jupiter::default_hash_function, std::equal_to<>>;
 
 			fpos_t pos; /** Position of the entry in the database */
 			uint16_t flags /** Flags affecting this ban entry (See below for flags) */ = 0x00;
