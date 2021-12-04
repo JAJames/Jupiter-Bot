@@ -21,6 +21,7 @@
 
 #include <cstdint>
 #include <unordered_map>
+#include "jessilib/unicode.hpp"
 #include "Jupiter/Database.h"
 #include "RenX.h"
 
@@ -77,7 +78,7 @@ namespace RenX
 		*/
 		struct RENX_API Entry
 		{
-			using VarDataTableType = std::unordered_map<std::string, std::string, Jupiter::default_hash_function, std::equal_to<>>;
+			using VarDataTableType = std::unordered_map<std::string, std::string, jessilib::text_hash, jessilib::text_equal>;
 
 			fpos_t pos; /** Position of the entry in the database */
 			uint16_t flags /** Flags affecting this ban entry (See below for flags) */ = 0x00;

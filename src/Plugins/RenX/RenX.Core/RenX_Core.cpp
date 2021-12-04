@@ -198,6 +198,7 @@ extern "C" JUPITER_EXPORT Jupiter::Plugin *getPlugin()
 // Unload
 
 extern "C" JUPITER_EXPORT void unload(void) {
+	// TODO: Are plugins which link to RenX.Core absorbing this and providing in dlsym?
 	auto& plugins = pluginInstance.getPlugins();
 	while (!plugins.empty()) {
 		Jupiter::Plugin::free(plugins.back());

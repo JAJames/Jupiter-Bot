@@ -16,15 +16,18 @@
 #include <charconv>
 #include "jessilib/split.hpp"
 #include "jessilib/word_split.hpp"
+#include "jessilib/unicode.hpp"
 #include "Jupiter/IRC.h"
 #include "RenX_Functions.h"
 #include "RenX_Server.h"
 #include "RenX_PlayerInfo.h"
 
+using namespace std::literals;
+
 // String literal redefinition of RenX::DelimC
 #define RX_DELIM "\x02"
+static constexpr std::string_view Rx_Delim = "\x02"sv;
 
-using namespace std::literals;
 constexpr const char g_blank_steamid[] = "0x0000000000000000";
 constexpr std::chrono::steady_clock::duration g_reconnect_delay = std::chrono::seconds{15 }; // game server: 120s
 constexpr std::chrono::steady_clock::duration g_activity_timeout = std::chrono::seconds{ 120 }; // game server: 120s
@@ -637,19 +640,9 @@ void RenX_RelayPlugin::upstream_connected(RenX::Server& in_server, upstream_serv
 	in_server_info.m_last_activity = in_server_info.m_last_connect_attempt;
 
 	// New format: 004 | Game Version Number | Game Version
-	const auto& version_str = in_server.getGameVersion();
-	std::string version_message = "v004";
-	version_message += RenX::DelimC;
-	version_message += std::to_string(in_server.getGameVersionNumber());
-	version_message += RenX::DelimC;
-	version_message.append(version_str.data(), version_str.size());
-	version_message += '\n';
-
-	// Tack on username auth
-	const auto& rcon_username = get_upstream_rcon_username(in_server_info, in_server);
-	version_message += 'a';
-	version_message += rcon_username;
-	version_message += '\n';
+	std::string version_message = jessilib::join<std::string>(
+		"v004"sv, Rx_Delim, std::to_string(in_server.getGameVersionNumber()), Rx_Delim, in_server.getGameVersion(), // Version string
+		"\na"sv, get_upstream_rcon_username(in_server_info, in_server), "\n"sv); // Newline & auth message
 
 	send_upstream(in_server_info, version_message, in_server);
 }
