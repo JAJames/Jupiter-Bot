@@ -22,6 +22,8 @@
 #include "Jupiter/Plugin.h"
 #include "RenX_Plugin.h"
 
+using query_table_type = std::unordered_map<std::string_view, std::string_view, jessilib::text_hash, jessilib::text_equal>;
+
 class RenX_Ladder_WebPlugin : public RenX::Plugin
 {
 protected:
@@ -37,9 +39,9 @@ public:
 
 	std::string header;
 	std::string footer;
-	std::string* generate_ladder_page(RenX::LadderDatabase *db, uint8_t format, size_t start_index, size_t count, const Jupiter::HTTP::HTMLFormResponse& query_params);
-	std::string* generate_search_page(RenX::LadderDatabase *db, uint8_t format, size_t start_index, size_t count, std::string_view name, const Jupiter::HTTP::HTMLFormResponse& query_params);
-	std::string* generate_profile_page(RenX::LadderDatabase *db, uint8_t format, uint64_t steam_id, const Jupiter::HTTP::HTMLFormResponse& query_params);
+	std::string* generate_ladder_page(RenX::LadderDatabase *db, uint8_t format, size_t start_index, size_t count, const query_table_type& query_params);
+	std::string* generate_search_page(RenX::LadderDatabase *db, uint8_t format, size_t start_index, size_t count, std::string_view name, const query_table_type& query_params);
+	std::string* generate_profile_page(RenX::LadderDatabase *db, uint8_t format, uint64_t steam_id, const query_table_type& query_params);
 	inline size_t getEntriesPerPage() const { return this->entries_per_page; }
 	inline size_t getMinSearchNameLength() const { return this->min_search_name_length; };
 

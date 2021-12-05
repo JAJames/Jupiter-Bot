@@ -16,11 +16,12 @@
  * Written by Jessica James <jessica.aj@outlook.com>
  */
 
+#include <charconv>
 #include "jessilib/split.hpp"
 #include "jessilib/unicode.hpp"
+#include "jessilib/http_query.hpp"
 #include "Jupiter/IRC_Client.h"
 #include "Jupiter/HTTP.h"
-#include "Jupiter/HTTP_QueryString.h"
 #include "HTTPServer.h"
 #include "RenX_Core.h"
 #include "RenX_Server.h"
@@ -666,20 +667,32 @@ std::string* handle_server_list_long_page(std::string_view) {
 	return server_list_long_json;
 }
 
+using query_table_type = std::unordered_map<std::string_view, std::string_view, jessilib::text_hash, jessilib::text_equal>;
+std::pair<std::string, query_table_type> parse_query_string(std::string_view in_query_string) {
+	std::pair<std::string, query_table_type> result;
+	result.first = in_query_string;
+	jessilib::deserialize_html_form(result.second, result.first);
+	return result;
+}
+
 std::string* handle_server_page(std::string_view query_string) {
-	Jupiter::HTTP::HTMLFormResponse html_form_response(query_string);
+	std::string parsed_query_string{ query_string };
+	std::unordered_map<std::string_view, std::string_view, jessilib::text_hash, jessilib::text_equal> table;
+	jessilib::deserialize_html_form(table, parsed_query_string);
 	std::string_view address;
-	int port = 0;
+	unsigned short port = 0;
 	RenX::Server *server;
 
 	// parse form data
 
-	if (html_form_response.table.size() < 2)
+	if (table.size() < 2) {
 		return new std::string();
+	}
 
-	if (html_form_response.table.size() != 0) {
-		address = html_form_response.tableGet("ip"sv, address);
-		port = html_form_response.tableGetCast<int>("port"sv, port);
+	if (table.size() != 0) {
+		address = table["ip"sv];
+		std::string_view port_str = table["port"sv];
+		std::from_chars(port_str.data(), port_str.data() + port_str.size(), port, 10);
 	}
 
 	// search for server

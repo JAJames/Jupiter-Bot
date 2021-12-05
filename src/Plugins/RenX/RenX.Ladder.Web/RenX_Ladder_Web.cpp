@@ -17,9 +17,9 @@
  */
 
 #include "jessilib/unicode.hpp"
+#include "jessilib/http_query.hpp"
 #include "Jupiter/IRC_Client.h"
 #include "Jupiter/HTTP.h"
-#include "Jupiter/HTTP_QueryString.h"
 #include "HTTPServer.h"
 #include "RenX_Tags.h"
 #include "RenX_Ladder_Web.h"
@@ -168,7 +168,7 @@ std::string generate_search(RenX::LadderDatabase *db) {
 }
 
 /** Database selector */
-std::string generate_database_selector(RenX::LadderDatabase *db, const Jupiter::HTTP::HTMLFormResponse& query_params) {
+std::string generate_database_selector(RenX::LadderDatabase *db, const query_table_type& query_params) {
 	std::string result;
 
 	result = R"database-select(<form method="get" class="database-select-form"><select name="database" class="database-select">)database-select"sv;
@@ -193,8 +193,8 @@ std::string generate_database_selector(RenX::LadderDatabase *db, const Jupiter::
 		}
 	}
 
-	auto value = query_params.tableFind("id"sv);
-	if (value != query_params.table.end()) {
+	auto value = query_params.find("id"sv);
+	if (value != query_params.end()) {
 		result += R"html(<input type="hidden" name="id" value=")html"sv;
 		result += value->second;
 		result += R"html("/>)html"sv;
@@ -287,7 +287,7 @@ std::string RenX_Ladder_WebPlugin::generate_entry_table(RenX::LadderDatabase *db
 	return result;
 }
 
-std::string* RenX_Ladder_WebPlugin::generate_ladder_page(RenX::LadderDatabase *db, uint8_t format, size_t index, size_t count, const Jupiter::HTTP::HTMLFormResponse& query_params) {
+std::string* RenX_Ladder_WebPlugin::generate_ladder_page(RenX::LadderDatabase *db, uint8_t format, size_t index, size_t count, const query_table_type& query_params) {
 	std::string* result = new std::string();
 	result->reserve(2048);
 
@@ -312,7 +312,7 @@ std::string* RenX_Ladder_WebPlugin::generate_ladder_page(RenX::LadderDatabase *d
 //	include_header | include_footer | include_any_headers | include_any_footers
 
 /** Search page */
-std::string* RenX_Ladder_WebPlugin::generate_search_page(RenX::LadderDatabase *db, uint8_t format, size_t start_index, size_t count, std::string_view name, const Jupiter::HTTP::HTMLFormResponse& query_params) {
+std::string* RenX_Ladder_WebPlugin::generate_search_page(RenX::LadderDatabase *db, uint8_t format, size_t start_index, size_t count, std::string_view name, const query_table_type& query_params) {
 	std::string* result = new std::string();
 	result->reserve(2048);
 
@@ -361,7 +361,7 @@ std::string* RenX_Ladder_WebPlugin::generate_search_page(RenX::LadderDatabase *d
 }
 
 /** Profile page */
-std::string* RenX_Ladder_WebPlugin::generate_profile_page(RenX::LadderDatabase *db, uint8_t format, uint64_t steam_id, const Jupiter::HTTP::HTMLFormResponse& query_params) {
+std::string* RenX_Ladder_WebPlugin::generate_profile_page(RenX::LadderDatabase *db, uint8_t format, uint64_t steam_id, const query_table_type& query_params) {
 	std::string* result = new std::string();
 	result->reserve(2048);
 
@@ -426,7 +426,7 @@ std::string* RenX_Ladder_WebPlugin::generate_profile_page(RenX::LadderDatabase *
 
 /** Content functions */
 
-std::string* generate_no_db_page(const Jupiter::HTTP::HTMLFormResponse& query_params) {
+std::string* generate_no_db_page(const query_table_type& query_params) {
 	std::string* result = new std::string(pluginInstance.header);
 	if (RenX::ladder_databases.size() != 0) {
 		result->append(generate_search(nullptr));
@@ -440,18 +440,43 @@ std::string* generate_no_db_page(const Jupiter::HTTP::HTMLFormResponse& query_pa
 	return result;
 }
 
+std::pair<std::string, query_table_type> parse_query_string(std::string_view in_query_string) {
+	std::pair<std::string, query_table_type> result;
+	result.first = in_query_string;
+	jessilib::deserialize_html_form(result.second, result.first);
+	return result;
+}
+
+std::string_view get_table_value(const query_table_type& in_table, std::string_view key, std::string_view in_default_result = {}) {
+	auto value = in_table.find(key);
+	if (value != in_table.end()) {
+		return value->second;
+	}
+	return in_default_result;
+}
+
+template<typename OutT>
+OutT from_table_value(const query_table_type& in_table, std::string_view key, OutT in_default_result) {
+	auto value = get_table_value(in_table, key, {});
+	if (!value.empty()) {
+		return Jupiter::from_string<OutT>(value);
+	}
+	return in_default_result;
+}
+
 std::string* handle_ladder_page(std::string_view query_string) {
-	Jupiter::HTTP::HTMLFormResponse html_form_response(query_string);
+	auto parsed_query = parse_query_string(query_string);
+	auto& table = parsed_query.second;
 	RenX::LadderDatabase *db = RenX::default_ladder_database;
 	size_t start_index = 0, count = pluginInstance.getEntriesPerPage();
 	uint8_t format = 0xFF;
 
-	if (html_form_response.table.size() != 0) {
-		format = html_form_response.tableGetCast<uint8_t>("format"sv, format);
-		start_index = html_form_response.tableGetCast<size_t>("start"sv, start_index);
-		count = html_form_response.tableGetCast<size_t>("count"sv, count);
+	if (table.size() != 0) {
+		format = from_table_value<uint8_t>(table, "format"sv, format);
+		start_index = from_table_value<size_t>(table, "start"sv, start_index);
+		count = from_table_value<size_t>(table, "count"sv, count);
 		
-		std::string_view db_name = html_form_response.tableGet("database"sv, {});
+		std::string_view db_name = get_table_value(table, "database"sv, {});
 		if (!db_name.empty()) {
 			db = nullptr;
 			for (const auto& database : RenX::ladder_databases) {
@@ -463,26 +488,28 @@ std::string* handle_ladder_page(std::string_view query_string) {
 		}
 	}
 
-	if (db == nullptr)
-		return generate_no_db_page(html_form_response);
+	if (db == nullptr) {
+		return generate_no_db_page(table);
+	}
 
-	return pluginInstance.generate_ladder_page(db, format, start_index, count, html_form_response);
+	return pluginInstance.generate_ladder_page(db, format, start_index, count, table);
 }
 
 std::string* handle_search_page(std::string_view query_string) {
-	Jupiter::HTTP::HTMLFormResponse html_form_response(query_string);
+	auto parsed_query = parse_query_string(query_string);
+	auto& table = parsed_query.second;
 	RenX::LadderDatabase *db = RenX::default_ladder_database;
 	uint8_t format = 0xFF;
 	size_t start_index = 0, count = pluginInstance.getEntriesPerPage();
 	std::string_view name;
 
-	if (html_form_response.table.size() != 0) {
-		format = html_form_response.tableGetCast<uint8_t>("format"sv, format);
-		start_index = html_form_response.tableGetCast<size_t>("start"sv, start_index);
-		count = html_form_response.tableGetCast<size_t>("count"sv, count);
-		name = html_form_response.tableGet("name"sv, name);
+	if (!table.empty()) {
+		format = from_table_value<uint8_t>(table, "format"sv, format);
+		start_index = from_table_value<size_t>(table, "start"sv, start_index);
+		count = from_table_value<size_t>(table, "count"sv, count);
+		name = get_table_value(table, "name"sv, name);
 
-		std::string_view db_name = html_form_response.tableGet("database"sv, {});
+		std::string_view db_name = get_table_value(table, "database"sv, {});
 		if (!db_name.empty()) {
 			db = nullptr;
 			for (const auto& database : RenX::ladder_databases) {
@@ -494,27 +521,29 @@ std::string* handle_search_page(std::string_view query_string) {
 		}
 	}
 
-	if (db == nullptr)
-		return generate_no_db_page(html_form_response);
+	if (db == nullptr) {
+		return generate_no_db_page(table);
+	}
 
-	if (name.size() < pluginInstance.getMinSearchNameLength()) // Generate ladder page when no name specified
+	if (name.size() < pluginInstance.getMinSearchNameLength()) { // Generate ladder page when no name specified
 		return handle_ladder_page(query_string);
+	}
 
-	return pluginInstance.generate_search_page(db, format, start_index, count, name, html_form_response);
+	return pluginInstance.generate_search_page(db, format, start_index, count, name, table);
 }
 
 std::string* handle_profile_page(std::string_view query_string) {
-	Jupiter::HTTP::HTMLFormResponse html_form_response(query_string);
+	auto parsed_query = parse_query_string(query_string);
+	auto& table = parsed_query.second;
 	RenX::LadderDatabase *db = RenX::default_ladder_database;
 	uint64_t steam_id = 0;
 	uint8_t format = 0xFF;
 
-	if (html_form_response.table.size() != 0)
-	{
-		format = html_form_response.tableGetCast<uint8_t>("format"sv, format);
-		steam_id = html_form_response.tableGetCast<uint64_t>("id"sv, steam_id);
+	if (!table.empty()) {
+		format = from_table_value<uint8_t>(table, "format"sv, format);
+		steam_id = from_table_value<uint64_t>(table, "id"sv, steam_id);
 
-		std::string_view db_name = html_form_response.tableGet("database"sv, {});
+		std::string_view db_name = get_table_value(table, "database"sv, {});
 		if (!db_name.empty()) {
 			db = nullptr;
 			for (const auto& database : RenX::ladder_databases) {
@@ -526,13 +555,13 @@ std::string* handle_profile_page(std::string_view query_string) {
 		}
 	}
 
-	if (db == nullptr)
-		return generate_no_db_page(html_form_response);
+	if (db == nullptr) {
+		return generate_no_db_page(table);
+	}
 
-	return pluginInstance.generate_profile_page(db, format, steam_id, html_form_response);
+	return pluginInstance.generate_profile_page(db, format, steam_id, table);
 }
 
-extern "C" JUPITER_EXPORT Jupiter::Plugin *getPlugin()
-{
+extern "C" JUPITER_EXPORT Jupiter::Plugin *getPlugin() {
 	return &pluginInstance;
 }
