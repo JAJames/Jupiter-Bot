@@ -183,14 +183,14 @@ int main(int argc, char* argv[]) {
 	std::cout << Jupiter::copyright << std::endl;
 
 	jessilib::app_parameters parameters{ argc, argv };
-	if (parameters.has_switch("help"sv)) {
+	if (parameters.has_switch(u8"help"sv)) {
 		std::cout << "Help coming soon, to a theatre near you!" << std::endl;
 		return 0;
 	}
 
-	std::string_view configFileName = parameters.get_value("config", "Config.ini"sv);
-	std::string_view plugins_directory = parameters.get_value("pluginsdir"sv);
-	std::string_view configs_directory = parameters.get_value("configsdir"sv);
+	std::string_view configFileName = jessilib::string_view_cast<char>(parameters.get_value(u8"config", u8"Config.ini"sv));
+	std::string_view plugins_directory = jessilib::string_view_cast<char>(parameters.get_value(u8"pluginsdir"sv));
+	std::string_view configs_directory = jessilib::string_view_cast<char>(parameters.get_value(u8"configsdir"sv));
 
 	std::chrono::steady_clock::time_point load_start = std::chrono::steady_clock::now();
 
