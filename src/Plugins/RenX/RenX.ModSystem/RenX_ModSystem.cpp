@@ -64,39 +64,39 @@ bool RenX_ModSystemPlugin::initialize() {
 
 		groupName += dotLockSteam;
 		group->lockSteam = this->config.get<bool>(groupName, m_lockSteam);
-		groupName.erase(dotLockSteam.size());
+		groupName.erase(groupName.size() - dotLockSteam.size());
 
 		groupName += dotLockIP;
 		group->lockIP = this->config.get<bool>(groupName, m_lockIP);
-		groupName.erase(dotLockIP.size());
+		groupName.erase(groupName.size() - dotLockIP.size());
 
 		groupName += dotLockName;
 		group->lockName = this->config.get<bool>(groupName, m_lockName);
-		groupName.erase(dotLockName.size());
+		groupName.erase(groupName.size() - dotLockName.size());
 
 		groupName += dotKickLockMismatch;
 		group->kickLockMismatch = this->config.get<bool>(groupName, m_kickLockMismatch);
-		groupName.erase(dotKickLockMismatch.size());
+		groupName.erase(groupName.size() - dotKickLockMismatch.size());
 
 		groupName += dotAutoAuthSteam;
 		group->autoAuthSteam = this->config.get<bool>(groupName, m_autoAuthSteam);
-		groupName.erase(dotAutoAuthSteam.size());
+		groupName.erase(groupName.size() - dotAutoAuthSteam.size());
 
 		groupName += dotAutoAuthIP;
 		group->autoAuthIP = this->config.get<bool>(groupName, m_autoAuthIP);
-		groupName.erase(dotAutoAuthIP.size());
+		groupName.erase(groupName.size() - dotAutoAuthIP.size());
 
 		groupName += dotAccess;
 		group->access = this->config.get<int>(groupName);
-		groupName.erase(dotAccess.size());
+		groupName.erase(groupName.size() - dotAccess.size());
 		
 		groupName += dotPrefix;
 		group->prefix = this->config.get(groupName);
-		groupName.erase(dotPrefix.size());
+		groupName.erase(groupName.size() - dotPrefix.size());
 
 		groupName += dotGamePrefix;
 		group->gamePrefix = this->config.get(groupName);
-		groupName.erase(dotGamePrefix.size());
+		groupName.erase(groupName.size() - dotGamePrefix.size());
 
 		// Next
 		groupName += dotNext;
