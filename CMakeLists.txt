@@ -2,6 +2,7 @@ cmake_minimum_required(VERSION 3.0)
 project(jupiter_bot)
 
 set(CMAKE_CXX_STANDARD 20)
+option(INSTALL_JUPITER_BOT "Enables the INSTALL target for Jupiter Bot" ON)
 
 # Try to set JUPITER_VERSION_SHORT if it isn't already
 if (NOT DEFINED JUPITER_VERSION_SHORT)
@@ -46,6 +47,10 @@ include(build/CMakeLists.txt)
 
 # Setup source files
 add_subdirectory(src)
+
+########################################
+# PackagedBuild & FullBotBuild targets #
+########################################
 
 # Add PackagedBuild target to package a release build, and FullBotBuild to just build all plugins
 add_custom_target(FullBotBuild)
@@ -114,3 +119,74 @@ add_custom_command(TARGET PackagedBuild
 add_custom_command(TARGET PackagedBuild
         POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E rename "${PACKAGED_BUILD_PATH}/../${TAR_FILENAME}" "${PACKAGED_BUILD_PATH}/${TAR_FILENAME}")
+
+##########################
+# INSTALL rules & target #
+##########################
+
+if (INSTALL_JUPITER_BOT)
+    message(STATUS "CMAKE_INSTALL_PREFIX: ${CMAKE_INSTALL_PREFIX}")
+    message(STATUS "CMAKE_INSTALL_BINDIR: ${CMAKE_INSTALL_BINDIR}")
+    message(STATUS "CMAKE_INSTALL_LIBDIR: ${CMAKE_INSTALL_LIBDIR}")
+    message(STATUS "CMAKE_INSTALL_INCLUDEDIR: ${CMAKE_INSTALL_INCLUDEDIR}")
+    message(STATUS "CMAKE_INSTALL_SYSCONFDIR: ${CMAKE_INSTALL_SYSCONFDIR}")
+    message(STATUS "CMAKE_INSTALL_LOCALSTATEDIR: ${CMAKE_INSTALL_LOCALSTATEDIR}")
+    message(STATUS "CMAKE_INSTALL_DATADIR: ${CMAKE_INSTALL_DATADIR}")
+
+    set(JUPITER_BOT_INSTALL_BINDIR "${CMAKE_INSTALL_BINDIR}")
+    set(JUPITER_BOT_INSTALL_LIBDIR "${CMAKE_INSTALL_LIBDIR}")
+    set(JUPITER_BOT_INSTALL_SYSCONFDIR "${CMAKE_INSTALL_SYSCONFDIR}")
+    set(JUPITER_BOT_INSTALL_DATADIR "${CMAKE_INSTALL_DATADIR}")
+
+    # Jupiter Bot program binary
+    set(JUPITER_BOT_INSTALL_EXE "jupiter_bot${CMAKE_EXECUTABLE_SUFFIX}")
+    install(PROGRAMS $<TARGET_FILE:Bot>
+            DESTINATION ${JUPITER_BOT_INSTALL_BINDIR}
+            RENAME ${JUPITER_BOT_INSTALL_EXE})
+
+    # Shared library dependencies
+    install(TARGETS jupiter jessilib
+            RUNTIME DESTINATION ${JUPITER_BOT_INSTALL_BINDIR}
+            LIBRARY DESTINATION ${JUPITER_BOT_INSTALL_LIBDIR})
+
+    # Plugins
+    install(TARGETS ${JUPITER_PLUGINS}
+            RUNTIME DESTINATION "${JUPITER_BOT_INSTALL_BINDIR}/Plugins"
+            LIBRARY DESTINATION "${JUPITER_BOT_INSTALL_LIBDIR}/Plugins")
+
+    # Copy baselines for modification
+    set(TMP_INSTALL_FILE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/install_tmp")
+    set(BASELINE_FILES_INSTALL "${TMP_INSTALL_FILE_DIR}/baseline")
+    install(CODE
+            "execute_process(COMMAND ${CMAKE_COMMAND} -E copy_directory \"${CMAKE_CURRENT_SOURCE_DIR}/baseline\" \"${BASELINE_FILES_INSTALL}/\")")
+
+    # Configure ConfigsDirectory & PluginsDirectory
+    set(INSTALL_CONFIG_PATH "${BASELINE_FILES_INSTALL}/Config.ini")
+    install(CODE
+            "file(APPEND \"${INSTALL_CONFIG_PATH}\" \"ConfigsDirectory=${CMAKE_INSTALL_PREFIX}/${JUPITER_BOT_INSTALL_SYSCONFDIR}/jupiter_bot/Configs\n\")")
+    if (WIN32)
+        install(CODE
+                "file(APPEND \"${INSTALL_CONFIG_PATH}\" \"PluginsDirectory=${CMAKE_INSTALL_PREFIX}/${JUPITER_BOT_INSTALL_BINDIR}/Plugins\n\")")
+    else()
+        install(CODE
+                "file(APPEND \"${INSTALL_CONFIG_PATH}\" \"PluginsDirectory=${CMAKE_INSTALL_PREFIX}/${JUPITER_BOT_INSTALL_LIBDIR}/Plugins\n\")")
+    endif()
+
+    # Generate run script to pass in Config.ini
+    set(HELPER_SCRIPT_NAME "jupiter_bot.sh")
+    if (WIN32)
+        install(CODE
+                "file(WRITE \"${TMP_INSTALL_FILE_DIR}/jupiter_bot.bat\" \"jupiter_bot.exe --config=${CMAKE_INSTALL_PREFIX}/${JUPITER_BOT_INSTALL_SYSCONFDIR}/jupiter_bot/Config.ini\")")
+        install(PROGRAMS ${TMP_INSTALL_FILE_DIR}/jupiter_bot.bat
+                DESTINATION ${JUPITER_BOT_INSTALL_BINDIR})
+    else()
+        install(CODE
+                "file(WRITE \"${TMP_INSTALL_FILE_DIR}/jupiter_bot.sh\" \"jupiter_bot --config=${CMAKE_INSTALL_PREFIX}/${JUPITER_BOT_INSTALL_SYSCONFDIR}/jupiter_bot/Config.ini\")")
+        install(PROGRAMS ${TMP_INSTALL_FILE_DIR}/jupiter_bot.sh
+                DESTINATION ${JUPITER_BOT_INSTALL_BINDIR})
+    endif()
+
+    # Copy configured baseline files
+    install(DIRECTORY ${BASELINE_FILES_INSTALL}/
+            DESTINATION "${JUPITER_BOT_INSTALL_SYSCONFDIR}/jupiter_bot")
+endif()

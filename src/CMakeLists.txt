@@ -7,6 +7,7 @@ set(CMAKE_SHARED_LIBRARY_PREFIX)
 
 # We need Jupiter and jessilib to be shared libs, and there aren't separate targets for shared/static variants
 set(BUILD_SHARED_LIBS ON)
+set(INSTALL_GTEST OFF)
 
 # Add primary components (Jupiter, Bot)
 add_subdirectory(Jupiter)
