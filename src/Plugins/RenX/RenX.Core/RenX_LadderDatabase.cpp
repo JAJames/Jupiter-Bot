@@ -175,14 +175,15 @@ void RenX::LadderDatabase::create_header(FILE *file) {
 
 void RenX::LadderDatabase::process_file_finish(FILE *file) {
 	if (m_read_version != m_write_version) {
-		puts("Notice: Ladder database is out of date; upgrading...");
-		std::chrono::steady_clock::duration write_duration;
+		std::cout << "Notice: Ladder database is out of date; upgrading..." << std::endl;
+
 		std::chrono::steady_clock::time_point start_time = std::chrono::steady_clock::now();
-
 		write(this->getFilename());
+		std::chrono::steady_clock::duration write_duration = std::chrono::steady_clock::now() - start_time;
 
-		write_duration = std::chrono::steady_clock::now() - start_time;
-		printf("Ladder database upgrade completed in %f seconds", static_cast<double>(write_duration.count()) * (static_cast<double>(std::chrono::steady_clock::duration::period::num) / static_cast<double>(std::chrono::steady_clock::duration::period::den) * static_cast<double>(std::chrono::seconds::duration::period::den / std::chrono::seconds::duration::period::num)));
+		// This does not seem anything close to correct...
+		double time_taken = static_cast<double>(write_duration.count()) * (static_cast<double>(std::chrono::steady_clock::duration::period::num) / static_cast<double>(std::chrono::steady_clock::duration::period::den) * static_cast<double>(std::chrono::seconds::duration::period::den / std::chrono::seconds::duration::period::num));
+		std::cout << "Ladder database upgrade completed in " << time_taken << "  seconds" << std::endl;
 		m_read_version = m_write_version;
 	}
 }

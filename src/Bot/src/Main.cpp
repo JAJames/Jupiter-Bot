@@ -31,6 +31,7 @@
 #include "Jupiter/Plugin.h"
 #include "Jupiter/Timer.h"
 #include "jessilib/word_split.hpp"
+#include "jessilib/serialize.hpp"
 #include "IRC_Bot.h"
 #include "Console_Command.h"
 #include "IRC_Command.h"
@@ -58,13 +59,13 @@ struct ConsoleInput {
 } console_input;
 
 void onTerminate() {
-	puts("Terminate signal received...");
+	std::cout << "Terminate signal received..." << std::endl;
 }
 
 void onExit() {
-	puts("Exit signal received; Cleaning up...");
+	std::cout << "Exit signal received; Cleaning up..." << std::endl;
 	Jupiter::Socket::cleanup();
-	puts("Clean-up complete. Closing...");
+	std::cout << "Clean-up complete. Closing..." << std::endl;
 }
 
 void inputLoop() {
@@ -155,7 +156,7 @@ void reinitialize_plugins() {
 					command->trigger(input_split.second);
 				}
 				else {
-					printf("Error: Command \"%.*s\" not found." ENDL, static_cast<int>(command_name.size()), command_name.data());
+					std::cout << "Error: Command \"" << command_name << "\" not found." << std::endl;
 				}
 			}
 			console_input.input_mutex.unlock();
@@ -188,6 +189,14 @@ int main(int argc, char* argv[]) {
 		return 0;
 	}
 
+	if (parameters.has_switch(u8"echo-parameters")) {
+		// TODO: Write pretty JSON serializer based on JSON serializer
+		// TODO: add a format specifier parameter
+		std::cout << "Echoing app_parameters: " << std::endl
+			<< jessilib::ustring_to_mbstring(jessilib::serialize_object(parameters, "json")).second << std::endl
+			<< std::endl; // leave an extra empty line so it's easier to read or copy/paste
+	}
+
 	std::string_view configFileName = jessilib::string_view_cast<char>(parameters.get_value(u8"config", u8"Config.ini"sv));
 	std::string_view plugins_directory = jessilib::string_view_cast<char>(parameters.get_value(u8"pluginsdir"sv));
 	std::string_view configs_directory = jessilib::string_view_cast<char>(parameters.get_value(u8"configsdir"sv));
@@ -202,7 +211,7 @@ int main(int argc, char* argv[]) {
 
 	double time_taken = static_cast<double>(std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::steady_clock::now() - load_start).count()) / 1000.0;
 
-	printf("Config loaded (%fms)." ENDL, time_taken);
+	std::cout << "Config loaded (" << time_taken << "ms)." << std::endl;
 
 	if (plugins_directory.empty())
 		plugins_directory = o_config.get("PluginsDirectory"sv);
@@ -212,23 +221,32 @@ int main(int argc, char* argv[]) {
 
 	if (!plugins_directory.empty()) {
 		Jupiter::Plugin::setDirectory(plugins_directory);
-		printf("Plugins will be loaded from \"%.*s\"." ENDL, static_cast<int>(plugins_directory.size()), plugins_directory.data());
+		std::cout << "Plugins will be loaded from \"" << plugins_directory << "\"." << std::endl;
 	}
 
 	if (!configs_directory.empty()) {
 		Jupiter::Plugin::setConfigDirectory(configs_directory);
-		printf("Plugin configs will be loaded from \"%.*s\"." ENDL, static_cast<int>(configs_directory.size()), configs_directory.data());
+		std::cout << "Plugin configs will be loaded from \"" << configs_directory << "\"." << std::endl;
 	}
 
 	initialize_plugins();
 
-	printf("Initialization completed in %f milliseconds." ENDL, static_cast<double>(std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::steady_clock::now() - Jupiter::g_start_time).count()) / 1000.0 );
+	time_taken = static_cast<double>(std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::steady_clock::now() - Jupiter::g_start_time).count()) / 1000.0;
+	std::cout << "Initialization completed in " << time_taken << " milliseconds." << std::endl;
 
 	if (!consoleCommands.empty()) {
-		printf("%zu Console Commands have been initialized%s" ENDL, consoleCommands.size(), getConsoleCommand("help"sv) == nullptr ? "." : "; type \"help\" for more information.");
+		std::cout << consoleCommands.size() << " Console Commands have been initialized"
+			<< (getConsoleCommand("help"sv) == nullptr ? "." : "; type \"help\" for more information.")
+			<< std::endl;
 	}
+
 	if (!IRCMasterCommandList.empty()) {
-		printf("%zu IRC Commands have been loaded into the master list." ENDL, IRCMasterCommandList.size());
+		std::cout << IRCMasterCommandList.size() << " IRC Commands have been loaded into the master list." << std::endl;
+	}
+
+	if (parameters.has_switch(u8"exit")) {
+		std::cout << "exit switch specified; closing down post-initialization before entering main_loop" << std::endl;
+		return 0;
 	}
 
 	main_loop();

@@ -17,7 +17,7 @@
  */
 
 #include <ctime>
-#include <cstdio>
+#include <iostream>
 #include "Jupiter/IRC_Client.h"
 #include "Jupiter/DataBuffer.h"
 #include "RenX_PlayerInfo.h"
@@ -84,11 +84,11 @@ void RenX::BanDatabase::create_header(FILE *file)
 void RenX::BanDatabase::process_file_finish(FILE *file) {
 	if (m_read_version < 3) {
 		if (freopen(m_filename.c_str(), "wb", file) == nullptr) {
-			puts("FATAL ERROR: UNABLE TO REMOVE UNSUPPORTED BAN DATABASE FILE VERSION");
+			std::cout << "FATAL ERROR: UNABLE TO REMOVE UNSUPPORTED BAN DATABASE FILE VERSION" << std::endl;
 			return;
 		}
 
-		puts("Warning: Unsupported ban database file version. The database will be removed and rewritten.");
+		std::cout << "Warning: Unsupported ban database file version. The database will be removed and rewritten." << std::endl;
 		create_header(file);
 		fgetpos(file, std::addressof(m_eof));
 		m_read_version = m_write_version;

@@ -132,13 +132,13 @@ RawRCONConsoleCommand::RawRCONConsoleCommand() {
 
 void RawRCONConsoleCommand::trigger(std::string_view parameters) {
 	if (parameters.empty()) {
-		puts("Error: Too Few Parameters. Syntax: rrcon <input>");
+		std::cout << "Error: Too Few Parameters. Syntax: rrcon <input>" << std::endl;
 		return;
 	}
 
 	const auto& servers = RenX::getCore()->getServers();
 	if (servers.empty()) {
-		puts("Error: Not connected to any Renegade X servers.");
+		std::cout << "Error: Not connected to any Renegade X servers." << std::endl;
 		return;
 	}
 
@@ -165,12 +165,12 @@ RCONConsoleCommand::RCONConsoleCommand() {
 
 void RCONConsoleCommand::trigger(std::string_view parameters) {
 	if (parameters.empty()) {
-		puts("Error: Too Few Parameters. Syntax: rcon <input>");
+		std::cout << "Error: Too Few Parameters. Syntax: rcon <input>" << std::endl;
 	}
 
 	const auto& servers = RenX::getCore()->getServers();
 	if (servers.empty()) {
-		puts("Error: Not connected to any Renegade X servers.");
+		std::cout << "Error: Not connected to any Renegade X servers." << std::endl;
 		return;
 	}
 

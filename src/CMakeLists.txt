@@ -9,6 +9,9 @@ set(CMAKE_SHARED_LIBRARY_PREFIX)
 set(BUILD_SHARED_LIBS ON)
 set(INSTALL_GTEST OFF)
 
+# Jupiter Bot cannot yet survive without JESSILIB_CHAR_AS_UTF8
+add_compile_definitions(JESSILIB_CHAR_AS_UTF8)
+
 # Add primary components (Jupiter, Bot)
 add_subdirectory(Jupiter)
 add_subdirectory(Bot)
